@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xmlData>
+	<DefaultPriority>
+		<EMPID>JLCONN</EMPID>
+		<EMPNAME>CONN,JOHN L.</EMPNAME>
+	</DefaultPriority>
+	<DefaultPriority>
+		<EMPID>LBLANE</EMPID>
+		<EMPNAME>LANE,LARRY</EMPNAME>
+	</DefaultPriority>
+</xmlData>
