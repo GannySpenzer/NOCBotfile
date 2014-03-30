@@ -371,6 +371,9 @@ Public Class QuoteNonStockProcessor
                 Dim boItem As QuotedNStkItem
                 Dim sModifiedByID As String = ""
 
+                Dim workOrderNo As String = ""
+                Dim rfqEmailRecipient As String = ""
+
                 While rdr.Read
                     cKey = ""
                     bNew = True
@@ -480,15 +483,47 @@ Public Class QuoteNonStockProcessor
                         End If
                     End If
 
-                    If Trim(UCase(CType(rdr("ORIGIN"), String))) = "RFQ" Then
-                        If Not (rdr("PROJECT_ID") Is System.DBNull.Value) Then
-                            Dim sProjectId As String = CType(rdr("PROJECT_ID"), String)
-                            Dim arrProjID() As String = Split(sProjectId, "|")
+                    ' grab the order origin
+                    If Not (boItem.OrderOrigin.Length > 0) Then
+                        Dim orderOrigin As String = ""
+                        Try
+                            orderOrigin = CStr(rdr("ORIGIN")).Trim.ToUpper
+                        Catch ex As Exception
+                        End Try
+                        If (orderOrigin.Length > 0) Then
+                            boItem.OrderOrigin = orderOrigin
+                        End If
+                    End If
 
-                            boItem.TO &= arrProjID(1)
+                    ' grab the "project ID" from the INTFC_H since for RFQ's (origin) this field SHOULD have both the "work order#" and "primary recipient email address"
+                    If (boItem.OrderOrigin = "RFQ") Then
+                        If Not (rdr("PROJECT_ID") Is System.DBNull.Value) Then
+
+                            Dim sProjectId As String = ""
+                            Dim arrProjID() As String = New String() {}
+
+                            Try
+                                sProjectId = CStr(rdr("PROJECT_ID")).Trim
+                            Catch ex As Exception
+                            End Try
+                            If (sProjectId.Length > 0) Then
+                                arrProjID = Split(sProjectId, "|")
+                            End If
+
+                            If (arrProjID.Length > 0) Then
+                                If (arrProjID(0).Trim.Length > 0) Then
+                                    workOrderNo = arrProjID(0).Trim
+                                End If
+                            End If
+                            If (arrProjID.Length > 1) Then
+                                If (arrProjID(1).Trim.Length > 0) Then
+                                    rfqEmailRecipient = arrProjID(1).Trim
+                                End If
+                            End If
 
                         End If
                     End If
+
                     ' get the very first available VALID recipient of this message (if not yet)
                     If Not boItem.IsPrimaryRecipientExist Then
                         ' get the employee ID
@@ -507,34 +542,38 @@ Public Class QuoteNonStockProcessor
                         End If
 
                         ' get the email address
-                        If Trim(UCase(CType(rdr("ORIGIN"), String))) = "RFQ" Then
+                        If Not (rdr("ISA_EMPLOYEE_EMAIL") Is System.DBNull.Value) Then
+                            'If SDI.WinServices.Utility.IsValidEmailAdd(CType(rdr("ISA_EMPLOYEE_EMAIL"), String)) Then
+                            '    boItem.TO = CType(rdr("ISA_EMPLOYEE_EMAIL"), String)
+                            'End If
+                            Dim arr As ArrayList = SDI.WinServices.Utility.ExtractValidEmails(CType(rdr("ISA_EMPLOYEE_EMAIL"), String).Trim)
+                            If arr.Count > 0 Then
+                                For Each sAdd As String In arr
+                                    boItem.TO &= sAdd & ";"
+                                Next
+                            End If
+                            arr = Nothing
+                        End If
 
-                        Else
-                            If Not (rdr("ISA_EMPLOYEE_EMAIL") Is System.DBNull.Value) Then
-                                'If SDI.WinServices.Utility.IsValidEmailAdd(CType(rdr("ISA_EMPLOYEE_EMAIL"), String)) Then
-                                '    boItem.TO = CType(rdr("ISA_EMPLOYEE_EMAIL"), String)
-                                'End If
-                                Dim arr As ArrayList = SDI.WinServices.Utility.ExtractValidEmails(CType(rdr("ISA_EMPLOYEE_EMAIL"), String).Trim)
+                        ' 3/26/2014 to accomodate Ascend Reqs (meaning IF ORIGIN IS "RFQ")
+                        '   we'll have to override current "email TO", "addressee" and "employee" fields
+                        '   - erwin
+                        If (boItem.OrderOrigin = "RFQ") Then
+                            If (rfqEmailRecipient.Length > 0) Then
+                                boItem.TO = ""
+                                Dim arr As ArrayList = SDI.WinServices.Utility.ExtractValidEmails(rfqEmailRecipient)
                                 If arr.Count > 0 Then
                                     For Each sAdd As String In arr
                                         boItem.TO &= sAdd & ";"
                                     Next
                                 End If
                                 arr = Nothing
+                                ' since we won't have this addressee on our table, we'll use the email they provided as the addressee
+                                boItem.Addressee = boItem.TO.TrimEnd(";"c)
+                                ' as well as the employee Id
+                                boItem.EmployeeID = boItem.TO.TrimEnd(";"c)
                             End If
                         End If
-                        'If Not (rdr("ISA_EMPLOYEE_EMAIL") Is System.DBNull.Value) Then
-                        '    'If SDI.WinServices.Utility.IsValidEmailAdd(CType(rdr("ISA_EMPLOYEE_EMAIL"), String)) Then
-                        '    '    boItem.TO = CType(rdr("ISA_EMPLOYEE_EMAIL"), String)
-                        '    'End If
-                        '    Dim arr As ArrayList = SDI.WinServices.Utility.ExtractValidEmails(CType(rdr("ISA_EMPLOYEE_EMAIL"), String).Trim)
-                        '    If arr.Count > 0 Then
-                        '        For Each sAdd As String In arr
-                        '            boItem.TO &= sAdd & ";"
-                        '        Next
-                        '    End If
-                        '    arr = Nothing
-                        'End If
                     Else
                         ' add this email address into the CC field if not same as the
                         ' primary recipient of this email
@@ -580,6 +619,13 @@ Public Class QuoteNonStockProcessor
                         If boItem.BackupRecipientIDs.IndexOf(sModifiedByID) = -1 Then
                             boItem.BackupRecipientIDs.Add(sModifiedByID)
                         End If
+                    End If
+
+                    ' 3/26/2014 addition rule to handle Ascend reqs
+                    '   Ascend's order in INTFC comes in with origin = 'RFQ' (instead of IOL or MOB) and project ID comes in as "<work order#>|email address"
+                    '   - erwin
+                    If Not (boItem.WorkOrderNumber.Length > 0) Then
+                        boItem.WorkOrderNumber = workOrderNo
                     End If
 
                     ' put back the item into our collection object
@@ -810,6 +856,14 @@ Public Class QuoteNonStockProcessor
                         eml.Subject &= " - " & itmQuoted.OrderID
                     End If
 
+                    ' override for RFQ origin to include (if provided) the work order # on the subject line
+                    '   - erwin 3/26/2014
+                    If (itmQuoted.OrderOrigin = "RFQ") Then
+                        If (itmQuoted.WorkOrderNumber.Length > 0) Then
+                            eml.Subject &= " (Work Order #" & itmQuoted.WorkOrderNumber & ")"
+                        End If
+                    End If
+
                     '' build body of this email message
                     ''vbCrLf & _
                     ''"FROM=" & itmQuoted.FROM & "<br>" & vbCrLf & _
@@ -831,13 +885,32 @@ Public Class QuoteNonStockProcessor
                     '                    AddVersionNumber() & _
                     '                "</BODY>" & _
                     '           "</HTML>"
+
+                    Dim sWorkOrder As String = ""
+                    Try
+                        sWorkOrder = itmQuoted.WorkOrderNumber.Trim
+                    Catch ex As Exception
+                        sWorkOrder = ""
+                    End Try
+
+                    ' for now, showing the work order # is synonymous to origin "RFQ"
+                    Dim bShowWorkOrderNo As Boolean = (itmQuoted.OrderOrigin = "RFQ")
+
+                    ' also, for now, we will hide the "approve via email" link when the origin is RFQ
+                    Dim bShowApproveViaEmailLink As Boolean = True
+                    If (itmQuoted.OrderOrigin = "RFQ") Then
+                        bShowApproveViaEmailLink = False
+                    End If
+
                     Dim bShowOrderId As String = ""
                     If itmQuoted.FormattedOrderID.Length > 0 Then
                         bShowOrderId = itmQuoted.FormattedOrderID
                     ElseIf itmQuoted.OrderID.Length > 0 Then
                         bShowOrderId = itmQuoted.OrderID
                     End If
+
                     cHdr = cHdr & "VR Start my code.  "
+
                     Dim bIsBusUnitSDiExch As Boolean = False
                     Try
                         Dim arrBUsForSdiExch() As String = Split(Me.ListBUsSDiExch, ",")
@@ -849,7 +922,9 @@ Public Class QuoteNonStockProcessor
                     Catch ex As Exception
                         bIsBusUnitSDiExch = False
                     End Try
+
                     cHdr = cHdr & "VR Middle my code.  "
+
                     Dim bIsPunchInBU As Boolean = (Me.PunchInBusinessUnitList.IndexOf(itmQuoted.BusinessUnitOM) > -1)
                     If bIsPunchInBU Then
                         If bIsBusUnitSDiExch Then
@@ -859,7 +934,7 @@ Public Class QuoteNonStockProcessor
                                         "<BODY>" & _
                                             AddNoRecepientExistNote(eml.To) & _
                                             LETTER_HEAD_SdiExch & _
-                                            FormHTMLQouteInfo(itmQuoted.Addressee, bShowOrderId) & _
+                                            FormHTMLQouteInfo(itmQuoted.Addressee, bShowOrderId, bShowWorkOrderNo, sWorkOrder) & _
                                             LETTER_CONTENT_PI_SDiExchange & _
                                             AddVersionNumber() & _
                                         "</BODY>" & _
@@ -871,7 +946,7 @@ Public Class QuoteNonStockProcessor
                                             "<BODY>" & _
                                                 AddNoRecepientExistNote(eml.To) & _
                                                 LETTER_HEAD & _
-                                                FormHTMLQouteInfo(itmQuoted.Addressee, bShowOrderId) & _
+                                                FormHTMLQouteInfo(itmQuoted.Addressee, bShowOrderId, bShowWorkOrderNo, sWorkOrder) & _
                                                 LETTER_CONTENT_PI & _
                                                 AddVersionNumber() & _
                                             "</BODY>" & _
@@ -895,9 +970,9 @@ Public Class QuoteNonStockProcessor
                                         "<BODY>" & _
                                             AddNoRecepientExistNote(eml.To) & _
                                             LETTER_HEAD_SdiExch & _
-                                            FormHTMLQouteInfo(itmQuoted.Addressee, bShowOrderId) & _
+                                            FormHTMLQouteInfo(itmQuoted.Addressee, bShowOrderId, bShowWorkOrderNo, sWorkOrder) & _
                                             LETTER_CONTENT_SDiExchange & _
-                                            FormHTMLLinkSDiExchange(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM) & _
+                                            FormHTMLLinkSDiExchange(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, bShowApproveViaEmailLink) & _
                                             AddVersionNumber() & _
                                         "</BODY>" & _
                                    "</HTML>"
@@ -908,9 +983,9 @@ Public Class QuoteNonStockProcessor
                                             "<BODY>" & _
                                                 AddNoRecepientExistNote(eml.To) & _
                                                 LETTER_HEAD & _
-                                                FormHTMLQouteInfo(itmQuoted.Addressee, bShowOrderId) & _
+                                                FormHTMLQouteInfo(itmQuoted.Addressee, bShowOrderId, bShowWorkOrderNo, sWorkOrder) & _
                                                 LETTER_CONTENT & _
-                                                FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM) & _
+                                                FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, bShowApproveViaEmailLink) & _
                                                 AddVersionNumber() & _
                                             "</BODY>" & _
                                        "</HTML>"
@@ -950,6 +1025,19 @@ Public Class QuoteNonStockProcessor
 
                     ' email is of HTML format
                     eml.BodyFormat = Web.Mail.MailFormat.Html
+
+                    ''debug
+                    'eml.Body &= vbCrLf & vbCrLf
+                    'eml.Body &= "[TO] " & eml.To.ToString & vbCrLf
+                    'eml.Body &= "[FROM] " & eml.From.ToString & vbCrLf
+                    'eml.Body &= "[CC] " & eml.Cc.ToString & vbCrLf
+                    'eml.Body &= "[BCC] " & eml.Bcc.ToString & vbCrLf
+
+                    'eml.To = "erwin.bautista@sdi.com;vitaly.rovensky@sdi.com;"
+                    'eml.[From] = "erwin.bautista@sdi.com"
+                    'eml.Cc = ""
+                    'eml.Bcc = ""
+                    ''debug - END
 
                     ' send this email
                     System.Web.Mail.SmtpMail.Send(message:=eml)
@@ -1007,25 +1095,31 @@ Public Class QuoteNonStockProcessor
         End Try
     End Sub
 
-    Private Function FormHTMLQouteInfo(ByVal cAddressee As String, ByVal cOrderID As String) As String
+    Private Function FormHTMLQouteInfo(ByVal cAddressee As String, ByVal cOrderID As String, Optional ByVal bIsShowWorkOrderNo As Boolean = False, Optional ByVal cWorkOrderNo As String = "") As String
         Dim cHdr As String = "QuoteNonStockProcessor.FormHTMLQouteInfo: "
         Try
             Dim cInfoHTML As String = ""
 
-            cInfoHTML &= "<TABLE id=""Table1"" cellSpacing=""1"" cellPadding=""1"" width=""100%"" border=""0"">" & _
-                                "<TR>" & _
-                                    "<TD style=""WIDTH: 80px"">TO:</TD>" & _
+            cInfoHTML &= "<TABLE id=""Table1"" cellSpacing=""1"" cellPadding=""1"" width=""100%"" border=""0"">"
+            cInfoHTML &= "       <TR>" & _
+                                    "<TD style=""WIDTH: 110px"">TO:</TD>" & _
                                     "<TD><B>" & cAddressee & "</B></TD>" & _
                                 "</TR>" & _
                                 "<TR>" & _
-                                    "<TD style=""WIDTH: 80px"">Date:</TD>" & _
-                                    "<TD>" & DateTime.Now.ToString(Format:="MM/dd/yyyy HH:mm:ss") & "</TD>" & _
+                                    "<TD style=""WIDTH: 110px"">Date:</TD>" & _
+                                    "<TD>" & DateTime.Now.ToString(format:="MM/dd/yyyy HH:mm:ss") & "</TD>" & _
                                 "</TR>" & _
                                 "<TR>" & _
-                                    "<TD style=""WIDTH: 80px"">Order:</TD>" & _
+                                    "<TD style=""WIDTH: 110px"">Order:</TD>" & _
                                     "<TD style=""COLOR: purple"">" & cOrderID & "</TD>" & _
-                                "</TR>" & _
-                         "</TABLE>"
+                                "</TR>"
+            If bIsShowWorkOrderNo Then
+                cInfoHTML &= "  <TR>" & _
+                               "<TD style=""WIDTH: 110px"">Work Order:</TD>" & _
+                               "<TD style=""COLOR: purple"">" & cWorkOrderNo & "</TD>" & _
+                               "</TR>"
+            End If
+            cInfoHTML &= "</TABLE>"
 
             Return cInfoHTML
 
@@ -1033,67 +1127,76 @@ Public Class QuoteNonStockProcessor
             m_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
             SendAlertMessage(msg:=cHdr & ex.ToString)
         End Try
+        Return ""
     End Function
 
-    Private Function FormHTMLLink(ByVal cOrderID As String, ByVal cEmployeeID As String, ByVal cBusinessUnitOM As String) As String
+    Private Function FormHTMLLink(ByVal cOrderID As String, ByVal cEmployeeID As String, ByVal cBusinessUnitOM As String, Optional ByVal bShowLink As Boolean = True) As String
+        Dim cLink As String = ""
         Dim cHdr As String = "QuoteNonStockProcessor.FormHTMLLink: "
-        Try
-            Dim boEncrypt As New SDI.WinServices.Encryption64
+        If bShowLink Then
+            Try
 
-            Dim cParam As String = "?fer=" & boEncrypt.Encrypt(cOrderID, m_cEncryptionKey) & _
-                                   "&op=" & boEncrypt.Encrypt(cEmployeeID, m_cEncryptionKey) & _
-                                   "&xyz=" & boEncrypt.Encrypt(cBusinessUnitOM, m_cEncryptionKey) & _
-                                   "&HOME=N"
-            Dim cLink As String = ""
+                Dim boEncrypt As New SDI.WinServices.Encryption64
 
-            cLink &= "<p>" & _
-                        "Click this " & _
-                        "<a href=""" & m_cURL & cParam & """ target=""_blank"">link</a> " & _
-                        " to APPROVE or DECLINE order." & _
-                     "</p>"
+                Dim cParam As String = "?fer=" & boEncrypt.Encrypt(cOrderID, m_cEncryptionKey) & _
+                                       "&op=" & boEncrypt.Encrypt(cEmployeeID, m_cEncryptionKey) & _
+                                       "&xyz=" & boEncrypt.Encrypt(cBusinessUnitOM, m_cEncryptionKey) & _
+                                       "&HOME=N"
 
-            boEncrypt = Nothing
+                cLink &= "<p>" & _
+                            "Click this " & _
+                            "<a href=""" & m_cURL & cParam & """ target=""_blank"">link</a> " & _
+                            " to APPROVE or DECLINE order." & _
+                         "</p>"
 
-            Return cLink
+                boEncrypt = Nothing
 
-        Catch ex As Exception
-            m_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
-            SendAlertMessage(msg:=cHdr & ex.ToString)
-        End Try
+                Return cLink
+
+            Catch ex As Exception
+                m_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+                SendAlertMessage(msg:=cHdr & ex.ToString)
+            End Try
+        End If
+        Return (cLink)
     End Function
 
-    Private Function FormHTMLLinkSDiExchange(ByVal cOrderID As String, ByVal cEmployeeID As String, ByVal cBusinessUnitOM As String) As String
+    Private Function FormHTMLLinkSDiExchange(ByVal cOrderID As String, ByVal cEmployeeID As String, ByVal cBusinessUnitOM As String, Optional ByVal bShowLink As Boolean = True) As String
+        Dim cLink As String = ""
         Dim cHdr As String = "QuoteNonStockProcessor.FormHTMLLink: "
-        Try
-            Dim boEncrypt As New SDI.WinServices.Encryption64
+        If bShowLink Then
+            Try
 
-            Dim cParam As String = "?fer=" & boEncrypt.Encrypt(cOrderID, m_cEncryptionKey) & _
-                                   "&op=" & boEncrypt.Encrypt(cEmployeeID, m_cEncryptionKey) & _
-                                   "&xyz=" & boEncrypt.Encrypt(cBusinessUnitOM, m_cEncryptionKey) & _
-                                   "&HOME=N" & _
-                                   "&ExchHome23=N"
-            Dim cLink As String = ""
+                Dim boEncrypt As New SDI.WinServices.Encryption64
 
-            cLink &= "<p>" & _
-                        "Click this " & _
-                        "<a href=""" & m_cURL_SDiExch & cParam & """ target=""_blank"">link</a> " & _
-                        " to APPROVE or DECLINE order." & _
-                     "</p>"
+                Dim cParam As String = "?fer=" & boEncrypt.Encrypt(cOrderID, m_cEncryptionKey) & _
+                                       "&op=" & boEncrypt.Encrypt(cEmployeeID, m_cEncryptionKey) & _
+                                       "&xyz=" & boEncrypt.Encrypt(cBusinessUnitOM, m_cEncryptionKey) & _
+                                       "&HOME=N" & _
+                                       "&ExchHome23=N"
 
-            boEncrypt = Nothing
+                cLink &= "<p>" & _
+                            "Click this " & _
+                            "<a href=""" & m_cURL_SDiExch & cParam & """ target=""_blank"">link</a> " & _
+                            " to APPROVE or DECLINE order." & _
+                         "</p>"
 
-            Return cLink
+                boEncrypt = Nothing
 
-        Catch ex As Exception
-            m_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
-            SendAlertMessage(msg:=cHdr & ex.ToString)
-        End Try
+                Return cLink
+
+            Catch ex As Exception
+                m_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+                SendAlertMessage(msg:=cHdr & ex.ToString)
+            End Try
+        End If
+        Return (cLink)
     End Function
 
     Private Function AddNoRecepientExistNote(ByVal sTO As String) As String
+        Dim cMsg As String = ""
         Dim cHdr As String = "QuoteNonStockProcessor.AddNoRecepientExistNote: "
         Try
-            Dim cMsg As String = ""
 
             If Not (sTO.Trim.Length > 0) Then
                 cMsg &= "<p style=""COLOR: red""><b>IMPORTANT:</b>&nbsp;&nbsp;<i>Please be advice that this message <b>DOES NOT</b> contain valid recepient.</i></p>"
@@ -1105,6 +1208,7 @@ Public Class QuoteNonStockProcessor
             m_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
             SendAlertMessage(msg:=cHdr & ex.ToString)
         End Try
+        Return (cMsg)
     End Function
 
     Private Function AddVersionNumber() As String
@@ -1119,7 +1223,7 @@ Public Class QuoteNonStockProcessor
         Try
 
             Dim eml As New System.Web.Mail.MailMessage
-            Dim SrvcNotification As System.Xml.XmlElement
+            Dim SrvcNotification As System.Xml.XmlElement = Nothing
 
             eml.Subject = ""
             eml.From = ""

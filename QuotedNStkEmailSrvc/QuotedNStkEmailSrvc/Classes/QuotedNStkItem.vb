@@ -20,6 +20,9 @@ Public Class QuotedNStkItem
     Private m_sEmployeeID As String = ""
     Private m_sAddressee As String = ""
 
+    Private m_workOrderNo As String = ""
+    Private m_orderOrigin As String = ""
+
     '
     ' for backup recipient(s)
     '
@@ -159,6 +162,24 @@ Public Class QuotedNStkItem
             End If
             Return m_arrEmpIDs
         End Get
+    End Property
+
+    Public Property WorkOrderNumber() As String
+        Get
+            Return m_workOrderNo
+        End Get
+        Set(value As String)
+            m_workOrderNo = value
+        End Set
+    End Property
+
+    Public Property OrderOrigin() As String
+        Get
+            Return m_orderOrigin
+        End Get
+        Set(value As String)
+            m_orderOrigin = value
+        End Set
     End Property
 
     '

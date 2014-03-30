@@ -8,7 +8,7 @@
 	<sourceDB cnstring="Provider=MSDAORA.1;Data Source=PLGR;User ID=ewindows;Password=ewindows;"
 		type="oracle8" />
 	//-->
-	<sourceDB cnString="Provider=MSDAORA.1;Data Source=PLGR;User ID=ewindows;Password=ewindows;"
+	<sourceDB cnString="Provider=MSDAORA.1;Data Source=PROD;User ID=einternet;Password=einternet;"
 		type="oracle8" />
 	<!-- TIMER
 		 timer object properties for checking newly added quoted non-stock items on the database.  this
@@ -40,7 +40,12 @@
 		//-->
 		<additionalTo desc="individuals that will be added in the TO field of emails sent through this service">
 		</additionalTo>
-		<!-- for testing
+    <noRecepientDefaultTo desc="individuals that will be the default recepient(s) WHEN NO VALID recepient was found">
+      <toItem name="Michael Randall" addy="Michael.Randall@sdi.com" />
+      <toItem name="Vitaly Rovensky" addy="Vitaly.Rovensky@sdi.com" />
+      <toItem name="Erwin Bautista" addy="erwin.bautista@sdi.com" />
+    </noRecepientDefaultTo>
+    <!-- for testing
 			<ccItem name="Erwin Bautista" addy="erwin.bautista@sdi.com" />
 		//-->
 		<additionalCc desc="individuals that will be added in the CC field of emails sent through this service">
@@ -71,5 +76,10 @@
 	//-->
 	<punchInBUs desc="List of punch-In business unit codes">
 		<punchInBU id="I0912" desc="Honeywell SDM" />
-	</punchInBUs>
+    <punchInBU id="I0440" desc="Ascend-Pen" />
+    <punchInBU id="I0441" desc="Ascend-Cho" />
+    <punchInBU id="I0442" desc="Ascend-Dec" />
+    <punchInBU id="I0443" desc="Ascend-Gre" />
+    <punchInBU id="I0444" desc="Ascend-Fol" />
+  </punchInBUs>
 </configuration>

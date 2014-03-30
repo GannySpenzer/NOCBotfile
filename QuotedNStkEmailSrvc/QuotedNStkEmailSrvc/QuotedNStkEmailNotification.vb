@@ -258,7 +258,7 @@ Public Class QuotedNStkEmailNotification
                 End If
 
                 If .Evaluate Then
-                    Dim xmlEmailElement As XmlElement
+                    Dim xmlEmailElement As XmlElement = Nothing
 
                     ' get encryption key for email use
                     If Not (m_xmlConfig("configuration")("s").Attributes("id").InnerText Is Nothing) Then
