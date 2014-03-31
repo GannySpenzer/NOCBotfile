@@ -67,7 +67,7 @@
 		<body linkURL="http://localhost/webpartnerplus/ApproveQuote.aspx" />
 		//-->
 		<body linkURL="http://localhost/webpartnerplus/ApproveQuote.aspx" />
-		<bodyExch linkUrlSdiExch="http://www.sdiexchange.com/LinkApproveQuote.aspx" />
+		<bodyExch linkUrlSdiExch="http://www.sdiexchange.com/ApproveQuote.aspx" />
 		<busUnits listForSdiExch="I0256,I0469" />
 	</email>
 	<!-- Punch-In Business Unit List
