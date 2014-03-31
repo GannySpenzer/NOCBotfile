@@ -902,11 +902,11 @@ Public Class QuoteNonStockProcessor
                         bShowApproveViaEmailLink = False
                     End If
 
-                    Dim bShowOrderId As String = ""
+                    Dim strShowOrderId As String = ""
                     If itmQuoted.FormattedOrderID.Length > 0 Then
-                        bShowOrderId = itmQuoted.FormattedOrderID
+                        strShowOrderId = itmQuoted.FormattedOrderID
                     ElseIf itmQuoted.OrderID.Length > 0 Then
-                        bShowOrderId = itmQuoted.OrderID
+                        strShowOrderId = itmQuoted.OrderID
                     End If
 
                     cHdr = cHdr & "VR Start my code.  "
@@ -934,7 +934,7 @@ Public Class QuoteNonStockProcessor
                                         "<BODY>" & _
                                             AddNoRecepientExistNote(eml.To) & _
                                             LETTER_HEAD_SdiExch & _
-                                            FormHTMLQouteInfo(itmQuoted.Addressee, bShowOrderId, bShowWorkOrderNo, sWorkOrder) & _
+                                            FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder) & _
                                             LETTER_CONTENT_PI_SDiExchange & _
                                             AddVersionNumber() & _
                                         "</BODY>" & _
@@ -946,7 +946,7 @@ Public Class QuoteNonStockProcessor
                                             "<BODY>" & _
                                                 AddNoRecepientExistNote(eml.To) & _
                                                 LETTER_HEAD & _
-                                                FormHTMLQouteInfo(itmQuoted.Addressee, bShowOrderId, bShowWorkOrderNo, sWorkOrder) & _
+                                                FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder) & _
                                                 LETTER_CONTENT_PI & _
                                                 AddVersionNumber() & _
                                             "</BODY>" & _
@@ -970,7 +970,7 @@ Public Class QuoteNonStockProcessor
                                         "<BODY>" & _
                                             AddNoRecepientExistNote(eml.To) & _
                                             LETTER_HEAD_SdiExch & _
-                                            FormHTMLQouteInfo(itmQuoted.Addressee, bShowOrderId, bShowWorkOrderNo, sWorkOrder) & _
+                                            FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder) & _
                                             LETTER_CONTENT_SDiExchange & _
                                             FormHTMLLinkSDiExchange(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, bShowApproveViaEmailLink) & _
                                             AddVersionNumber() & _
@@ -983,7 +983,7 @@ Public Class QuoteNonStockProcessor
                                             "<BODY>" & _
                                                 AddNoRecepientExistNote(eml.To) & _
                                                 LETTER_HEAD & _
-                                                FormHTMLQouteInfo(itmQuoted.Addressee, bShowOrderId, bShowWorkOrderNo, sWorkOrder) & _
+                                                FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder) & _
                                                 LETTER_CONTENT & _
                                                 FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, bShowApproveViaEmailLink) & _
                                                 AddVersionNumber() & _
