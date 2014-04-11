@@ -4,6 +4,8 @@
 
 '12/11/13: Added fix for blank UOM
 '01/22/14: Added fix for invoices with sales tax amount not included in total.
+'03/17/14: Changed SQL to pull PO number from line detail first to avoid blank PO numbers when the tax or freight lines are first.
+'04/02/14: Added fix for invoices with no unit price to use merchandise amt instead.
 
 Imports System
 Imports System.Configuration
@@ -36,6 +38,7 @@ Module SDI_BRT_HeaderLine
         Dim hdrSql As String
         Dim lineSql As String
         Dim hdrInfo As DataSet
+        Dim poSql As String
         Dim updateSql As String
 
         'Output variables
@@ -76,7 +79,8 @@ Module SDI_BRT_HeaderLine
         Dim filePath As String
         Dim i As Integer
 
-        connectionString = ("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=PROD")
+        'connectionString = ("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=plgr")
+        connectionString = ("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=prod")
 
         'get header data
         hdrSql = "SELECT UNIQUE(SYSADM8.PS_APXVCHR_HDR_STG.INVOICE_ID), TO_CHAR(SYSADM8.PS_APXVCHR_HDR_STG.INVOICE_DT, 'MM/DD/YYYY'), " & _
@@ -88,9 +92,7 @@ Module SDI_BRT_HeaderLine
                     "SYSADM8.PS_APXVCHR_HDR_STG.VCHR_BLD_KEY_C1 " & _
                     "FROM SYSADM8.PS_APXVCHR_HDR_STG, SYSADM8.PS_VENDOR " & _
                     "WHERE PS_APXVCHR_HDR_STG.VENDOR_ID = PS_VENDOR.VENDOR_ID " & _
-                  "AND SYSADM8.PS_APXVCHR_HDR_STG.USER_HDR_CHAR1 = ' '"
-
-        'hdrSql = "SELECT * FROM SYSADM8.PS_APXVCHR_HDR_STG WHERE SYSADM8.PS_APXVCHR_HDR_STG.USER_HDR_CHAR1 = ' '"
+           "AND SYSADM8.PS_APXVCHR_HDR_STG.USER_HDR_CHAR1 = ' '"
 
         oledbc = New OleDbConnection(connectionString)
 
@@ -104,7 +106,7 @@ Module SDI_BRT_HeaderLine
             oler = oledbCmd.ExecuteReader()
 
             While oler.Read
-                'filePath = "c:\new\" & Replace(oler.Item(0).ToString, "/", "") & ".xml"
+                'filePath = "c:\new\" & Replace(oler.Item(0).ToString,"/","") & ".xml"
                 filePath = "\\APWEB.isacs.com\APxImport\" & oler.Item(0).ToString & ".xml"
                 'filePath = "\\apdemo.isacs.com\APxImport\" & oledbReader.Item(0).ToString & ".xml"
 
@@ -130,6 +132,7 @@ Module SDI_BRT_HeaderLine
                 salesTax = Convert.ToDouble(oler.Item(10).ToString)
                 freight = Convert.ToDouble(oler.Item(11).ToString)
                 vchrBldKeyC1 = UCase(oler.Item(12).ToString)
+                vchrPONo = ""
 
 
                 If busUnit = "ISA00" Then salesTax = 0 'Sales tax not paid for ISA invoices
@@ -151,6 +154,39 @@ Module SDI_BRT_HeaderLine
                 Else
                     captureType = "DR"
                 End If
+
+                poSql = "SELECT DISTINCT SYSADM8.PS_APXVCHRLINE_STG.PO_ID, SYSADM8.PS_APXVCHRLINE_STG.BUSINESS_UNIT_PO, SYSADM8.PS_APXVCHRLINE_STG.BUSINESS_UNIT " & _
+                  "FROM SYSADM8.PS_APXVCHRLINE_STG " & _
+                  "WHERE SYSADM8.PS_APXVCHRLINE_STG.VCHR_BLD_KEY_N1 = " & vchrBldKey & _
+                  " AND SYSADM8.PS_APXVCHRLINE_STG.VCHR_BLD_KEY_C1 = '" & vchrBldKeyC1 & "'" & _
+                  " AND SYSADM8.PS_APXVCHRLINE_STG.PO_ID <> ' '"
+
+                oledbc2 = New OleDbConnection(connectionString)
+                oledbc2.Open()
+                oledbCmd2 = New OleDbCommand(poSql, oledbc2)
+                oler2 = oledbCmd2.ExecuteReader
+
+                While oler2.Read
+                    vchrPONo = oler2.Item(0).ToString
+
+                    If Left(vchrPONo, 1) <> "C" And Left(vchrPONo, 3) <> "UPE" And vchrPONo <> "" Then
+                        vchrPONo = UCase(Right("0000000000" & vchrPONo, 10))
+                    End If
+
+                    poBusUnit = UCase(oler2.Item(1).ToString)
+                    vchrBusUnit = UCase(oler2.Item(2).ToString)
+
+                    If String.Compare(poBusUnit, busUnit) <> 0 Then
+                        busUnit = poBusUnit
+                    End If
+                End While
+
+                apxPONo = busUnit & UCase(vchrPONo) 'create APx PO No	
+
+                oler2.Close()
+                oledbCmd2.Dispose()
+                oledbc2.Close()
+
 
                 'get line-level detail
                 lineSql = "SELECT SYSADM8.PS_APXVCHRLINE_STG.PO_ID, SYSADM8.PS_APXVCHRLINE_STG.DESCR, SYSADM8.PS_APXVCHRLINE_STG.INV_ITEM_ID, SYSADM8.PS_APXVCHRLINE_STG.QTY_VCHR, " & _
@@ -179,12 +215,8 @@ Module SDI_BRT_HeaderLine
                 i = 0
                 While oler2.Read
                     i += 1
-                    vchrPONo = UCase(Right("0000000000" & oler2.Item(0).ToString, 10))
-                    apxPONo = UCase(vchrPONo)
 
                     If i = 1 Then
-                        poBusUnit = UCase(oler2.Item(9).ToString)
-                        vchrBusUnit = UCase(oler2.Item(8).ToString)
                         add1 = oler2.Item(10).ToString
                         add2 = oler2.Item(11).ToString
                         add3 = oler2.Item(12).ToString
@@ -198,12 +230,6 @@ Module SDI_BRT_HeaderLine
                         Else
                             docId = "IN2" & vchrBldKey
                         End If
-
-                        If String.Compare(poBusUnit, busUnit) <> 0 Then
-                            busUnit = poBusUnit
-                        End If
-
-                        apxPONo = busUnit & apxPONo 'create APx PO No
 
                         'Write XML header
                         createNode(invNo, invDt, invCurr, vendorId, vchrId, freight.ToString, salesTax.ToString, invOrigin, busUnit, invSub.ToString, invGross.ToString, vendorNm, docId, captureType, add1, add2, add3, city, state, postal, country, x)
@@ -225,7 +251,7 @@ Module SDI_BRT_HeaderLine
                         vchrQty = 1
                     End If
 
-                    If unitPrice = 0 And GLAmt > 0 Then
+                    If unitPrice = 0 And GLAmt <> 0 Then
                         unitPrice = GLAmt
                     End If
 
