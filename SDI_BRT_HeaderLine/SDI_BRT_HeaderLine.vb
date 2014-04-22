@@ -107,7 +107,7 @@ Module SDI_BRT_HeaderLine
 
             While oler.Read
                 'filePath = "c:\new\" & Replace(oler.Item(0).ToString,"/","") & ".xml"
-                filePath = "\\APWEB.isacs.com\APxImport\" & oler.Item(0).ToString & ".xml"
+                filePath = "\\APWEB.isacs.com\APxImport\" & Replace(oler.Item(0).ToString, "/", "") & ".xml"
                 'filePath = "\\apdemo.isacs.com\APxImport\" & oledbReader.Item(0).ToString & ".xml"
 
                 'create XML document at specified file path
