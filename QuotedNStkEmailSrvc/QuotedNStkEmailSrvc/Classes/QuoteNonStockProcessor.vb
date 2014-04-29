@@ -1026,6 +1026,13 @@ Public Class QuoteNonStockProcessor
                     ' email is of HTML format
                     eml.BodyFormat = Web.Mail.MailFormat.Html
 
+                    ' quick fix for Ascend
+                    '   take off CC since Ascend orders were being put in into INTFC table as "ASCENDCA" and it's email address is the CC
+                    '   that customer is complaining about - erwin 2014.04.29
+                    If (itmQuoted.OrderOrigin = "RFQ") Then
+                        eml.Cc = ""
+                    End If
+
                     ''debug
                     'eml.Body &= vbCrLf & vbCrLf
                     'eml.Body &= "[TO] " & eml.To.ToString & vbCrLf
