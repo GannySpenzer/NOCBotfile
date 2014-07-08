@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <soapenv:Header>
+    <Organization>*</Organization>
+    <Security>
+      <UsernameToken>
+        <Username>{0}</Username>
+        <Password>{1}</Password>
+      </UsernameToken>
+    </Security>
+    <SessionScenario>terminate</SessionScenario>
+  </soapenv:Header>
+  <soapenv:Body>
+    <ns1:MP6228_ProcessWSPromptTransaction_001 verb="Process" noun="WSPromptTransaction" version="001" xmlns:ns1="http://schemas.datastream.net/MP_functions/MP6228_001">
+      <ns2:WSPromptTransaction xmlns:ns2="http://schemas.datastream.net/MP_entities/WSPromptTransaction_001">{2}</ns2:WSPromptTransaction>
+    </ns1:MP6228_ProcessWSPromptTransaction_001>
+  </soapenv:Body>
+</soapenv:Envelope>
