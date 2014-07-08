@@ -1,0 +1,85 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "CYCCNT_HTTP_SOAP", "CYCCNT_HTTP_SOAP\CYCCNT_HTTP_SOAP.vbproj", "{0AD307FF-9C17-4CAB-AC67-1FC5DFC1D763}"
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "MOMBrandEAMParentApp", "..\MOMBrandEAMParentApp\MOMBrandEAMParentApp\MOMBrandEAMParentApp.vbproj", "{1316B7DD-5A01-45C9-A4A9-EE2778335C81}"
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "HTTP_SOAP_INTFC", "..\HTTP_SOAP_INTFC\HTTP_SOAP_INTFC\HTTP_SOAP_INTFC.vbproj", "{44A6852C-CF04-4F2B-885A-E98C37E353D3}"
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "SDI.ApplicationLogger", "..\..\SDI.ApplicationLogger\SDI.ApplicationLogger\SDI.ApplicationLogger.vbproj", "{E35057E1-F6E3-4969-B5E8-BD198B929C46}"
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "SDI.EmailNotifier", "..\..\SDI.EmailNotifier\SDI.EmailNotifier\SDI.EmailNotifier.vbproj", "{49B46124-274E-40CE-B983-4487BEA2C069}"
+EndProject
+Global
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 6
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = http://192.168.253.77:8080/tfs/insiteonline
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = CYCCNT_HTTP_SOAP\\CYCCNT_HTTP_SOAP.vbproj
+		SccProjectName1 = CYCCNT_HTTP_SOAP
+		SccLocalPath1 = CYCCNT_HTTP_SOAP
+		SccProjectUniqueName2 = ..\\HTTP_SOAP_INTFC\\HTTP_SOAP_INTFC\\HTTP_SOAP_INTFC.vbproj
+		SccProjectName2 = ../HTTP_SOAP_INTFC/HTTP_SOAP_INTFC
+		SccLocalPath2 = ..\\HTTP_SOAP_INTFC\\HTTP_SOAP_INTFC
+		SccProjectUniqueName3 = ..\\MOMBrandEAMParentApp\\MOMBrandEAMParentApp\\MOMBrandEAMParentApp.vbproj
+		SccProjectName3 = ../MOMBrandEAMParentApp/MOMBrandEAMParentApp
+		SccLocalPath3 = ..\\MOMBrandEAMParentApp\\MOMBrandEAMParentApp
+		SccProjectUniqueName4 = ..\\..\\SDI.ApplicationLogger\\SDI.ApplicationLogger\\SDI.ApplicationLogger.vbproj
+		SccProjectName4 = ../../SDI.ApplicationLogger/SDI.ApplicationLogger
+		SccLocalPath4 = ..\\..\\SDI.ApplicationLogger\\SDI.ApplicationLogger
+		SccProjectUniqueName5 = ..\\..\\SDI.EmailNotifier\\SDI.EmailNotifier\\SDI.EmailNotifier.vbproj
+		SccProjectName5 = ../../SDI.EmailNotifier/SDI.EmailNotifier
+		SccLocalPath5 = ..\\..\\SDI.EmailNotifier\\SDI.EmailNotifier
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0AD307FF-9C17-4CAB-AC67-1FC5DFC1D763}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{0AD307FF-9C17-4CAB-AC67-1FC5DFC1D763}.Debug|x86.ActiveCfg = Debug|x86
+		{0AD307FF-9C17-4CAB-AC67-1FC5DFC1D763}.Debug|x86.Build.0 = Debug|x86
+		{0AD307FF-9C17-4CAB-AC67-1FC5DFC1D763}.Release|Any CPU.ActiveCfg = Release|x86
+		{0AD307FF-9C17-4CAB-AC67-1FC5DFC1D763}.Release|x86.ActiveCfg = Release|x86
+		{0AD307FF-9C17-4CAB-AC67-1FC5DFC1D763}.Release|x86.Build.0 = Release|x86
+		{1316B7DD-5A01-45C9-A4A9-EE2778335C81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1316B7DD-5A01-45C9-A4A9-EE2778335C81}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1316B7DD-5A01-45C9-A4A9-EE2778335C81}.Debug|x86.ActiveCfg = Debug|x86
+		{1316B7DD-5A01-45C9-A4A9-EE2778335C81}.Debug|x86.Build.0 = Debug|x86
+		{1316B7DD-5A01-45C9-A4A9-EE2778335C81}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1316B7DD-5A01-45C9-A4A9-EE2778335C81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1316B7DD-5A01-45C9-A4A9-EE2778335C81}.Release|x86.ActiveCfg = Release|x86
+		{1316B7DD-5A01-45C9-A4A9-EE2778335C81}.Release|x86.Build.0 = Release|x86
+		{44A6852C-CF04-4F2B-885A-E98C37E353D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44A6852C-CF04-4F2B-885A-E98C37E353D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44A6852C-CF04-4F2B-885A-E98C37E353D3}.Debug|x86.ActiveCfg = Debug|x86
+		{44A6852C-CF04-4F2B-885A-E98C37E353D3}.Debug|x86.Build.0 = Debug|x86
+		{44A6852C-CF04-4F2B-885A-E98C37E353D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44A6852C-CF04-4F2B-885A-E98C37E353D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44A6852C-CF04-4F2B-885A-E98C37E353D3}.Release|x86.ActiveCfg = Release|x86
+		{44A6852C-CF04-4F2B-885A-E98C37E353D3}.Release|x86.Build.0 = Release|x86
+		{E35057E1-F6E3-4969-B5E8-BD198B929C46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E35057E1-F6E3-4969-B5E8-BD198B929C46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E35057E1-F6E3-4969-B5E8-BD198B929C46}.Debug|x86.ActiveCfg = Debug|x86
+		{E35057E1-F6E3-4969-B5E8-BD198B929C46}.Debug|x86.Build.0 = Debug|x86
+		{E35057E1-F6E3-4969-B5E8-BD198B929C46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E35057E1-F6E3-4969-B5E8-BD198B929C46}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E35057E1-F6E3-4969-B5E8-BD198B929C46}.Release|x86.ActiveCfg = Release|x86
+		{E35057E1-F6E3-4969-B5E8-BD198B929C46}.Release|x86.Build.0 = Release|x86
+		{49B46124-274E-40CE-B983-4487BEA2C069}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49B46124-274E-40CE-B983-4487BEA2C069}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49B46124-274E-40CE-B983-4487BEA2C069}.Debug|x86.ActiveCfg = Debug|x86
+		{49B46124-274E-40CE-B983-4487BEA2C069}.Debug|x86.Build.0 = Debug|x86
+		{49B46124-274E-40CE-B983-4487BEA2C069}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49B46124-274E-40CE-B983-4487BEA2C069}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49B46124-274E-40CE-B983-4487BEA2C069}.Release|x86.ActiveCfg = Release|x86
+		{49B46124-274E-40CE-B983-4487BEA2C069}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
