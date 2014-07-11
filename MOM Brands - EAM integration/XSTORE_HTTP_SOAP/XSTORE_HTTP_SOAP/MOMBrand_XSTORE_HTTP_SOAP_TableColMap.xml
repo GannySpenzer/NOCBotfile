@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<tableColumnMappings>
+  <column Id="0" inColumnName="" value="{SYSTEM:CUSTOMER_ID}" targetTableName="PS_ISA_MB_IBU_XFER" targetColumnName="CUST_ID" targetColumnLength="15" targetColumnDataType="" />
+  <column Id="1" inColumnName="BIS_STORE" value="" targetTableName="PS_ISA_MB_IBU_XFER" targetColumnName="PLANT" targetColumnLength="30" targetColumnDataType="" />
+  <column Id="2" inColumnName="BIS_PART" value="" targetTableName="PS_ISA_MB_IBU_XFER" targetColumnName="INV_ITEM_ID" targetColumnLength="18" targetColumnDataType="" />
+  <column Id="3" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_IBU_XFER" targetColumnName="ISA_CUST_BIN" targetColumnLength="15" targetColumnDataType="" />
+  <column Id="4" inColumnName="BIS_QTY" value="" targetTableName="PS_ISA_MB_IBU_XFER" targetColumnName="QTY" targetColumnLength="0" targetColumnDataType="DECIMAL" />
+  <column Id="5" inColumnName="BIS_STORE" value="" targetTableName="PS_ISA_MB_IBU_XFER" targetColumnName="ISA_TO_PLANT" targetColumnLength="30" targetColumnDataType="" />
+  <column Id="6" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_IBU_XFER" targetColumnName="SERIAL_ID" targetColumnLength="20" targetColumnDataType="" />
+  <column Id="7" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_IBU_XFER" targetColumnName="ISA_CUST_TO_BIN" targetColumnLength="15" targetColumnDataType="" />
+  <column Id="8" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_IBU_XFER" targetColumnName="BUSINESS_UNIT_IN" targetColumnLength="5" targetColumnDataType="" />
+  <column Id="9" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_IBU_XFER" targetColumnName="STORAGE_AREA" targetColumnLength="5" targetColumnDataType="" />
+  <column Id="10" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_IBU_XFER" targetColumnName="STOR_LEVEL_1" targetColumnLength="4" targetColumnDataType="" />
+  <column Id="11" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_IBU_XFER" targetColumnName="STOR_LEVEL_2" targetColumnLength="4" targetColumnDataType="" />
+  <column Id="12" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_IBU_XFER" targetColumnName="STOR_LEVEL_3" targetColumnLength="4" targetColumnDataType="" />
+  <column Id="13" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_IBU_XFER" targetColumnName="STOR_LEVEL_4" targetColumnLength="4" targetColumnDataType="" />
+  <column Id="14" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_IBU_XFER" targetColumnName="TO_BU" targetColumnLength="5" targetColumnDataType="" />
+  <column Id="15" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_IBU_XFER" targetColumnName="TO_STOR_AREA" targetColumnLength="5" targetColumnDataType="" />
+  <column Id="16" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_IBU_XFER" targetColumnName="TO_STOR_LEVEL_1" targetColumnLength="4" targetColumnDataType="" />
+  <column Id="17" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_IBU_XFER" targetColumnName="TO_STOR_LEVEL_2" targetColumnLength="4" targetColumnDataType="" />
+  <column Id="18" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_IBU_XFER" targetColumnName="TO_STOR_LEVEL_3" targetColumnLength="4" targetColumnDataType="" />
+  <column Id="19" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_IBU_XFER" targetColumnName="TO_STOR_LEVEL_4" targetColumnLength="4" targetColumnDataType="" />
+  <column Id="20" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_IBU_XFER" targetColumnName="PROCESS_FLAG" targetColumnLength="0" targetColumnDataType="" />
+  <column Id="21" inColumnName="" value="{SYSTEM:DATETIME}" targetTableName="PS_ISA_MB_IBU_XFER" targetColumnName="DT_TIMESTAMP" targetColumnLength="0" targetColumnDataType="" />
+</tableColumnMappings>

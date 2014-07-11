@@ -1,0 +1,50 @@
+﻿<ns2:WSProcessGroup>
+  <ns3:WSPROMPTGROUPID xmlns:ns3="http://schemas.datastream.net/MP_fields">
+    <ns3:WSPROMPTID>
+      <ns3:WSPROMPTCODE>MBSSTR</ns3:WSPROMPTCODE>
+    </ns3:WSPROMPTID>
+    <ns3:WSPROMPTPROCESSGROUP>10</ns3:WSPROMPTPROCESSGROUP>
+  </ns3:WSPROMPTGROUPID>
+  <ns2:WSPROMPTFIELD>
+    <ns8:LINE xmlns:ns8="http://schemas.datastream.net/MP_fields">1010</ns8:LINE>
+    <ns9:WSPROMPTFIELDVALUE xmlns:ns9="http://schemas.datastream.net/MP_fields">
+      <ns9:TEXTVALUE>{0}</ns9:TEXTVALUE>
+    </ns9:WSPROMPTFIELDVALUE>
+  </ns2:WSPROMPTFIELD>
+  <ns2:WSPROMPTFIELD>
+    <ns10:LINE xmlns:ns10="http://schemas.datastream.net/MP_fields">1020</ns10:LINE>
+    <ns11:WSPROMPTFIELDVALUE xmlns:ns11="http://schemas.datastream.net/MP_fields">
+      <ns11:TEXTVALUE>{1}</ns11:TEXTVALUE>
+    </ns11:WSPROMPTFIELDVALUE>
+  </ns2:WSPROMPTFIELD>
+  <ns2:WSPROMPTFIELD>
+    <ns12:LINE xmlns:ns12="http://schemas.datastream.net/MP_fields">1030</ns12:LINE>
+    <ns13:WSPROMPTFIELDVALUE xmlns:ns13="http://schemas.datastream.net/MP_fields">
+      <ns13:TEXTVALUE>{2}</ns13:TEXTVALUE>
+    </ns13:WSPROMPTFIELDVALUE>
+  </ns2:WSPROMPTFIELD>
+  <ns2:WSPROMPTFIELD>
+    <ns14:LINE xmlns:ns14="http://schemas.datastream.net/MP_fields">1040</ns14:LINE>
+    <ns15:WSPROMPTFIELDVALUE xmlns:ns15="http://schemas.datastream.net/MP_fields">
+      <ns15:TEXTVALUE>{3}</ns15:TEXTVALUE>
+    </ns15:WSPROMPTFIELDVALUE>
+  </ns2:WSPROMPTFIELD>
+  <ns2:WSPROMPTFIELD>
+    <ns16:LINE xmlns:ns16="http://schemas.datastream.net/MP_fields">1050</ns16:LINE>
+    <ns17:WSPROMPTFIELDVALUE xmlns:ns17="http://schemas.datastream.net/MP_fields">
+      <ns17:TEXTVALUE>{4}</ns17:TEXTVALUE>
+    </ns17:WSPROMPTFIELDVALUE>
+  </ns2:WSPROMPTFIELD>
+  <ns2:WSPROMPTFIELD>
+    <ns18:LINE xmlns:ns18="http://schemas.datastream.net/MP_fields">1060</ns18:LINE>
+    <ns19:WSPROMPTFIELDVALUE xmlns:ns19="http://schemas.datastream.net/MP_fields">
+      <ns19:TEXTVALUE>{5}</ns19:TEXTVALUE>
+    </ns19:WSPROMPTFIELDVALUE>
+  </ns2:WSPROMPTFIELD>
+  <ns2:WSPROMPTFIELD>
+    <ns20:LINE xmlns:ns20="http://schemas.datastream.net/MP_fields">1070</ns20:LINE>
+    <ns21:WSPROMPTFIELDVALUE xmlns:ns21="http://schemas.datastream.net/MP_fields">
+      <ns21:TEXTVALUE>{6}</ns21:TEXTVALUE>
+    </ns21:WSPROMPTFIELDVALUE>
+  </ns2:WSPROMPTFIELD>
+</ns2:WSProcessGroup>
