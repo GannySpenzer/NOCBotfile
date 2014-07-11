@@ -1,0 +1,33 @@
+﻿<action type="insert" aid="0">
+  <daoClass>DAOTrackingdata</daoClass>
+  <data>
+    <datafield>
+      <mpl:name>tkd_transid</mpl:name>
+      <mpl:value encoding="none">1</mpl:value>
+    </datafield>
+    <datafield>
+      <mpl:name>tkd_trans</mpl:name>
+      <mpl:value encoding="none">MBPO</mpl:value>
+    </datafield>
+    <datafield>
+      <mpl:name>tkd_trackdate</mpl:name>
+      <mpl:value>{1}</mpl:value>
+    </datafield>
+    <datafield>
+      <mpl:name>tkd_sourcesystem</mpl:name>
+      <mpl:value>MBPO TEST</mpl:value>
+    </datafield>
+    <datafield>
+      <mpl:name>tkd_promptdata1</mpl:name>
+      <mpl:value>{0}</mpl:value>
+    </datafield>
+    <datafield>
+      <mpl:name>tkd_promptdata2</mpl:name>
+      <mpl:value></mpl:value>
+    </datafield>
+    <datafield>
+      <mpl:name>tkd_promptdata3</mpl:name>
+      <mpl:value>+</mpl:value>
+    </datafield>
+  </data>
+</action>

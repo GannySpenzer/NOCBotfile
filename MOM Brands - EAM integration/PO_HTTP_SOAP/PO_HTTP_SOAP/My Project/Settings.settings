@@ -1,0 +1,39 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="My" GeneratedClassName="MySettings" UseMySettingsClassName="true">
+  <Profiles />
+  <Settings>
+    <Setting Name="ParentApp" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">SDI.MOMBrandEAMParentApp.dll</Value>
+    </Setting>
+    <Setting Name="ParentAppClass" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">SDI.MOMBrandEAMParentApp.MOMBrandEAMParentApp</Value>
+    </Setting>
+    <Setting Name="PO_HTTP_SOAP_REQ" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">MOMBrand_PO_HTTP_SOAP_Request.xml</Value>
+    </Setting>
+    <Setting Name="PO_GetBatchSize" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">1000</Value>
+    </Setting>
+    <Setting Name="PO_MaxReq" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">1000</Value>
+    </Setting>
+    <Setting Name="PO_HTTP_SOAP_DataMap" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">MOMBrand_PO_HTTP_SOAP_TableColMap.xml</Value>
+    </Setting>
+    <Setting Name="PO_HTTP_SOAP_ACK" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">MOMBrand_PO_HTTP_SOAP_Ack.xml</Value>
+    </Setting>
+    <Setting Name="PO_HTTP_SOAP_ACK_ITM" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">MOMBrand_PO_HTTP_SOAP_Ack_Item.xml</Value>
+    </Setting>
+    <Setting Name="PO_AckBatchSize" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="PO_AckColumnId" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">ORD_CODE</Value>
+    </Setting>
+    <Setting Name="PO_AckKeyColumns" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">CUST_ID,PLANT,REQ_ID</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
