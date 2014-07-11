@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<tableColumnMappings>
+  <column Id="0" inColumnName="" value="{SYSTEM:CUSTOMER_ID}" targetTableName="PS_ISA_MB_WO_WS" targetColumnName="CUST_ID" targetColumnLength="15" targetColumnDataType="" />
+  <column Id="1" inColumnName="EVT_ORG" value="" targetTableName="PS_ISA_MB_WO_WS" targetColumnName="PLANT" targetColumnLength="30" targetColumnDataType="" />
+  <column Id="2" inColumnName="EVT_CODE" value="" targetTableName="PS_ISA_MB_WO_WS" targetColumnName="ISA_WORK_ORDER_NO" targetColumnLength="20" targetColumnDataType="" />
+  <column Id="3" inColumnName="ACT_ACT" value="" targetTableName="PS_ISA_MB_WO_WS" targetColumnName="ACTIVITY_ID" targetColumnLength="15" targetColumnDataType="" />
+  <column Id="4" inColumnName="MLP_PART" value="" targetTableName="PS_ISA_MB_WO_WS" targetColumnName="INV_ITEM_ID" targetColumnLength="18" targetColumnDataType="" />
+  <column Id="5" inColumnName="EVT_LOCATION" value="" targetTableName="PS_ISA_MB_WO_WS" targetColumnName="SHIPTO_ID_WRK" targetColumnLength="10" targetColumnDataType="" />
+  <column Id="6" inColumnName="MLP_QTY" value="" targetTableName="PS_ISA_MB_WO_WS" targetColumnName="QTY_REQUESTED" targetColumnLength="0" targetColumnDataType="DECIMAL" />
+  <column Id="7" inColumnName="EVT_REPORTED" value="" targetTableName="PS_ISA_MB_WO_WS" targetColumnName="REQUEST_DT" targetColumnLength="0" targetColumnDataType="DATETIME" />
+  <column Id="8" inColumnName="EVT_STATUS" value="" targetTableName="PS_ISA_MB_WO_WS" targetColumnName="ISA_WO_STATUS" targetColumnLength="5" targetColumnDataType="" />
+  <column Id="9" inColumnName="EVT_JOBTYPE" value="" targetTableName="PS_ISA_MB_WO_WS" targetColumnName="WORK_ORDER_TYPE" targetColumnLength="5" targetColumnDataType="" />
+  <column Id="10" inColumnName="EVT_COSTCODE" value="" targetTableName="PS_ISA_MB_WO_WS" targetColumnName="ISA_COST_CODE" targetColumnLength="30" targetColumnDataType="" />
+  <column Id="11" inColumnName="EVT_OBJECT" value="" targetTableName="PS_ISA_MB_WO_WS" targetColumnName="SERIAL_ID" targetColumnLength="20" targetColumnDataType="" />
+  <column Id="12" inColumnName="" value="{SYSTEM:PROCESS_INSTANCE}" targetTableName="PS_ISA_MB_WO_WS" targetColumnName="PROCESS_INSTANCE" targetColumnLength="0" targetColumnDataType="" />
+  <column Id="13" inColumnName="ADD_TEXT" value="" targetTableName="PS_ISA_MB_WO_WS" targetColumnName="COMMENTS" targetColumnLength="0" targetColumnDataType="" />
+  <column Id="14" inColumnName="" value="{SYSTEM:DATETIME}" targetTableName="PS_ISA_MB_WO_WS" targetColumnName="DT_TIMESTAMP" targetColumnLength="0" targetColumnDataType="" />
+  <column Id="15" inColumnName="ACT_ACT2" value="" targetTableName="PS_ISA_MB_WO_WS" targetColumnName="ISA_ITEM_RQST_TYPE" targetColumnLength="1" targetColumnDataType="" />
+</tableColumnMappings>
