@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Header>
+    <Organization xmlns="http://schemas.datastream.net/MP_functions">*</Organization>
+    <Security xmlns="http://schemas.xmlsoap.org/ws/2002/04/secext">
+      <UserNameToken xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Id="WSToolkitUserID" xmlns="">
+        <Username>{0}</Username>
+        <Password>{1}</Password>
+      </UserNameToken>
+    </Security>
+  </soap:Header>
+  <soap:Body>
+    <MP0116_GetGridDataOnly_001  xmlns="http://schemas.datastream.net/MP_functions/MP0116_GetGridDataOnly_001" xmlns:cr="http://schemas.datastream.net/MP_functions/MP0110_001" xmlns:mpf="http://schemas.datastream.net/MP_fields" xmlns:mpl="http://schemas.datastream.net/BaseLib" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.datastream.net/MP_functions/MP0116_001 D:\COE\AGL\Sample XMLS\MP0116_GetGridDataOnly_001.xsd">
+      <FUNCTION_REQUEST_INFO REQUEST_TYPE="LIST.HEAD_DATA.STORED" >
+        <GRID CURRENT_TAB_NAME="LST" GRID_NAME="MBINVY" NUMBER_OF_ROWS_FIRST_RETURNED="{2}" CURSOR_POSITION="{3}"  USER_FUNCTION_NAME="MBINVY"/>
+        <GRID_TYPE TYPE="LIST"/>
+      </FUNCTION_REQUEST_INFO>
+    </MP0116_GetGridDataOnly_001>
+  </soap:Body>
+</soap:Envelope>

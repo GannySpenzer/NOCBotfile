@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<tableColumnMappings>
+  <column Id="0" inColumnName="" value="{SYSTEM:CUSTOMER_ID}" targetTableName="PS_ISA_MB_MATMAST" targetColumnName="CUST_ID" targetColumnLength="15" targetColumnDataType="" />
+  <column Id="1" inColumnName="STO_STORE" value="" targetTableName="PS_ISA_MB_MATMAST" targetColumnName="PLANT" targetColumnLength="30" targetColumnDataType="" />
+  <column Id="2" inColumnName="PAR_CODE" value="" targetTableName="PS_ISA_MB_MATMAST" targetColumnName="INV_ITEM_ID" targetColumnLength="18" targetColumnDataType="" />
+  <column Id="3" inColumnName="PAR_NOTUSED" value="" targetTableName="PS_ISA_MB_MATMAST" targetColumnName="EFF_STATUS" targetColumnLength="1" targetColumnDataType="" />
+  <column Id="4" inColumnName="PAR_CLASS" value="" targetTableName="PS_ISA_MB_MATMAST" targetColumnName="ISA_CUSTOMER_CAT" targetColumnLength="20" targetColumnDataType="5" />
+  <column Id="5" inColumnName="PAR_DESC" value="" targetTableName="PS_ISA_MB_MATMAST" targetColumnName="IM_CFFT" targetColumnLength="254" targetColumnDataType="" />
+  <column Id="6" inColumnName="STO_ONDEMAND" value="" targetTableName="PS_ISA_MB_MATMAST" targetColumnName="INV_STOCK_TYPE" targetColumnLength="4" targetColumnDataType="" />
+  <column Id="7" inColumnName="MFP_MANUFACTURER" value="" targetTableName="PS_ISA_MB_MATMAST" targetColumnName="ISA_CUSTOMER_MFG" targetColumnLength="40" targetColumnDataType="" />
+  <column Id="8" inColumnName="MFP_MANUFACTPART" value="" targetTableName="PS_ISA_MB_MATMAST" targetColumnName="MFG_ITM_ID" targetColumnLength="35" targetColumnDataType="" />
+  <column Id="9" inColumnName="MFP_PRIMARY" value="" targetTableName="PS_ISA_MB_MATMAST" targetColumnName="PREFERRED_MFG" targetColumnLength="1" targetColumnDataType="" />
+  <column Id="10" inColumnName="STO_MINLEV" value="" targetTableName="PS_ISA_MB_MATMAST" targetColumnName="REORDER_POINT" targetColumnLength="0" targetColumnDataType="DECIMAL" />
+  <column Id="11" inColumnName="STO_MAXQTY" value="" targetTableName="PS_ISA_MB_MATMAST" targetColumnName="QTY_MAXIMUM" targetColumnLength="0" targetColumnDataType="DECIMAL" />
+  <column Id="12" inColumnName="STO_ORDLEV" value="" targetTableName="PS_ISA_MB_MATMAST" targetColumnName="REORDER_QTY" targetColumnLength="0" targetColumnDataType="DECIMAL" />
+  <column Id="13" inColumnName="PAR_UOM" value="" targetTableName="PS_ISA_MB_MATMAST" targetColumnName="UNIT_OF_MEASURE" targetColumnLength="3" targetColumnDataType="" />
+  <column Id="14" inColumnName="PAR_REPAIRABLE" value="" targetTableName="PS_ISA_MB_MATMAST" targetColumnName="REPAIR_OPTION_LBL" targetColumnLength="1" targetColumnDataType="" />
+  <column Id="15" inColumnName="CAT_GROSS" value="" targetTableName="PS_ISA_MB_MATMAST" targetColumnName="STANDARD_COST" targetColumnLength="0" targetColumnDataType="DECIMAL" />
+  <column Id="16" inColumnName="CAT_LEADTIME" value="" targetTableName="PS_ISA_MB_MATMAST" targetColumnName="STD_LEAD" targetColumnLength="0" targetColumnDataType="DECIMAL" />
+  <column Id="17" inColumnName="STO_ABCCLASS" value="" targetTableName="PS_ISA_MB_MATMAST" targetColumnName="UTILIZ_CD" targetColumnLength="4" targetColumnDataType="" />
+  <column Id="18" inColumnName="" value="{SYSTEM:DATETIME}" targetTableName="PS_ISA_MB_MATMAST" targetColumnName="DT_TIMESTAMP" targetColumnLength="0" targetColumnDataType="" />
+  <column Id="19" inColumnName="" value="{SYSTEM:PROCESS_INSTANCE}" targetTableName="PS_ISA_MB_MATMAST" targetColumnName="PROCESS_INSTANCE" targetColumnLength="0" targetColumnDataType="" />
+  <column Id="20" inColumnName="PAR_UDFCHAR01" value="" targetTableName="PS_ISA_MB_MATMAST" targetColumnName="ISA_NRTE_GL_CODE" targetColumnLength="30" targetColumnDataType="" />
+  <column Id="21" inColumnName="PAR_UDFCHAR03" value="" targetTableName="PS_ISA_MB_MATMAST" targetColumnName="ISA_ARTE_GL_CODE" targetColumnLength="30" targetColumnDataType="" />
+  <column Id="22" inColumnName="PAR_UDFCHAR05" value="" targetTableName="PS_ISA_MB_MATMAST" targetColumnName="ISA_TRTE_GL_CODE" targetColumnLength="30" targetColumnDataType="" />
+  <column Id="23" inColumnName="PAR_UDFCHAR07" value="" targetTableName="PS_ISA_MB_MATMAST" targetColumnName="ISA_NHOT_GL_CODE" targetColumnLength="30" targetColumnDataType="" />
+  <column Id="24" inColumnName="PAR_UDFCHAR02" value="" targetTableName="PS_ISA_MB_MATMAST" targetColumnName="ISA_MN_TAX_CODE" targetColumnLength="80" targetColumnDataType="" />
+  <column Id="25" inColumnName="PAR_UDFCHAR04" value="" targetTableName="PS_ISA_MB_MATMAST" targetColumnName="ISA_NC_TAX_CODE" targetColumnLength="80" targetColumnDataType="" />
+  <column Id="26" inColumnName="PAR_UDFCHAR06" value="" targetTableName="PS_ISA_MB_MATMAST" targetColumnName="ISA_UT_TAX_CODE" targetColumnLength="80" targetColumnDataType="" />
+</tableColumnMappings>
