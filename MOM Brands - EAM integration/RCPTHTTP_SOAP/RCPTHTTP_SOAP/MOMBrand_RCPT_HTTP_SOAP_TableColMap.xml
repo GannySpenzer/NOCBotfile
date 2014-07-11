@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<tableColumnMappings>
+  <column Id="0" inColumnName="" value="{SYSTEM:CUSTOMER_ID}" targetTableName="PS_ISA_MB_RECEIPT" targetColumnName="CUST_ID" targetColumnLength="15" targetColumnDataType="" />
+  <column Id="1" inColumnName="BIS_STORE" value="" targetTableName="PS_ISA_MB_RECEIPT" targetColumnName="PLANT" targetColumnLength="30" targetColumnDataType="" />
+  <column Id="2" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_RECEIPT" targetColumnName="ISA_WORK_ORDER_NO" targetColumnLength="20" targetColumnDataType="" />
+  <column Id="3" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_RECEIPT" targetColumnName="ACTIVITY_ID" targetColumnLength="15" targetColumnDataType="" />
+  <column Id="4" inColumnName="BIS_PART" value="" targetTableName="PS_ISA_MB_RECEIPT" targetColumnName="INV_ITEM_ID" targetColumnLength="18" targetColumnDataType="" />
+  <column Id="5" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_RECEIPT" targetColumnName="RECEIVER_ID" targetColumnLength="10" targetColumnDataType="" />
+  <column Id="6" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_RECEIPT" targetColumnName="PO_ID" targetColumnLength="10" targetColumnDataType="" />
+  <column Id="7" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_RECEIPT" targetColumnName="REQ_ID" targetColumnLength="10" targetColumnDataType="" />
+  <column Id="8" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_RECEIPT" targetColumnName="VENDOR_ID" targetColumnLength="10" targetColumnDataType="" />
+  <column Id="9" inColumnName="BIS_BIN" value="" targetTableName="PS_ISA_MB_RECEIPT" targetColumnName="ISA_CUST_BIN" targetColumnLength="15" targetColumnDataType="" />
+  <column Id="10" inColumnName="BIS_QTY" value="" targetTableName="PS_ISA_MB_RECEIPT" targetColumnName="QTY" targetColumnLength="0" targetColumnDataType="DECIMAL" />
+  <column Id="11" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_RECEIPT" targetColumnName="PRICE_PO" targetColumnLength="0" targetColumnDataType="DECIMAL" />
+  <column Id="12" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_RECEIPT" targetColumnName="SERIAL_ID" targetColumnLength="20" targetColumnDataType="" />
+  <column Id="13" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_RECEIPT" targetColumnName="BUSINESS_UNIT_IN" targetColumnLength="5" targetColumnDataType="" />
+  <column Id="14" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_RECEIPT" targetColumnName="STORAGE_AREA" targetColumnLength="5" targetColumnDataType="" />
+  <column Id="15" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_RECEIPT" targetColumnName="STOR_LEVEL_1" targetColumnLength="4" targetColumnDataType="" />
+  <column Id="16" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_RECEIPT" targetColumnName="STOR_LEVEL_2" targetColumnLength="4" targetColumnDataType="" />
+  <column Id="17" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_RECEIPT" targetColumnName="STOR_LEVEL_3" targetColumnLength="4" targetColumnDataType="" />
+  <column Id="18" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_RECEIPT" targetColumnName="STOR_LEVEL_4" targetColumnLength="4" targetColumnDataType="" />
+  <column Id="19" inColumnName="" value="{SYSTEM:PROCESS_INSTANCE}" targetTableName="PS_ISA_MB_RECEIPT" targetColumnName="PROCESS_INSTANCE" targetColumnLength="0" targetColumnDataType="" />
+  <column Id="20" inColumnName="" value="{SYSTEM:DATETIME}" targetTableName="PS_ISA_MB_RECEIPT" targetColumnName="DT_TIMESTAMP" targetColumnLength="0" targetColumnDataType="" />
+</tableColumnMappings>

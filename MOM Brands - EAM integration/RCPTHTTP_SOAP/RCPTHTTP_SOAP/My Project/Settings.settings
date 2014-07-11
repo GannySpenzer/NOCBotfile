@@ -1,0 +1,36 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="My" GeneratedClassName="MySettings" UseMySettingsClassName="true">
+  <Profiles />
+  <Settings>
+    <Setting Name="ParentApp" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">SDI.MOMBrandEAMParentApp.dll</Value>
+    </Setting>
+    <Setting Name="ParentAppClass" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">SDI.MOMBrandEAMParentApp.MOMBrandEAMParentApp</Value>
+    </Setting>
+    <Setting Name="RCPT_GetBatchSize" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">100</Value>
+    </Setting>
+    <Setting Name="RCPT_MaxReq" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">100</Value>
+    </Setting>
+    <Setting Name="RCPT_HTTP_SOAP_DataMap" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">MOMBrand_RCPT_HTTP_SOAP_TableColMap.xml</Value>
+    </Setting>
+    <Setting Name="RCPT_SelectToSend" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">RCPT_HTTP_SOAP_SelectToSend.sql</Value>
+    </Setting>
+    <Setting Name="RCPT_UpdateKeyColumns" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">CUST_ID,PLANT,ISA_WORK_ORDER_NO,ACTIVITY_ID,INV_ITEM_ID,RECEIVER_ID,PO_ID,REQ_ID,VENDOR_ID,ISA_CUST_BIN,QTY,PRICE_PO,SERIAL_ID,BUSINESS_UNIT_IN,STORAGE_AREA,STOR_LEVEL_1,STOR_LEVEL_2,STOR_LEVEL_3,STOR_LEVEL_4</Value>
+    </Setting>
+    <Setting Name="RCPT_HTTP_SOAP_Batch" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">MOMBrand_RCPT_HTTP_SOAP_Batch.xml</Value>
+    </Setting>
+    <Setting Name="RCPT_HTTP_SOAP_Batch_Item" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">MOMBrand_RCPT_HTTP_SOAP_Batch_Item.xml</Value>
+    </Setting>
+    <Setting Name="RCPT_UpdateInputTable" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">RCPT_HTTP_SOAP_UpdateFromResp.sql</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
