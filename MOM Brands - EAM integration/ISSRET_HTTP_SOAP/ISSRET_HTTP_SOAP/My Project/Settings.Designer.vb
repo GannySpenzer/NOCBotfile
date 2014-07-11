@@ -112,7 +112,7 @@ Namespace My
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.DefaultSettingValueAttribute("CUST_ID,TRANS_CODE,ISA_WORK_ORDER_NO,ACTIVITY_ID,SERIAL_ID,PLANT,INV_ITEM_ID,ISA_"& _ 
             "CUST_BIN,QTY,BUSINESS_UNIT_IN,STORAGE_AREA,STOR_LEVEL_1,STOR_LEVEL_2,STOR_LEVEL_"& _ 
-            "3,STOR_LEVEL_4")>  _
+            "3,STOR_LEVEL_4,ISA_EMPLID_30")>  _
         Public ReadOnly Property ISSRET_UpdateKeyColumns() As String
             Get
                 Return CType(Me("ISSRET_UpdateKeyColumns"),String)

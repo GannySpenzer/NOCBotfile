@@ -21,7 +21,7 @@
       <Value Profile="(Default)">ISSRET_HTTP_SOAP_SelectToSend.sql</Value>
     </Setting>
     <Setting Name="ISSRET_UpdateKeyColumns" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">CUST_ID,TRANS_CODE,ISA_WORK_ORDER_NO,ACTIVITY_ID,SERIAL_ID,PLANT,INV_ITEM_ID,ISA_CUST_BIN,QTY,BUSINESS_UNIT_IN,STORAGE_AREA,STOR_LEVEL_1,STOR_LEVEL_2,STOR_LEVEL_3,STOR_LEVEL_4</Value>
+      <Value Profile="(Default)">CUST_ID,TRANS_CODE,ISA_WORK_ORDER_NO,ACTIVITY_ID,SERIAL_ID,PLANT,INV_ITEM_ID,ISA_CUST_BIN,QTY,BUSINESS_UNIT_IN,STORAGE_AREA,STOR_LEVEL_1,STOR_LEVEL_2,STOR_LEVEL_3,STOR_LEVEL_4,ISA_EMPLID_30</Value>
     </Setting>
     <Setting Name="ISSRET_HTTP_SOAP_Batch" Type="System.String" Scope="Application">
       <Value Profile="(Default)">MOMBrand_ISSRET_HTTP_SOAP_Batch.xml</Value>

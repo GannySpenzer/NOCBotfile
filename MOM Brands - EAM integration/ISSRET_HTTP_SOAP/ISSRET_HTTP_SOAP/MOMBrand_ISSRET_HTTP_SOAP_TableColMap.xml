@@ -17,4 +17,5 @@
   <column Id="14" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_ISS_RET" targetColumnName="STOR_LEVEL_4" targetColumnLength="4" targetColumnDataType="" />
   <column Id="15" inColumnName="" value="{SYSTEM:PROCESS_INSTANCE}" targetTableName="PS_ISA_MB_ISS_RET" targetColumnName="PROCESS_INSTANCE" targetColumnLength="0" targetColumnDataType="" />
   <column Id="16" inColumnName="" value="{SYSTEM:DATETIME}" targetTableName="PS_ISA_MB_ISS_RET" targetColumnName="DT_TIMESTAMP" targetColumnLength="0" targetColumnDataType="" />
+  <column Id="17" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_ISS_RET" targetColumnName="ISA_EMPLID_30" targetColumnLength="30" targetColumnDataType="" />
 </tableColumnMappings>
