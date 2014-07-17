@@ -128,7 +128,7 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("100")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("1")>  _
         Public ReadOnly Property WO_AckBatchSize() As String
             Get
                 Return CType(Me("WO_AckBatchSize"),String)
