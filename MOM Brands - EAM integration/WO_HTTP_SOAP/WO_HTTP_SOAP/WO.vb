@@ -796,7 +796,7 @@
                         Dim keyValue As ArrayList = CType(ackWOs.UniqueIds(sWOAck), ArrayList)
 
                         ' delete w/o entry(ies)
-                        Dim sql As String = "DELETE FROM SYSADM.PS_ISA_MB_WO_WS WHERE {0}"
+                        Dim sql As String = "DELETE FROM SYSADM.PS_ISA_MB_WO_WS WHERE PROCESS_INSTANCE = 0 AND {0}"
                         s = ""
                         For i As Integer = 0 To (keyValue.Count - 1)
                             If (i = (keyValue.Count - 1)) Then
