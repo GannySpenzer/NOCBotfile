@@ -245,7 +245,8 @@
                             sInitialProcessFlag = ""
                         End If
 
-                        sKey = sEventId & "." & sPlant & "-" & sItem & "-" & sBin & "." & nRecId.ToString.PadLeft(4, "0"c)
+                        'sKey = sEventId & "." & sPlant & "-" & sItem & "-" & sBin & "." & nRecId.ToString.PadLeft(4, "0"c)
+                        sKey = sEventId & "." & sPlant & "-" & sItem & "." & nRecId.ToString.PadLeft(4, "0"c)
 
                         ' grab row values that we'll compare when updating this record later on
                         arrKeyValue = New Hashtable
