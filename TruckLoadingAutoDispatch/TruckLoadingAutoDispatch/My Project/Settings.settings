@@ -1,0 +1,42 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="My" GeneratedClassName="MySettings" UseMySettingsClassName="true">
+  <Profiles />
+  <Settings>
+    <Setting Name="AutoDispatchSite" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">I0469</Value>
+    </Setting>
+    <Setting Name="oraCNString" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=RPTG</Value>
+    </Setting>
+    <Setting Name="SQL_AutoDispatchBU" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">TruckLoadingAutoDispatchBU.sql</Value>
+    </Setting>
+    <Setting Name="appLogLevel" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">VERBOSE</Value>
+    </Setting>
+    <Setting Name="appLogFilenameId" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">TruckLoadingAutoDispatch</Value>
+    </Setting>
+    <Setting Name="appLogPath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Logs</Value>
+    </Setting>
+    <Setting Name="onError_NotifyTO" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">erwin.bautista@sdi.com</Value>
+    </Setting>
+    <Setting Name="onError_NotifyFROM" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">InSiteOnline@sdi.com</Value>
+    </Setting>
+    <Setting Name="onError_NotifyCC" Type="System.String" Scope="Application">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="onError_NotifyBCC" Type="System.String" Scope="Application">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="onError_NotifySUBJECT" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Truck Loading Auto-Dispatch ERROR</Value>
+    </Setting>
+    <Setting Name="appTempPath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Logs</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
