@@ -187,6 +187,7 @@
                     Dim nPrice As Decimal = 0
                     Dim sSerialId As String = ""
                     Dim sWorkOrderNo As String = ""
+                    Dim sEmployeeId As String = ""
 
                     Dim sInitialProcessFlag As String = ""
 
@@ -302,6 +303,15 @@
                             sInitialProcessFlag = ""
                         End If
 
+                        sEmployeeId = ""
+                        Try
+                            sEmployeeId = CStr(dr("ISA_EMPLID_30")).Trim
+                        Catch ex As Exception
+                        End Try
+                        If (sEmployeeId Is Nothing) Then
+                            sEmployeeId = ""
+                        End If
+
                         sKey = sPlant & "." & sItem & "." & sReceiverId & "." & nRecId.ToString.PadLeft(4, "0"c)
 
                         ' grab row values that we'll compare when updating this record later on
@@ -368,7 +378,7 @@
                         '   1110    Asset ID 			SERIAL_ID       :: blank for now
                         '   1120    EAM Work Order # 	ISA_WORK_ORDER_NO
                         sb = New System.Text.StringBuilder
-                        sb.AppendFormat(s, sReceiverId, sPoId, sReqId, sVendorId, sPlant, sItem, sBin, nQty.ToString, nPrice.ToString, sPlant, sSerialId, sWorkOrderNo)
+                        sb.AppendFormat(s, sReceiverId, sPoId, sReqId, sVendorId, sPlant, sItem, sBin, nQty.ToString, nPrice.ToString, sPlant, sSerialId, sWorkOrderNo, sEmployeeId)
                         iList &= sb.ToString
                         sb = Nothing
 

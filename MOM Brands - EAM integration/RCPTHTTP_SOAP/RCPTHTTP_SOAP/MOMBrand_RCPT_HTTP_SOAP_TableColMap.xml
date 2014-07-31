@@ -21,4 +21,5 @@
   <column Id="18" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_RECEIPT" targetColumnName="STOR_LEVEL_4" targetColumnLength="4" targetColumnDataType="" />
   <column Id="19" inColumnName="" value="{SYSTEM:PROCESS_INSTANCE}" targetTableName="PS_ISA_MB_RECEIPT" targetColumnName="PROCESS_INSTANCE" targetColumnLength="0" targetColumnDataType="" />
   <column Id="20" inColumnName="" value="{SYSTEM:DATETIME}" targetTableName="PS_ISA_MB_RECEIPT" targetColumnName="DT_TIMESTAMP" targetColumnLength="0" targetColumnDataType="" />
+  <column Id="21" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_RECEIPT" targetColumnName="ISA_EMPLID_30" targetColumnLength="30" targetColumnDataType="" />
 </tableColumnMappings>
