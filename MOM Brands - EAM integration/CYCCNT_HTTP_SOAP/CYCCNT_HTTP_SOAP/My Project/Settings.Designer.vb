@@ -54,125 +54,131 @@ Namespace My
             End Get
         End Property
         
-        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.DefaultSettingValueAttribute("SDI.MOMBrandEAMParentApp.dll")>  _
-        Public Property ParentApp() As String
+        Public ReadOnly Property ParentApp() As String
             Get
                 Return CType(Me("ParentApp"),String)
             End Get
-            Set
-                Me("ParentApp") = value
-            End Set
         End Property
         
-        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.DefaultSettingValueAttribute("SDI.MOMBrandEAMParentApp.MOMBrandEAMParentApp")>  _
-        Public Property ParentAppClass() As String
+        Public ReadOnly Property ParentAppClass() As String
             Get
                 Return CType(Me("ParentAppClass"),String)
             End Get
-            Set
-                Me("ParentAppClass") = value
-            End Set
         End Property
         
-        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.DefaultSettingValueAttribute("100")>  _
-        Public Property CYCCNT_GetBatchSize() As String
+        Public ReadOnly Property CYCCNT_GetBatchSize() As String
             Get
                 Return CType(Me("CYCCNT_GetBatchSize"),String)
             End Get
-            Set
-                Me("CYCCNT_GetBatchSize") = value
-            End Set
         End Property
         
-        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.DefaultSettingValueAttribute("100")>  _
-        Public Property CYCCNT_MaxReq() As String
+        Public ReadOnly Property CYCCNT_MaxReq() As String
             Get
                 Return CType(Me("CYCCNT_MaxReq"),String)
             End Get
-            Set
-                Me("CYCCNT_MaxReq") = value
-            End Set
         End Property
         
-        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.DefaultSettingValueAttribute("MOMBrand_CYCCNT_HTTP_SOAP_TableColMap.xml")>  _
-        Public Property CYCCNT_HTTP_SOAP_DataMap() As String
+        Public ReadOnly Property CYCCNT_HTTP_SOAP_DataMap() As String
             Get
                 Return CType(Me("CYCCNT_HTTP_SOAP_DataMap"),String)
             End Get
-            Set
-                Me("CYCCNT_HTTP_SOAP_DataMap") = value
-            End Set
         End Property
         
-        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.DefaultSettingValueAttribute("CUST_ID,EVENT_ID,PLANT,INV_ITEM_ID,ISA_CUST_BIN,QTY,BUSINESS_UNIT_IN,STORAGE_AREA"& _ 
             ",STOR_LEVEL_1,STOR_LEVEL_2,STOR_LEVEL_3,STOR_LEVEL_4")>  _
-        Public Property CYCCNT_UpdateKeyColumns() As String
+        Public ReadOnly Property CYCCNT_UpdateKeyColumns() As String
             Get
                 Return CType(Me("CYCCNT_UpdateKeyColumns"),String)
             End Get
-            Set
-                Me("CYCCNT_UpdateKeyColumns") = value
-            End Set
         End Property
         
-        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.DefaultSettingValueAttribute("CYCCNT_HTTP_SOAP_SelectToSend.sql")>  _
-        Public Property CYCCNT_SelectToSend() As String
+        Public ReadOnly Property CYCCNT_SelectToSend() As String
             Get
                 Return CType(Me("CYCCNT_SelectToSend"),String)
             End Get
-            Set
-                Me("CYCCNT_SelectToSend") = value
-            End Set
         End Property
         
-        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.DefaultSettingValueAttribute("MOMBrand_CYCCNT_HTTP_SOAP_Batch.xml")>  _
-        Public Property CYCCNT_HTTP_SOAP_Batch() As String
+        Public ReadOnly Property CYCCNT_HTTP_SOAP_Batch() As String
             Get
                 Return CType(Me("CYCCNT_HTTP_SOAP_Batch"),String)
             End Get
-            Set
-                Me("CYCCNT_HTTP_SOAP_Batch") = value
-            End Set
         End Property
         
-        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.DefaultSettingValueAttribute("MOMBrand_CYCCNT_HTTP_SOAP_Batch_Item.xml")>  _
-        Public Property CYCCNT_HTTP_SOAP_Batch_Item() As String
+        Public ReadOnly Property CYCCNT_HTTP_SOAP_Batch_Item() As String
             Get
                 Return CType(Me("CYCCNT_HTTP_SOAP_Batch_Item"),String)
             End Get
-            Set
-                Me("CYCCNT_HTTP_SOAP_Batch_Item") = value
-            End Set
         End Property
         
-        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.DefaultSettingValueAttribute("CYCCNT_HTTP_SOAP_UpdateFromResp.sql")>  _
-        Public Property CYCCNT_UpdateInputTable() As String
+        Public ReadOnly Property CYCCNT_UpdateInputTable() As String
             Get
                 Return CType(Me("CYCCNT_UpdateInputTable"),String)
             End Get
-            Set
-                Me("CYCCNT_UpdateInputTable") = value
-            End Set
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("False")>  _
+        Public ReadOnly Property CYCCNT_ClearErrMsgOnSuccess() As String
+            Get
+                Return CType(Me("CYCCNT_ClearErrMsgOnSuccess"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("[Tt]=[Pp][Rr][Oo][Cc]\s[Nn]=[0-9]{0,5}(-[A-Za-z0-9_]*)?\s[Cc]=[0-9]{0,5}")>  _
+        Public ReadOnly Property CYCCNT_CanParseErrMsgSignature() As String
+            Get
+                Return CType(Me("CYCCNT_CanParseErrMsgSignature"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("\s[Nn]=[0-9]{0,5}(-[A-Za-z0-9_]*)?\s")>  _
+        Public ReadOnly Property CYCCNT_ErrMsgId() As String
+            Get
+                Return CType(Me("CYCCNT_ErrMsgId"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("CYCCNT_HTTP_SOAP_GetErrMsgDesc.sql")>  _
+        Public ReadOnly Property CYCCNT_GetErrMsgDesc() As String
+            Get
+                Return CType(Me("CYCCNT_GetErrMsgDesc"),String)
+            End Get
         End Property
     End Class
 End Namespace
