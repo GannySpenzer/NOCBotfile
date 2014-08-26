@@ -144,6 +144,42 @@ Namespace My
                 Return CType(Me("INVADJ_UpdateInputTable"),String)
             End Get
         End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("False")>  _
+        Public ReadOnly Property INVADJ_ClearErrMsgOnSuccess() As String
+            Get
+                Return CType(Me("INVADJ_ClearErrMsgOnSuccess"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("[Tt]=[Pp][Rr][Oo][Cc]\s[Nn]=[0-9]{0,5}(-[A-Za-z0-9_]*)?\s[Cc]=[0-9]{0,5}")>  _
+        Public ReadOnly Property INVADJ_CanParseErrMsgSignature() As String
+            Get
+                Return CType(Me("INVADJ_CanParseErrMsgSignature"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("\s[Nn]=[0-9]{0,5}(-[A-Za-z0-9_]*)?\s")>  _
+        Public ReadOnly Property INVADJ_ErrMsgId() As String
+            Get
+                Return CType(Me("INVADJ_ErrMsgId"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("INVADJ_HTTP_SOAP_GetErrMsgDesc.sql")>  _
+        Public ReadOnly Property INVADJ_GetErrMsgDesc() As String
+            Get
+                Return CType(Me("INVADJ_GetErrMsgDesc"),String)
+            End Get
+        End Property
     End Class
 End Namespace
 

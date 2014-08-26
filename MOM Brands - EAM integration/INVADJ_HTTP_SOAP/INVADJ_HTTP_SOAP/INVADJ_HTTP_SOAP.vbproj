@@ -130,8 +130,15 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="INVADJ_HTTP_SOAP_SelectToSend.sql" />
-    <Content Include="INVADJ_HTTP_SOAP_UpdateFromResp.sql" />
+    <Content Include="INVADJ_HTTP_SOAP_GetErrMsgDesc.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="INVADJ_HTTP_SOAP_SelectToSend.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="INVADJ_HTTP_SOAP_UpdateFromResp.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="MOMBrand_INVADJ_HTTP_SOAP_Batch.xml" />
     <Content Include="MOMBrand_INVADJ_HTTP_SOAP_Batch_Item.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

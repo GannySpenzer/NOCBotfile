@@ -181,6 +181,9 @@
                     Dim sBin As String = ""
                     Dim nQty As Decimal = 0
 
+                    Dim sPrevErrMsg As String = ""
+                    Dim sPrevErrMsgDesc As String = ""
+
                     Dim sInitialProcessFlag As String = ""
 
                     Dim nRecId As Integer = 0
@@ -233,6 +236,24 @@
                         End Try
                         If (sInitialProcessFlag Is Nothing) Then
                             sInitialProcessFlag = ""
+                        End If
+
+                        sPrevErrMsg = ""
+                        Try
+                            sPrevErrMsg = CStr(dr("ISA_ERROR_RAW")).Trim
+                        Catch ex As Exception
+                        End Try
+                        If (sPrevErrMsg Is Nothing) Then
+                            sPrevErrMsg = ""
+                        End If
+
+                        sPrevErrMsgDesc = ""
+                        Try
+                            sPrevErrMsgDesc = CStr(dr("ISA_ERROR_MSG_80")).Trim
+                        Catch ex As Exception
+                        End Try
+                        If (sPrevErrMsgDesc Is Nothing) Then
+                            sPrevErrMsgDesc = ""
                         End If
 
                         'sKey = sPlant & "." & sItem & "." & sBin & "." & nQty.ToString & "." & nRecId.ToString.PadLeft(4, "0"c)
@@ -377,7 +398,10 @@
                         logger.WriteVerboseLog("response XML file : " & fle)
 
                         Dim bSucceed As Boolean = False
-                        Dim sRespErrMsg As String = ""
+
+                        ' inherit current error messages from the table
+                        Dim sRespErrMsg As String = sPrevErrMsg
+                        Dim sRespErrMsgDesc As String = sPrevErrMsgDesc
 
                         ' parse through the response string to check for any errors 
                         '       and update PS_ISA_MB_ADJ table of each inventory adjustment record/request
@@ -433,6 +457,23 @@
                                     sRespErrMsg = s
                                 End If
                             End If
+
+                            If (sRespErrMsg.Trim.Length > 0) Then
+                                ' try to interpret this message
+                                sRespErrMsgDesc = GetDescriptiveErrorMessage(oraCN1, sRespErrMsg)
+                            End If
+                        Else
+                            ' on success, check flag if we need to clear previous (if any) error message that we wrote
+                            Dim bClearErrMsg As Boolean = False
+                            Try
+                                bClearErrMsg = CBool(My.Settings("INVADJ_ClearErrMsgOnSuccess"))
+                            Catch ex As Exception
+                            End Try
+                            If bClearErrMsg Then
+                                ' reset both "raw" and "descriptive" error messages
+                                sRespErrMsg = ""
+                                sRespErrMsgDesc = ""
+                            End If
                         End If
 
                         nd2 = Nothing
@@ -450,6 +491,20 @@
                             sProcessFlag = "Y"
                         Else
                             sProcessFlag = "E"
+                        End If
+
+                        ' accommodate Oracle interpretation of empty string = NULL
+                        '   and since table can only handle 80 chars each field ...
+                        If (sRespErrMsg.Trim.Length = 0) Then
+                            ' single space
+                            sRespErrMsg = " "
+                        Else
+                            sRespErrMsg = (sRespErrMsg.Trim + (New String(" "c, 80))).Substring(0, 80).TrimEnd
+                        End If
+                        If (sRespErrMsgDesc.Trim.Length = 0) Then
+                            sRespErrMsgDesc = " "
+                        Else
+                            sRespErrMsgDesc = (sRespErrMsgDesc.Trim + (New String(" "c, 80))).Substring(0, 80).TrimEnd
                         End If
 
                         Dim sWhere As String = ""
@@ -472,9 +527,11 @@
 
                         ' fields 
                         '   PROCESS_FLAG {0}
+                        '   ISA_ERROR_RAW = '{2}'
+                        '   ISA_ERROR_MSG_80 = '{3}'
                         '   "WHERE clause" {1}
                         sb = New System.Text.StringBuilder
-                        sb.AppendFormat(s, sProcessFlag, sWhere)
+                        sb.AppendFormat(s, sProcessFlag, sWhere, sRespErrMsg, sRespErrMsgDesc)
                         s = sb.ToString
                         sb = Nothing
 
@@ -548,5 +605,118 @@
         oParent = Nothing
 
     End Sub
+
+    Private Function GetDescriptiveErrorMessage(ByVal oraCN As OleDb.OleDbConnection, _
+                                                ByVal sRaw As String) As String
+
+        Dim sRawMsg As String = ""
+        Dim sMsgDesc As String = ""
+
+        If Not (sRaw Is Nothing) Then
+            Try
+                sRawMsg = sRaw.Trim
+            Catch ex As Exception
+            End Try
+        End If
+
+        If (sRawMsg.Length > 0) Then
+
+            Dim sErrKeyValSeparator As Char = "="c
+            Dim sErrKeyVal As String() = New String() {}
+
+            Dim sErrCodePattern As String = ""
+            Dim sErrIdPattern As String = ""
+
+            Dim sErrId As String = ""
+
+            Try
+                sErrCodePattern = CStr(My.Settings("INVADJ_CanParseErrMsgSignature")).Trim
+            Catch ex As Exception
+            End Try
+            If (sErrCodePattern Is Nothing) Then
+                sErrCodePattern = ""
+            End If
+
+            Try
+                sErrIdPattern = CStr(My.Settings("INVADJ_ErrMsgId")).Trim
+            Catch ex As Exception
+            End Try
+            If (sErrIdPattern Is Nothing) Then
+                sErrIdPattern = ""
+            End If
+
+            ' can I parse this error message (ie., is expected error code pattern on raw string)
+            Dim oErrRaw As System.Text.RegularExpressions.Match = System.Text.RegularExpressions.Regex.Match(sRawMsg, sErrCodePattern)
+
+            If Not (oErrRaw Is Nothing) Then
+                If oErrRaw.Success Then
+                    ' found error code pattern. grab the first instance and search for the error ID (based on known pattern)
+                    Dim oErrId As System.Text.RegularExpressions.Match = System.Text.RegularExpressions.Regex.Match(oErrRaw.Groups(0).Value, sErrIdPattern)
+                    If Not (oErrId Is Nothing) Then
+                        Try
+                            sErrKeyVal = oErrId.Groups(0).Value.Trim.Split(sErrKeyValSeparator)
+                        Catch ex As Exception
+                        End Try
+                    End If
+                    If (sErrKeyVal.Length > 1) Then
+                        Try
+                            sErrId = sErrKeyVal(1).Trim.ToUpper
+                        Catch ex As Exception
+                        End Try
+                    End If
+                    If Not (sErrId.Length > 0) Then
+                        sMsgDesc = "unable to identify error ID from message"
+                    End If
+                Else
+                    ' unable to find the error code pattern, so I'm reporting the exact error message 
+                    sMsgDesc = sRawMsg
+                End If
+            End If
+
+            ' check for error key/value pair (ie., N=*)
+            '   if error ID value found, try to search table
+            If (sErrId.Length > 0) Then
+                Dim cmd As OleDb.OleDbCommand = Nothing
+                Dim sb As System.Text.StringBuilder = Nothing
+                Dim sql As String = ""
+                Dim sr As System.IO.StreamReader = Nothing
+
+                sr = New System.IO.StreamReader(CStr(My.Settings("INVADJ_GetErrMsgDesc")))
+                sql = sr.ReadToEnd
+                sr.Dispose()
+                sr = Nothing
+
+                ' fields
+                '	ERR_ID
+                sb = New System.Text.StringBuilder
+                sb.AppendFormat(sql, sErrId)
+                sql = sb.ToString
+                sb = Nothing
+
+                cmd = oraCN.CreateCommand
+                cmd.CommandText = sql
+                cmd.CommandType = CommandType.Text
+
+                Try
+                    sMsgDesc = CStr(cmd.ExecuteScalar).Trim
+                Catch ex As Exception
+                End Try
+
+                Try
+                    cmd.Dispose()
+                Catch ex As Exception
+                End Try
+                cmd = Nothing
+
+                If (sMsgDesc.Trim.Length = 0) Then
+                    sMsgDesc = "error code NOT DEFINED : " & sErrId
+                End If
+            End If
+
+        End If
+
+        Return (sMsgDesc)
+
+    End Function
 
 End Module
