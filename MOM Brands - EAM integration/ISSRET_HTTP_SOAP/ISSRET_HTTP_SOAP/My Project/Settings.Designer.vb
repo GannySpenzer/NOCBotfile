@@ -148,10 +148,46 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("ISS=Issue,RET=Return")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("ISS=Issue,RET=Return,RPR=RPR")>  _
         Public ReadOnly Property ISSRET_TransactionCodeXRef() As String
             Get
                 Return CType(Me("ISSRET_TransactionCodeXRef"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("FALSE")>  _
+        Public ReadOnly Property ISSRET_ClearErrMsgOnSuccess() As String
+            Get
+                Return CType(Me("ISSRET_ClearErrMsgOnSuccess"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("[Tt]=[Pp][Rr][Oo][Cc]\s[Nn]=[0-9]{0,5}(-[A-Za-z0-9_]*)?\s[Cc]=[0-9]{0,5}")>  _
+        Public ReadOnly Property ISSRET_CanParseErrMsgSignature() As String
+            Get
+                Return CType(Me("ISSRET_CanParseErrMsgSignature"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("\s[Nn]=[0-9]{0,5}(-[A-Za-z0-9_]*)?\s")>  _
+        Public ReadOnly Property ISSRET_ErrMsgId() As String
+            Get
+                Return CType(Me("ISSRET_ErrMsgId"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("ISSRET_HTTP_SOAP_GetErrMsgDesc.sql")>  _
+        Public ReadOnly Property ISSRET_GetErrMsgDesc() As String
+            Get
+                Return CType(Me("ISSRET_GetErrMsgDesc"),String)
             End Get
         End Property
     End Class

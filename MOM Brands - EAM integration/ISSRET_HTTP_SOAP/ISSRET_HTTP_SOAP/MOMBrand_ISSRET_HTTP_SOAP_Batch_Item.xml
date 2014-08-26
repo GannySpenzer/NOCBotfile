@@ -44,7 +44,7 @@
   <ns2:WSPROMPTFIELD>
     <ns20:LINE xmlns:ns20="http://schemas.datastream.net/MP_fields">1070</ns20:LINE>
     <ns21:WSPROMPTFIELDVALUE xmlns:ns21="http://schemas.datastream.net/MP_fields">
-      <ns21:TEXTVALUE>{6}</ns21:TEXTVALUE>
+      <ns21:TEXTVALUE><![CDATA[{6}]]></ns21:TEXTVALUE>
     </ns21:WSPROMPTFIELDVALUE>
   </ns2:WSPROMPTFIELD>
   <ns2:WSPROMPTFIELD>
