@@ -740,6 +740,8 @@
             Dim sErrCodePattern As String = ""
             Dim sErrIdPattern As String = ""
 
+            Dim sErrId As String = ""
+
             Try
                 sErrCodePattern = CStr(My.Settings("ISSRET_CanParseErrMsgSignature")).Trim
             Catch ex As Exception
@@ -769,6 +771,15 @@
                         Catch ex As Exception
                         End Try
                     End If
+                    If (sErrKeyVal.Length > 1) Then
+                        Try
+                            sErrId = sErrKeyVal(1).Trim.ToUpper
+                        Catch ex As Exception
+                        End Try
+                    End If
+                    If Not (sErrId.Length > 0) Then
+                        sMsgDesc = "unable to identify error ID from message"
+                    End If
                 Else
                     ' unable to find the error code pattern, so I'm reporting the exact error message 
                     sMsgDesc = sRawMsg
@@ -777,17 +788,7 @@
 
             ' check for error key/value pair (ie., N=*)
             '   if error ID value found, try to search table
-            Dim sErrId As String = ""
-
-            If (sErrKeyVal.Length > 1) Then
-                Try
-                    sErrId = sErrKeyVal(1).Trim.ToUpper
-                Catch ex As Exception
-                End Try
-            End If
-
             If (sErrId.Length > 0) Then
-
                 Dim cmd As OleDb.OleDbCommand = Nothing
                 Dim sb As System.Text.StringBuilder = Nothing
                 Dim sql As String = ""
@@ -823,9 +824,6 @@
                 If (sMsgDesc.Trim.Length = 0) Then
                     sMsgDesc = "error code NOT DEFINED : " & sErrId
                 End If
-
-            Else
-                sMsgDesc = "unable to identify error ID from message"
             End If
 
         End If
