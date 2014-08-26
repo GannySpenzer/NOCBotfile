@@ -135,6 +135,9 @@
     <Content Include="MOMBrand_RCPT_HTTP_SOAP_Batch_Item.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="RCPT_HTTP_SOAP_GetErrMsgDesc.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="RCPT_HTTP_SOAP_SelectToSend.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

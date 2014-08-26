@@ -112,7 +112,7 @@ Namespace My
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.DefaultSettingValueAttribute("CUST_ID,PLANT,ISA_WORK_ORDER_NO,ACTIVITY_ID,INV_ITEM_ID,RECEIVER_ID,PO_ID,REQ_ID,"& _ 
             "VENDOR_ID,ISA_CUST_BIN,QTY,PRICE_PO,SERIAL_ID,BUSINESS_UNIT_IN,STORAGE_AREA,STOR"& _ 
-            "_LEVEL_1,STOR_LEVEL_2,STOR_LEVEL_3,STOR_LEVEL_4")>  _
+            "_LEVEL_1,STOR_LEVEL_2,STOR_LEVEL_3,STOR_LEVEL_4,ISA_EMPLID_30")>  _
         Public ReadOnly Property RCPT_UpdateKeyColumns() As String
             Get
                 Return CType(Me("RCPT_UpdateKeyColumns"),String)
@@ -143,6 +143,42 @@ Namespace My
         Public ReadOnly Property RCPT_UpdateInputTable() As String
             Get
                 Return CType(Me("RCPT_UpdateInputTable"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("False")>  _
+        Public ReadOnly Property RCPT_ClearErrMsgOnSuccess() As String
+            Get
+                Return CType(Me("RCPT_ClearErrMsgOnSuccess"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("[Tt]=[Pp][Rr][Oo][Cc]\s[Nn]=[0-9]{0,5}(-[A-Za-z0-9_]*)?\s[Cc]=[0-9]{0,5}")>  _
+        Public ReadOnly Property RCPT_CanParseErrMsgSignature() As String
+            Get
+                Return CType(Me("RCPT_CanParseErrMsgSignature"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("\s[Nn]=[0-9]{0,5}(-[A-Za-z0-9_]*)?\s")>  _
+        Public ReadOnly Property RCPT_ErrMsgId() As String
+            Get
+                Return CType(Me("RCPT_ErrMsgId"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("RCPT_HTTP_SOAP_GetErrMsgDesc.sql")>  _
+        Public ReadOnly Property RCPT_GetErrMsgDesc() As String
+            Get
+                Return CType(Me("RCPT_GetErrMsgDesc"),String)
             End Get
         End Property
     End Class
