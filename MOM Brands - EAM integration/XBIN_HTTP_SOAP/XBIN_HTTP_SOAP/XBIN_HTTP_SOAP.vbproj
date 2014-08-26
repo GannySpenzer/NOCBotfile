@@ -136,8 +136,15 @@
     <Content Include="MOMBrand_XBIN_HTTP_SOAP_Batch.xml" />
     <Content Include="MOMBrand_XBIN_HTTP_SOAP_Batch_Item.xml" />
     <Content Include="MOMBrand_XBIN_HTTP_SOAP_TableColMap.xml" />
-    <Content Include="XBIN_HTTP_SOAP_SelectToSend.sql" />
-    <Content Include="XBIN_HTTP_SOAP_UpdateFromResp.sql" />
+    <Content Include="XBIN_HTTP_SOAP_GetErrMsgDesc.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="XBIN_HTTP_SOAP_SelectToSend.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="XBIN_HTTP_SOAP_UpdateFromResp.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

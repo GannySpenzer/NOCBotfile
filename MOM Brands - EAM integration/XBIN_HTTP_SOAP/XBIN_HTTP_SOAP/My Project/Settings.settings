@@ -32,5 +32,17 @@
     <Setting Name="XBIN_UpdateInputTable" Type="System.String" Scope="Application">
       <Value Profile="(Default)">XBIN_HTTP_SOAP_UpdateFromResp.sql</Value>
     </Setting>
+    <Setting Name="XBIN_ClearErrMsgOnSuccess" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="XBIN_CanParseErrMsgSignature" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">[Tt]=[Pp][Rr][Oo][Cc]\s[Nn]=[0-9]{0,5}(-[A-Za-z0-9_]*)?\s[Cc]=[0-9]{0,5}</Value>
+    </Setting>
+    <Setting Name="XBIN_ErrMsgId" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">\s[Nn]=[0-9]{0,5}(-[A-Za-z0-9_]*)?\s</Value>
+    </Setting>
+    <Setting Name="XBIN_GetErrMsgDesc" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">XBIN_HTTP_SOAP_GetErrMsgDesc.sql</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
