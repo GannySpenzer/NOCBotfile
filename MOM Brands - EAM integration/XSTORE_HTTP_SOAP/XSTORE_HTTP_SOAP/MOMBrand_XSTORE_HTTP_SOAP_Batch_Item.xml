@@ -26,13 +26,13 @@
   <ns2:WSPROMPTFIELD>
     <ns14:LINE xmlns:ns14="http://schemas.datastream.net/MP_fields">1040</ns14:LINE>
     <ns15:WSPROMPTFIELDVALUE xmlns:ns15="http://schemas.datastream.net/MP_fields">
-      <ns15:TEXTVALUE>{3}</ns15:TEXTVALUE>
+      <ns15:TEXTVALUE><![CDATA[{3}]]></ns15:TEXTVALUE>
     </ns15:WSPROMPTFIELDVALUE>
   </ns2:WSPROMPTFIELD>
   <ns2:WSPROMPTFIELD>
     <ns16:LINE xmlns:ns16="http://schemas.datastream.net/MP_fields">1050</ns16:LINE>
     <ns17:WSPROMPTFIELDVALUE xmlns:ns17="http://schemas.datastream.net/MP_fields">
-      <ns17:TEXTVALUE>{4}</ns17:TEXTVALUE>
+      <ns17:TEXTVALUE><![CDATA[{4}]]></ns17:TEXTVALUE>
     </ns17:WSPROMPTFIELDVALUE>
   </ns2:WSPROMPTFIELD>
   <ns2:WSPROMPTFIELD>
