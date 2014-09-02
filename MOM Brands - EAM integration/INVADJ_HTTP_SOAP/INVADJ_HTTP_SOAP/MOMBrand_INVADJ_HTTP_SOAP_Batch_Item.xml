@@ -20,7 +20,7 @@
   <ns2:WSPROMPTFIELD>
     <ns12:LINE xmlns:ns12="http://schemas.datastream.net/MP_fields">1030</ns12:LINE>
     <ns13:WSPROMPTFIELDVALUE xmlns:ns13="http://schemas.datastream.net/MP_fields">
-      <ns13:TEXTVALUE>{2}</ns13:TEXTVALUE>
+      <ns13:TEXTVALUE><![CDATA[{2}]]></ns13:TEXTVALUE>
     </ns13:WSPROMPTFIELDVALUE>
   </ns2:WSPROMPTFIELD>
   <ns2:WSPROMPTFIELD>
