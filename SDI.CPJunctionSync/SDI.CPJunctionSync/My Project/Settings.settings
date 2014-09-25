@@ -1,0 +1,57 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="My" GeneratedClassName="MySettings" UseMySettingsClassName="true">
+  <Profiles />
+  <Settings>
+    <Setting Name="oraCNString" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Provider=OraOLEDB.Oracle;Data Source=PROD;User Id=EINTERNET;Password=einternet;</Value>
+    </Setting>
+    <Setting Name="sql2012CNString" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">server=SQL2012;uid=ItemAddWorker;pwd=sdiadmin;initial catalog={0};</Value>
+    </Setting>
+    <Setting Name="sqlDAZZLECNString" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">server=DAZZLE;uid=sa;pwd=sdiadmin;initial catalog={0};</Value>
+    </Setting>
+    <Setting Name="qryGetSiteProdViewList" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">GetSiteProdViewList.sql</Value>
+    </Setting>
+    <Setting Name="qryGetCatalogProductViewList" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">GetCatalogProductView.sql</Value>
+    </Setting>
+    <Setting Name="sqlCPlusCNString" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">server=CPLUS_PROD;uid=sa;pwd=coca-cola;initial catalog=Contentplus;</Value>
+    </Setting>
+    <Setting Name="appLogLevel" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">VERB</Value>
+    </Setting>
+    <Setting Name="qryGetCPJunctionItemListForSite" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">GetCPJunctionItemsForSite.sql</Value>
+    </Setting>
+    <Setting Name="qryGetClassAvailProductItemCount" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">ClassAvailableProductsItemCount.sql</Value>
+    </Setting>
+    <Setting Name="qryCPJunctionUpdate" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">UpdateCPJunction.sql</Value>
+    </Setting>
+    <Setting Name="qryGetClassAvailProductItemCount_CustItemId" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">ClassAvailableProductsItemCount_CustItemId.sql</Value>
+    </Setting>
+    <Setting Name="qryGetClassAvailableProductItemsForProdView" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">GetClassAvailableProductItemsForProdView.sql</Value>
+    </Setting>
+    <Setting Name="qryCPJunctionUpdateViaItemID" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">UpdateCPJunctionViaItemID.sql</Value>
+    </Setting>
+    <Setting Name="qryCheckCPJunctionViaPartNumber" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">CheckCPJunctionViaPartNumber.sql</Value>
+    </Setting>
+    <Setting Name="qryCPJunctionAdd" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">CreateCPJunction.sql</Value>
+    </Setting>
+    <Setting Name="qryCPJunctionUpdateViaPartNoNotEqual" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">UpdateCPJunctionViaPartNumberIfNotEqual.sql</Value>
+    </Setting>
+    <Setting Name="qryCPJunctionUpdateViaItemIDNotEqual" Type="System.String" Scope="User">
+      <Value Profile="(Default)">UpdateCPJunctionViaItemIDIfNotEqual.sql</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
