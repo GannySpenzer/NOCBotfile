@@ -131,7 +131,11 @@ Module CPJunctionSync
             Dim arrSite As ArrayList = oSiteProductViews.GetSite(siteId:=sSiteId)
             If arrSite.Count > 0 Then
                 For Each oSite As SiteProductView In arrSite
-                    ProcessSite(oSite, logger)
+                    If (oSite.CatalogId > 0) And (oSite.ProductViewId > 0) And (oSite.SiteId.Length > 0) Then
+                        ProcessSite(oSite, logger)
+                    Else
+                        logger.WriteWarningLog("UNABLE TO PROCESS SITE : site ID=" & oSite.SiteId & " / catalog ID=" & oSite.CatalogId.ToString & " / product view ID=" & oSite.ProductViewId.ToString)
+                    End If
                 Next
             Else
                 logger.WriteWarningLog("UNABLE TO IDENTIFY SITE : " & sSiteId)
