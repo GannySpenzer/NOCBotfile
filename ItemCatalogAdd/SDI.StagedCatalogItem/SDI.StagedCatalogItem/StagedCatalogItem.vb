@@ -781,10 +781,10 @@ Module StagedCatalogItem
                     sr.Dispose()
                     sr = Nothing
 
-                    Dim sCustId As String = oItem.Catalog_CustomerItemId
-                    If (("~CUS~TBX").IndexOf(oItem.Catalog_CustomerItemPrefix) > -1) Then
-                        sCustId = oItem.PS_ItemId
-                    End If
+                    'Dim sCustId As String = oItem.Catalog_CustomerItemId
+                    'If (("~CUS~TBX").IndexOf(oItem.Catalog_CustomerItemPrefix) > -1) Then
+                    '    sCustId = oItem.PS_ItemId
+                    'End If
 
                     ' fields 
                     sb = New System.Text.StringBuilder
@@ -794,7 +794,7 @@ Module StagedCatalogItem
                                     oItem.Catalog_ProductViewId.ToString, _
                                     oItem.Catalog_ClassId.ToString, _
                                     oItem.Catalog_ItemId.ToString, _
-                                    sCustId)
+                                    oItem.Catalog_CustomerItemId)
                     sql = sb.ToString
                     sb = Nothing
 

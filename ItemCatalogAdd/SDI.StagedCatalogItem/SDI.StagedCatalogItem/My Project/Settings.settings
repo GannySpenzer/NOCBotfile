@@ -68,5 +68,8 @@
     <Setting Name="qryGetItemClassIdStaged" Type="System.String" Scope="Application">
       <Value Profile="(Default)">GetItemClassId_Staged.sql</Value>
     </Setting>
+    <Setting Name="qryUpdateCPJunctionViaPartNoNonEqual" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">UpdateCPJunctionViaPartNumberIfNotEqual.sql</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

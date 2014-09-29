@@ -251,6 +251,15 @@ Namespace My
                 Return CType(Me("qryGetItemClassIdStaged"),String)
             End Get
         End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("UpdateCPJunctionViaPartNumberIfNotEqual.sql")>  _
+        Public ReadOnly Property qryUpdateCPJunctionViaPartNoNonEqual() As String
+            Get
+                Return CType(Me("qryUpdateCPJunctionViaPartNoNonEqual"),String)
+            End Get
+        End Property
     End Class
 End Namespace
 

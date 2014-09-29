@@ -166,6 +166,9 @@
     <Content Include="StageClassAvailableProducts_UpdateFlag.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="UpdateCPJunctionViaPartNumberIfNotEqual.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="UpdateCP_JUNCTION.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
