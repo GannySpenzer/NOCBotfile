@@ -1,0 +1,72 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="My" GeneratedClassName="MySettings" UseMySettingsClassName="true">
+  <Profiles />
+  <Settings>
+    <Setting Name="oraCNString" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Provider=OraOLEDB.Oracle;Data Source=PROD;User Id=EINTERNET;Password=einternet;</Value>
+    </Setting>
+    <Setting Name="sql2012CNString" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">server=SQL2012;uid=ItemAddWorker;pwd=sdiadmin;initial catalog={0};</Value>
+    </Setting>
+    <Setting Name="sqlDAZZLECNString" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">server=DAZZLE;uid=sa;pwd=sdiadmin;initial catalog={0};</Value>
+    </Setting>
+    <Setting Name="sqlSDICLOUDCNString" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">server=SDICLOUD;uid=spAdmin;pwd=Sharepoint2013;initial catalog={0};</Value>
+    </Setting>
+    <Setting Name="LastRunInfoXML" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">LatestRunInfo.xml</Value>
+    </Setting>
+    <Setting Name="qryGetNewModPSItem" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">GetNewModPSItem.sql</Value>
+    </Setting>
+    <Setting Name="qryCheckCustomerItemInCatalog" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">checkCustomerItemInCatalog.sql</Value>
+    </Setting>
+    <Setting Name="sqlCPlusCNString" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">server=192.168.253.52;uid=sa;pwd=coca-cola;initial catalog=Contentplus;</Value>
+    </Setting>
+    <Setting Name="qryGetCatalogProductViewList" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">GetCatalogProductView.sql</Value>
+    </Setting>
+    <Setting Name="qryGetSiteProductViewList" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">GetSiteProductView.sql</Value>
+    </Setting>
+    <Setting Name="qryGetSiteItemPrefixList" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">GetSiteItemPrefix.sql</Value>
+    </Setting>
+    <Setting Name="qryInsertCP_JUNCTION" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">InsertCP_JUNCTION.sql</Value>
+    </Setting>
+    <Setting Name="qryUpdateCP_JUNCTION" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">UpdateCP_JUNCTION.sql</Value>
+    </Setting>
+    <Setting Name="qryStageClassAvailProdInsert" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">StageClassAvailableProducts_Insert.sql</Value>
+    </Setting>
+    <Setting Name="qryStageClassAvailProdUpdate" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">StageClassAvailableProducts_Update.sql</Value>
+    </Setting>
+    <Setting Name="qryRemoveOriginClassAvailProd" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">RemoveItemFromClassAvailableProducts.sql</Value>
+    </Setting>
+    <Setting Name="qryMainClassAvailProdUpdate" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">MainClassAvailableProducts_Update.sql</Value>
+    </Setting>
+    <Setting Name="qryMainClassAvailProdInsert" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">MainClassAvailableProducts_Insert.sql</Value>
+    </Setting>
+    <Setting Name="qryUpdateScottsdaleItemMfgPartNo" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">UpdateScottsdaleItemTableMfgPartNumber.sql</Value>
+    </Setting>
+    <Setting Name="qryGetItemClassId" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">GetItemClassId.sql</Value>
+    </Setting>
+    <Setting Name="qryStageClassAvailProdUpdateFlag" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">StageClassAvailableProducts_UpdateFlag.sql</Value>
+    </Setting>
+    <Setting Name="qryGetItemClassIdStaged" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">GetItemClassId_Staged.sql</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
