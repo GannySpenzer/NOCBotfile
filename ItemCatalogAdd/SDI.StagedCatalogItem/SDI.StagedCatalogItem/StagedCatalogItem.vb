@@ -684,19 +684,47 @@ Module StagedCatalogItem
                 '       we just need it in ScottsdaleTable so it won't be regarded as a new item next time we run this utility
             End If
         Else
-            ' do we need to "activate" or "in-activate" this item
-            If oItem.IsActive Then
-                '
-                ' make sure that item is ACTIVE
-                '
-                logger.WriteVerboseLog(vbTab & "processing as ACTIVE item")
+            ' since this is an existing item, grab the class ID for catalog/product view/item and update item object
+            Dim cmdSql As SqlCommand = Nothing
 
-                Dim nInActiveFlag As Integer = 0
-                Dim cmdSql As SqlCommand = Nothing
-                Dim i As Integer = -1
+            sr = New System.IO.StreamReader(CStr(My.Settings("qryGetItemClassId")).Trim)
+            sql = sr.ReadToEnd
+            sr.Dispose()
+            sr = Nothing
 
-                ' since this is an existing item, grab the class ID for catalog/product view/item and update item object
-                sr = New System.IO.StreamReader(CStr(My.Settings("qryGetItemClassId")).Trim)
+            ' fields 
+            sb = New System.Text.StringBuilder
+            sb.AppendFormat(sql, _
+                            oItem.CatalogId.ToString, _
+                            oItem.CatalogId.ToString, _
+                            oItem.Catalog_ProductViewId.ToString, _
+                            oItem.Catalog_ItemId.ToString)
+            sql = sb.ToString
+            sb = Nothing
+
+            cmdSql = sql2012CN.CreateCommand
+            cmdSql.CommandText = sql
+            cmdSql.CommandType = CommandType.Text
+
+            Dim nClassId As Integer = 0
+
+            Try
+                nClassId = CInt(cmdSql.ExecuteScalar)
+            Catch ex As Exception
+            End Try
+
+            If (nClassId > 0) Then
+                oItem.Catalog_ClassId = nClassId
+            End If
+
+            Try
+                cmdSql.Dispose()
+            Catch ex As Exception
+            End Try
+            cmdSql = Nothing
+
+            If (oItem.Catalog_ClassId = 0) Then
+                sr = New System.IO.StreamReader(CStr(My.Settings("qryGetItemClassIdStaged")).Trim)
                 sql = sr.ReadToEnd
                 sr.Dispose()
                 sr = Nothing
@@ -715,7 +743,7 @@ Module StagedCatalogItem
                 cmdSql.CommandText = sql
                 cmdSql.CommandType = CommandType.Text
 
-                Dim nClassId As Integer = 0
+                nClassId = 0
 
                 Try
                     nClassId = CInt(cmdSql.ExecuteScalar)
@@ -731,44 +759,17 @@ Module StagedCatalogItem
                 Catch ex As Exception
                 End Try
                 cmdSql = Nothing
+            End If
 
-                If (oItem.Catalog_ClassId = 0) Then
-                    sr = New System.IO.StreamReader(CStr(My.Settings("qryGetItemClassIdStaged")).Trim)
-                    sql = sr.ReadToEnd
-                    sr.Dispose()
-                    sr = Nothing
+            ' do we need to "activate" or "in-activate" this item
+            If oItem.IsActive Then
+                '
+                ' make sure that item is ACTIVE
+                '
+                logger.WriteVerboseLog(vbTab & "processing as ACTIVE item")
 
-                    ' fields 
-                    sb = New System.Text.StringBuilder
-                    sb.AppendFormat(sql, _
-                                    oItem.CatalogId.ToString, _
-                                    oItem.CatalogId.ToString, _
-                                    oItem.Catalog_ProductViewId.ToString, _
-                                    oItem.Catalog_ItemId.ToString)
-                    sql = sb.ToString
-                    sb = Nothing
-
-                    cmdSql = sql2012CN.CreateCommand
-                    cmdSql.CommandText = sql
-                    cmdSql.CommandType = CommandType.Text
-
-                    nClassId = 0
-
-                    Try
-                        nClassId = CInt(cmdSql.ExecuteScalar)
-                    Catch ex As Exception
-                    End Try
-
-                    If (nClassId > 0) Then
-                        oItem.Catalog_ClassId = nClassId
-                    End If
-
-                    Try
-                        cmdSql.Dispose()
-                    Catch ex As Exception
-                    End Try
-                    cmdSql = Nothing
-                End If
+                Dim nInActiveFlag As Integer = 0
+                Dim i As Integer = -1
 
                 ' create transaction objects
                 oraTran = oraCN.BeginTransaction
@@ -1006,7 +1007,6 @@ Module StagedCatalogItem
                 logger.WriteVerboseLog(vbTab & "processing as IN-ACTIVE item")
 
                 Dim nInActiveFlag As Integer = 1
-                Dim cmdSql As SqlCommand = Nothing
                 Dim i As Integer = -1
 
                 ' create transaction objects
