@@ -12,12 +12,22 @@
 , mitm.UNIT_MEASURE_STD as UM
 , cpj.isa_site_id AS ISA_SITE_ID
 , cpj.isa_cp_prod_id AS CATALOG_ITEM_ID
+, MFG.MFG_ID as MFG_ID
+, MFG.MFG_ITM_ID as MFG_PART_NUMBER
 from sysadm.ps_inv_items itm
 inner join sysadm.ps_master_item_tbl mitm
   on mitm.SETID = itm.SETID
  and mitm.INV_ITEM_ID = itm.INV_ITEM_ID
 left outer join sysadm.ps_isa_cp_junction cpj
   on cpj.INV_ITEM_ID = itm.INV_ITEM_ID
+left outer join (
+        select setid, inv_item_id, mfg_id, mfg_itm_id, preferred_mfg, row_number() over (partition by setid, inv_item_id order by setid, inv_item_id, preferred_mfg desc) as rnum
+        from SYSADM.PS_ITEM_MFG
+        where setid='MAIN1'
+) MFG
+  ON MFG.SETID = itm.SETID
+ AND MFG.INV_ITEM_ID = itm.INV_ITEM_ID
+ AND MFG.rnum = 1
 where itm.setid = 'MAIN1'
   and itm.effdt between to_date('{0}','MM/DD/YYYY HH24:MI:SS') and to_date('{1}','MM/DD/YYYY HH24:MI:SS')
   and itm.effdt = (
