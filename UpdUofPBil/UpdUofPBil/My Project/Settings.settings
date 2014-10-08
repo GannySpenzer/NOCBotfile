@@ -1,0 +1,30 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="My" GeneratedClassName="MySettings" UseMySettingsClassName="true">
+  <Profiles />
+  <Settings>
+    <Setting Name="SRV" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">LOCALHOST</Value>
+    </Setting>
+    <Setting Name="UID" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">SDIUOP</Value>
+    </Setting>
+    <Setting Name="PWD" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">sdiuop00</Value>
+    </Setting>
+    <Setting Name="ICat" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">SDIUOP</Value>
+    </Setting>
+    <Setting Name="OutFilePath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">C:\updUofPBil\TXTOUT\</Value>
+    </Setting>
+    <Setting Name="SmallProjectFeeOld" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">.033</Value>
+    </Setting>
+    <Setting Name="SmallProjectFeeNew" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">.036</Value>
+    </Setting>
+    <Setting Name="SmallProjectFeeNewDate" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">07/01/2012</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
