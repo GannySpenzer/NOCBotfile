@@ -95,6 +95,7 @@ Module Module1
         objStreamWriter.WriteLine("End of updUofPBil " & Now())
         objStreamWriter.Flush()
         objStreamWriter.Close()
+
         sendFTPLog(logpath)
 
     End Sub
@@ -528,7 +529,15 @@ Module Module1
         For I = 0 To dsRows.Tables(0).Rows.Count - 1
             'format dt table
             dtRow = dt.NewRow
-            dtRow("trans_date") = String.Format("{0:d}", dsRows.Tables(0).Rows(I).Item("SHIP_DT"))
+
+            ' ship date
+            'dtRow("trans_date") = String.Format("{0:d}", dsRows.Tables(0).Rows(I).Item("SHIP_DT"))
+            Dim sShipDate As String = String.Format("{0:d}", CDate("1/1/1900"))
+            Try
+                sShipDate = String.Format("{0:d}", CDate(dsRows.Tables(0).Rows(I).Item("SHIP_DT")))
+            Catch ex As Exception
+            End Try
+            dtRow("trans_date") = sShipDate
 
             ' w/o and/or charge code
             '   now I got to figure out which one contains valid UPenn's w/o because of process change!?
