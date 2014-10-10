@@ -22,6 +22,9 @@ Module Module1
     Dim strRemoteUser As String = "ftp.supplypro"
     Dim strRemotePassword As String = "Tv06wsi0"
 
+    Const PARAM_NO_XML_GET As String = "/NO_XML_GET"
+    Const PARAM_NO_STATUS_REPORTING As String = "/NO_STATUS_REPORTING"
+
     Sub Main()
 
         Console.WriteLine("Start updUofPBil XML in")
@@ -38,6 +41,8 @@ Module Module1
                 strRemoteHost = "lenka"
             End If
         End If
+
+        Dim cmdArgs As System.Collections.ObjectModel.ReadOnlyCollection(Of String) = My.Application.CommandLineArgs
 
         If Dir(rootDir, FileAttribute.Directory) = "" Then
             MkDir(rootDir)
@@ -88,7 +93,14 @@ Module Module1
         objStreamWriter = File.CreateText(logpath)
         objStreamWriter.WriteLine("Update of updUofPBil IN XML " & Now())
 
-        getFTPfiles()
+        'getFTPfiles()
+        If cmdArgs.Contains(PARAM_NO_XML_GET) Then
+            ' skip grabbing new xml file from ftp site
+        Else
+            ' grab any new xml file from ftp site
+            getFTPfiles()
+        End If
+
         processfiles()
         deleteOldFiles()
 
@@ -96,7 +108,13 @@ Module Module1
         objStreamWriter.Flush()
         objStreamWriter.Close()
 
-        sendFTPLog(logpath)
+        'sendFTPLog(logpath)
+        If cmdArgs.Contains(PARAM_NO_STATUS_REPORTING) Then
+            ' skip sending report back to ftp site
+        Else
+            ' send process log back to ftp site
+            sendFTPLog(logpath)
+        End If
 
     End Sub
 
@@ -670,6 +688,14 @@ Module Module1
             End If
 
             dtRow("cash_no") = FormatNumber(dsRows.Tables(0).Rows(I).Item("NET_EXTENDED_AMT"), 2)
+
+            '' according to accounting, after reviewing output textfile against UPenn's daily billing feed,
+            ''   that if "cash_no" (#13) field is Zero, that the "amount" (#6) field should also be Zero.
+            'If IsNumeric(dtRow("cash_no")) Then
+            '    If CDec(dtRow("cash_no")) = 0 Then
+            '        dtRow("amount") = dtRow("cash_no")
+            '    End If
+            'End If
 
             dtRow("subledger_type") = "M"
             dtRow("batch_no") = dsRows.Tables(0).Rows(I).Item("BATCH_NUMBER")
