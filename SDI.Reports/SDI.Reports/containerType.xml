@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?> 
+<containerTypes>
+	<add id="BOX"  desc="BOX" />
+	<add id="BUND" desc="BUNDLE" />
+	<add id="DOOR" desc="DOOR" />
+	<add id="WOOD" desc="WOOD" />
+	<add id="PLYW" desc="PLYWOOD" />
+	<add id="WALB" desc="WALLBOARD" />
+	<add id="PIPE" desc="PIPES" />
+	<add id="MISC" desc="MISCELLANEOUS" />
+	<add id="STUD" desc="STUD" />
+	<add id="BAG"  desc="BAG" />
+	<add id="PAIL" desc="PAIL" />
+	<add id="BUCK" desc="BUCKET" />
+	<add id="ROD"  desc="ROD" />
+	<add id="CHAN" desc="CHANNEL" />
+	<add id="ROLL" desc="ROLL" />
+	<add id="SHEE" desc="SHEETMETAL" />
+	<add id="ANGL" desc="ANGLE" />
+</containerTypes>
