@@ -285,9 +285,11 @@
             'Response_Doc = httpSession.SendAsBytes
             Response_Doc = httpSession.SendAsString
         Catch ex As Exception
-            ''Response.Write(ex.ToString)
-            'ShowErrorMessage(ex.ToString)
-            Response_Doc &= ex.ToString
+            ' new 7i instance for MOM Brand is actually sending us an exception (System.Net.WebException) now
+            '       instead just the actual error on the response and NOT producing a "webException" ... thus this change to 
+            '       try and process that response even on webException - Erwin 2014.10.15
+            'Response_Doc &= ex.ToString
+            Response_Doc &= ex.Message
         End Try
 
         httpSession = Nothing
