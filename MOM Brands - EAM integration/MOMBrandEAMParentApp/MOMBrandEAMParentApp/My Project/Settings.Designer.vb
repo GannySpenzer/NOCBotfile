@@ -56,7 +56,7 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=PROD")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=RPTG")>  _
         Public ReadOnly Property oraCNString1() As String
             Get
                 Return CType(Me("oraCNString1"),String)
@@ -137,7 +137,7 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("https://eam.saas.infor.com/EAM85WS/axis/services/EWSConnector")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("https://eam.saas.infor.com/EAM11WS/axis/services/EWSConnector")>  _
         Public ReadOnly Property target_URL() As String
             Get
                 Return CType(Me("target_URL"),String)
@@ -164,7 +164,7 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("INTERFACE@MALTOMEAL_PRD")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("INTERFACE@MALTOMEAL_TRN")>  _
         Public ReadOnly Property username() As String
             Get
                 Return CType(Me("username"),String)

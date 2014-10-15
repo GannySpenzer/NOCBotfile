@@ -185,7 +185,8 @@ Public Class easyHttp
             Catch webEx As System.Net.WebException
                 sr = New StreamReader(webEx.Response.GetResponseStream())
                 responseData = sr.ReadToEnd()
-                Throw New ApplicationException(message:=rtn & responseData, innerException:=webEx)
+                'Throw New ApplicationException(message:=rtn & responseData, innerException:=webEx)
+                Throw New ApplicationException(message:=responseData, innerException:=webEx)
             Catch ex As Exception
                 Throw New ApplicationException(message:=rtn & ex.Message, innerException:=ex)
             Finally
