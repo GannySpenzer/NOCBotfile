@@ -128,7 +128,7 @@
         If (oraCN1.State = ConnectionState.Open) Then
 
             logger.WriteVerboseLog("DB connection opened.")
-            logger.WriteVerboseLog("using DB : " & oraCN1.Database)
+            logger.WriteVerboseLog("using DB : " & oraCN1.DataSource)
 
             Dim oraTran1 As OleDb.OleDbTransaction = Nothing
 
@@ -461,7 +461,11 @@
                             'sHttpResponse = httpSession.SendAsBytes
                             sHttpResponse = httpSession.SendAsString
                         Catch ex As Exception
-                            sHttpResponse &= ex.ToString
+                            ' new 7i instance for MOM Brand is actually sending us an exception (System.Net.WebException) now
+                            '       instead just the actual error on the response and NOT producing a "webException" ... thus this change to 
+                            '       try and process that response even on webException - Erwin 2014.10.15
+                            'sHttpResponse &= ex.ToString
+                            sHttpResponse &= ex.Message
                         End Try
 
                         httpSession = Nothing
