@@ -127,7 +127,7 @@
 
         If (oraCN1.State = ConnectionState.Open) Then
 
-            logger.WriteVerboseLog("using DB : " & oraCN1.Database)
+            logger.WriteVerboseLog("using DB : " & oraCN1.DataSource)
 
             ' prepare transaction
             Dim oraTran1 As OleDb.OleDbTransaction = oraCN1.BeginTransaction
@@ -167,7 +167,7 @@
                 ' retrieve, save and check batch result
                 Try
                     logger.WriteVerboseLog("#" & nLoopCtr.ToString & " batch")
-                    RetrieveAndProcess(oraCN1, custId, processId, oraTran1, oBatch, appVar, oParent)
+                    RetrieveAndProcess(oraCN1, custId, processId, oraTran1, oBatch, appVar, oParent, ackMATMSTs)
                     nTotalRecordsProcessed += oBatch.BatchProcessedRecordCount
                 Catch ex As Exception
                     oBatch.ex = ex
@@ -236,7 +236,8 @@
                                    ByVal oraTran As OleDb.OleDbTransaction, _
                                    ByVal oBatch As MATMST_batch, _
                                    ByVal vars As SDI.HTTP_SOAP_INTFC.appVarCollection, _
-                                   ByVal oParent As SDI.HTTP_SOAP_INTFC.IParentApp)
+                                   ByVal oParent As SDI.HTTP_SOAP_INTFC.IParentApp, _
+                                   ByVal ackMATMSTs As MATMST_AckBatch)
 
         Dim logger As SDI.ApplicationLogger.IApplicationLogger = oParent.Logger
         Dim emailer As SDI.EmailNotifier.IEmailNotifier = oParent.EmailNotifier
@@ -297,9 +298,11 @@
             'Response_Doc = httpSession.SendAsBytes
             Response_Doc = httpSession.SendAsString
         Catch ex As Exception
-            ''Response.Write(ex.ToString)
-            'ShowErrorMessage(ex.ToString)
-            Response_Doc &= ex.ToString
+            ' new 7i instance for MOM Brand is actually sending us an exception (System.Net.WebException) now
+            '       instead just the actual error on the response and NOT producing a "webException" ... thus this change to 
+            '       try and process that response even on webException - Erwin 2014.10.15
+            'Response_Doc &= ex.ToString
+            Response_Doc &= ex.Message
         End Try
 
         httpSession = Nothing
@@ -435,6 +438,7 @@
         logger.WriteVerboseLog("processing row(s).")
 
         '   (2) data/rows
+        Dim sColumnNameForAck As String = ackMATMSTs.ColumnIdToSave
         Dim idxCol As Integer = 0
         Dim rowId As Integer = 0
         Dim row As System.Data.DataRow = Nothing
@@ -464,6 +468,7 @@
                             End If
                         Next
                         If (idxCol >= 0) Then
+                            ' assign row/column value within datatable
                             Try
                                 Select Case dtMap.Columns(idxCol).DataType
                                     Case GetType(System.Decimal)
@@ -487,8 +492,30 @@
                             Catch ex As Exception
                                 Throw New ApplicationException(ex.ToString)
                             End Try
+                            ' if this is the field for our acknowledgement
+                            '       save value if not existing
+                            If (CType(dtMap.Columns(idxCol), SDI.HTTP_SOAP_INTFC.CColumn).ColumnName = sColumnNameForAck) Then
+                                Try
+                                    'If ackWOs.UniqueIds.ContainsKey(ndFld.InnerText.Trim.ToUpper) Then
+                                    '    ' increment count
+                                    '    ackWOs.UniqueIds(ndFld.InnerText.Trim.ToUpper) = CInt(ackWOs.UniqueIds(ndFld.InnerText.Trim.ToUpper)) + 1
+                                    'Else
+                                    '    ' add new, set initial count to 1
+                                    '    ackWOs.UniqueIds.Add(ndFld.InnerText.Trim.ToUpper, 1)
+                                    'End If
+                                    If Not ackMATMSTs.UniqueIds.ContainsKey(ndFld.InnerText.Trim.ToUpper) Then
+                                        ackMATMSTs.UniqueIds.Add(key:=ndFld.InnerText.Trim.ToUpper, value:=Nothing)
+                                    End If
+                                Catch ex As Exception
+                                    Throw New ApplicationException(ex.ToString)
+                                End Try
+                            End If
                         End If
                     Next
+
+                    Dim sAckKeyColumns As String = CStr(My.Settings("MATMST_AckKeyColumns"))
+                    Dim ackKey As String = CStr(row(sColumnNameForAck))
+                    Dim arr As New ArrayList
 
                     ' save each row 
                     '   but we'll have to loop on however many defined target backend table
@@ -496,33 +523,42 @@
 
                         sql = "INSERT INTO SYSADM.{0} ({1}) VALUES ({2})"
 
+                        Dim sCol As String = ""
+                        Dim sVal As String = ""
+
                         Dim columnList As String = ""
                         Dim valueList As String = ""
 
                         For Each col As SDI.HTTP_SOAP_INTFC.CColumn In dtMap.Columns
-                            'col.DataType
                             If (col.TargetTableName = sKeyTableName) Then
                                 ' column name
-                                columnList &= col.TargetColumnName & ","
+                                sCol = col.TargetColumnName
+                                columnList &= sCol & ","
                                 ' column value
+                                sVal = ""
                                 If (col.TargetValue.Trim.Length > 0) Then
                                     ' this means that value of this column, this process should supply it
                                     If vars.Vars.ContainsKey(col.TargetValue.Trim) Then
                                         ' special types
                                         If (col.TargetValue.Trim = "{SYSTEM:DATETIME}") Then
-                                            valueList &= "" & vars.varValue(col.TargetValue.Trim) & ","
+                                            'valueList &= "" & vars.varValue(col.TargetValue.Trim) & ","
+                                            sVal = "" & vars.varValue(col.TargetValue.Trim) & ""
                                         Else
                                             Select Case vars.varDataType(col.TargetValue.Trim).ToUpper
                                                 Case "DATETIME"
-                                                    valueList &= "TO_DATE('" & CDate(vars.varValue(col.TargetValue.Trim)).ToString("MM/dd/yyyy HH:mm:ss") & "','MM/DD/YYYY HH24:MI:SS'),"
+                                                    'valueList &= "TO_DATE('" & CDate(vars.varValue(col.TargetValue.Trim)).ToString("MM/dd/yyyy HH:mm:ss") & "','MM/DD/YYYY HH24:MI:SS'),"
+                                                    sVal = "TO_DATE('" & CDate(vars.varValue(col.TargetValue.Trim)).ToString("MM/dd/yyyy HH:mm:ss") & "','MM/DD/YYYY HH24:MI:SS')"
                                                 Case "DECIMAL"
-                                                    valueList &= "'" & CDec(vars.varValue(col.TargetValue.Trim)).ToString & "',"
+                                                    'valueList &= "'" & CDec(vars.varValue(col.TargetValue.Trim)).ToString & "',"
+                                                    sVal = "'" & CDec(vars.varValue(col.TargetValue.Trim)).ToString & "'"
                                                 Case Else
-                                                    valueList &= "'" & vars.varValue(col.TargetValue.Trim) & "',"
+                                                    'valueList &= "'" & vars.varValue(col.TargetValue.Trim) & "',"
+                                                    sVal = "'" & vars.varValue(col.TargetValue.Trim) & "'"
                                             End Select
                                         End If
                                     Else
-                                        valueList &= "'',"
+                                        'valueList &= "'',"
+                                        sVal = "''"
                                     End If
                                 Else
                                     ' this column's value is coming out of the feed
@@ -530,25 +566,37 @@
                                         Case GetType(System.DateTime)
                                             ' date/time
                                             If (row(col.ColumnName) Is System.DBNull.Value) Then
-                                                valueList &= "TO_DATE('01/01/1900 00:00:00','MM/DD/YYYY HH24:MI:SS'),"
+                                                'valueList &= "TO_DATE('01/01/1900 00:00:00','MM/DD/YYYY HH24:MI:SS'),"
+                                                sVal = "TO_DATE('01/01/1900 00:00:00','MM/DD/YYYY HH24:MI:SS')"
                                             Else
-                                                valueList &= "TO_DATE('" & CDate(row(col.ColumnName)).ToString("MM/dd/yyyy HH:mm:ss") & "','MM/DD/YYYY HH24:MI:SS'),"
+                                                'valueList &= "TO_DATE('" & CDate(row(col.ColumnName)).ToString("MM/dd/yyyy HH:mm:ss") & "','MM/DD/YYYY HH24:MI:SS'),"
+                                                sVal = "TO_DATE('" & CDate(row(col.ColumnName)).ToString("MM/dd/yyyy HH:mm:ss") & "','MM/DD/YYYY HH24:MI:SS')"
                                             End If
                                         Case GetType(System.Decimal)
                                             ' decimal
                                             If (row(col.ColumnName) Is System.DBNull.Value) Then
-                                                valueList &= "'0',"
+                                                'valueList &= "'0',"
+                                                sVal = "'0'"
                                             Else
-                                                valueList &= "'" & CDec(row(col.ColumnName)).ToString & "',"
+                                                'valueList &= "'" & CDec(row(col.ColumnName)).ToString & "',"
+                                                sVal = "'" & CDec(row(col.ColumnName)).ToString & "'"
                                             End If
                                         Case Else
                                             ' string
                                             If (row(col.ColumnName) Is System.DBNull.Value) Then
-                                                valueList &= "'',"
+                                                'valueList &= "'',"
+                                                sVal = "''"
                                             Else
-                                                valueList &= "'" & CStr(row(col.ColumnName)) & "',"
+                                                'valueList &= "'" & CStr(row(col.ColumnName)) & "',"
+                                                sVal = "'" & CStr(row(col.ColumnName)) & "'"
                                             End If
                                     End Select
+                                End If
+                                valueList &= sVal & ","
+                                ' check for known key fields
+                                '   add into collection for acknowledgement use later if it is
+                                If (sAckKeyColumns.IndexOf(col.TargetColumnName) > -1) Then
+                                    arr.Add(col.TargetColumnName & " = " & sVal & "")
                                 End If
                             End If
                         Next
@@ -575,6 +623,8 @@
                         sb = Nothing
 
                     Next
+
+                    ackMATMSTs.UniqueIds(ackKey) = arr
 
                     ' increment processed record counter
                     oBatch.BatchProcessedRecordCount += 1
