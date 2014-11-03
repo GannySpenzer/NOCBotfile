@@ -1,0 +1,33 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="My" GeneratedClassName="MySettings" UseMySettingsClassName="true">
+  <Profiles />
+  <Settings>
+    <Setting Name="ParentApp" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">SDI.MOMBrandEAMParentApp.dll</Value>
+    </Setting>
+    <Setting Name="ParentAppClass" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">SDI.MOMBrandEAMParentApp.MOMBrandEAMParentApp</Value>
+    </Setting>
+    <Setting Name="MATMST_IOH_HTTP_SOAP_REQ" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">MOMBrand_MATMST_IOH_HTTP_SOAP_Request.xml</Value>
+    </Setting>
+    <Setting Name="MATMST_IOH_GetBatchSize" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">10000</Value>
+    </Setting>
+    <Setting Name="MATMST_IOH_MaxReq" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">100</Value>
+    </Setting>
+    <Setting Name="MATMST_IOH_HTTP_SOAP_DataMap" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">MOMBrand_MATMST_IOH_HTTP_SOAP_TableColMap.xml</Value>
+    </Setting>
+    <Setting Name="MATMST_IOH_SelectNewItemToProc" Type="System.String" Scope="User">
+      <Value Profile="(Default)">MATMST_IOH_SelectNewItemToProcess.sql</Value>
+    </Setting>
+    <Setting Name="MATMST_IOH_FlagMatMast" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">MATMST_IOH_FlagMaterialMaster.sql</Value>
+    </Setting>
+    <Setting Name="MATMST_IOH_UpdateKeyColumns" Type="System.String" Scope="User">
+      <Value Profile="(Default)">CUST_ID,PLANT,INV_ITEM_ID,EFF_STATUS,ISA_CUSTOMER_CAT,IM_CFFT,INV_STOCK_TYPE,ISA_CUSTOMER_MFG,MFG_ITM_ID,PREFERRED_MFG,REORDER_POINT,QTY_MAXIMUM,REORDER_QTY,UNIT_OF_MEASUREREPAIR_OPTION_LBLSTANDARD_COST,STD_LEAD,UTILIZ_CD,ISA_NRTE_GL_CODE,ISA_ARTE_GL_CODE,ISA_TRTE_GL_CODE,ISA_NHOT_GL_CODE,ISA_MN_TAX_CODE,ISA_NC_TAX_CODE,ISA_UT_TAX_CODE,PROCESS_INSTANCE</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

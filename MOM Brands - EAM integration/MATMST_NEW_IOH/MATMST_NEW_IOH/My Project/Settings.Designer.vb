@@ -56,128 +56,93 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=PROD")>  _
-        Public ReadOnly Property oraCNString1() As String
+         Global.System.Configuration.DefaultSettingValueAttribute("SDI.MOMBrandEAMParentApp.dll")>  _
+        Public ReadOnly Property ParentApp() As String
             Get
-                Return CType(Me("oraCNString1"),String)
+                Return CType(Me("ParentApp"),String)
             End Get
         End Property
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("Logs")>  _
-        Public ReadOnly Property appLogPath() As String
+         Global.System.Configuration.DefaultSettingValueAttribute("SDI.MOMBrandEAMParentApp.MOMBrandEAMParentApp")>  _
+        Public ReadOnly Property ParentAppClass() As String
             Get
-                Return CType(Me("appLogPath"),String)
+                Return CType(Me("ParentAppClass"),String)
             End Get
         End Property
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("erwin.bautista@sdi.com")>  _
-        Public ReadOnly Property onError_NotifyTO() As String
+         Global.System.Configuration.DefaultSettingValueAttribute("MOMBrand_MATMST_IOH_HTTP_SOAP_Request.xml")>  _
+        Public ReadOnly Property MATMST_IOH_HTTP_SOAP_REQ() As String
             Get
-                Return CType(Me("onError_NotifyTO"),String)
+                Return CType(Me("MATMST_IOH_HTTP_SOAP_REQ"),String)
             End Get
         End Property
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("InSiteOnline@sdi.com")>  _
-        Public ReadOnly Property onError_NotifyFROM() As String
+         Global.System.Configuration.DefaultSettingValueAttribute("10000")>  _
+        Public ReadOnly Property MATMST_IOH_GetBatchSize() As String
             Get
-                Return CType(Me("onError_NotifyFROM"),String)
+                Return CType(Me("MATMST_IOH_GetBatchSize"),String)
             End Get
         End Property
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("")>  _
-        Public ReadOnly Property onError_NotifyCC() As String
+         Global.System.Configuration.DefaultSettingValueAttribute("100")>  _
+        Public ReadOnly Property MATMST_IOH_MaxReq() As String
             Get
-                Return CType(Me("onError_NotifyCC"),String)
+                Return CType(Me("MATMST_IOH_MaxReq"),String)
             End Get
         End Property
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("")>  _
-        Public ReadOnly Property onError_NotifyBCC() As String
+         Global.System.Configuration.DefaultSettingValueAttribute("MOMBrand_MATMST_IOH_HTTP_SOAP_TableColMap.xml")>  _
+        Public ReadOnly Property MATMST_IOH_HTTP_SOAP_DataMap() As String
             Get
-                Return CType(Me("onError_NotifyBCC"),String)
+                Return CType(Me("MATMST_IOH_HTTP_SOAP_DataMap"),String)
             End Get
+        End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("MATMST_IOH_SelectNewItemToProcess.sql")>  _
+        Public Property MATMST_IOH_SelectNewItemToProc() As String
+            Get
+                Return CType(Me("MATMST_IOH_SelectNewItemToProc"),String)
+            End Get
+            Set
+                Me("MATMST_IOH_SelectNewItemToProc") = value
+            End Set
         End Property
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("EAM Data Exchange Error")>  _
-        Public ReadOnly Property onError_NotifySUBJECT() As String
+         Global.System.Configuration.DefaultSettingValueAttribute("MATMST_IOH_FlagMaterialMaster.sql")>  _
+        Public ReadOnly Property MATMST_IOH_FlagMatMast() As String
             Get
-                Return CType(Me("onError_NotifySUBJECT"),String)
+                Return CType(Me("MATMST_IOH_FlagMatMast"),String)
             End Get
         End Property
         
-        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("VERBOSE")>  _
-        Public ReadOnly Property appLogLevel() As String
+         Global.System.Configuration.DefaultSettingValueAttribute("CUST_ID,PLANT,INV_ITEM_ID,EFF_STATUS,ISA_CUSTOMER_CAT,IM_CFFT,INV_STOCK_TYPE,ISA_"& _ 
+            "CUSTOMER_MFG,MFG_ITM_ID,PREFERRED_MFG,REORDER_POINT,QTY_MAXIMUM,REORDER_QTY,UNIT"& _ 
+            "_OF_MEASUREREPAIR_OPTION_LBLSTANDARD_COST,STD_LEAD,UTILIZ_CD,ISA_NRTE_GL_CODE,IS"& _ 
+            "A_ARTE_GL_CODE,ISA_TRTE_GL_CODE,ISA_NHOT_GL_CODE,ISA_MN_TAX_CODE,ISA_NC_TAX_CODE"& _ 
+            ",ISA_UT_TAX_CODE,PROCESS_INSTANCE")>  _
+        Public Property MATMST_IOH_UpdateKeyColumns() As String
             Get
-                Return CType(Me("appLogLevel"),String)
+                Return CType(Me("MATMST_IOH_UpdateKeyColumns"),String)
             End Get
-        End Property
-        
-        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
-         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("MOMBrand")>  _
-        Public ReadOnly Property appLogFilenameId() As String
-            Get
-                Return CType(Me("appLogFilenameId"),String)
-            End Get
-        End Property
-        
-        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
-         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("https://eam.saas.infor.com/EAM85WS/axis/services/EWSConnector")>  _
-        Public ReadOnly Property target_URL() As String
-            Get
-                Return CType(Me("target_URL"),String)
-            End Get
-        End Property
-        
-        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
-         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("MOMBRANDS")>  _
-        Public ReadOnly Property customerIdentifier() As String
-            Get
-                Return CType(Me("customerIdentifier"),String)
-            End Get
-        End Property
-        
-        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
-         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("Logs")>  _
-        Public ReadOnly Property appTempPath() As String
-            Get
-                Return CType(Me("appTempPath"),String)
-            End Get
-        End Property
-        
-        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
-         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("INTERFACE@MALTOMEAL_PRD")>  _
-        Public ReadOnly Property username() As String
-            Get
-                Return CType(Me("username"),String)
-            End Get
-        End Property
-        
-        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
-         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("111111")>  _
-        Public ReadOnly Property password() As String
-            Get
-                Return CType(Me("password"),String)
-            End Get
+            Set
+                Me("MATMST_IOH_UpdateKeyColumns") = value
+            End Set
         End Property
     End Class
 End Namespace
@@ -190,9 +155,9 @@ Namespace My
     Friend Module MySettingsProperty
         
         <Global.System.ComponentModel.Design.HelpKeywordAttribute("My.Settings")>  _
-        Friend ReadOnly Property Settings() As Global.SDI.MOMBrandEAMParentApp.My.MySettings
+        Friend ReadOnly Property Settings() As Global.SDI.MATMST_NEW_IOH.My.MySettings
             Get
-                Return Global.SDI.MOMBrandEAMParentApp.My.MySettings.Default
+                Return Global.SDI.MATMST_NEW_IOH.My.MySettings.Default
             End Get
         End Property
     End Module
