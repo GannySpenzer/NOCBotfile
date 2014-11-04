@@ -677,7 +677,9 @@
                                 Dim xLen As Integer = 0
                                 Dim ndData As Xml.XmlNode = nd.SelectSingleNode("resp:GRID", nsmgr).SelectSingleNode("resp:DATA", nsmgr)
 
-                                ' do we have any data from customer response
+                                ' do we have any data from customer response?
+                                '   if we do, save all IOH information
+                                '   if WE DON'T, we'll just skip BUT will still need to flag that we've processed (or tried to look for IOH info) this part #/item
                                 If Not (ndData Is Nothing) Then
                                     '
                                     ' (2.2.1) save all data rows returned since this pertains to a given part#/item
@@ -829,69 +831,69 @@
                                     Next 'For Each ndRow As Xml.XmlNode In ndData.ChildNodes
 
                                     ndData = Nothing
-
-                                    '
-                                    '   (2.2.2) update material master table after processing IOH record/s
-                                    '
-                                    Dim sWhere As String = ""
-
-                                    For n As Integer = 0 To (arrKeyValue.Keys.Count - 1)
-                                        sFldKey = CStr(arrKeyValue.Keys(n))
-                                        If Not (n < (arrKeyValue.Keys.Count - 1)) Then
-                                            ' we're on the last field
-                                            sWhere &= " " & sFldKey & " " & arrKeyValue(sFldKey)
-                                        Else
-                                            ' we're NOT on the last field
-                                            sWhere &= " " & sFldKey & " " & arrKeyValue(sFldKey) & " AND"
-                                        End If
-                                    Next
-
-                                    sr = New System.IO.StreamReader(CStr(My.Settings("MATMST_IOH_FlagMatMast")))
-                                    s = sr.ReadToEnd
-                                    sr.Dispose()
-                                    sr = Nothing
-
-                                    ' fields 
-                                    '   PROCESS_INSTANCE            {0}
-                                    '   "WHERE clause"              {1}
-                                    sb = New System.Text.StringBuilder
-                                    sb.AppendFormat(s, processInstanceAfterProcess.ToString, sWhere)
-                                    s = sb.ToString
-                                    sb = Nothing
-
-                                    cmdUpdate = oraCN_Update.CreateCommand
-                                    cmdUpdate.CommandText = s
-                                    cmdUpdate.CommandType = CommandType.Text
-                                    cmdUpdate.Transaction = xOraTran1
-                                    Try
-                                        cmdUpdate.ExecuteNonQuery()
-                                    Catch ex As Exception
-                                        xOraTran1.Rollback()
-                                        xOraTran1.Dispose()
-                                        xOraTran1 = Nothing
-                                        Throw New ApplicationException(message:=ex.ToString)
-                                    End Try
-                                    Try
-                                        cmdUpdate.Dispose()
-                                    Catch ex As Exception
-                                    End Try
-                                    cmdUpdate = Nothing
-
-                                    ' commit transaction
-                                    '   and dispose object
-                                    xOraTran1.Commit()
-                                    xOraTran1.Dispose()
-                                    xOraTran1 = Nothing
-
-                                    ' clean-up
-                                    Try
-                                        cmdUpdate.Dispose()
-                                    Catch ex As Exception
-                                    End Try
-                                    cmdUpdate = Nothing
                                 Else
                                     logger.WriteVerboseLog("NO IOH data returned :: " & sPLANT & " / " & sINV_ITEM_ID)
                                 End If 'If Not (ndData Is Nothing) Then
+
+                                '
+                                '   (2.2.2) update material master table after processing IOH record/s
+                                '
+                                Dim sWhere As String = ""
+
+                                For n As Integer = 0 To (arrKeyValue.Keys.Count - 1)
+                                    sFldKey = CStr(arrKeyValue.Keys(n))
+                                    If Not (n < (arrKeyValue.Keys.Count - 1)) Then
+                                        ' we're on the last field
+                                        sWhere &= " " & sFldKey & " " & arrKeyValue(sFldKey)
+                                    Else
+                                        ' we're NOT on the last field
+                                        sWhere &= " " & sFldKey & " " & arrKeyValue(sFldKey) & " AND"
+                                    End If
+                                Next
+
+                                sr = New System.IO.StreamReader(CStr(My.Settings("MATMST_IOH_FlagMatMast")))
+                                s = sr.ReadToEnd
+                                sr.Dispose()
+                                sr = Nothing
+
+                                ' fields 
+                                '   PROCESS_INSTANCE            {0}
+                                '   "WHERE clause"              {1}
+                                sb = New System.Text.StringBuilder
+                                sb.AppendFormat(s, processInstanceAfterProcess.ToString, sWhere)
+                                s = sb.ToString
+                                sb = Nothing
+
+                                cmdUpdate = oraCN_Update.CreateCommand
+                                cmdUpdate.CommandText = s
+                                cmdUpdate.CommandType = CommandType.Text
+                                cmdUpdate.Transaction = xOraTran1
+                                Try
+                                    cmdUpdate.ExecuteNonQuery()
+                                Catch ex As Exception
+                                    xOraTran1.Rollback()
+                                    xOraTran1.Dispose()
+                                    xOraTran1 = Nothing
+                                    Throw New ApplicationException(message:=ex.ToString)
+                                End Try
+                                Try
+                                    cmdUpdate.Dispose()
+                                Catch ex As Exception
+                                End Try
+                                cmdUpdate = Nothing
+
+                                ' commit transaction
+                                '   and dispose object
+                                xOraTran1.Commit()
+                                xOraTran1.Dispose()
+                                xOraTran1 = Nothing
+
+                                ' clean-up
+                                Try
+                                    cmdUpdate.Dispose()
+                                Catch ex As Exception
+                                End Try
+                                cmdUpdate = Nothing
 
                             Else
                                 ' cannot open connection (which will be weird since it's the same connection for reading data from material master table) BUT just in case
