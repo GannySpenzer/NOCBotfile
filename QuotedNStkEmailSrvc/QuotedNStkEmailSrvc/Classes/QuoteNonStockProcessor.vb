@@ -332,7 +332,7 @@ Public Class QuoteNonStockProcessor
                                  ",A4.OPRID_MODIFIED_BY AS OPRID_MODIFIED_BY,B1.WORK_ORDER_ID,B1.EMAIL_ADDRESS " & vbCrLf & _
                                  "FROM " & vbCrLf & _
                                  " PS_REQ_HDR A" & vbCrLf & _
-                                 ",SYSADM8.PS_ROLEXLATOPR B" & vbCrLf & _
+                                 ",SYSADM.PS_ROLEXLATOPR B" & vbCrLf & _
                                  ",PS_REQ_LINE A1" & vbCrLf & _
                                  ",PS_ISA_USERS_TBL A2" & vbCrLf & _
                                  ",PS_ISA_ENTERPRISE A3" & vbCrLf & _
