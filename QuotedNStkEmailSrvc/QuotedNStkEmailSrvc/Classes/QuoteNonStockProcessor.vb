@@ -320,7 +320,7 @@ Public Class QuoteNonStockProcessor
             Dim cSQL As String = "" & _
                                  "SELECT " & vbCrLf & _
                                  " A.BUSINESS_UNIT AS BUSINESS_UNIT" & vbCrLf & _
-                                 ",A.REQ_ID AS REQ_ID" & vbCrLf & _
+                                 ",A.REQ_ID AS REQ_ID,A.BUYER_ID,B.DESCR,B.EMAILID" & vbCrLf & _
                                  ",A1.LINE_NBR AS LINE_NBR" & vbCrLf & _
                                  ",A1.SOLD_TO_CUST_ID AS SOLD_TO_CUST_ID" & vbCrLf & _
                                  ",A2.ISA_EMPLOYEE_EMAIL AS ISA_EMPLOYEE_EMAIL" & vbCrLf & _
@@ -329,14 +329,19 @@ Public Class QuoteNonStockProcessor
                                  ",A4.OPRID_ENTERED_BY AS ISA_EMPLOYEE_ID" & vbCrLf & _
                                  ",A4.BUSINESS_UNIT_OM AS BUSINESS_UNIT_OM" & vbCrLf & _
                                  ",A4.PROJECT_ID,A4.ORIGIN" & vbCrLf & _
-                                 ",A4.OPRID_MODIFIED_BY AS OPRID_MODIFIED_BY " & vbCrLf & _
+                                 ",A4.OPRID_MODIFIED_BY AS OPRID_MODIFIED_BY,B1.WORK_ORDER_ID,B1.EMAIL_ADDRESS " & vbCrLf & _
                                  "FROM " & vbCrLf & _
                                  " PS_REQ_HDR A" & vbCrLf & _
+                                 ",SYSADM8.PS_ROLEXLATOPR B" & vbCrLf & _
                                  ",PS_REQ_LINE A1" & vbCrLf & _
                                  ",PS_ISA_USERS_TBL A2" & vbCrLf & _
                                  ",PS_ISA_ENTERPRISE A3" & vbCrLf & _
                                  ",PS_ISA_ORD_INTFC_H A4" & vbCrLf & _
+                                 ",SYSADM.PS_ISA_INTFC_H_SUP B1" & vbCrLf & _
                                  "WHERE A.BUSINESS_UNIT = A1.BUSINESS_UNIT" & vbCrLf & _
+                                 "  AND A.BUYER_ID = B.ROLEUSER (+)" & vbCrLf & _
+                                 " AND A4.BUSINESS_UNIT_OM = B1.BUSINESS_UNIT_OM (+)" & vbCrLf & _
+                                 " AND A4.ORDER_NO = B1.ORDER_NO (+)" & vbCrLf & _
                                  "  AND A.REQ_ID = A1.REQ_ID" & vbCrLf & _
                                  "  AND A.REQ_ID = A4.ORDER_NO (+)" & vbCrLf & _
                                  "  AND A4.ORIGIN IN ('IOL','MOB','RFQ')" & vbCrLf & _
@@ -373,6 +378,9 @@ Public Class QuoteNonStockProcessor
 
                 Dim workOrderNo As String = ""
                 Dim rfqEmailRecipient As String = ""
+
+                Dim strBuyerDescr As String = ""
+                Dim strBuyerEmail As String = ""
 
                 While rdr.Read
                     cKey = ""
@@ -497,31 +505,62 @@ Public Class QuoteNonStockProcessor
 
                     ' grab the "project ID" from the INTFC_H since for RFQ's (origin) this field SHOULD have both the "work order#" and "primary recipient email address"
                     If (boItem.OrderOrigin = "RFQ") Then
-                        If Not (rdr("PROJECT_ID") Is System.DBNull.Value) Then
+                        ' VR 11/20/2014 We are not using PROJECT_ID field anymore
+                        'If Not (rdr("PROJECT_ID") Is System.DBNull.Value) Then
 
-                            Dim sProjectId As String = ""
-                            Dim arrProjID() As String = New String() {}
+                        '    Dim sProjectId As String = ""
+                        '    Dim arrProjID() As String = New String() {}
 
-                            Try
-                                sProjectId = CStr(rdr("PROJECT_ID")).Trim
-                            Catch ex As Exception
-                            End Try
-                            If (sProjectId.Length > 0) Then
-                                arrProjID = Split(sProjectId, "|")
-                            End If
+                        '    Try
+                        '        sProjectId = CStr(rdr("PROJECT_ID")).Trim
+                        '    Catch ex As Exception
+                        '    End Try
+                        '    If (sProjectId.Length > 0) Then
+                        '        arrProjID = Split(sProjectId, "|")
+                        '    End If
 
-                            If (arrProjID.Length > 0) Then
-                                If (arrProjID(0).Trim.Length > 0) Then
-                                    workOrderNo = arrProjID(0).Trim
-                                End If
-                            End If
-                            If (arrProjID.Length > 1) Then
-                                If (arrProjID(1).Trim.Length > 0) Then
-                                    rfqEmailRecipient = arrProjID(1).Trim
-                                End If
-                            End If
+                        '    If (arrProjID.Length > 0) Then
+                        '        If (arrProjID(0).Trim.Length > 0) Then
+                        '            workOrderNo = arrProjID(0).Trim
+                        '        End If
+                        '    End If
+                        '    If (arrProjID.Length > 1) Then
+                        '        If (arrProjID(1).Trim.Length > 0) Then
+                        '            rfqEmailRecipient = arrProjID(1).Trim
+                        '        End If
+                        '    End If
 
+                        'End If
+
+                        ' VR 11/20/2014 New code based on using new header table SYSADM.PS_ISA_INTFC_H_SUP
+                        If Not (rdr("WORK_ORDER_ID") Is System.DBNull.Value) Then
+                            workOrderNo = CStr(rdr("WORK_ORDER_ID")).Trim
                         End If
+                        If Not (rdr("EMAIL_ADDRESS") Is System.DBNull.Value) Then
+                            rfqEmailRecipient = CStr(rdr("EMAIL_ADDRESS")).Trim
+                        End If
+                    End If
+
+                    ' get Buyer ID (if not defined yet)
+                    If Not (boItem.BuyerId.Length > 0) Then
+                        Try
+                            If Not (rdr("DESCR") Is System.DBNull.Value) Then
+                                boItem.BuyerId = CType(rdr("DESCR"), String).Trim
+                            End If
+                        Catch ex As Exception
+
+                        End Try
+                    End If
+
+                    ' get Buyer E-mail (if not defined yet)
+                    If Not (boItem.BuyerEmail.Length > 0) Then
+                        Try
+                            If Not (rdr("EMAILID") Is System.DBNull.Value) Then
+                                boItem.BuyerEmail = CType(rdr("EMAILID"), String).Trim
+                            End If
+                        Catch ex As Exception
+
+                        End Try
                     End If
 
                     ' get the very first available VALID recipient of this message (if not yet)
@@ -622,7 +661,7 @@ Public Class QuoteNonStockProcessor
                     End If
 
                     ' 3/26/2014 addition rule to handle Ascend reqs
-                    '   Ascend's order in INTFC comes in with origin = 'RFQ' (instead of IOL or MOB) and project ID comes in as "<work order#>|email address"
+                    '   Ascend's order in INTFC comes in with origin = 'RFQ' (instead of IOL or MOB) and work Order No comes from new header table SYSADM.PS_ISA_INTFC_H_SUP
                     '   - erwin
                     If Not (boItem.WorkOrderNumber.Length > 0) Then
                         boItem.WorkOrderNumber = workOrderNo
@@ -912,17 +951,19 @@ Public Class QuoteNonStockProcessor
                     cHdr = cHdr & "VR Start my code.  "
 
                     Dim bIsBusUnitSDiExch As Boolean = False
-                    Try
-                        Dim arrBUsForSdiExch() As String = Split(Me.ListBUsSDiExch, ",")
-                        If arrBUsForSdiExch.Length > 0 Then
-                            If Array.IndexOf(arrBUsForSdiExch, itmQuoted.BusinessUnitOM) > -1 Then
-                                bIsBusUnitSDiExch = True
-                            End If
-                        End If
-                    Catch ex As Exception
-                        bIsBusUnitSDiExch = False
-                    End Try
+                    'Try
+                    '    Dim arrBUsForSdiExch() As String = Split(Me.ListBUsSDiExch, ",")
+                    '    If arrBUsForSdiExch.Length > 0 Then
+                    '        If Array.IndexOf(arrBUsForSdiExch, itmQuoted.BusinessUnitOM) > -1 Then
+                    '            bIsBusUnitSDiExch = True
+                    '        End If
+                    '    End If
+                    'Catch ex As Exception
+                    '    bIsBusUnitSDiExch = False
+                    'End Try
 
+                    ' VR 11/20/2014 Eliminating the IF - everybody on SDiExchange now
+                    bIsBusUnitSDiExch = True
                     cHdr = cHdr & "VR Middle my code.  "
 
                     Dim bIsPunchInBU As Boolean = (Me.PunchInBusinessUnitList.IndexOf(itmQuoted.BusinessUnitOM) > -1)
@@ -936,6 +977,7 @@ Public Class QuoteNonStockProcessor
                                             LETTER_HEAD_SdiExch & _
                                             FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder) & _
                                             LETTER_CONTENT_PI_SDiExchange & _
+                                            AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
                                             AddVersionNumber() & _
                                         "</BODY>" & _
                                    "</HTML>"
@@ -948,6 +990,7 @@ Public Class QuoteNonStockProcessor
                                                 LETTER_HEAD & _
                                                 FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder) & _
                                                 LETTER_CONTENT_PI & _
+                                                AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
                                                 AddVersionNumber() & _
                                             "</BODY>" & _
                                        "</HTML>"
@@ -973,6 +1016,7 @@ Public Class QuoteNonStockProcessor
                                             FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder) & _
                                             LETTER_CONTENT_SDiExchange & _
                                             FormHTMLLinkSDiExchange(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, bShowApproveViaEmailLink) & _
+                                            AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
                                             AddVersionNumber() & _
                                         "</BODY>" & _
                                    "</HTML>"
@@ -986,6 +1030,7 @@ Public Class QuoteNonStockProcessor
                                                 FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder) & _
                                                 LETTER_CONTENT & _
                                                 FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, bShowApproveViaEmailLink) & _
+                                                AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
                                                 AddVersionNumber() & _
                                             "</BODY>" & _
                                        "</HTML>"
@@ -1200,6 +1245,35 @@ Public Class QuoteNonStockProcessor
         Return (cLink)
     End Function
 
+    Private Function AddBuyerInfo(ByVal strBuyerDescr As String, ByVal strBuyerEmail As String) As String
+        Dim cHdr As String = "QuoteNonStockProcessor.AddBuyerInfo: "
+        Try
+            Dim cInfoHTML As String = ""
+
+            cInfoHTML &= "<TABLE id=""Tbl111"" cellSpacing=""1"" cellPadding=""1"" width=""100%"" border=""0"">"
+            cInfoHTML &= "       <TR>" & _
+                                    "<TD style=""WIDTH: 110px"">Buyer:</TD>" & _
+                                    "<TD><B>" & strBuyerDescr & "</B></TD>" & _
+                                "</TR>"
+            cInfoHTML &= "</TABLE>"
+            
+            cInfoHTML &= "<p>" & _
+                            "Buyer E-mail: " & _
+                            "<a href=""mailto:" & strBuyerEmail & """>" & strBuyerEmail & "</a> " & _
+                         "</p>"
+            cInfoHTML &= "<p>" & _
+                            "Phone Number:  888-435-7734 " & _
+                         "</p>"
+
+            Return cInfoHTML
+
+        Catch ex As Exception
+            m_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+            SendAlertMessage(msg:=cHdr & ex.ToString)
+        End Try
+        Return ""
+    End Function
+
     Private Function AddNoRecepientExistNote(ByVal sTO As String) As String
         Dim cMsg As String = ""
         Dim cHdr As String = "QuoteNonStockProcessor.AddNoRecepientExistNote: "
@@ -1219,6 +1293,7 @@ Public Class QuoteNonStockProcessor
     End Function
 
     Private Function AddVersionNumber() As String
+
         Dim cRet As String = "<br><p align=""right""><FONT face=""Bookman Old Style"" size=""1"">v" & _
                              System.Reflection.Assembly.GetExecutingAssembly.GetName.Version.ToString & _
                              "</FONT></p>"

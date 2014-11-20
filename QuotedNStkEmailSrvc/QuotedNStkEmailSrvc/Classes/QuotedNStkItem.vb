@@ -23,6 +23,9 @@ Public Class QuotedNStkItem
     Private m_workOrderNo As String = ""
     Private m_orderOrigin As String = ""
 
+    ' VR 11/20/2014 Adding new members to display in E-mail
+    Private m_Buyer_Id As String = ""
+    Private m_Buyer_Email As String = ""
     '
     ' for backup recipient(s)
     '
@@ -179,6 +182,24 @@ Public Class QuotedNStkItem
         End Get
         Set(value As String)
             m_orderOrigin = value
+        End Set
+    End Property
+
+    Public Property BuyerId() As String
+        Get
+            Return m_Buyer_Id
+        End Get
+        Set(value As String)
+            m_Buyer_Id = value
+        End Set
+    End Property
+
+    Public Property BuyerEmail() As String
+        Get
+            Return m_Buyer_Email
+        End Get
+        Set(value As String)
+            m_Buyer_Email = value
         End Set
     End Property
 
