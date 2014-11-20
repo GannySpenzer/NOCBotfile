@@ -1250,20 +1250,24 @@ Public Class QuoteNonStockProcessor
         Try
             Dim cInfoHTML As String = ""
 
-            cInfoHTML &= "<TABLE id=""Tbl111"" cellSpacing=""1"" cellPadding=""1"" width=""100%"" border=""0"">"
-            cInfoHTML &= "       <TR>" & _
-                                    "<TD style=""WIDTH: 110px"">Buyer:</TD>" & _
-                                    "<TD><B>" & strBuyerDescr & "</B></TD>" & _
-                                "</TR>"
-            cInfoHTML &= "</TABLE>"
-            
-            cInfoHTML &= "<p>" & _
+            cInfoHTML &= "<BR />"  '<TABLE id=""Tbl111"" cellSpacing=""1"" cellPadding=""1"" width=""100%"" border=""0"">"
+            'cInfoHTML &= "       <TR>" & _
+            '                        "<TD style=""WIDTH: 110px"">Buyer:</TD>" & _
+            '                        "<TD><B>" & strBuyerDescr & "</B></TD>" & _
+            '                    "</TR>"
+            'cInfoHTML &= "</TABLE>"
+
+            cInfoHTML &= "" & _
+                            "Buyer: " & _
+                            "<B>" & strBuyerEmail & "</B>" & _
+                         ""
+            cInfoHTML &= "<br />" & _
                             "Buyer E-mail: " & _
                             "<a href=""mailto:" & strBuyerEmail & """>" & strBuyerEmail & "</a> " & _
-                         "</p>"
-            cInfoHTML &= "<p>" & _
-                            "Phone Number:  888-435-7734 " & _
-                         "</p>"
+                         "<br />"
+            cInfoHTML &= "" & _
+                            "Phone Number:  888-435-7734 opt. 7 " & _
+                         ""
 
             Return cInfoHTML
 
