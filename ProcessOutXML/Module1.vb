@@ -248,6 +248,8 @@ Module Module1
         'put code here to go get the XML files
         getOutputFiles()
 
+        m_logger.WriteVerboseLog(rtn & " : looking at XMLOUT folder ...")
+
         Dim dirInfo As DirectoryInfo = New DirectoryInfo("c:\INTFCXML\XMLOUT\")
         Dim strFiles As String = ""
         Dim sr As System.IO.StreamReader = Nothing
@@ -288,6 +290,8 @@ Module Module1
         Dim strURL As String = m_url_archibus_uncc_edu
         Dim Response_Doc As String
 
+        m_logger.WriteVerboseLog(rtn & " : started sending file (if any) ...")
+
         Try
             For I = 0 To aFiles.Length - 1
                 objStreamWriter.WriteLine(" Start sending File " & aFiles(I).Name)
@@ -302,10 +306,10 @@ Module Module1
                     Console.WriteLine("")
                     Console.WriteLine("***error - " & ex.ToString)
                     Console.WriteLine("")
-                    objStreamWriter.WriteLine("     load out file Error " & ex.message.ToString & " in file " & aFiles(I).Name)
+                    objStreamWriter.WriteLine("     load out file Error " & ex.Message.ToString & " in file " & aFiles(I).Name)
                     strXMLError = ex.ToString
                     m_logger.WriteErrorLog(rtn & " :load out Error " & strXMLError & " in file " & aFiles(I).Name)
-                    m_logger.WriteErrorLog(rtn & " :: " & ex.message.ToString)
+                    m_logger.WriteErrorLog(rtn & " :: " & ex.Message.ToString)
 
                 End Try
 
@@ -343,7 +347,7 @@ Module Module1
                         Console.WriteLine("")
                         Console.WriteLine("***error - " & ex.ToString)
                         Console.WriteLine("")
-                        objStreamWriter.WriteLine("     Error " & ex.message.ToString & " in file " & aFiles(I).Name)
+                        objStreamWriter.WriteLine("     Error " & ex.Message.ToString & " in file " & aFiles(I).Name)
                         strXMLError = ex.ToString
                         m_logger.WriteErrorLog(rtn & " ::Error " & strXMLError & " in file " & aFiles(I).Name)
                         m_logger.WriteErrorLog(rtn & " :: " & ex.ToString)
@@ -383,7 +387,7 @@ Module Module1
         Catch ex As Exception
             m_logger.WriteErrorLog(rtn & " ::Error " & strXMLError & " in file " & aFiles(I).Name)
             m_logger.WriteErrorLog(rtn & " :: " & ex.ToString)
-            
+
             strXMLError = ex.ToString
             objStreamWriter.WriteLine("**")
             objStreamWriter.WriteLine("     Error " & strXMLError & " in file " & aFiles(I).Name)
@@ -405,18 +409,71 @@ Module Module1
         'Dim dirInfo4 As DirectoryInfo = New DirectoryInfo("\\Instprd2\PSSHARE\efi\I0256\outbound\ITM")
         'Dim dirInfo5 As DirectoryInfo = New DirectoryInfo("\\Instprd2\PSSHARE\efi\I0256\outbound\REQCST")
 
-        Dim dirInfo3 As DirectoryInfo = New DirectoryInfo(m_unixServer_IOH)
-        Dim dirInfo4 As DirectoryInfo = New DirectoryInfo(m_unixServer_ITM)
-        Dim dirInfo5 As DirectoryInfo = New DirectoryInfo(m_unixServer_REQCST)
+        m_logger.WriteVerboseLog(rtn & " : looking at source folder for XML files (ie., IOH, ITM, REQCST) ...")
+
+        'Dim dirInfo3 As DirectoryInfo = New DirectoryInfo(m_unixServer_IOH)
+        Dim dirInfo3 As DirectoryInfo = Nothing
+        Try
+            dirInfo3 = New DirectoryInfo(m_unixServer_IOH)
+        Catch ex As Exception
+        End Try
+        'Dim dirInfo4 As DirectoryInfo = New DirectoryInfo(m_unixServer_ITM)
+        Dim dirInfo4 As DirectoryInfo = Nothing
+        Try
+            dirInfo4 = New DirectoryInfo(m_unixServer_ITM)
+        Catch ex As Exception
+        End Try
+        'Dim dirInfo5 As DirectoryInfo = New DirectoryInfo(m_unixServer_REQCST)
+        Dim dirInfo5 As DirectoryInfo = Nothing
+        Try
+            dirInfo5 = New DirectoryInfo(m_unixServer_REQCST)
+        Catch ex As Exception
+        End Try
+
+        m_logger.WriteVerboseLog(rtn & " : retrieving XML files (ie., IOH, ITM, REQCST) ...")
 
         Dim strFiles As String = "*.XML"
-        Dim aFiles3 As FileInfo() = dirInfo3.GetFiles(strFiles)
-        Dim aFiles4 As FileInfo() = dirInfo4.GetFiles(strFiles)
-        Dim aFiles5 As FileInfo() = dirInfo5.GetFiles(strFiles)
 
-        If aFiles3.Length = 0 Then
-            objStreamWriter.WriteLine(" No IOH XML files to send")
+        'Dim aFiles3 As FileInfo() = dirInfo3.GetFiles(strFiles)
+        Dim aFiles3 As FileInfo() = Nothing
+        If Not (dirInfo3 Is Nothing) Then
+            Try
+                aFiles3 = dirInfo3.GetFiles(strFiles)
+            Catch ex As Exception
+            End Try
+        End If
+        'Dim aFiles4 As FileInfo() = dirInfo4.GetFiles(strFiles)
+        Dim aFiles4 As FileInfo() = Nothing
+        If Not (dirInfo4 Is Nothing) Then
+            Try
+                aFiles4 = dirInfo4.GetFiles(strFiles)
+            Catch ex As Exception
+            End Try
+        End If
+        'Dim aFiles5 As FileInfo() = dirInfo5.GetFiles(strFiles)
+        Dim aFiles5 As FileInfo() = Nothing
+        If Not (dirInfo5 Is Nothing) Then
+            Try
+                aFiles5 = dirInfo5.GetFiles(strFiles)
+            Catch ex As Exception
+            End Try
+        End If
+
+        Dim bProcessFolder As Boolean = False
+
+        If (aFiles3 Is Nothing) Then
+            m_logger.WriteInformationLog(rtn & " : unable to obtain XML file list from IOH folder")
+            objStreamWriter.WriteLine(" unable to obtain XML file list from IOH folder")
         Else
+            If aFiles3.Length = 0 Then
+                m_logger.WriteInformationLog(rtn & " : No IOH XML files to send")
+                objStreamWriter.WriteLine(" No IOH XML files to send")
+            Else
+                bProcessFolder = True
+            End If
+        End If
+
+        If bProcessFolder Then
             For I = 0 To aFiles3.Length - 1
                 If Not File.Exists("c:\INTFCXML\XMLOUTProcessed\" & aFiles3(I).Name) Then
                     Try
@@ -432,9 +489,22 @@ Module Module1
                 End If
             Next
         End If
-        If aFiles4.Length = 0 Then
-            objStreamWriter.WriteLine(" No ITM XML files to send")
+
+        bProcessFolder = False
+
+        If (aFiles4 Is Nothing) Then
+            m_logger.WriteInformationLog(rtn & " : unable to obtain XML file list from ITM folder")
+            objStreamWriter.WriteLine(" unable to obtain XML file list from ITM folder")
         Else
+            If aFiles4.Length = 0 Then
+                m_logger.WriteInformationLog(rtn & " : No ITM XML files to send")
+                objStreamWriter.WriteLine(" No ITM XML files to send")
+            Else
+                bProcessFolder = True
+            End If
+        End If
+
+        If bProcessFolder Then
             For I = 0 To aFiles4.Length - 1
                 If Not File.Exists("c:\INTFCXML\XMLOUTProcessed\" & aFiles4(I).Name) Then
                     Try
@@ -450,9 +520,22 @@ Module Module1
                 End If
             Next
         End If
-        If aFiles5.Length = 0 Then
-            objStreamWriter.WriteLine(" No REQCST XML files to send")
+
+        bProcessFolder = False
+
+        If (aFiles5 Is Nothing) Then
+            m_logger.WriteInformationLog(rtn & " : unable to obtain XML file list from REQCST folder")
+            objStreamWriter.WriteLine(" unable to obtain XML file list from REQCST folder")
         Else
+            If aFiles5.Length = 0 Then
+                m_logger.WriteInformationLog(rtn & " : No ITM XML files to send")
+                objStreamWriter.WriteLine(" No REQCST XML files to send")
+            Else
+                bProcessFolder = True
+            End If
+        End If
+
+        If bProcessFolder Then
             For I = 0 To aFiles5.Length - 1
                 If Not File.Exists("c:\INTFCXML\XMLOUTProcessed\" & aFiles5(I).Name) Then
                     Try
