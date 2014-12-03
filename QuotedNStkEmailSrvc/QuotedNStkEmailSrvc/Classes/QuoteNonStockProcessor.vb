@@ -1259,7 +1259,7 @@ Public Class QuoteNonStockProcessor
 
             cInfoHTML &= "" & _
                             "Buyer: " & _
-                            "<B>" & strBuyerEmail & "</B>" & _
+                            "<B>" & strBuyerDescr & "</B>" & _
                          ""
             cInfoHTML &= "<br />" & _
                             "Buyer E-mail: " & _
