@@ -1521,7 +1521,7 @@ Module module1
         strCustomerName = objEnterprise.CustomerName
         connectOR.Close()
 
-        Mailer.From = "Insiteonline@SDI.com"
+        Mailer.From = "SDIExchange@SDI.com"  '  "Insiteonline@SDI.com"
         Mailer.cc = ""
         Mailer.bcc = ""
         strbodyhead = strbodyhead & "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI Marketplace</span><center>" & vbCrLf
@@ -1651,13 +1651,14 @@ Module module1
             dtgcart.DataSource = dstcartSTK
             dtgcart.DataBind()
             dtgcart.CellPadding = 3
-            dtgcart.Width.Percentage(90)
+            'dtgcart.Width.Percentage(90)
+            'dtgcart.Width = "90%"  '  ??
 
             dtgcart.RenderControl(htmlTWstk)
 
             dataGridHTML = SBstk.ToString()
 
-            strItemtype = "<center><span >In-Site&reg; Online - Material Request - Stock</span></center>"
+            strItemtype = "<center><span >SDiExchange - Material Request - Stock</span></center>"
             Mailer.body = strbodyhead & strItemtype & strbodydetl
             Mailer.body = Mailer.body & "<TABLE cellSpacing='1' cellPadding='1' width='100%' border='0'>" & vbCrLf
             Mailer.body = Mailer.body + "<TR><TD Class='DetailRow' width='100%'>" & dataGridHTML & "</TD></TR>"
@@ -1725,12 +1726,13 @@ Module module1
             dtgcart.DataSource = dstCartNSTK
             dtgcart.DataBind()
             dtgcart.CellPadding = 3
-            dtgcart.Width.Percentage(90)
+            'dtgcart.Width.Percentage(90)
+            'dtgcart.Width = "90%"  '  ??
 
             dtgcart.RenderControl(htmlTWnstk)
 
             dataGridHTML = SBnstk.ToString()
-            strItemtype = "<center><span >In-Site&reg; Online - Material Request - Non-Stock</span></center>"
+            strItemtype = "<center><span >SDiExchange - Material Request - Non-Stock</span></center>"
             Mailer.body = strbodyhead & strItemtype & strbodydetl
             Mailer.body = Mailer.body & "<TABLE cellSpacing='1' cellPadding='1' width='100%' border='0'>" & vbCrLf
             Mailer.body = Mailer.body + "<TR><TD Class='DetailRow' width='100%'>" & dataGridHTML & "</TD></TR>"
