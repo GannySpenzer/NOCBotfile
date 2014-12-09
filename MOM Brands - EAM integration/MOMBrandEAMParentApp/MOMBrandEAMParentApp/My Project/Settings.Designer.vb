@@ -137,7 +137,7 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("https://eam.saas.infor.com/EAM85WS/axis/services/EWSConnector")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("https://eam.saas.infor.com/EAM11WS/axis/services/EWSConnector")>  _
         Public ReadOnly Property target_URL() As String
             Get
                 Return CType(Me("target_URL"),String)
