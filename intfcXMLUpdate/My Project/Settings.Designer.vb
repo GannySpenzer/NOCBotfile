@@ -89,6 +89,42 @@ Namespace My
                 Return CType(Me("logPath"),String)
             End Get
         End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("robert.arthur@sdi.com")>  _
+        Public ReadOnly Property onErrorEmail_To() As String
+            Get
+                Return CType(Me("onErrorEmail_To"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("TechSupport@sdi.com")>  _
+        Public ReadOnly Property onErrorEmail_From() As String
+            Get
+                Return CType(Me("onErrorEmail_From"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("")>  _
+        Public ReadOnly Property onErrorEmail_CC() As String
+            Get
+                Return CType(Me("onErrorEmail_CC"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("WebDev@sdi.com")>  _
+        Public ReadOnly Property onErrorEmail_BCC() As String
+            Get
+                Return CType(Me("onErrorEmail_BCC"),String)
+            End Get
+        End Property
     End Class
 End Namespace
 

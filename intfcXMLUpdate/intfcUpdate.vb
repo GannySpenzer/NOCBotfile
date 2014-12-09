@@ -21,6 +21,8 @@ Module module1
     Dim strOverride As String
     Dim bolWarning As Boolean = False
 
+    Private m_arrErrXMLs As New ArrayList
+
     Sub Main()
 
         'debug
@@ -240,7 +242,14 @@ Module module1
         Dim bolError As Boolean
         ''''''2
 
-        bolError = getINTFCXMLIn()
+        'bolError = getINTFCXMLIn()
+        Try
+            bolError = getINTFCXMLIn()
+        Catch ex As Exception
+            m_logger.WriteErrorLog(rtn & " :: " & ex.ToString)
+            bolError = True
+        End Try
+
         If bolError = True Or _
             bolWarning = True Then
             SendEmail()
@@ -288,94 +297,105 @@ Module module1
         Dim aFiles As FileInfo() = dirInfo.GetFiles(strFiles)
         Dim root As XmlElement
 
-        'Try
-        For I = 0 To aFiles.Length - 1
-            'objStreamWriter.WriteLine(" Start File " & aFiles(I).Name)
-            m_logger.WriteInformationLog(rtn & " :: Start File " & aFiles(I).Name)
-            sr = New System.IO.StreamReader(aFiles(I).FullName)
-            XMLContent = sr.ReadToEnd()
-            XMLContent = Replace(XMLContent, "&", "&amp;")
-            'here where we load the xml into memory
-            'XMLContent = Replace(XMLContent, "'", "&#39;")
-            'XMLContent = Replace(XMLContent, """", "&quot;")
-            sr.Close()
+        Dim sXMLFilename As String = ""
 
-            Try
-                xmlRequest.LoadXml(XMLContent)
-            Catch ex As Exception
-                Console.WriteLine("")
-                Console.WriteLine("***error - " & ex.ToString)
-                Console.WriteLine("")
-                'objStreamWriter.WriteLine("     Error " & ex.message.ToString & " in file " & aFiles(I).Name)
-                m_logger.WriteErrorLog(rtn & " :: Error " & ex.message.ToString & " in file " & aFiles(I).Name)
-                strXMLError = ex.ToString
-                bolError = True
-            End Try
-            If Trim(strXMLError) = "" Then
-                root = xmlRequest.DocumentElement
-                'firstchild.name = PS_ISA_ORD_INTFC_H
+        Try
+            For I = 0 To aFiles.Length - 1
+                sXMLFilename = aFiles(I).Name
 
-                If root.FirstChild Is Nothing Then
-                    strXMLError = "empty UNCC in file"
-                ElseIf root.LastChild.Name.ToUpper = "PS_ISA_ORD_INTFC_L" Or _
-                    root.LastChild.Name.ToUpper = "EMP_ROW" Then
-                    strXMLError = ""
-                Else
-                    strXMLError = "Missing last INTFC_L Element"
-                End If
+                'objStreamWriter.WriteLine(" Start File " & aFiles(I).Name)
+                m_logger.WriteInformationLog(rtn & " :: Start File " & aFiles(I).Name)
+                sr = New System.IO.StreamReader(aFiles(I).FullName)
+                XMLContent = sr.ReadToEnd()
+                XMLContent = Replace(XMLContent, "&", "&amp;")
+                'here where we load the xml into memory
+                'XMLContent = Replace(XMLContent, "'", "&#39;")
+                'XMLContent = Replace(XMLContent, """", "&quot;")
+                sr.Close()
 
-                If Trim(strXMLError) = "" Then
-                    If root.LastChild.Name.ToUpper = "PS_ISA_ORD_INTFC_L" Then
-                        strXMLError = UpdIntfcTable(aFiles(I).FullName)
-                    ElseIf root.LastChild.Name.ToUpper = "EMP_ROW" Then
-                        strXMLError = UpdEmpTable(aFiles(I).FullName)
-                    End If
-                End If
-
-                If Trim(strXMLError) = "" Or _
-                    Trim(strXMLError) = "Invalid Status" Then
-                    Try
-                        File.Move(aFiles(I).FullName, "C:\INTFCXML\XMLINProcessed\" & aFiles(I).Name)
-                        If Trim(strXMLError) = "Invalid Status" Then
-                            'objStreamWriter.WriteLine(" not status I or C in File " & aFiles(I).Name)
-                            m_logger.WriteInformationLog(rtn & " :: not status I or C in File " & aFiles(I).Name)
-                        End If
-                        'objStreamWriter.WriteLine(" End - File " & aFiles(I).Name & " has been moved")
-                        m_logger.WriteInformationLog(rtn & " :: End - File " & aFiles(I).Name & " has been moved")
-                    Catch ex As Exception
-                        'objStreamWriter.WriteLine("     Error " & ex.Message.ToString & " in file " & aFiles(I).Name)
-                        m_logger.WriteErrorLog(rtn & " :: Error " & ex.Message.ToString & " in file " & aFiles(I).Name)
-                    End Try
-                    File.Delete(aFiles(I).FullName)
-                Else
-                    'objStreamWriter.WriteLine("**")
-                    'objStreamWriter.WriteLine("     Error " & strXMLError & " in file " & aFiles(I).Name)
-                    'objStreamWriter.WriteLine("**")
-                    m_logger.WriteErrorLog(rtn & " :: ** ")
-                    m_logger.WriteErrorLog(rtn & " :: Error " & strXMLError & " in file " & aFiles(I).Name)
-                    m_logger.WriteErrorLog(rtn & " :: ** ")
+                Try
+                    xmlRequest.LoadXml(XMLContent)
+                Catch ex As Exception
+                    Console.WriteLine("")
+                    Console.WriteLine("***error - " & ex.ToString)
+                    Console.WriteLine("")
+                    'objStreamWriter.WriteLine("     Error " & ex.message.ToString & " in file " & aFiles(I).Name)
+                    m_logger.WriteErrorLog(rtn & " :: Error " & ex.Message.ToString & " in file " & aFiles(I).Name)
+                    strXMLError = ex.ToString
                     bolError = True
-                    Try
-                        File.Move(aFiles(I).FullName, "C:\INTFCXML\BadXML\" & aFiles(I).Name)
+                End Try
+                If Trim(strXMLError) = "" Then
+                    root = xmlRequest.DocumentElement
+                    'firstchild.name = PS_ISA_ORD_INTFC_H
+
+                    If root.FirstChild Is Nothing Then
+                        strXMLError = "empty UNCC in file"
+                    ElseIf root.LastChild.Name.ToUpper = "PS_ISA_ORD_INTFC_L" Or _
+                        root.LastChild.Name.ToUpper = "EMP_ROW" Then
+                        strXMLError = ""
+                    Else
+                        strXMLError = "Missing last INTFC_L Element"
+                    End If
+
+                    If Trim(strXMLError) = "" Then
+                        If root.LastChild.Name.ToUpper = "PS_ISA_ORD_INTFC_L" Then
+                            strXMLError = UpdIntfcTable(aFiles(I).FullName)
+                        ElseIf root.LastChild.Name.ToUpper = "EMP_ROW" Then
+                            strXMLError = UpdEmpTable(aFiles(I).FullName)
+                        End If
+                    End If
+
+                    If Trim(strXMLError) = "" Or _
+                        Trim(strXMLError) = "Invalid Status" Then
+                        Try
+                            File.Move(aFiles(I).FullName, "C:\INTFCXML\XMLINProcessed\" & aFiles(I).Name)
+                            If Trim(strXMLError) = "Invalid Status" Then
+                                'objStreamWriter.WriteLine(" not status I or C in File " & aFiles(I).Name)
+                                m_logger.WriteInformationLog(rtn & " :: not status I or C in File " & aFiles(I).Name)
+                            End If
+                            'objStreamWriter.WriteLine(" End - File " & aFiles(I).Name & " has been moved")
+                            m_logger.WriteInformationLog(rtn & " :: End - File " & aFiles(I).Name & " has been moved")
+                        Catch ex As Exception
+                            'objStreamWriter.WriteLine("     Error " & ex.Message.ToString & " in file " & aFiles(I).Name)
+                            m_logger.WriteErrorLog(rtn & " :: Error " & ex.Message.ToString & " in file " & aFiles(I).Name)
+                        End Try
                         File.Delete(aFiles(I).FullName)
-                    Catch ex As Exception
+                    Else
                         'objStreamWriter.WriteLine("**")
-                        'objStreamWriter.WriteLine("     Error " & ex.Message & " in file " & aFiles(I).Name)
+                        'objStreamWriter.WriteLine("     Error " & strXMLError & " in file " & aFiles(I).Name)
                         'objStreamWriter.WriteLine("**")
                         m_logger.WriteErrorLog(rtn & " :: ** ")
-                        m_logger.WriteErrorLog(rtn & " :: Error " & ex.Message & " in file " & aFiles(I).Name)
+                        m_logger.WriteErrorLog(rtn & " :: Error " & strXMLError & " in file " & aFiles(I).Name)
                         m_logger.WriteErrorLog(rtn & " :: ** ")
-                    End Try
+                        bolError = True
+                        Try
+                            File.Move(aFiles(I).FullName, "C:\INTFCXML\BadXML\" & aFiles(I).Name)
+                            File.Delete(aFiles(I).FullName)
+                        Catch ex As Exception
+                            'objStreamWriter.WriteLine("**")
+                            'objStreamWriter.WriteLine("     Error " & ex.Message & " in file " & aFiles(I).Name)
+                            'objStreamWriter.WriteLine("**")
+                            m_logger.WriteErrorLog(rtn & " :: ** ")
+                            m_logger.WriteErrorLog(rtn & " :: Error " & ex.Message & " in file " & aFiles(I).Name)
+                            m_logger.WriteErrorLog(rtn & " :: ** ")
+                        End Try
+                    End If
+
                 End If
 
-            End If
+                ' if there's an error, capture the filename of the XML
+                If (Trim(strXMLError) <> "") Or bolError Then
+                    m_arrErrXMLs.Add(sXMLFilename)
+                End If
 
-            strXMLError = ""
-        Next
-        'Catch ex As Exception
-        '    strXMLError = ex.ToString
-        '    bolError = True
-        'End Try
+                strXMLError = ""
+            Next
+        Catch ex As Exception
+            'strXMLError = ex.ToString
+            'bolError = True
+            m_arrErrXMLs.Add(sXMLFilename)
+            Throw New ApplicationException(rtn & "::" & ex.Message, ex)
+        End Try
 
         Return bolError
 
@@ -852,33 +872,95 @@ Module module1
 
         'The email address of the sender
         email.From = "TechSupport@sdi.com"
+        If (CStr(My.Settings(propertyName:="onErrorEmail_From")) <> "") Then
+            email.From = CStr(My.Settings(propertyName:="onErrorEmail_From")).Trim
+        End If
 
         'The email address of the recipient. 
         email.To = "erwin.bautista@sdi.com"
+        If (CStr(My.Settings(propertyName:="onErrorEmail_To")) <> "") Then
+            email.To = CStr(My.Settings(propertyName:="onErrorEmail_To")).Trim
+        End If
 
+        If (CStr(My.Settings(propertyName:="onErrorEmail_CC")) <> "") Then
+            email.Cc = CStr(My.Settings(propertyName:="onErrorEmail_CC")).Trim
+        End If
+
+        If (CStr(My.Settings(propertyName:="onErrorEmail_BCC")) <> "") Then
+            email.Bcc = CStr(My.Settings(propertyName:="onErrorEmail_BCC")).Trim
+        End If
 
         'The Priority attached and displayed for the email
         email.Priority = MailPriority.High
 
         email.BodyFormat = MailFormat.Html
 
-        email.Body = "<html><body><table><tr><td>UNCCXMLIn has completed with "
-        If bolWarning = True Then
-            email.Body = email.Body & "warnings,"
-            email.Subject = "UNCC XML Warning"
-        Else
-            email.Body = email.Body & "errors,"
-            email.Subject = "UNCC XML In Error"
-        End If
+        email.Body = ""
+        email.Body &= "<html><body>"
+        email.Body &= "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI, Inc</span></center><center><span >UNCC XML IN Error</span></center>&nbsp;&nbsp;"
 
-        email.Body = email.Body & " review log.</td></tr>"
+        email.Body &= "<table><tr><td>UNCCXMLIn has completed with "
+        If bolWarning = True Then
+            email.Body &= "warnings,"
+            email.Subject = "UNCC XML IN Warning"
+        Else
+            email.Body &= "errors,"
+            email.Subject = "UNCC XML IN Error"
+        End If
+        email.Body &= " review log.</td></tr></table>"
+
+        email.Body &= "&nbsp;<br>Sincerely,<br>&nbsp;<br>SDI Customer Care<br>&nbsp;<br></p></div><BR>"
+        email.Body &= "<br />"
+
         'email.Body = email.Body & "<tr><td></td><a href='\\BDougherty_XP-l\logs'>\\BDougherty_XP-l\logs\</a></tr></table></body></html>"
 
-        'Send the email and handle any error that occurs
+        ''Send the email and handle any error that occurs
+        'Try
+        '    UpdEmailOut.UpdEmailOut.UpdEmailOut(email.Subject, email.From, email.To, "", "", "Y", email.Body, connectOR)
+        'Catch ex As Exception
+        '    'objStreamWriter.WriteLine("     Error - the email was not sent")
+        '    m_logger.WriteErrorLog(rtn & " :: Error - the email was not sent.")
+        '    m_logger.WriteErrorLog(rtn & " :: " & ex.ToString)
+        'End Try
+
+        Dim sApp As String = "" & _
+                             System.Reflection.Assembly.GetExecutingAssembly.GetModules()(0).Name & _
+                             " v" & System.Reflection.Assembly.GetExecutingAssembly.GetName.Version.ToString & _
+                             ""
         Try
-            UpdEmailOut.UpdEmailOut.UpdEmailOut(email.Subject, email.From, email.To, "", "", "Y", email.Body, connectOR)
+            email.Body &= "" & _
+                          "<p style=""text-align:right;font-size:10px"">" & _
+                          sApp & _
+                          "</p>" & _
+                          ""
         Catch ex As Exception
-            'objStreamWriter.WriteLine("     Error - the email was not sent")
+        End Try
+
+        email.Body &= "<br><P><CENTER><SPAN style='FONT-SIZE: 12pt'><SPAN style='FONT-SIZE: 12pt'><FONT color=teal size=2>The information in this communication, including any attachments, is the property of SDI, Inc,&nbsp;</SPAN>is intended only for the addressee and may contain confidential, proprietary, and/or privileged material. Any review, retransmission, dissemination or other use of, or taking of any action in reliance upon, this information by persons or entities other than the intended recipient is prohibited. If you received this in error, please immediately contact the sender by replying to this email and delete the material from all computers.</FONT></SPAN></CENTER></P>"
+        email.Body &= "</body></html>"
+
+        Try
+            email.Attachments.Add(New System.Web.Mail.MailAttachment(filename:=logpath))
+        Catch ex As Exception
+        End Try
+
+        If Not (m_arrErrXMLs Is Nothing) Then
+            If (m_arrErrXMLs.Count > 0) Then
+                m_logger.WriteInformationLog(rtn & " :: erronuous xml file count = " & m_arrErrXMLs.Count.ToString)
+                Try
+                    For i As Integer = 0 To (m_arrErrXMLs.Count - 1)
+                        If CStr(m_arrErrXMLs(i)).Trim.Length > 0 Then
+                            email.Attachments.Add(New System.Web.Mail.MailAttachment(filename:=CStr(m_arrErrXMLs(i))))
+                        End If
+                    Next
+                Catch ex As Exception
+                End Try
+            End If
+        End If
+
+        Try
+            System.Web.Mail.SmtpMail.Send(email)
+        Catch ex As Exception
             m_logger.WriteErrorLog(rtn & " :: Error - the email was not sent.")
             m_logger.WriteErrorLog(rtn & " :: " & ex.ToString)
         End Try

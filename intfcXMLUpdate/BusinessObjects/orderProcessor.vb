@@ -660,7 +660,8 @@ Public Class orderProcessor
                                                     lne.Vendor_id = objquoteRn.Vendor_ID
                                                     connectOR.Close()
                                                 Else
-                                                    lne.Vendor_id = CDbl(lneElem.InnerText.Trim)
+                                                    'lne.Vendor_id = CDbl(lneElem.InnerText.Trim)
+                                                    lne.Vendor_id = lneElem.InnerText.Trim
                                                 End If
                                                 'see if this xml has a reference number
                                                 'if so get the pricing info from the quote table 
