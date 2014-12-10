@@ -119,7 +119,9 @@
     <Compile Include="Web References\loadbalance\Reference.vb">
       <SubType>Code</SubType>
     </Compile>
-    <Content Include="configSetting.xml" />
+    <Content Include="configSetting.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Web References\loadbalance\Reference.map" />
     <Content Include="Web References\loadbalance\SDI_loadbalance_IO.disco" />
     <Content Include="Web References\loadbalance\SDI_loadbalance_IO.wsdl" />
