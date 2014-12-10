@@ -1,0 +1,6 @@
+System
+System.Configuration.Install
+System.Data
+System.ServiceProcess
+System.Web
+System.XML

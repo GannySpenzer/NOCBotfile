@@ -1,0 +1,128 @@
+SQL> DESC PS_ISA_QUICK_REQ_H;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ BUSINESS_UNIT                             NOT NULL VARCHAR2(5)
+ REQ_ID                                    NOT NULL VARCHAR2(10)
+ REQUESTOR_ID                              NOT NULL VARCHAR2(30)
+ REQ_STATUS                                NOT NULL VARCHAR2(4)
+ HOLD_STATUS                               NOT NULL VARCHAR2(1)
+ REQ_DT                                             DATE
+ ORIGIN                                    NOT NULL VARCHAR2(3)
+ OPRID_ENTERED_BY                          NOT NULL VARCHAR2(8)
+ OPRID_MODIFIED_BY                         NOT NULL VARCHAR2(8)
+ ENTERED_DT                                         DATE
+ APPROVAL_DATE                                      DATE
+ PROCESS_INSTANCE                          NOT NULL NUMBER(10)
+ IN_PROCESS_FLG                            NOT NULL VARCHAR2(1)
+ LOCATION                                  NOT NULL VARCHAR2(10)
+ LAST_DTTM_UPDATE                                   DATE
+ ISA_PARTNER_STATUS                        NOT NULL VARCHAR2(1)
+ TOTAL_AMOUNT                              NOT NULL NUMBER(14,4)
+ BUSINESS_UNIT_OM                          NOT NULL VARCHAR2(5)
+ COMMENTS_2000                                      LONG
+
+SQL> DESC PS_ISA_QUICK_REQ_L;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ BUSINESS_UNIT                             NOT NULL VARCHAR2(5)
+ REQ_ID                                    NOT NULL VARCHAR2(10)
+ REQUESTOR_ID                              NOT NULL VARCHAR2(30)
+ LINE_NBR                                  NOT NULL NUMBER(38)
+ IN_PROCESS_FLG                            NOT NULL VARCHAR2(1)
+ QTY_REQ                                   NOT NULL NUMBER(15,4)
+ ITM_SETID                                 NOT NULL VARCHAR2(5)
+ INV_ITEM_ID                               NOT NULL VARCHAR2(18)
+ VENDOR_SETID                              NOT NULL VARCHAR2(5)
+ VENDOR_ID                                 NOT NULL VARCHAR2(10)
+ ITM_ID_VNDR                               NOT NULL VARCHAR2(35)
+ VNDR_CATALOG_ID                           NOT NULL VARCHAR2(20)
+ BUYER_ID                                  NOT NULL VARCHAR2(30)
+ UNIT_OF_MEASURE                           NOT NULL VARCHAR2(3)
+ MFG_ID                                    NOT NULL VARCHAR2(10)
+ PRICE_REQ                                 NOT NULL NUMBER(15,5)
+ MERCHANDISE_AMT                           NOT NULL NUMBER(15,2)
+ INSPECT_CD                                NOT NULL VARCHAR2(1)
+ SOURCE_STATUS                             NOT NULL VARCHAR2(1)
+ INVENTORY_SRC_FLG                         NOT NULL VARCHAR2(1)
+ ROUTING_ID                                NOT NULL VARCHAR2(10)
+ UNIT_MEASURE_STD                          NOT NULL VARCHAR2(3)
+ MERCH_AMT_BSE                             NOT NULL NUMBER(15,2)
+ DESCR254_MIXED                            NOT NULL VARCHAR2(254)
+ ISA_VNDR_WEB_NOTES                        NOT NULL VARCHAR2(254)
+ MFG_ITM_ID                                NOT NULL VARCHAR2(35)
+ EMPLID                                    NOT NULL VARCHAR2(11)
+ ISA_CUST_CHARGE_CD                        NOT NULL VARCHAR2(40)
+ ISA_WORK_ORDER_NO                         NOT NULL VARCHAR2(20)
+ ISA_MACHINE_NO                            NOT NULL VARCHAR2(20)
+ ISA_QUOTE_STATUS                          NOT NULL VARCHAR2(1)
+ COST                                      NOT NULL NUMBER(15,2)
+
+SQL> DESC PS_ISA_USERS_TBL;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ ISA_USER_ID                               NOT NULL NUMBER(38)
+ ISA_USER_NAME                             NOT NULL VARCHAR2(50)
+ ISA_PASSWORD_ENCR                         NOT NULL VARCHAR2(50)
+ FIRST_NAME_SRCH                           NOT NULL VARCHAR2(30)
+ LAST_NAME_SRCH                            NOT NULL VARCHAR2(30)
+ BUSINESS_UNIT                             NOT NULL VARCHAR2(5)
+ ISA_EMPLOYEE_ID                           NOT NULL VARCHAR2(10)
+ ISA_EMPLOYEE_NAME                         NOT NULL VARCHAR2(40)
+ PHONE_NUM                                 NOT NULL VARCHAR2(12)
+ ISA_DAILY_ALLOW                           NOT NULL NUMBER(17,2)
+ ISA_EMPLOYEE_PASSW                        NOT NULL VARCHAR2(10)
+ ISA_EMPLOYEE_EMAIL                        NOT NULL VARCHAR2(40)
+ ISA_EMPLOYEE_ACTYP                        NOT NULL VARCHAR2(10)
+ CUST_ID                                   NOT NULL VARCHAR2(15)
+ ISA_SESSION                               NOT NULL NUMBER(38)
+ ISA_LAST_SYNC_DATE                                 DATE
+ ISA_SDI_EMPLOYEE                          NOT NULL VARCHAR2(1)
+ LASTUPDOPRID                              NOT NULL VARCHAR2(8)
+ LASTUPDDTTM                                        DATE
+ ACTIVE_STATUS                             NOT NULL VARCHAR2(1)
+
+SQL> DESC PS_ISA_ENTERPRISE;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ SETID                                     NOT NULL VARCHAR2(5)
+ CUST_ID                                   NOT NULL VARCHAR2(15)
+ ISA_BUSINESS_UNIT                         NOT NULL VARCHAR2(5)
+ ISA_COMPANY_ID                            NOT NULL VARCHAR2(10)
+ ISA_CPLUS_PRODVIEW                        NOT NULL VARCHAR2(10)
+ ISA_STARTINGITEMID                        NOT NULL NUMBER(18)
+ ISA_LASTITEMID                            NOT NULL NUMBER(18)
+ ISA_TOTAL_NUM_EXP                         NOT NULL NUMBER(10)
+ ISA_CURRENT_EXPORT                        NOT NULL NUMBER(38)
+ ISA_LAST_EXPORT_DT                                 DATE
+ ISA_CUSTOMER_CODES                        NOT NULL VARCHAR2(1)
+ ISA_ITEMID_LEN                            NOT NULL NUMBER(38)
+ ISA_ITEMID_MODE                           NOT NULL VARCHAR2(1)
+ ISA_TOTAL_FLD_SIZE                        NOT NULL NUMBER(38)
+ ISA_SITE_EMAIL                            NOT NULL VARCHAR2(40)
+ ISA_ITEMADD_EMAIL                         NOT NULL VARCHAR2(40)
+ ISA_STOCKREQ_EMAIL                        NOT NULL VARCHAR2(40)
+ ISA_NONSKREQ_EMAIL                        NOT NULL VARCHAR2(40)
+ ISA_SITE_PRINTER                          NOT NULL VARCHAR2(40)
+ ISA_ITMADD_PRINTER                        NOT NULL VARCHAR2(40)
+ ISA_STOCK_PRINTER                         NOT NULL VARCHAR2(40)
+ ISA_NONSTK_PRINTER                        NOT NULL VARCHAR2(40)
+ NEXT_WEBREQ_ID                            NOT NULL NUMBER(18)
+ ISA_ORD_APPR_TYPE                         NOT NULL VARCHAR2(1)
+ ISA_ORD_BUDGET_FLG                        NOT NULL VARCHAR2(1)
+ ISA_RECEIVING_DATE                                 DATE
+ ISA_STD_NSTK_SITE                         NOT NULL VARCHAR2(1)
+ ISA_CUST_PRFX_FLAG                        NOT NULL VARCHAR2(1)
+ ISA_CUST_PREFIX                           NOT NULL VARCHAR2(3)
+ ISA_SHOPCART_PAGE                         NOT NULL VARCHAR2(30)
+ LASTUPDOPRID                              NOT NULL VARCHAR2(8)
+ LASTUPDDTTM                                        DATE
+
+SQL> DESC PS_ISA_REQ_EML_LOG;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ BUSINESS_UNIT                             NOT NULL VARCHAR2(5)
+ REQ_ID                                    NOT NULL VARCHAR2(10)
+ ISA_RECIPIENT                             NOT NULL VARCHAR2(254)
+ ISA_SENDER                                NOT NULL VARCHAR2(254)
+ ISA_SUBJECT                               NOT NULL VARCHAR2(254)
+ EMAIL_DATETIME                                     DATE
