@@ -299,13 +299,15 @@
         '   "System.Xml.XmlException: The XML declaration is unexpected ..." error message due to unexpected char before the xml declaration!?
         Response_Doc = SDI.HTTP_SOAP_INTFC.Common.RemoveCrLf(Response_Doc)
 
-        fle = flePath & "\" & processId & " (" & idx & ")-resp.xml"
-        sw = New System.IO.StreamWriter(path:=fle, append:=False)
-        sw.WriteLine(Response_Doc)
-        sw.Flush()
-        sw.Close()
-        sw.Dispose()
-        sw = Nothing
+        If (logger.LoggingLevel = TraceLevel.Verbose) Then
+            fle = flePath & "\" & processId & " (" & idx & ")-resp.xml"
+            sw = New System.IO.StreamWriter(path:=fle, append:=False)
+            sw.WriteLine(Response_Doc)
+            sw.Flush()
+            sw.Close()
+            sw.Dispose()
+            sw = Nothing
+        End If
 
         '
         ' (2) process data retrieved from customer system
@@ -744,7 +746,7 @@
                 Catch ex As Exception
                     ''Response.Write(ex.ToString)
                     'ShowErrorMessage(ex.ToString)
-                    Response_Doc &= ex.ToString
+                    Response_Doc &= ex.Message
                 End Try
 
                 httpSession = Nothing
@@ -754,40 +756,52 @@
                 '   "System.Xml.XmlException: The XML declaration is unexpected ..." error message due to unexpected char before the xml declaration!?
                 Response_Doc = SDI.HTTP_SOAP_INTFC.Common.RemoveCrLf(Response_Doc)
 
-                fle = flePath & "\" & processId & " (" & idx & ")-resp.xml"
-                sw = New System.IO.StreamWriter(path:=fle, append:=False)
-                sw.WriteLine(Response_Doc)
-                sw.Flush()
-                sw.Close()
-                sw.Dispose()
-                sw = Nothing
+                If (logger.LoggingLevel = TraceLevel.Verbose) Then
+                    fle = flePath & "\" & processId & " (" & idx & ")-resp.xml"
+                    sw = New System.IO.StreamWriter(path:=fle, append:=False)
+                    sw.WriteLine(Response_Doc)
+                    sw.Flush()
+                    sw.Close()
+                    sw.Dispose()
+                    sw = Nothing
+                End If
 
                 ' parse through the response string to check for any errors (non-acknowledgement)
                 '       and update arrWOAcknowledged of each W/O's acknowledgement state
-                Dim xmlIn As New System.Xml.XmlDocument
+                '       if this part blows-up for any reason (ie., cannot load response xml, cannot parse response xml, not being able to see expected node)
+                '       we'll consider acknowledgment as a fail
+                Try
 
-                xmlIn.LoadXml(xml:=Response_Doc)
+                    Dim xmlIn As New System.Xml.XmlDocument
 
-                Dim nsmgr As New Xml.XmlNamespaceManager(xmlIn.NameTable)
-                nsmgr.AddNamespace("cr3", "http://schemas.datastream.net/MP_results/MP0123_001")
+                    xmlIn.LoadXml(xml:=Response_Doc)
 
-                Dim nd As Xml.XmlNode = xmlIn.SelectSingleNode("//cr3:result", nsmgr)
+                    Dim nsmgr As New Xml.XmlNamespaceManager(xmlIn.NameTable)
+                    nsmgr.AddNamespace("cr3", "http://schemas.datastream.net/MP_results/MP0123_001")
 
-                For i As Integer = 0 To (nd.ChildNodes.Count - 1) ' actionResult
+                    Dim nd As Xml.XmlNode = xmlIn.SelectSingleNode("//cr3:result", nsmgr)
+
+                    For i As Integer = 0 To (nd.ChildNodes.Count - 1) ' actionResult
+                        bIsAckSucceed = False
+                        sAckErrMsg = ""
+
+                        bIsAckSucceed = CBool(nd.ChildNodes(i).SelectSingleNode("cr3:success", nsmgr).InnerText.Trim)
+                        If Not bIsAckSucceed Then
+                            sAckErrMsg = nd.ChildNodes(i).SelectSingleNode("cr3:errorMessage", nsmgr).InnerText.Trim
+                        End If
+
+                        arrWOAcknowledged(CStr(arrWOAcknowledged.Keys(i))) = New String() {bIsAckSucceed.ToString, sAckErrMsg}
+                    Next
+
+                    nd = Nothing
+                    nsmgr = Nothing
+                    xmlIn = Nothing
+
+                Catch ex As Exception
                     bIsAckSucceed = False
-                    sAckErrMsg = ""
-
-                    bIsAckSucceed = CBool(nd.ChildNodes(i).SelectSingleNode("cr3:success", nsmgr).InnerText.Trim)
-                    If Not bIsAckSucceed Then
-                        sAckErrMsg = nd.ChildNodes(i).SelectSingleNode("cr3:errorMessage", nsmgr).InnerText.Trim
-                    End If
-
-                    arrWOAcknowledged(CStr(arrWOAcknowledged.Keys(i))) = New String() {bIsAckSucceed.ToString, sAckErrMsg}
-                Next
-
-                nd = Nothing
-                nsmgr = Nothing
-                xmlIn = Nothing
+                    sAckErrMsg = ex.ToString
+                    arrWOAcknowledged(CStr(arrWOAcknowledged.Keys(sWO))) = New String() {bIsAckSucceed.ToString, sAckErrMsg}
+                End Try
 
                 ' delete all W/Os that acknowledgement fails
                 '       and log W/O with the "failure message"
