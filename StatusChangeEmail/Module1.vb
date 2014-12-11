@@ -862,7 +862,7 @@ Module Module1
         Dim bolSelectItem As Boolean
 
         Dim Mailer As MailMessage = New MailMessage
-        Dim strccfirst As String = "erwin.bautista"  '  "pete.doyle"
+        Dim strccfirst As String = "erwin.bautista"   '  "pete.doyle"
         Dim strcclast As String = "sdi.com"
         Mailer.From = "SDIExchange@SDI.com"  '  "Insiteonline@SDI.com"
         Mailer.Cc = ""
@@ -886,7 +886,7 @@ Module Module1
 
         Dim strPurchaserName As String = strFirstName & _
             " " & strLastName
-        Dim ted As String = ";erwin.bautista@sdi.com"   '  ";pete.doyle@sdi.com"
+        Dim ted As String = ";erwin.bautista@sdi.com"  '  ";pete.doyle@sdi.com"
         Dim strPurchaserEmail As String = strEmail
         'dim strPurchaserEmail As String = strEmail
         strbodydetl = "&nbsp;" & vbCrLf
@@ -952,7 +952,7 @@ Module Module1
         email.From = "TechSupport@sdi.com"
 
         'The email address of the recipient. 
-        email.To = "erwin.bautista@sdi.com"  '   "pete.doyle@sdi.com"
+        email.To = "erwin.bautista@sdi.com"  '  "pete.doyle@sdi.com"
 
         'The subject of the email
         email.Subject = "StatChgEmailOut XML OUT Error_from Normal"
@@ -1376,7 +1376,7 @@ Module Module1
         'Dim strPurchaserName As String = strCustID
         Dim strPurchaserName As String = strFirstName & _
            " " & strLastName
-        Dim ted As String = ";erwin.bautista@sdi.com"  '  ";pete.doyle@sdi.com"
+        Dim ted As String = ";erwin.bautista@sdi.com"
         Dim strPurchaserEmail As String = strEmail
         'Dim strPurchaserEmail As String = strEmail
         strbodydet1 = "&nbsp;" & vbCrLf
@@ -1418,7 +1418,6 @@ Module Module1
             'Mailer1.To = "eric.wilson@sdi.com"
         End If
 
-        'Mailer1.Subject = "SDiExchange - Order Status records for" & Now.Month & "/" & Now.Day & "/" & Now.Year
         Mailer1.Subject = "SDiExchange - Order Status records for Order Number: " & strOrderNo
         Mailer1.BodyFormat = System.Web.Mail.MailFormat.Html
         'SmtpMail.Send(Mailer)
@@ -1486,7 +1485,7 @@ Module Module1
             Return False
         End If
     End Function
-    Private Function getpo_id(ByVal strorderno As String, ByVal strlineno As String, ByVal strBU As String, ByVal strSiteBU As String)
+    Private Function getpo_id(ByVal strorderno As String, ByVal strlineno As String, ByVal strBU As String, ByVal strSiteBU As String) As String
         Dim I As Integer
         Dim strpo_no As String
         Dim strSQLstring As String = "SELECT PO_ID B " & vbCrLf & _
