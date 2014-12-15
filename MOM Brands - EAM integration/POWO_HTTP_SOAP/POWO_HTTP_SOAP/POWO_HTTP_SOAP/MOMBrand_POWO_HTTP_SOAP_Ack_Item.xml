@@ -7,7 +7,7 @@
     </datafield>
     <datafield>
       <mpl:name>tkd_trans</mpl:name>
-      <mpl:value encoding="none">MBPO</mpl:value>
+      <mpl:value encoding="none">MBRO</mpl:value>
     </datafield>
     <datafield>
       <mpl:name>tkd_trackdate</mpl:name>
@@ -15,7 +15,7 @@
     </datafield>
     <datafield>
       <mpl:name>tkd_sourcesystem</mpl:name>
-      <mpl:value>MBPO TEST</mpl:value>
+      <mpl:value>MBRO TEST</mpl:value>
     </datafield>
     <datafield>
       <mpl:name>tkd_promptdata1</mpl:name>

@@ -133,6 +133,23 @@
             Dim oraTran1 As OleDb.OleDbTransaction = oraCN1.BeginTransaction
             logger.WriteVerboseLog("DB connection opened and transaction created")
 
+            ' remove existing records (if any) in preparation for new set from customer
+            sql = "" & _
+                  "DELETE FROM SYSADM.PS_ISA_MB_REQ_NOPO " & _
+                  "WHERE CUST_ID = '{0}' " & _
+                  ""
+            sb = New System.Text.StringBuilder
+            sb.AppendFormat(sql, custId)
+            cmd = oraCN1.CreateCommand
+            cmd.CommandText = sb.ToString
+            cmd.CommandType = CommandType.Text
+            cmd.Transaction = oraTran1
+            cmd.ExecuteNonQuery()
+            cmd.Dispose()
+            cmd = Nothing
+            sb = Nothing
+            logger.WriteVerboseLog("removed existing records")
+
             nTotalRecordsProcessed = 0
 
             ' retrieve records from customer's system - batch
@@ -169,15 +186,17 @@
 
             End While
 
-            ' since we need the acknowledgement within transaction
-            '       send all necessary acknowledgement before committing changes in PeolpleSoft
-            Try
-                logger.WriteVerboseLog("sending acknowledgement for " & ackPOs.UniqueIds.Keys.Count.ToString & " P/O received.")
-                SendAcknowledgement(processIdAck, oParent, ackPOs, oraCN1, custId, oraTran1)
-            Catch ex As Exception
-                oBatch.ex = ex
-                logger.WriteErrorLog("acknowledgement error : " & ex.ToString)
-            End Try
+            ' according to team members (ie., Donna/Sam) we don't acknowledge this po/wo since we'll need to regrab this everytime we ran
+            '   - erwin 2014.12.15
+            '' since we need the acknowledgement within transaction
+            ''       send all necessary acknowledgement before committing changes in PeolpleSoft
+            'Try
+            '    logger.WriteVerboseLog("sending acknowledgement for " & ackPOs.UniqueIds.Keys.Count.ToString & " P/O received.")
+            '    SendAcknowledgement(processIdAck, oParent, ackPOs, oraCN1, custId, oraTran1)
+            'Catch ex As Exception
+            '    oBatch.ex = ex
+            '    logger.WriteErrorLog("acknowledgement error : " & ex.ToString)
+            'End Try
 
             ' rollback OR
             '       commit / send acknowledgment back
@@ -295,13 +314,15 @@
         '   "System.Xml.XmlException: The XML declaration is unexpected ..." error message due to unexpected char before the xml declaration!?
         Response_Doc = SDI.HTTP_SOAP_INTFC.Common.RemoveCrLf(Response_Doc)
 
-        fle = flePath & "\" & processId & " (" & idx & ")-resp.xml"
-        sw = New System.IO.StreamWriter(path:=fle, append:=False)
-        sw.WriteLine(Response_Doc)
-        sw.Flush()
-        sw.Close()
-        sw.Dispose()
-        sw = Nothing
+        If (logger.LoggingLevel = TraceLevel.Verbose) Then
+            fle = flePath & "\" & processId & " (" & idx & ")-resp.xml"
+            sw = New System.IO.StreamWriter(path:=fle, append:=False)
+            sw.WriteLine(Response_Doc)
+            sw.Flush()
+            sw.Close()
+            sw.Dispose()
+            sw = Nothing
+        End If
 
         '
         ' (2) process data retrieved from customer system
