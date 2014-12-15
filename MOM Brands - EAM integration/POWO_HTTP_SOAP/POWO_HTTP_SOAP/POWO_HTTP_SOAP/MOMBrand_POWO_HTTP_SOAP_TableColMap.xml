@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<tableColumnMappings>
+  <column Id="0" inColumnName="" value="{SYSTEM:CUSTOMER_ID}" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="CUST_ID" targetColumnLength="15" targetColumnDataType="" />
+  <column Id="1" inColumnName="RQL_TYPE" value="" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="PO_TYPE" targetColumnLength="4" targetColumnDataType="" />
+  <column Id="2" inColumnName="REQ_ORG" value="" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="PLANT" targetColumnLength="30" targetColumnDataType="" />
+  <column Id="3" inColumnName="RQL_EVENT" value="" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="ISA_WORK_ORDER_NO" targetColumnLength="20" targetColumnDataType="" />
+  <column Id="4" inColumnName="RQL_ACT" value="" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="ACTIVITY_ID" targetColumnLength="15" targetColumnDataType="" />
+  <column Id="5" inColumnName="REQ_CODE" value="" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="REQ_ID" targetColumnLength="10" targetColumnDataType="" />
+  <column Id="6" inColumnName="RQL_REQLINE" value="" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="LINE_NBR" targetColumnLength="0" targetColumnDataType="DECIMAL" />
+  <column Id="7" inColumnName="RQL_PART" value="" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="INV_ITEM_ID" targetColumnLength="18" targetColumnDataType="" />
+  <column Id="8" inColumnName="REQ_TOCODE" value="" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="SHIPTO_ID_WRK" targetColumnLength="10" targetColumnDataType="" />
+  <column Id="9" inColumnName="RQL_QTY" value="" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="QTY_PO" targetColumnLength="0" targetColumnDataType="DECIMAL" />
+  <column Id="10" inColumnName="REQ_DATE" value="" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="REQ_DT" targetColumnLength="0" targetColumnDataType="DATETIME" />
+  <column Id="11" inColumnName="RQL_STATUS" value="" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="ORD_LINE_STATUS" targetColumnLength="1" targetColumnDataType="" />
+  <column Id="12" inColumnName="RQL_REVISION" value="" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="CHNG_ORD_SEQ" targetColumnLength="0" targetColumnDataType="DECIMAL" />
+  <column Id="13" inColumnName="RQL_MANUFACTURER" value="" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="ISA_CUSTOMER_MFG" targetColumnLength="40" targetColumnDataType="" />
+  <column Id="14" inColumnName="RQL_MANUFACTPART" value="" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="MFG_ITM_ID" targetColumnLength="35" targetColumnDataType="" />
+  <column Id="15" inColumnName="RQL_BUYER" value="" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="EMPLID" targetColumnLength="11" targetColumnDataType="" />
+  <column Id="16" inColumnName="RQL_DUE" value="" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="DUE_DT" targetColumnLength="0" targetColumnDataType="DATETIME" />
+  <column Id="17" inColumnName="RQL_CURR" value="" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="CURRENCY_CD" targetColumnLength="3" targetColumnDataType="" />
+  <column Id="18" inColumnName="RQL_UOM" value="" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="ISA_CUSTOMER_UOM" targetColumnLength="3" targetColumnDataType="" />
+  <column Id="19" inColumnName="RQL_PRICE" value="" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="PRICE_PO" targetColumnLength="0" targetColumnDataType="DECIMAL" />
+  <column Id="20" inColumnName="RQL_MULTIPLY" value="" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="RATE_MULT" targetColumnLength="0" targetColumnDataType="DECIMAL" />
+  <column Id="21" inColumnName="REQ_STATUS" value="" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="ORDER_STATUS" targetColumnLength="3" targetColumnDataType="" />
+  <column Id="22" inColumnName="RQL_UDFCHAR01" value="" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="TAX_EXEMPT_FLAG" targetColumnLength="1" targetColumnDataType="" />
+  <column Id="23" inColumnName="RQL_REQ" value="" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="ISA_CUST_REQ" targetColumnLength="10" targetColumnDataType="" />
+  <column Id="24" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="SERIAL_ID" targetColumnLength="20" targetColumnDataType="" />
+  <column Id="25" inColumnName="REQ_DUE" value="" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="DUE_DT_PO" targetColumnLength="0" targetColumnDataType="DATETIME" />
+  <column Id="26" inColumnName="" value="{SYSTEM:PROCESS_INSTANCE}" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="PROCESS_INSTANCE" targetColumnLength="0" targetColumnDataType="" />
+  <column Id="27" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="PROCESS_FLAG" targetColumnLength="1" targetColumnDataType="" />
+  <column Id="28" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="SHIPTO_ID" targetColumnLength="10" targetColumnDataType="" />
+  <column Id="29" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="UNIT_OF_MEASURE" targetColumnLength="3" targetColumnDataType="" />
+  <column Id="30" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="MFG_ID" targetColumnLength="10" targetColumnDataType="" />
+  <column Id="31" inColumnName="RQL_COSTCODE" value="" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="ISA_COST_CODE" targetColumnLength="30" targetColumnDataType="" />
+  <column Id="32" inColumnName="RQL_TAX" value="" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="ISA_TAX_CODE80" targetColumnLength="80" targetColumnDataType="" />
+  <column Id="33" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="BUSINESS_UNIT_OM" targetColumnLength="5" targetColumnDataType="" />
+  <column Id="34" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="ACTION_CD" targetColumnLength="1" targetColumnDataType="" />
+  <column Id="35" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="ORDER_NO" targetColumnLength="10" targetColumnDataType="" />
+  <column Id="36" inColumnName="" value="{SYSTEM:EMPTY_NUMBER}" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="ORDER_INT_LINE_NO" targetColumnLength="0" targetColumnDataType="DECIMAL" />
+  <column Id="37" inColumnName="" value="{SYSTEM:EMPTY_NUMBER}" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="QTY_NEW" targetColumnLength="0" targetColumnDataType="DECIMAL" />
+  <column Id="38" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="ACTIVITY_STATUS" targetColumnLength="1" targetColumnDataType="" />
+  <column Id="39" inColumnName="PAR_DESC" value="" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="DESCR254_MIXED" targetColumnLength="254" targetColumnDataType="" />
+  <column Id="40" inColumnName="" value="{SYSTEM:DATETIME}" targetTableName="PS_ISA_MB_REQ_NOPO" targetColumnName="DT_TIMESTAMP" targetColumnLength="0" targetColumnDataType="" />
+</tableColumnMappings>
