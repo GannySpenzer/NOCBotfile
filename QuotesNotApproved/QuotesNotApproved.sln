@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "updOrdAppr_UPENN", "ConsoleApplication2\updOrdAppr_UPENN.vbproj", "{AEC953D8-00EA-4DA4-9A3F-3BBB5504DFF6}"
+EndProject
+Global
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 2
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = http://192.168.253.77:8080/tfs/insiteonline
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = ConsoleApplication2\\updOrdAppr_UPENN.vbproj
+		SccProjectName1 = ConsoleApplication2
+		SccLocalPath1 = ConsoleApplication2
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AEC953D8-00EA-4DA4-9A3F-3BBB5504DFF6}.Debug|x86.ActiveCfg = Debug|x86
+		{AEC953D8-00EA-4DA4-9A3F-3BBB5504DFF6}.Debug|x86.Build.0 = Debug|x86
+		{AEC953D8-00EA-4DA4-9A3F-3BBB5504DFF6}.Release|x86.ActiveCfg = Release|x86
+		{AEC953D8-00EA-4DA4-9A3F-3BBB5504DFF6}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
