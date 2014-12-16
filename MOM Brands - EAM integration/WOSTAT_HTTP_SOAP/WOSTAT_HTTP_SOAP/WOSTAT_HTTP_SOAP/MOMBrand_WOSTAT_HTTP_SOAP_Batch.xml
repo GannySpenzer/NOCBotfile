@@ -1,0 +1,19 @@
+﻿<?xml version='1.0' encoding='UTF-8' ?>
+<soapenv:Envelope xmlns:soapenv='http://schemas.xmlsoap.org/soap/envelope/' xmlns:xsd='http://www.w3.org/2001/XMLSchema' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>
+  <soapenv:Header>
+    <Organization>*</Organization>
+    <Security>
+      <UsernameToken>
+        <Username>{0}</Username>
+        <Password>{1}</Password>
+      </UsernameToken>
+    </Security>
+    <SessionScenario>terminate</SessionScenario>
+  </soapenv:Header>
+  <soapenv:Body>
+    <tt:echoElements xmlns:tt='EWSConnector' />
+    <MP0123_ConnectorRequest_001  xmlns='http://schemas.datastream.net/MP_functions/MP0123_001' xmlns:cr='http://schemas.datastream.net/MP_functions/MP0110_001' xmlns:mpf='http://schemas.datastream.net/MP_fields' xmlns:mpl='http://schemas.datastream.net/BaseLib' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='http://schemas.datastream.net/MP_functions/MP0123_001 L:\DataStream\prototypes\connector\old-schema\MP0123_ConnectorRequest_001.xsd'>
+      <request>{2}</request>
+    </MP0123_ConnectorRequest_001>
+  </soapenv:Body>
+</soapenv:Envelope>
