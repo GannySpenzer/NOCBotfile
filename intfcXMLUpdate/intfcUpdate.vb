@@ -1478,7 +1478,7 @@ Module module1
 
         Dim I As Integer
         Dim X As Integer
-        Dim strbodyhead As String
+        Dim strbodyhead As String = ""
         Dim strbodydetl As String
         Dim strItemtype As String
         Dim intGridloop As Integer
