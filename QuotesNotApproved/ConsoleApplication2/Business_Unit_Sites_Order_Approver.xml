@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xmlData>
+           <SITE>
+			   <SITE_HELP_DESK_CONTACT>tony.smith@sdi.com;pete.doyle@sdi.com</SITE_HELP_DESK_CONTACT>
+			   <SITE_MANAGER_CONTACT>joe.bowers@sdi.com</SITE_MANAGER_CONTACT>
+	           <SITE_BU>I0206</SITE_BU>
+	        </SITE>   
+</xmlData>
