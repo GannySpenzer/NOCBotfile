@@ -452,17 +452,17 @@
                             '       let's see if we can retrieve the error message (detail)
                             sRespErrMsg = ""
 
-                            nsmgr = New Xml.XmlNamespaceManager(xmlIn.NameTable)
-                            nsmgr.AddNamespace("ns1", "http://schemas.datastream.net/MP_functions")
-
-                            nd = xmlIn.SelectSingleNode("//ns1:ExceptionInfo", nsmgr)
-
                             If Not (nd Is Nothing) Then
-                                nd1 = nd.SelectSingleNode("ns1:Exception", nsmgr)
-                                If Not (nd1 Is Nothing) Then
-                                    s = nd1.SelectSingleNode("ns1:Message", nsmgr).InnerText.Trim
-                                    sRespErrMsg = s
-                                End If
+                                For i As Integer = 0 To (nd.ChildNodes.Count - 1) ' actionResult
+                                    nd1 = nd.ChildNodes(i).SelectSingleNode("cr3:errorMessage", nsmgr)
+                                    If Not (nd1 Is Nothing) Then
+                                        sRespErrMsg = nd1.InnerText.Trim
+                                    End If
+                                    nd1 = Nothing
+                                    ' since we're only processing a single request
+                                    '       we're assumming there's only a single response (GROUPRESULT)
+                                    Exit For
+                                Next
                             End If
 
                             If (sRespErrMsg.Trim.Length > 0) Then
