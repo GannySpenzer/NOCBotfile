@@ -1,7 +1,7 @@
 ﻿<ns2:WSProcessGroup>
   <ns3:WSPROMPTGROUPID xmlns:ns3="http://schemas.datastream.net/MP_fields">
     <ns3:WSPROMPTID>
-      <ns3:WSPROMPTCODE>MBRECV</ns3:WSPROMPTCODE>
+      <ns3:WSPROMPTCODE>MBPRIC</ns3:WSPROMPTCODE>
     </ns3:WSPROMPTID>
     <ns3:WSPROMPTPROCESSGROUP>10</ns3:WSPROMPTPROCESSGROUP>
   </ns3:WSPROMPTGROUPID>
