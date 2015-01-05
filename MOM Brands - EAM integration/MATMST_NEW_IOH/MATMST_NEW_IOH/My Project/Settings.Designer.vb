@@ -108,16 +108,13 @@ Namespace My
             End Get
         End Property
         
-        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.DefaultSettingValueAttribute("MATMST_IOH_SelectNewItemToProcess.sql")>  _
-        Public Property MATMST_IOH_SelectNewItemToProc() As String
+        Public ReadOnly Property MATMST_IOH_SelectNewItemToProc() As String
             Get
                 Return CType(Me("MATMST_IOH_SelectNewItemToProc"),String)
             End Get
-            Set
-                Me("MATMST_IOH_SelectNewItemToProc") = value
-            End Set
         End Property
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
@@ -129,20 +126,17 @@ Namespace My
             End Get
         End Property
         
-        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.DefaultSettingValueAttribute("CUST_ID,PLANT,INV_ITEM_ID,EFF_STATUS,ISA_CUSTOMER_CAT,IM_CFFT,INV_STOCK_TYPE,ISA_"& _ 
             "CUSTOMER_MFG,MFG_ITM_ID,PREFERRED_MFG,REORDER_POINT,QTY_MAXIMUM,REORDER_QTY,UNIT"& _ 
             "_OF_MEASUREREPAIR_OPTION_LBLSTANDARD_COST,STD_LEAD,UTILIZ_CD,ISA_NRTE_GL_CODE,IS"& _ 
             "A_ARTE_GL_CODE,ISA_TRTE_GL_CODE,ISA_NHOT_GL_CODE,ISA_MN_TAX_CODE,ISA_NC_TAX_CODE"& _ 
             ",ISA_UT_TAX_CODE,PROCESS_INSTANCE")>  _
-        Public Property MATMST_IOH_UpdateKeyColumns() As String
+        Public ReadOnly Property MATMST_IOH_UpdateKeyColumns() As String
             Get
                 Return CType(Me("MATMST_IOH_UpdateKeyColumns"),String)
             End Get
-            Set
-                Me("MATMST_IOH_UpdateKeyColumns") = value
-            End Set
         End Property
     End Class
 End Namespace

@@ -208,7 +208,8 @@
                         ' grab row values
                         sCUST_ID = ""
                         Try
-                            sCUST_ID = CStr(dr("CUST_ID")).Trim.ToUpper
+                            'sCUST_ID = CStr(dr("CUST_ID")).Trim.ToUpper
+                            sCUST_ID = CStr(dr("CUST_ID"))
                         Catch ex As Exception
                         End Try
                         If (sCUST_ID Is Nothing) Then
@@ -217,7 +218,8 @@
 
                         sPLANT = ""
                         Try
-                            sPLANT = CStr(dr("PLANT")).Trim
+                            'sPLANT = CStr(dr("PLANT")).Trim
+                            sPLANT = CStr(dr("PLANT"))
                         Catch ex As Exception
                         End Try
                         If (sPLANT Is Nothing) Then
@@ -226,7 +228,8 @@
 
                         sINV_ITEM_ID = ""
                         Try
-                            sINV_ITEM_ID = CStr(dr("INV_ITEM_ID")).Trim
+                            'sINV_ITEM_ID = CStr(dr("INV_ITEM_ID")).Trim
+                            sINV_ITEM_ID = CStr(dr("INV_ITEM_ID"))
                         Catch ex As Exception
                         End Try
                         If (sINV_ITEM_ID Is Nothing) Then
@@ -235,7 +238,8 @@
 
                         sEFF_STATUS = ""
                         Try
-                            sEFF_STATUS = CStr(dr("EFF_STATUS")).Trim
+                            'sEFF_STATUS = CStr(dr("EFF_STATUS")).Trim
+                            sEFF_STATUS = CStr(dr("EFF_STATUS"))
                         Catch ex As Exception
                         End Try
                         If (sEFF_STATUS Is Nothing) Then
@@ -244,7 +248,8 @@
 
                         sISA_CUSTOMER_CAT = ""
                         Try
-                            sISA_CUSTOMER_CAT = CStr(dr("ISA_CUSTOMER_CAT")).Trim
+                            'sISA_CUSTOMER_CAT = CStr(dr("ISA_CUSTOMER_CAT")).Trim
+                            sISA_CUSTOMER_CAT = CStr(dr("ISA_CUSTOMER_CAT"))
                         Catch ex As Exception
                         End Try
                         If (sISA_CUSTOMER_CAT Is Nothing) Then
@@ -253,7 +258,8 @@
 
                         sIM_CFFT = ""
                         Try
-                            sIM_CFFT = CStr(dr("IM_CFFT")).Trim
+                            'sIM_CFFT = CStr(dr("IM_CFFT")).Trim
+                            sIM_CFFT = CStr(dr("IM_CFFT"))
                         Catch ex As Exception
                         End Try
                         If (sIM_CFFT Is Nothing) Then
@@ -262,7 +268,8 @@
 
                         sINV_STOCK_TYPE = ""
                         Try
-                            sINV_STOCK_TYPE = CStr(dr("INV_STOCK_TYPE")).Trim
+                            'sINV_STOCK_TYPE = CStr(dr("INV_STOCK_TYPE")).Trim
+                            sINV_STOCK_TYPE = CStr(dr("INV_STOCK_TYPE"))
                         Catch ex As Exception
                         End Try
                         If (sINV_STOCK_TYPE Is Nothing) Then
@@ -271,7 +278,8 @@
 
                         sISA_CUSTOMER_MFG = ""
                         Try
-                            sISA_CUSTOMER_MFG = CStr(dr("ISA_CUSTOMER_MFG")).Trim
+                            'sISA_CUSTOMER_MFG = CStr(dr("ISA_CUSTOMER_MFG")).Trim
+                            sISA_CUSTOMER_MFG = CStr(dr("ISA_CUSTOMER_MFG"))
                         Catch ex As Exception
                         End Try
                         If (sISA_CUSTOMER_MFG Is Nothing) Then
@@ -280,7 +288,8 @@
 
                         sMFG_ITM_ID = ""
                         Try
-                            sMFG_ITM_ID = CStr(dr("MFG_ITM_ID")).Trim
+                            'sMFG_ITM_ID = CStr(dr("MFG_ITM_ID")).Trim
+                            sMFG_ITM_ID = CStr(dr("MFG_ITM_ID"))
                         Catch ex As Exception
                         End Try
                         If (sMFG_ITM_ID Is Nothing) Then
@@ -289,7 +298,8 @@
 
                         sPREFERRED_MFG = ""
                         Try
-                            sPREFERRED_MFG = CStr(dr("sPREFERRED_MFG")).Trim
+                            'sPREFERRED_MFG = CStr(dr("sPREFERRED_MFG")).Trim
+                            sPREFERRED_MFG = CStr(dr("sPREFERRED_MFG"))
                         Catch ex As Exception
                         End Try
                         If (sPREFERRED_MFG Is Nothing) Then
@@ -316,7 +326,8 @@
 
                         sUNIT_OF_MEASURE = ""
                         Try
-                            sUNIT_OF_MEASURE = CStr(dr("UNIT_OF_MEASURE")).Trim
+                            'sUNIT_OF_MEASURE = CStr(dr("UNIT_OF_MEASURE")).Trim
+                            sUNIT_OF_MEASURE = CStr(dr("UNIT_OF_MEASURE"))
                         Catch ex As Exception
                         End Try
                         If (sUNIT_OF_MEASURE Is Nothing) Then
@@ -325,7 +336,8 @@
 
                         sREPAIR_OPTION_LBL = ""
                         Try
-                            sREPAIR_OPTION_LBL = CStr(dr("REPAIR_OPTION_LBL")).Trim
+                            'sREPAIR_OPTION_LBL = CStr(dr("REPAIR_OPTION_LBL")).Trim
+                            sREPAIR_OPTION_LBL = CStr(dr("REPAIR_OPTION_LBL"))
                         Catch ex As Exception
                         End Try
                         If (sREPAIR_OPTION_LBL Is Nothing) Then
@@ -346,7 +358,8 @@
 
                         sUTILIZ_CD = ""
                         Try
-                            sUTILIZ_CD = CStr(dr("UTILIZ_CD")).Trim
+                            'sUTILIZ_CD = CStr(dr("UTILIZ_CD")).Trim
+                            sUTILIZ_CD = CStr(dr("UTILIZ_CD"))
                         Catch ex As Exception
                         End Try
                         If (sUTILIZ_CD Is Nothing) Then
@@ -355,7 +368,8 @@
 
                         sISA_NRTE_GL_CODE = ""
                         Try
-                            sISA_NRTE_GL_CODE = CStr(dr("ISA_NRTE_GL_CODE")).Trim
+                            'sISA_NRTE_GL_CODE = CStr(dr("ISA_NRTE_GL_CODE")).Trim
+                            sISA_NRTE_GL_CODE = CStr(dr("ISA_NRTE_GL_CODE"))
                         Catch ex As Exception
                         End Try
                         If (sISA_NRTE_GL_CODE Is Nothing) Then
@@ -364,7 +378,8 @@
 
                         sISA_ARTE_GL_CODE = ""
                         Try
-                            sISA_ARTE_GL_CODE = CStr(dr("ISA_ARTE_GL_CODE")).Trim
+                            'sISA_ARTE_GL_CODE = CStr(dr("ISA_ARTE_GL_CODE")).Trim
+                            sISA_ARTE_GL_CODE = CStr(dr("ISA_ARTE_GL_CODE"))
                         Catch ex As Exception
                         End Try
                         If (sISA_ARTE_GL_CODE Is Nothing) Then
@@ -373,7 +388,8 @@
 
                         sISA_TRTE_GL_CODE = ""
                         Try
-                            sISA_TRTE_GL_CODE = CStr(dr("ISA_TRTE_GL_CODE")).Trim
+                            'sISA_TRTE_GL_CODE = CStr(dr("ISA_TRTE_GL_CODE")).Trim
+                            sISA_TRTE_GL_CODE = CStr(dr("ISA_TRTE_GL_CODE"))
                         Catch ex As Exception
                         End Try
                         If (sISA_TRTE_GL_CODE Is Nothing) Then
@@ -382,7 +398,8 @@
 
                         sISA_NHOT_GL_CODE = ""
                         Try
-                            sISA_NHOT_GL_CODE = CStr(dr("ISA_NHOT_GL_CODE")).Trim
+                            'sISA_NHOT_GL_CODE = CStr(dr("ISA_NHOT_GL_CODE")).Trim
+                            sISA_NHOT_GL_CODE = CStr(dr("ISA_NHOT_GL_CODE"))
                         Catch ex As Exception
                         End Try
                         If (sISA_NHOT_GL_CODE Is Nothing) Then
@@ -391,7 +408,8 @@
 
                         sISA_MN_TAX_CODE = ""
                         Try
-                            sISA_MN_TAX_CODE = CStr(dr("ISA_MN_TAX_CODE")).Trim
+                            'sISA_MN_TAX_CODE = CStr(dr("ISA_MN_TAX_CODE")).Trim
+                            sISA_MN_TAX_CODE = CStr(dr("ISA_MN_TAX_CODE"))
                         Catch ex As Exception
                         End Try
                         If (sISA_MN_TAX_CODE Is Nothing) Then
@@ -400,7 +418,8 @@
 
                         sISA_NC_TAX_CODE = ""
                         Try
-                            sISA_NC_TAX_CODE = CStr(dr("ISA_NC_TAX_CODE")).Trim
+                            'sISA_NC_TAX_CODE = CStr(dr("ISA_NC_TAX_CODE")).Trim
+                            sISA_NC_TAX_CODE = CStr(dr("ISA_NC_TAX_CODE"))
                         Catch ex As Exception
                         End Try
                         If (sISA_NC_TAX_CODE Is Nothing) Then
@@ -409,7 +428,8 @@
 
                         sISA_UT_TAX_CODE = ""
                         Try
-                            sISA_UT_TAX_CODE = CStr(dr("ISA_UT_TAX_CODE")).Trim
+                            'sISA_UT_TAX_CODE = CStr(dr("ISA_UT_TAX_CODE")).Trim
+                            sISA_UT_TAX_CODE = CStr(dr("ISA_UT_TAX_CODE"))
                         Catch ex As Exception
                         End Try
                         If (sISA_UT_TAX_CODE Is Nothing) Then
@@ -449,7 +469,8 @@
                                             If (CStr(dr(sFldKey)).Trim.Length = 0) Then
                                                 sFldVal = "= ' '"
                                             Else
-                                                sFldVal = "= '" & CStr(dr(sFldKey)).Trim & "'"
+                                                'sFldVal = "= '" & CStr(dr(sFldKey)).Trim & "'"
+                                                sFldVal = "= '" & CStr(dr(sFldKey)) & "'"
                                             End If
                                     End Select
                                 End If
@@ -887,13 +908,6 @@
                                 xOraTran1.Commit()
                                 xOraTran1.Dispose()
                                 xOraTran1 = Nothing
-
-                                ' clean-up
-                                Try
-                                    cmdUpdate.Dispose()
-                                Catch ex As Exception
-                                End Try
-                                cmdUpdate = Nothing
 
                             Else
                                 ' cannot open connection (which will be weird since it's the same connection for reading data from material master table) BUT just in case
