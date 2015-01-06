@@ -163,6 +163,9 @@
       <AutoGen>True</AutoGen>
     </Compile>
     <Content Include="PathLocator.xml" />
+    <Content Include="UpdEmailOutSettingConfig.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <None Include="Web References\loadbalance\Reference.map">
       <Generator>MSDiscoCodeGenerator</Generator>
       <LastGenOutput>Reference.vb</LastGenOutput>
