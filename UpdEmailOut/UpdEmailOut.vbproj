@@ -128,6 +128,14 @@
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="SDI.ApplicationLogger, Version=2.0.0.0, Culture=neutral">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\SDI.ApplicationLogger.dll</HintPath>
+    </Reference>
+    <Reference Include="SDI.UNCC.WorkOrderAdapter, Version=1.0.0.0, Culture=neutral">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\SDI.UNCC.WorkOrderAdapter.dll</HintPath>
+    </Reference>
     <Reference Include="System">
       <Name>System</Name>
     </Reference>
@@ -163,9 +171,6 @@
       <AutoGen>True</AutoGen>
     </Compile>
     <Content Include="PathLocator.xml" />
-    <Content Include="UpdEmailOutSettingConfig.xml">
-      <SubType>Designer</SubType>
-    </Content>
     <None Include="Web References\loadbalance\Reference.map">
       <Generator>MSDiscoCodeGenerator</Generator>
       <LastGenOutput>Reference.vb</LastGenOutput>
