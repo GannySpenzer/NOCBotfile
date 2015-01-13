@@ -495,9 +495,11 @@
                         Dim sProcessFlag As String = ""
 
                         If bSucceed Then
-                            sProcessFlag = "Y"
+                            'sProcessFlag = "Y"
+                            sProcessFlag = CStr(My.Settings("WOSTAT_ProcessFlag_Success")).Trim.ToUpper
                         Else
-                            sProcessFlag = "E"
+                            'sProcessFlag = "E"
+                            sProcessFlag = CStr(My.Settings("WOSTAT_ProcessFlag_Exception")).Trim.ToUpper
                         End If
 
                         ' accommodate Oracle interpretation of empty string = NULL

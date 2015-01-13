@@ -47,5 +47,11 @@
     <Setting Name="WOSTAT_GetErrMsgDesc" Type="System.String" Scope="Application">
       <Value Profile="(Default)">WOSTAT_HTTP_SOAP_GetErrMsgDesc.sql</Value>
     </Setting>
+    <Setting Name="WOSTAT_ProcessFlag_Success" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">W</Value>
+    </Setting>
+    <Setting Name="WOSTAT_ProcessFlag_Exception" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">X</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

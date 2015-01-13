@@ -189,6 +189,24 @@ Namespace My
                 Return CType(Me("WOSTAT_GetErrMsgDesc"),String)
             End Get
         End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("W")>  _
+        Public ReadOnly Property WOSTAT_ProcessFlag_Success() As String
+            Get
+                Return CType(Me("WOSTAT_ProcessFlag_Success"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("X")>  _
+        Public ReadOnly Property WOSTAT_ProcessFlag_Exception() As String
+            Get
+                Return CType(Me("WOSTAT_ProcessFlag_Exception"),String)
+            End Get
+        End Property
     End Class
 End Namespace
 
