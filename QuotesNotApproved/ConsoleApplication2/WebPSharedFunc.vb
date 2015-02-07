@@ -2245,9 +2245,10 @@ Namespace WebPartnerFunctions
         Public Shared Function GetUserInfo(ByVal strBU As String, ByVal strEmpID As String) As DataSet
 
             Dim strSQLstring As String
-            strSQLstring = "SELECT A.ISA_EMPLOYEE_EMAIL, A.PHONE_NUM" & vbCrLf & _
-                    " FROM PS_ISA_USERS_TBL A" & vbCrLf & _
-                    " WHERE BUSINESS_UNIT = '" & strBU & "'" & vbCrLf & _
+            strSQLstring = "SELECT A.ISA_EMPLOYEE_EMAIL, A.PHONE_NUM, B.isa_site_email" & vbCrLf & _
+                    " FROM PS_ISA_USERS_TBL A, ps_isa_enterprise B " & vbCrLf & _
+                    " WHERE B.isa_business_unit = A.business_unit " & vbCrLf & _
+                    " AND BUSINESS_UNIT = '" & strBU & "'" & vbCrLf & _
                     " AND ISA_EMPLOYEE_ID = '" & strEmpID & "'"
 
             GetUserInfo = ORDBData.GetAdapter(strSQLstring)

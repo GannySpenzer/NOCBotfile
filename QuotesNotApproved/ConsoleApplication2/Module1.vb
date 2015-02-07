@@ -205,12 +205,21 @@ Module Module1
         ds1.Dispose()
         Dim ds As DataSet
         Dim stremail As String = " "
+        Dim sEmailCC As String = " "
         'get email address here
         ds = GetUserInfo("I0206", stroneupid)
         If ds.Tables(0).Rows.Count > 0 Then
-            stremail = ds.Tables(0).Rows(0).Item("ISA_EMPLOYEE_EMAIL")
+            Try
+                stremail = ds.Tables(0).Rows(0).Item("ISA_EMPLOYEE_EMAIL")
+                sEmailCC = ds.Tables(0).Rows(0).Item("isa_site_email")
+
+            Catch ex As Exception
+                stremail = "erwin.bautista@sdi.com;Tony.smith@sdi.com"
+                sEmailCC = "karyn.crumbock@sdi.com;debbie.stephenson@sdi.com"
+            End Try
         Else
             stremail = "erwin.bautista@sdi.com;Tony.smith@sdi.com"
+            sEmailCC = "karyn.crumbock@sdi.com;debbie.stephenson@sdi.com"
         End If
         ds.Dispose()
         Dim dtgEmail As WebControls.DataGrid
@@ -252,15 +261,15 @@ Module Module1
         Else
             Mailer.To = stremail
         End If
-        Mailer.Bcc = "erwin.bautista@sdi.com"
-        Mailer.Cc = ds.Tables(0).Rows(0).Item("ISA_EMPLOYEE_EMAIL")
-        '"karyn.crumbock@sdi.com; tim.porter@sdi.com; carol.silverman@sdi.com"
+        Mailer.Bcc = "erwin.bautista@sdi.com;vitaly.rovensky@sdi.com"
+        Mailer.Cc = sEmailCC  '   ds.Tables(0).Rows(0).Item("ISA_EMPLOYEE_EMAIL")
+        '"karyn.crumbock@sdi.com; carol.silverman@sdi.com"
 
         Mailer.Subject = "SDiExchange - Order #: " & strorder_no & " waiting for quote approval > than 48 hrs"
         Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
         'SmtpMail.Send(Mailer)
         'SendEmail(Mailer)
-        Dim YesNOEmail As String
+        'Dim YesNOEmail As String
 
         '[ Public Shared Function GetUserInfo(ByVal strBU As String, ByVal strEmpID As String) As DataSet
         Mailer.To = stremail
