@@ -183,7 +183,7 @@ Module Module1
         Dim bolSelectItem As Boolean
         Dim strFirstName As String
         Dim strLastName As String
-        Dim stremp_email As String
+        'Dim stremp_email As String
         Dim strPO_ID As String
         Dim strbuer As String
         Dim dteCompanyID As String
@@ -232,13 +232,13 @@ Module Module1
         Unit.Percentage(70)
         dtgEmail.RenderControl(htmlTWnstk)
         dataGridHTML = SBnstk.ToString()
-        Dim strPurchaserEmail As String = stremp_email
+        'Dim strPurchaserEmail As String = stremp_email
         strbodydetl = "&nbsp;" & vbCrLf
         strbodydetl = strbodydetl & "<div>"
         strbodydetl = strbodydetl & "<p >To: " & strONE_LEVEL_UP_Approver & ", &nbsp;<br><br>"
-        strbodydetl = strbodydetl & "Order Number: &nbsp;&nbsp;" & strorder_no & "&nbsp"
-        strbodydetl = strbodydetl & "has been waiting for a Quote Approval over 48 hours. "
-        strbodydetl = strbodydetl & "Please have the Approver log on to <a href= http://www.sdiexchange.com >&nbsp;<B>SDiExchange</B> </a>" & " to approve the Quote.<br>"
+        strbodydetl = strbodydetl & "Order Number: &nbsp;&nbsp;" & strorder_no & " &nbsp;&nbsp; "
+        strbodydetl = strbodydetl & "has been waiting for a Quote Approval by the employee listed below for over 48 hours. <br><br>"
+        strbodydetl = strbodydetl & "Please have the employee log on to <a href= http://www.sdiexchange.com >&nbsp;<B>SDiExchange</B> </a>" & " to approve the Quote so that it is released to you for approval.<br><br>"
         strbodydetl = strbodydetl & "You will receive an email everyday until this Order has a resolution. <br><br>"
         strbodydetl = strbodydetl & "If you have questions please contact SDI&#39;s Help desk at 888-435-7734 "
         strbodydetl = strbodydetl & "&nbsp;</p>"
