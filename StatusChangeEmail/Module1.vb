@@ -12,7 +12,7 @@ Module Module1
     Dim objStreamWriter As StreamWriter
     Dim rootDir As String = "C:\StatChg"
     Dim logpath As String = "C:\StatChg\LOGS\StatChgEmailOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim connectOR As New OleDbConnection("Provider=MSDAORA.1;Password=EINTERNET;User ID=EINTERNET;Data Source=prod")
+    Dim connectOR As New OleDbConnection("Provider=MSDAORA.1;Password=EINTERNET;User ID=EINTERNET;Data Source=rptg")
 
     Sub Main()
 
@@ -938,9 +938,8 @@ Module Module1
         End If
 
         Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
-        'SmtpMail.Send(Mailer)
-        'SendEmail(Mailer)
-        UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer.Subject, Mailer.From, Mailer.To, "", "", "N", Mailer.Body, connectOR)
+        
+        'UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer.Subject, Mailer.From, Mailer.To, "", "", "N", Mailer.Body, connectOR)
 
     End Sub
 
@@ -968,7 +967,7 @@ Module Module1
 
         'Send the email and handle any error that occurs
         Try
-            UpdEmailOut.UpdEmailOut.UpdEmailOut(email.Subject, email.From, email.To, "", "", "Y", email.Body, connectOR)
+            'UpdEmailOut.UpdEmailOut.UpdEmailOut(email.Subject, email.From, email.To, "", "", "Y", email.Body, connectOR)
         Catch
             objStreamWriter.WriteLine("     Error - the email was not sent")
         End Try
@@ -978,7 +977,7 @@ Module Module1
     Private Sub sendemail(ByVal mailer As MailMessage)
 
         Try
-            SmtpMail.Send(mailer)
+            'SmtpMail.Send(mailer)
         Catch ex As Exception
             objStreamWriter.WriteLine("     Error - in the sendemail to customer SUB")
         End Try
@@ -1060,6 +1059,18 @@ Module Module1
         Dim ds As New DataSet
         Dim bolerror1 As Boolean
 
+        ' check is processed order is ASCEND order
+        Dim bIsAscend As Boolean = False
+        Dim strAscendBuList As String = "I0440,I0441,I0442,I0443,I0444"
+        If Trim(strBU) <> "" Then
+            Try
+                If strAscendBuList.IndexOf(strBU.Trim().ToUpper()) > -1 Then
+                    bIsAscend = True
+                End If
+            Catch ex As Exception
+                bIsAscend = False
+            End Try
+        End If
 
         dteEndDate.AddSeconds(1)
 
@@ -1071,8 +1082,12 @@ Module Module1
 
         strSQLstring = "SELECT distinct G.BUSINESS_UNIT_OM, A.ORDER_NO,B.ISA_WORK_ORDER_NO As WORK_ORDER_NO, B.line_nbr," & vbCrLf & _
                  " B.EMPLID, B.ISA_ORDER_STATUS as ORDER_TYPE," & vbCrLf & _
-                 " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, " & vbCrLf & _
-                 " G.ISA_ORDER_STATUS," & vbCrLf & _
+                 " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, " & vbCrLf   '  & _
+        If bIsAscend Then
+            ' add Ascend e-mail field
+            strSQLstring += " AB.EMAIL_ADDRESS AS ASCEND_EMAIL_ADDRESS," & vbCrLf
+        End If
+        strSQLstring += " G.ISA_ORDER_STATUS," & vbCrLf & _
                  " (SELECT E.XLATLONGNAME" & vbCrLf & _
                                 " FROM XLATTABLE E" & vbCrLf & _
                                 " WHERE E.EFFDT =" & vbCrLf & _
@@ -1088,8 +1103,12 @@ Module Module1
                   "H.ISA_IOL_OP_NAME as STATUS_CODE," & vbCrLf & _
                  " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH" & vbCrLf & _
                  " ,A.origin" & vbCrLf & _
-                 " FROM ps_isa_ord_intfc_H A," & vbCrLf & _
-                 " ps_isa_ord_intfc_l B," & vbCrLf & _
+                 " FROM ps_isa_ord_intfc_H A," & vbCrLf  '   & _
+        If bIsAscend Then
+            ' add Ascend source table
+            strSQLstring += " sysadm.PS_ISA_INTFC_H_SUP AB," & vbCrLf
+        End If
+        strSQLstring += " ps_isa_ord_intfc_l B," & vbCrLf & _
                  " PS_MASTER_ITEM_TBL C," & vbCrLf & _
                  " PS_ISA_USERS_TBL D," & vbCrLf & _
                  " PS_ISAORDSTATUSLOG G, " & vbCrLf & _
@@ -1099,8 +1118,13 @@ Module Module1
                  " AND G.BUSINESS_UNIT_OM = H.BUSINESS_UNIT " & vbCrLf & _
                  " AND G.BUSINESS_UNIT_OM = A.BUSINESS_UNIT_OM " & vbCrLf & _
                  " AND G.BUSINESS_UNIT_OM = D.BUSINESS_UNIT " & vbCrLf & _
-                 " AND H.BUSINESS_UNIT = D.BUSINESS_UNIT " & vbCrLf & _
-                 " and A.ISA_IDENTIFIER = B.ISA_PARENT_IDENT" & vbCrLf & _
+                 " AND H.BUSINESS_UNIT = D.BUSINESS_UNIT " & vbCrLf     '   & _
+        If bIsAscend Then
+            ' add Ascend clauses
+            strSQLstring += " AND A.BUSINESS_UNIT_OM = AB.BUSINESS_UNIT_OM" & vbCrLf & _
+                " AND A.ORDER_NO = AB.ORDER_NO" & vbCrLf
+        End If
+        strSQLstring += " and A.ISA_IDENTIFIER = B.ISA_PARENT_IDENT" & vbCrLf & _
                  " and C.SETID (+) = 'MAIN1'" & vbCrLf & _
                  " and C.INV_ITEM_ID(+) = B.INV_ITEM_ID " & vbCrLf & _
                  " AND G.ORDER_NO = A.ORDER_NO " & vbCrLf & _
@@ -1121,43 +1145,6 @@ Module Module1
         ' the tenth byte of isa_iol_op_name has the one character g.isa_order_status code
         ' example: substr(emlsubmit1,10) = '1'   order status code 1
         ' We are going to check for priveleges in the upd_email_out program that sends the emails out.
-
-
-        'strSQLstring = "SELECT A.BUSINESS_UNIT_OM, A.ORDER_NO, B.line_nbr," & vbCrLf & _
-        '         " B.EMPLID, B.ISA_ORDER_STATUS as ORDER_TYPE," & vbCrLf & _
-        '         " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, " & vbCrLf & _
-        '         " G.ISA_ORDER_STATUS," & vbCrLf & _
-        '         " (SELECT E.XLATLONGNAME" & vbCrLf & _
-        '                        " FROM XLATTABLE E" & vbCrLf & _
-        '                        " WHERE E.EFFDT =" & vbCrLf & _
-        '                        " (SELECT MAX(E_ED.EFFDT) FROM XLATTABLE E_ED" & vbCrLf & _
-        '                        " WHERE(E.FIELDNAME = E_ED.FIELDNAME)" & vbCrLf & _
-        '                        " AND E.LANGUAGE_CD = E_ED.LANGUAGE_CD" & vbCrLf & _
-        '                        " AND E.FIELDVALUE = E_ED.FIELDVALUE" & vbCrLf & _
-        '                        " AND E_ED.EFFDT <= SYSDATE)" & vbCrLf & _
-        '                        " AND E.FIELDNAME = 'ISA_ORDER_STATUS'" & vbCrLf & _
-        '                        " AND E.FIELDVALUE = G.ISA_ORDER_STATUS) as ORDER_STATUS_DESC, " & vbCrLf & _
-        '         " B.DESCR254 As NONSTOCK_DESCRIPTION, C.DESCR60 as STOCK_DESCRIPTION, D.ISA_EMPLOYEE_EMAIL," & vbCrLf & _
-        '         " B.INV_ITEM_ID as INV_ITEM_ID," & vbCrLf & _
-        '         " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH" & vbCrLf & _
-        '         " FROM ps_isa_ord_intfc_H A," & vbCrLf & _
-        '         " ps_isa_ord_intfc_l B," & vbCrLf & _
-        '         " PS_MASTER_ITEM_TBL C," & vbCrLf & _
-        '         " PS_ISA_USERS_TBL D," & vbCrLf & _
-        '         " PS_ISAORDSTATUSLOG G  " & vbCrLf & _
-        '         " where G.BUSINESS_UNIT_OM = '" & strBU & "' " & vbCrLf & _
-        '         " AND G.BUSINESS_UNIT_OM = A.BUSINESS_UNIT_OM " & vbCrLf & _
-        '         " AND G.BUSINESS_UNIT_OM = D.BUSINESS_UNIT " & vbCrLf & _
-        '         " and A.ISA_IDENTIFIER = B.ISA_PARENT_IDENT" & vbCrLf & _
-        '         " and C.SETID (+) = 'MAIN1'" & vbCrLf & _
-        '         " and C.INV_ITEM_ID(+) = B.INV_ITEM_ID " & vbCrLf & _
-        '         " AND G.ORDER_NO = A.ORDER_NO " & vbCrLf & _
-        '         " AND B.LINE_NBR = G.LINE_NBR" & vbCrLf & _
-        '         " AND A.BUSINESS_UNIT_OM = D.BUSINESS_UNIT" & vbCrLf & _
-        '         " AND G.DTTM_STAMP > TO_DATE('" & dteStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
-        '         " AND G.DTTM_STAMP <= TO_DATE('" & dteEndDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
-        '         " AND B.EMPLID = D.ISA_EMPLOYEE_ID" & vbCrLf & _
-        '         " ORDER BY ORDER_NO, LINE_NBR, DTTM_STAMP"
 
         Try
             ds = ORDBAccess.GetAdapter(strSQLstring, connectOR)
@@ -1262,6 +1249,14 @@ Module Module1
             Else
                 strdescription = ds.Tables(0).Rows(I).Item("ORDER_STATUS_DESC")
             End If
+            Dim strEmailTo As String = ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL")
+            Try
+                If bIsAscend Then
+                    strEmailTo = ds.Tables(0).Rows(I).Item("ASCEND_EMAIL_ADDRESS")
+                End If
+            Catch ex As Exception
+
+            End Try
             If I = ds.Tables(0).Rows.Count - 1 Then
 
                 strEmail_test = ";tom.rapp@sdi.com"
@@ -1275,7 +1270,7 @@ Module Module1
                 ds.Tables(0).Rows(I).Item("LINE_NBR"), _
                 ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
                 ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
-                ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"), _
+                strEmailTo, _
                 ds.Tables(0).Rows(I).Item("Origin"))
                 'strEmail_test)
 
@@ -1298,7 +1293,7 @@ Module Module1
                ds.Tables(0).Rows(I).Item("LINE_NBR"), _
                ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
                ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
-               ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"), _
+               strEmailTo, _
                ds.Tables(0).Rows(I).Item("Origin"))
                 'strEmail_test)
                 'ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
@@ -1420,9 +1415,8 @@ Module Module1
 
         Mailer1.Subject = "SDiExchange - Order Status records for Order Number: " & strOrderNo
         Mailer1.BodyFormat = System.Web.Mail.MailFormat.Html
-        'SmtpMail.Send(Mailer)
-        'SendEmail(Mailer)
-        UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer1.Subject, Mailer1.From, Mailer1.To, "", Mailer1.Bcc, "N", Mailer1.Body, connectOR)
+        
+        'UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer1.Subject, Mailer1.From, Mailer1.To, "", Mailer1.Bcc, "N", Mailer1.Body, connectOR)
 
     End Sub
     Private Function updateEnterprise(ByVal strBU As String, ByVal dteEndDate As DateTime) As Boolean
