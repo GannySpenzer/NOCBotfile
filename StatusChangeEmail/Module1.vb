@@ -92,36 +92,6 @@ Module Module1
                 End If
             End If
         Next
-        'For I = 0 To dsRows.Tables(0).Rows.Count - 1
-        '    If dsRows.Tables(0).Rows(I).Item("SITESTK") = "Y" And dsRows.Tables(0).Rows(I).Item("SITEBU") <> "I0256" Then
-        '        objStreamWriter.WriteLine("  StatChg Email send stock emails for " & dsRows.Tables(0).Rows(I).Item("SITEBU"))
-        '        buildstatchgout = checkStock(dsRows.Tables(0).Rows(I).Item("SITEBU"), dsRows.Tables(0).Rows(I).Item("SITESTART"))
-        '        If buildstatchgout = True Then
-        '            bolErrorSomeWhere = True
-        '        End If
-        '    End If
-        'Next
-
-        '' check non-stock
-        'For I = 0 To dsRows.Tables(0).Rows.Count - 1
-        '    If dsRows.Tables(0).Rows(I).Item("SITENSTK") = "Y" And dsRows.Tables(0).Rows(I).Item("SITEBU") <> "I0256" Then
-        '        objStreamWriter.WriteLine("  StatChg Email send nonstock emails for " & dsRows.Tables(0).Rows(I).Item("SITEBU"))
-        '        buildstatchgout = checkNonStock(dsRows.Tables(0).Rows(I).Item("SITEBU"), dsRows.Tables(0).Rows(I).Item("SITESTART"))
-        '        If buildstatchgout = True Then
-        '            bolErrorSomeWhere = True
-        '        End If
-        '    End If
-        'Next
-
-        'For I = 0 To dsRows.Tables(0).Rows.Count - 1
-        '    If dsRows.Tables(0).Rows(I).Item("ALLSTATUS") = "Y" And dsRows.Tables(0).Rows(I).Item("SITEBU") <> "I0256" Then
-        '        objStreamWriter.WriteLine("  StatChg Email send allstatus emails for " & dsRows.Tables(0).Rows(I).Item("SITEBU"))
-        '        buildstatchgout = checkAllStatus_7(dsRows.Tables(0).Rows(I).Item("SITEBU"), dsRows.Tables(0).Rows(I).Item("SITESTART"))
-        '        If buildstatchgout = True Then
-        '            bolErrorSomeWhere = True
-        '        End If
-        '    End If
-        'Next
 
         '7 is stock
         'R is non-stock
@@ -529,13 +499,34 @@ Module Module1
                 dsEmail.Rows.Add(dr)
                 'take this code down below so u can have multiple Order num's per email.
                 Dim strEmail_test As String = ";tom.rapp@sdi.com"
+
+                Dim strEmailTo As String = ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL")
+                Dim strOrderNo As String = ds.Tables(0).Rows(I).Item("ORDER_NO")
+                Dim strBu As String = ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM")
+
+                ' check is processed order is ASCEND order
+                Dim bIsAscend As Boolean = False
+                If Trim(strBu) <> "" Then
+                    bIsAscend = IsBuAscend(strBu)
+                End If
+
+                If bIsAscend Then
+                    Dim strAscendEmail As String = GetAscendEmailAddress(strBu, strOrderNo, connectOR)
+                    If Not strAscendEmail Is Nothing Then
+                        If Trim(strAscendEmail) <> "" Then
+                            strEmailTo = strAscendEmail
+                        End If
+                    End If
+
+                End If
+
                 If I = ds.Tables(0).Rows.Count - 1 Then
                     sendCustEmail(dsEmail, _
-                        ds.Tables(0).Rows(I).Item("ORDER_NO"), _
+                        strOrderNo, _
                         ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
                         ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
-                        ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"), _
-                        ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM"), ds.Tables(0).Rows(I).Item("Origin"))
+                        strEmailTo, _
+                        strBu, ds.Tables(0).Rows(I).Item("Origin"))
                     'ds.Tables(0).Rows(I).Item("DESCR254_MIXED")
 
                     dsEmail.Clear()
@@ -552,11 +543,11 @@ Module Module1
                    ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM") _
                    & ds.Tables(0).Rows(I).Item("ORDER_NO") Then
                     sendCustEmail(dsEmail, _
-                        ds.Tables(0).Rows(I).Item("ORDER_NO"), _
+                        strOrderNo, _
                         ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
                         ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
-                       ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"), _
-                        ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM"), ds.Tables(0).Rows(I).Item("Origin"))
+                        strEmailTo, _
+                        strBu, ds.Tables(0).Rows(I).Item("Origin"))
                     dsEmail.Clear()
                     If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
                         connectOR.Close()
@@ -724,13 +715,34 @@ Module Module1
                 End If
                 dsEmail.Rows.Add(dr)
                 Dim strEmail_test As String = ";tom.rapp@sdi.com"
+
+                Dim strEmailTo As String = ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL")
+                Dim strOrderNo As String = ds.Tables(0).Rows(I).Item("ORDER_NO")
+                Dim strBu As String = ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM")
+
+                ' check is processed order is ASCEND order
+                Dim bIsAscend As Boolean = False
+                If Trim(strBu) <> "" Then
+                    bIsAscend = IsBuAscend(strBu)
+                End If
+
+                If bIsAscend Then
+                    Dim strAscendEmail As String = GetAscendEmailAddress(strBu, strOrderNo, connectOR)
+                    If Not strAscendEmail Is Nothing Then
+                        If Trim(strAscendEmail) <> "" Then
+                            strEmailTo = strAscendEmail
+                        End If
+                    End If
+
+                End If
+
                 If I = ds.Tables(0).Rows.Count - 1 Then
                     sendCustEmail(dsEmail, _
-                        ds.Tables(0).Rows(I).Item("ORDER_NO"), _
+                        strOrderNo, _
                         ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
                         ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
-                        ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"), _
-                        ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM"), _
+                        strEmailTo, _
+                        strBu, _
                         ds.Tables(0).Rows(I).Item("Origin"))
                     dsEmail.Clear()
                     If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
@@ -746,11 +758,11 @@ Module Module1
                    ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM") _
                    & ds.Tables(0).Rows(I).Item("ORDER_NO") Then
                     sendCustEmail(dsEmail, _
-                        ds.Tables(0).Rows(I).Item("ORDER_NO"), _
+                        strOrderNo, _
                         ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
                         ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
-                        ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"), _
-                        ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM"), _
+                        strEmailTo, _
+                        strBu, _
                         ds.Tables(0).Rows(I).Item("Origin"))
                     dsEmail.Clear()
                     If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
@@ -939,7 +951,7 @@ Module Module1
 
         Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
         
-        'UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer.Subject, Mailer.From, Mailer.To, "", "", "N", Mailer.Body, connectOR)
+        UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer.Subject, Mailer.From, Mailer.To, "", "", "N", Mailer.Body, connectOR)
 
     End Sub
 
@@ -967,7 +979,7 @@ Module Module1
 
         'Send the email and handle any error that occurs
         Try
-            'UpdEmailOut.UpdEmailOut.UpdEmailOut(email.Subject, email.From, email.To, "", "", "Y", email.Body, connectOR)
+            UpdEmailOut.UpdEmailOut.UpdEmailOut(email.Subject, email.From, email.To, "", "", "Y", email.Body, connectOR)
         Catch
             objStreamWriter.WriteLine("     Error - the email was not sent")
         End Try
@@ -977,7 +989,7 @@ Module Module1
     Private Sub sendemail(ByVal mailer As MailMessage)
 
         Try
-            'SmtpMail.Send(mailer)
+            SmtpMail.Send(mailer)
         Catch ex As Exception
             objStreamWriter.WriteLine("     Error - in the sendemail to customer SUB")
         End Try
@@ -1010,6 +1022,25 @@ Module Module1
             updateSendEmailTbl = True
         End Try
         Command1.Dispose()
+    End Function
+
+    Private Function IsBuAscend(ByVal strBu As String) As Boolean
+
+        ' check is processed order is ASCEND order
+        Dim bIsAscend As Boolean = False
+        Dim strAscendBuList As String = "I0440,I0441,I0442,I0443,I0444"
+        If Trim(strBu) <> "" Then
+            Try
+                If strAscendBuList.IndexOf(strBu.Trim().ToUpper()) > -1 Then
+                    bIsAscend = True
+                End If
+            Catch ex As Exception
+                bIsAscend = False
+            End Try
+        End If
+
+        Return bIsAscend
+
     End Function
 
     Private Function checkAllStatus_7(ByVal strBU As String, ByVal dtrStartDate As String) As Boolean
@@ -1061,15 +1092,8 @@ Module Module1
 
         ' check is processed order is ASCEND order
         Dim bIsAscend As Boolean = False
-        Dim strAscendBuList As String = "I0440,I0441,I0442,I0443,I0444"
         If Trim(strBU) <> "" Then
-            Try
-                If strAscendBuList.IndexOf(strBU.Trim().ToUpper()) > -1 Then
-                    bIsAscend = True
-                End If
-            Catch ex As Exception
-                bIsAscend = False
-            End Try
+            bIsAscend = IsBuAscend(strBU)
         End If
 
         dteEndDate.AddSeconds(1)
@@ -1083,10 +1107,10 @@ Module Module1
         strSQLstring = "SELECT distinct G.BUSINESS_UNIT_OM, A.ORDER_NO,B.ISA_WORK_ORDER_NO As WORK_ORDER_NO, B.line_nbr," & vbCrLf & _
                  " B.EMPLID, B.ISA_ORDER_STATUS as ORDER_TYPE," & vbCrLf & _
                  " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, " & vbCrLf   '  & _
-        If bIsAscend Then
-            ' add Ascend e-mail field
-            strSQLstring += " AB.EMAIL_ADDRESS AS ASCEND_EMAIL_ADDRESS," & vbCrLf
-        End If
+        'If bIsAscend Then
+        '    ' add Ascend e-mail field
+        '    strSQLstring += " AB.EMAIL_ADDRESS AS ASCEND_EMAIL_ADDRESS," & vbCrLf
+        'End If
         strSQLstring += " G.ISA_ORDER_STATUS," & vbCrLf & _
                  " (SELECT E.XLATLONGNAME" & vbCrLf & _
                                 " FROM XLATTABLE E" & vbCrLf & _
@@ -1104,10 +1128,10 @@ Module Module1
                  " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH" & vbCrLf & _
                  " ,A.origin" & vbCrLf & _
                  " FROM ps_isa_ord_intfc_H A," & vbCrLf  '   & _
-        If bIsAscend Then
-            ' add Ascend source table
-            strSQLstring += " sysadm.PS_ISA_INTFC_H_SUP AB," & vbCrLf
-        End If
+        'If bIsAscend Then
+        '    ' add Ascend source table
+        '    strSQLstring += " sysadm.PS_ISA_INTFC_H_SUP AB," & vbCrLf
+        'End If
         strSQLstring += " ps_isa_ord_intfc_l B," & vbCrLf & _
                  " PS_MASTER_ITEM_TBL C," & vbCrLf & _
                  " PS_ISA_USERS_TBL D," & vbCrLf & _
@@ -1119,11 +1143,11 @@ Module Module1
                  " AND G.BUSINESS_UNIT_OM = A.BUSINESS_UNIT_OM " & vbCrLf & _
                  " AND G.BUSINESS_UNIT_OM = D.BUSINESS_UNIT " & vbCrLf & _
                  " AND H.BUSINESS_UNIT = D.BUSINESS_UNIT " & vbCrLf     '   & _
-        If bIsAscend Then
-            ' add Ascend clauses
-            strSQLstring += " AND A.BUSINESS_UNIT_OM = AB.BUSINESS_UNIT_OM" & vbCrLf & _
-                " AND A.ORDER_NO = AB.ORDER_NO" & vbCrLf
-        End If
+        'If bIsAscend Then
+        '    ' add Ascend clauses
+        '    strSQLstring += " AND A.BUSINESS_UNIT_OM = AB.BUSINESS_UNIT_OM" & vbCrLf & _
+        '        " AND A.ORDER_NO = AB.ORDER_NO" & vbCrLf
+        'End If
         strSQLstring += " and A.ISA_IDENTIFIER = B.ISA_PARENT_IDENT" & vbCrLf & _
                  " and C.SETID (+) = 'MAIN1'" & vbCrLf & _
                  " and C.INV_ITEM_ID(+) = B.INV_ITEM_ID " & vbCrLf & _
@@ -1192,7 +1216,6 @@ Module Module1
             Try
                 strStatus_code = ds.Tables(0).Rows(I).Item("STATUS_CODE")
                 strStatus_code = strStatus_code.Substring(9)
-                'Dim strstatus_code1 As String = strStatus_code.Substring(10)
 
             Catch ex As Exception
                 strStatus_code = " "
@@ -1250,13 +1273,16 @@ Module Module1
                 strdescription = ds.Tables(0).Rows(I).Item("ORDER_STATUS_DESC")
             End If
             Dim strEmailTo As String = ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL")
-            Try
-                If bIsAscend Then
-                    strEmailTo = ds.Tables(0).Rows(I).Item("ASCEND_EMAIL_ADDRESS")
-                End If
-            Catch ex As Exception
 
-            End Try
+            If bIsAscend Then
+                Dim strAscendEmail As String = GetAscendEmailAddress(strBU, stroderno, connectOR)
+                If Not strAscendEmail Is Nothing Then
+                    If Trim(strAscendEmail) <> "" Then
+                        strEmailTo = strAscendEmail
+                    End If
+                End If
+                
+            End If
             If I = ds.Tables(0).Rows.Count - 1 Then
 
                 strEmail_test = ";tom.rapp@sdi.com"
@@ -1318,6 +1344,62 @@ Module Module1
 
 
 
+    End Function
+
+    Private Function GetAscendEmailAddress(ByVal strBu As String, ByVal strOrderNo As String, ByVal connectOR As OleDbConnection) As String
+        Dim strAscendEmail As String = ""
+
+        Try
+            'GET ASCEND E-MAIL ADDRESS FOR THIS ORDER
+            Dim strAscendSql As String = ""
+            strAscendSql += " select AB.EMAIL_ADDRESS AS ASCEND_EMAIL_ADDRESS, AB.WORK_ORDER_ID, A.BUSINESS_UNIT_OM," & vbCrLf
+            strAscendSql += " A.ORDER_NO FROM ps_isa_ord_intfc_H A," & vbCrLf
+            strAscendSql += " sysadm.PS_ISA_INTFC_H_SUP AB" & vbCrLf
+            strAscendSql += " where A.BUSINESS_UNIT_OM = AB.BUSINESS_UNIT_OM" & vbCrLf
+            strAscendSql += " AND A.ORDER_NO = AB.ORDER_NO" & vbCrLf
+            strAscendSql += " AND A.BUSINESS_UNIT_OM='" & strBu & "'" & vbCrLf
+            strAscendSql += " AND A.ORDER_NO='" & strOrderNo & "'" & vbCrLf
+
+
+            If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
+                connectOR.Close()
+            End If
+
+            Dim dSet As New DataSet
+            dSet = ORDBAccess.GetAdapter(strAscendSql, connectOR)
+            If Not dSet Is Nothing Then
+                If dSet.Tables.Count > 0 Then
+                    If dSet.Tables(0).Rows.Count > 0 Then
+                        If Not dSet.Tables(0).Rows(0).Item("ASCEND_EMAIL_ADDRESS") Is Nothing Then
+                            If Trim(dSet.Tables(0).Rows(0).Item("ASCEND_EMAIL_ADDRESS")) <> "" Then
+                                strAscendEmail = dSet.Tables(0).Rows(0).Item("ASCEND_EMAIL_ADDRESS")
+                            End If
+                        End If
+                    End If
+                End If
+            End If
+
+            If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
+                connectOR.Close()
+            End If
+        Catch ex As Exception
+            strAscendEmail = ""
+            Try
+
+                If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
+                    connectOR.Close()
+                Else
+                    Try
+                        connectOR.Close()
+                    Catch ex2 As Exception
+
+                    End Try
+                End If
+            Catch ex1 As Exception
+
+            End Try
+        End Try
+        Return strAscendEmail
     End Function
 
     Private Sub sendCustEmail1(ByVal dsEmail As DataTable, _
@@ -1416,7 +1498,7 @@ Module Module1
         Mailer1.Subject = "SDiExchange - Order Status records for Order Number: " & strOrderNo
         Mailer1.BodyFormat = System.Web.Mail.MailFormat.Html
         
-        'UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer1.Subject, Mailer1.From, Mailer1.To, "", Mailer1.Bcc, "N", Mailer1.Body, connectOR)
+        UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer1.Subject, Mailer1.From, Mailer1.To, "", Mailer1.Bcc, "N", Mailer1.Body, connectOR)
 
     End Sub
     Private Function updateEnterprise(ByVal strBU As String, ByVal dteEndDate As DateTime) As Boolean
