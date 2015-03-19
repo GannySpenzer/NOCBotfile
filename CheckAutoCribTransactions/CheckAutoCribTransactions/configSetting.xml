@@ -8,7 +8,7 @@
 	<sourceDB cnstring="Provider=MSDAORA.1;Data Source=PLGR;User ID=ewindows;Password=ewindows;"
 		type="oracle8" />
 	//-->
-	<sourceDB cnString="Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=UATC"
+	<sourceDB cnString="Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=RPTG"
 		type="oracle8" />
 	<!-- TIMER
 		 timer object properties for checking newly added quoted non-stock items on the database.  this
@@ -52,9 +52,9 @@
 			<bccItem name="Ronald Fijalkowski" addy="ronald.fijalkowski@isacs.com" />
 		//-->
 		<additionalBcc desc="individuals that will be added in the BCC field of emails sent through this service">
-			<bccItem name="Erwin Bautista" addy="erwin.bautista@sdi.com" />
+			<bccItem name="Vitaly Rovensky" addy="Vitaly.Rovensky@sdi.com" />
 		</additionalBcc>
-		<defaultSubject text="Quote Process (TESTING PHASE)" />
+		<defaultSubject text="Check Auto Crib Transactions (TESTING PHASE)" />
 		<!-- for TESTING or PRODUCTION web page
 		*** for PRODUCTION access
 		<body linkURL="http://InSiteOnLine.isacs.com/ApproveQuote.aspx" />
