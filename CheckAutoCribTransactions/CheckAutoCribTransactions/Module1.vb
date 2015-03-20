@@ -131,6 +131,7 @@ Module Module1
                     " where business_unit='" & dr.Item("isa_business_unit") & "' " & vbCrLf & _
                     " and trunc(dt_timestamp, 'DDD') > trunc(sysdate - 2, 'DDD')"
 
+        Dim dDate As Date = CDate(Now())
         Try
             objStreamWriter.WriteLine(" strSQLstring: " & strSQLstring)
             Dim Command1 As OleDbCommand = New OleDbCommand(strSQLstring, connectOR)
@@ -138,25 +139,26 @@ Module Module1
             Dim dataAdapter1 As OleDbDataAdapter = _
                         New OleDbDataAdapter(Command1)
             Dim ds1 As System.Data.DataSet = New System.Data.DataSet
-            objStreamWriter.WriteLine("Place1")
+            'objStreamWriter.WriteLine("Place1")
             dataAdapter1.Fill(ds1)
-            Try
-                objStreamWriter.WriteLine("Place2 " & ds1.Tables.Count)
-            Catch ex As Exception
-                objStreamWriter.WriteLine("Error: Place2")
-            End Try
-            Try
-                objStreamWriter.WriteLine("Place2-A " & ds1.Tables(0).Rows.Count)
-            Catch ex As Exception
-                objStreamWriter.WriteLine("Error: Place2-A")
-            End Try
+            'Try
+            '    objStreamWriter.WriteLine("Place2 " & ds1.Tables.Count)
+            'Catch ex As Exception
+            '    objStreamWriter.WriteLine("Error: Place2")
+            'End Try
+            'Try
+            '    objStreamWriter.WriteLine("Place2-A " & ds1.Tables(0).Rows.Count)
+            'Catch ex As Exception
+            '    objStreamWriter.WriteLine("Error: Place2-A")
+            'End Try
+
             If Not ds1 Is Nothing Then
                 If ds1.Tables.Count > 0 Then
                     If ds1.Tables(0).Rows.Count = 0 Then
                         'send e-mail
 
                         Dim Mailer As MailMessage = New MailMessage
-                        objStreamWriter.WriteLine("Place3")
+                        'objStreamWriter.WriteLine("Place3")
 
                         With Mailer
 
@@ -169,7 +171,6 @@ Module Module1
                                 .To = "DoNotSendRPTG@sdi.com"
                             End If
 
-                            Dim dDate As Date = CDate(Now())
                             dDate = dDate.AddDays(-1)
 
                             .Subject = "No Autocrib Transaction for " & dr.Item("ISA_COMPANY_ID") & " (BU: " & dr.Item("isa_business_unit") & ") on " & dDate.ToShortDateString()
@@ -179,25 +180,29 @@ Module Module1
 
 
                         End With
-                        objStreamWriter.WriteLine("Place4")
+                        'objStreamWriter.WriteLine("Place4")
 
                         bReslt = sendemail(Mailer)
-                        objStreamWriter.WriteLine("Place5")
+                        'objStreamWriter.WriteLine("Place5")
                         If bReslt = False Then
                             objStreamWriter.WriteLine("  Error sending email to: " & Mailer.To & ", from: " & Mailer.From & ", - at " & Now().ToString())
                         Else
                             objStreamWriter.WriteLine("E-mail was sent successfully for " & dr.Item("ISA_COMPANY_ID") & " BU: " & dr.Item("isa_business_unit") & "")
                         End If
+                    Else
+                        If ds1.Tables(0).Rows.Count > 0 Then
+                            objStreamWriter.WriteLine("There are " & ds1.Tables(0).Rows.Count & " transactions for " & dr.Item("ISA_COMPANY_ID") & " (BU: " & dr.Item("isa_business_unit") & ") on " & dDate.ToShortDateString())
+                        End If
                     End If
                 Else
-                    objStreamWriter.WriteLine("No data from SYSADM.ps_isa_autocrb_trx for " & dr.Item("ISA_COMPANY_ID") & " BU: " & dr.Item("isa_business_unit") & "")
+                    objStreamWriter.WriteLine("No data from SYSADM.ps_isa_autocrb_trx for " & dr.Item("ISA_COMPANY_ID") & " (BU: " & dr.Item("isa_business_unit") & ") on " & dDate.ToShortDateString())
                 End If
             Else
-                objStreamWriter.WriteLine("No data from SYSADM.ps_isa_autocrb_trx for " & dr.Item("ISA_COMPANY_ID") & " BU: " & dr.Item("isa_business_unit") & "")
+                objStreamWriter.WriteLine("No data from SYSADM.ps_isa_autocrb_trx for " & dr.Item("ISA_COMPANY_ID") & " (BU: " & dr.Item("isa_business_unit") & ") on " & dDate.ToShortDateString())
             End If
         Catch ex As Exception
             bReslt = False
-            objStreamWriter.WriteLine("Error retrieving data from SYSADM.ps_isa_autocrb_trx for " & dr.Item("ISA_COMPANY_ID") & " BU: " & dr.Item("isa_business_unit") & "")
+            objStreamWriter.WriteLine("Error retrieving data from SYSADM.ps_isa_autocrb_trx for " & dr.Item("ISA_COMPANY_ID") & " (BU: " & dr.Item("isa_business_unit") & ") on " & dDate.ToShortDateString())
             objStreamWriter.WriteLine("Error: " & ex.Message)
         End Try
 
@@ -207,9 +212,9 @@ Module Module1
     Private Function sendemail(ByVal mailer As MailMessage) As Boolean
         Dim bNoError As Boolean = False
         Try
-            'SmtpMail.Send(mailer)
+            SmtpMail.Send(mailer)
 
-            UpdEmailOut.UpdEmailOut.UpdEmailOut(mailer.Subject, mailer.From, mailer.To, "", "", "N", mailer.Body, connectOR)
+            'UpdEmailOut.UpdEmailOut.UpdEmailOut(mailer.Subject, mailer.From, mailer.To, "", "", "N", mailer.Body, connectOR)
 
             bNoError = True
         Catch ex As Exception
