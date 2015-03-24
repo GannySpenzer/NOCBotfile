@@ -13,8 +13,8 @@ Module Module1
     Private m_xmlConfig As XmlDocument
     Private m_configFile As String = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly.GetModules()(0).FullyQualifiedName) & "\configSetting.xml"
     Dim objStreamWriter As StreamWriter
-    Dim rootDir As String = "C:\CheckAutoCribTrans"
-    Dim logpath As String = "C:\CheckAutoCribTrans\LOGS\CheckAutoCribTransOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+    Dim rootDir As String = "C:\Program Files\sdi\CheckAutoCribTrans"
+    Dim logpath As String = "C:\Program Files\sdi\CheckAutoCribTrans\LOGS\CheckAutoCribTransOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
     Dim connectOR As New OleDbConnection("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=RPTG")
     'ISA_EMAIL_ID                              NOT NULL NUMBER(38)
     'DATETIME_ADDED                                     DATE
@@ -31,6 +31,9 @@ Module Module1
 
     Sub Main()
 
+        Console.WriteLine("Started to check Auto Crib Transactions ")
+        Console.WriteLine("")
+
         If Dir(rootDir, FileAttribute.Directory) = "" Then
             MkDir(rootDir)
         End If
@@ -39,7 +42,7 @@ Module Module1
         End If
 
         objStreamWriter = File.CreateText(logpath)
-        objStreamWriter.WriteLine("Send Auto Crib Transactions emails out " & Now())
+        objStreamWriter.WriteLine("Started to check Auto Crib Transactions " & Now())
 
         m_xmlConfig = New XmlDocument
         m_xmlConfig.Load(filename:=m_configFile)
@@ -109,17 +112,31 @@ Module Module1
             Catch ex As Exception
                 objStreamWriter.WriteLine(" Error on connectOR.Open() ")
             End Try
+            Dim bOK As Boolean = False
             For I = 0 To ds.Tables(0).Rows.Count - 1
                 'objStreamWriter.WriteLine(" Going to check row: " & I.ToString())
-                CheckAndSendCustEmail(ds.Tables(0).Rows(I))
+                If I = 0 Then
+                    bOK = CheckAndSendCustEmail(ds.Tables(0).Rows(I), True)
+                Else
+                    bOK = CheckAndSendCustEmail(ds.Tables(0).Rows(I))
+                End If
+
+                If Not bOK Then
+                    bResult = True
+                End If
             Next
+            Try
+                connectOR.Close()
+            Catch ex As Exception
+                objStreamWriter.WriteLine(" Error on connectOR.Close() ")
+            End Try
         End If
 
         Return bResult
 
     End Function
 
-    Private Function CheckAndSendCustEmail(ByVal dr As DataRow) As Boolean
+    Private Function CheckAndSendCustEmail(ByVal dr As DataRow, Optional ByVal bDo As Boolean = False) As Boolean
         Dim bReslt As Boolean = False
         '  ISA_COMPANY_ID " & dr.Item("ISA_COMPANY_ID") & "
 
@@ -133,7 +150,9 @@ Module Module1
 
         Dim dDate As Date = CDate(Now())
         Try
-            objStreamWriter.WriteLine(" strSQLstring: " & strSQLstring)
+            If bDo Then
+                objStreamWriter.WriteLine(" Sample SQL string: " & strSQLstring)
+            End If
             Dim Command1 As OleDbCommand = New OleDbCommand(strSQLstring, connectOR)
 
             Dim dataAdapter1 As OleDbDataAdapter = _
@@ -160,16 +179,59 @@ Module Module1
                         Dim Mailer As MailMessage = New MailMessage
                         'objStreamWriter.WriteLine("Place3")
 
+                        Dim xmlEmailElement As XmlElement = Nothing
+
+                        ' get "email" node of the configuration file
+                        If Not (m_xmlConfig("configuration")("email") Is Nothing) Then
+                            xmlEmailElement = m_xmlConfig("configuration")("email")
+                        End If
+                        Dim strTo As String = ""
+
+                        ' get additional recipient (as TO) email addresses
+                        If Not (xmlEmailElement("additionalTo").ChildNodes Is Nothing) Then
+                            If xmlEmailElement("additionalTo").ChildNodes.Count > 0 Then
+                                For Each toItem As XmlNode In xmlEmailElement("additionalTo").ChildNodes
+                                    If toItem.Name = "toItem" And Not (toItem.Attributes("addy").InnerText Is Nothing) Then
+                                        If toItem.Attributes("addy").InnerText.Trim.Length > 0 Then
+                                            strTo += toItem.Attributes("addy").InnerText.Trim & ";"
+                                        End If
+                                    End If
+                                Next
+                            End If
+                        End If
+                        If Trim(strTo) = "" Then
+                            strTo = "Donna.Ciampoli@sdi.com"
+                        End If
+
+                        Dim strBcc As String = ""
+
+                        ' get additional recipient (as BCC) email addresses
+                        If Not (xmlEmailElement("additionalBcc").ChildNodes Is Nothing) Then
+                            If xmlEmailElement("additionalBcc").ChildNodes.Count > 0 Then
+                                For Each bccItem As XmlNode In xmlEmailElement("additionalBcc").ChildNodes
+                                    If bccItem.Name = "bccItem" And Not (bccItem.Attributes("addy").InnerText Is Nothing) Then
+                                        If bccItem.Attributes("addy").InnerText.Trim.Length > 0 Then
+                                            strBcc += bccItem.Attributes("addy").InnerText.Trim & ";"
+                                        End If
+                                    End If
+                                Next
+                            End If
+                        End If
+                        If Trim(strBcc) = "" Then
+                            strBcc = "WebDev@sdi.com"
+                        End If
+
                         With Mailer
 
                             .From = "TechSupport@sdi.com"
-                            .To = "vitaly.rovensky@sdi.com"
+                            .To = strTo    '  "vitaly.rovensky@sdi.com"
                             If connectOR.DataSource.ToUpper = "RPTG" Or _
                                     connectOR.DataSource.ToUpper = "SNBX" Or _
                                     connectOR.DataSource.ToUpper = "DEVL" Then
 
                                 .To = "DoNotSendRPTG@sdi.com"
                             End If
+                            .Bcc = strBcc
 
                             dDate = dDate.AddDays(-1)
 
@@ -191,6 +253,7 @@ Module Module1
                         End If
                     Else
                         If ds1.Tables(0).Rows.Count > 0 Then
+                            bReslt = True
                             objStreamWriter.WriteLine("There are " & ds1.Tables(0).Rows.Count & " transactions for " & dr.Item("ISA_COMPANY_ID") & " (BU: " & dr.Item("isa_business_unit") & ") on " & dDate.ToShortDateString())
                         End If
                     End If

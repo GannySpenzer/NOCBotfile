@@ -39,6 +39,8 @@
 			<toItem name="Erwin Bautista" addy="erwin.bautista@sdi.com" />
 		//-->
 		<additionalTo desc="individuals that will be added in the TO field of emails sent through this service">
+      <toItem name="Matthew Adams" addy="Matthew.Adams@sdi.com" />
+      <toItem name="Donna Ciampoli" addy="Donna.Ciampoli@sdi.com" />
 		</additionalTo>
 		<!-- for testing
 			<ccItem name="Erwin Bautista" addy="erwin.bautista@sdi.com" />
@@ -52,7 +54,7 @@
 			<bccItem name="Ronald Fijalkowski" addy="ronald.fijalkowski@isacs.com" />
 		//-->
 		<additionalBcc desc="individuals that will be added in the BCC field of emails sent through this service">
-			<bccItem name="Vitaly Rovensky" addy="Vitaly.Rovensky@sdi.com" />
+			<bccItem name="WebDev" addy="WebDev@sdi.com" />
 		</additionalBcc>
 		<defaultSubject text="Check Auto Crib Transactions (TESTING PHASE)" />
 		<!-- for TESTING or PRODUCTION web page
