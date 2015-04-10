@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE cXML SYSTEM "{__DOCTYPE}">
+<cXML payloadID="{__PAYLOAD_ID}" xml:lang="en-US" timestamp="{__TIMESTAMP}">
+	<Header>
+		<From />
+		<To />
+		<Sender />
+	</Header>
+	<Request>
+	</Request>
+</cXML>
