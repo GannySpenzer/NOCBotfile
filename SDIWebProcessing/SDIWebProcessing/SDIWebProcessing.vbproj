@@ -82,6 +82,21 @@
     <Import Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BusinessObjects\ISDIOrderProcessor.vb" />
+    <Compile Include="BusinessObjects\myItem.vb" />
+    <Compile Include="BusinessObjects\noAppLogger.vb" />
+    <Compile Include="BusinessObjects\order.vb" />
+    <Compile Include="BusinessObjects\orderLine.vb" />
+    <Compile Include="BusinessObjects\orderProcessMsgs.vb" />
+    <Compile Include="BusinessObjects\orderProcessor.vb" />
+    <Compile Include="BusinessObjects\processMsg.vb" />
+    <Compile Include="BusinessObjects\stringEncoder.vb" />
+    <Compile Include="clsEnterprise.vb" />
+    <Compile Include="clsIntfcLine.vb" />
+    <Compile Include="clsIntfcOrder.vb" />
+    <Compile Include="clsInvItemID.vb" />
+    <Compile Include="clsQuote.vb" />
+    <Compile Include="clsUserTbl.vb" />
     <Compile Include="Module1.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
@@ -98,6 +113,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="ORDBAccess.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
@@ -122,6 +138,7 @@
   <ItemGroup>
     <Content Include="configSetting.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </Content>
     <Content Include="references\SDI.ApplicationLogger.dll" />
     <Content Include="references\SDI.UNCC.WorkOrderAdapter.dll" />
