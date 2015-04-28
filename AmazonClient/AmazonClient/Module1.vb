@@ -80,12 +80,45 @@ Module Module1
         strMsgVendConfig = " 'm_vendorConfig.ConfigFile' is not defined"
         Try
             objStreamWriter.WriteLine("Started building XML out " & Now())
-            'Dim userBU As String = "I0256"
+            Dim userBU As String = "I0256"
 
-            ' DO NOT DELELTE COMMENTED OUT CODE BELOW!
+            ''DO NOT DELELTE COMMENTED OUT CODE BELOW!
             '' this function is a copy of the PuncoutWin.aspx call to vendor to establish Punchout session
             '' returning XML file which is ready to be send
             'strInput = getPOSR(strPunSite, userBU)
+
+            'If Trim(strInput) <> "" Then
+            '    objStreamWriter.WriteLine("Saving XML file to send " & Now())
+            '    objStreamWriterXML.WriteLine(strInput)
+
+            '    Call Send1(strInput, strOutput)
+
+            '    objStreamWriter.WriteLine("Saving Response XML file " & Now())
+            '    objStrmWrtrXMLRspns.WriteLine(strOutput)
+            'Else
+
+            '    objStreamWriter.WriteLine("Input string is empty. Possible cause: " & strMsgVendConfig)
+            '    objStreamWriter.Flush()
+            '    objStreamWriter.Close()
+
+            '    objStreamWriterXML.Flush()
+            '    objStreamWriterXML.Close()
+
+            '    objStrmWrtrXMLRspns.Flush()
+            '    objStrmWrtrXMLRspns.Close()
+            '    Exit Sub
+            'End If
+
+            'objStreamWriter.Flush()
+            'objStreamWriter.Close()
+
+            'objStreamWriterXML.Flush()
+            'objStreamWriterXML.Close()
+
+            'objStrmWrtrXMLRspns.Flush()
+            'objStrmWrtrXMLRspns.Close()
+            'Exit Sub
+            ''end special test
 
             ' function to send order request - using strPunSite only
             strInput = getOrderRequest(strPunSite, OrderListDataSet)
@@ -126,6 +159,14 @@ Module Module1
         Else
 
             objStreamWriter.WriteLine("Input string is empty. Possible cause: " & strMsgVendConfig)
+            objStreamWriter.Flush()
+            objStreamWriter.Close()
+
+            objStreamWriterXML.Flush()
+            objStreamWriterXML.Close()
+
+            objStrmWrtrXMLRspns.Flush()
+            objStrmWrtrXMLRspns.Close()
             Exit Sub
         End If
 
@@ -141,89 +182,157 @@ Module Module1
             '-----------------------------------------------------------------------
 
             Dim xmlResponse As New XmlDocument
-            xmlResponse.LoadXml(Response_Doc)
-            Dim root As XmlElement = xmlResponse.DocumentElement
+            Dim root As XmlElement = Nothing
+            Try
+                xmlResponse.LoadXml(Response_Doc)
+                root = xmlResponse.DocumentElement
+                bIsOK = True
+            Catch ex As Exception
+                objStreamWriter.WriteLine("Response XML file is NOT checked OK - 'LoadXml' area  " & Now())
+                bIsOK = False
+            End Try
             'Dim objnode As XmlNode
 
-            Try
-                bIsOK = (root.SelectNodes("Response/Status").Item(0).Attributes(name:="code").Value = "200")
-                If Not bIsOK Then
-                    bIsOK = (root.SelectNodes("Response/Status").Item(0).Attributes(name:="text").Value.ToUpper = "SUCCESS")
-                End If
-                If Not bIsOK Then
-                    bIsOK = (root.SelectNodes("Response/Status").Item(0).Attributes(name:="text").Value.ToUpper = "OK")
-                End If
-
-                If bIsOK Then
-                    objStreamWriter.WriteLine("Response XML file checked OK. Changing Order statuses " & Now())
-                    Dim strValueToWrite As String = Now.Year.ToString() & Now.Month.ToString() & Now.Day.ToString() & Now.GetHashCode.ToString()
-                    Dim intNumberToWrite As Long = 0
-                    If IsNumeric(strValueToWrite) Then
-                        intNumberToWrite = CType(strValueToWrite, Long)
-                    Else
-                        intNumberToWrite = Now.GetHashCode
-                    End If
-                    Dim bNoErrors As Boolean = True
-                    Dim strOrderNo As String = ""
-                    connectOR.Open()
+            If bIsOK Then
+                Try
                     Try
-                        Dim iOrdCount As Integer = OrderListDataSet.Tables(0).Rows.Count
-                        ' run this query for every order sent:
-                        ' "update SYSADM.PS_PO_DISPATCHED set ECQUEUEINSTANCE=" & intNumberToWrite & " where po_id='" & "M010373791" & "'"
-                        If connectOR.State = ConnectionState.Open Then
-                        Else
-                            connectOR.Open()
+                        If Not root.SelectNodes("Response/Status").Item(0).Attributes(name:="code").Value Is Nothing Then
+                            Try
+                                bIsOK = (root.SelectNodes("Response/Status").Item(0).Attributes(name:="code").Value = "200")
+                            Catch ex As Exception
+                                bIsOK = False
+                            End Try
                         End If
-                        Dim rowsAffected As Integer = 0
-                        Dim iCnt As Integer = 0
-                        For iCnt = 0 To iOrdCount - 1
-                            'If iCnt = 2 Then Exit For ' for testing ONLY!
-                            rowsAffected = 0
-                            strOrderNo = OrderListDataSet.Tables(0).Rows(iCnt).Item("po_id").ToString()
-                            'run query
-                            Dim strUpdateQuery As String = "update SYSADM.PS_PO_DISPATCHED set ECQUEUEINSTANCE=" & intNumberToWrite & " where po_id='" & strOrderNo & "'"
-                            ''commented out for testing
-                            'Dim UpdCommand As OleDbCommand = New OleDbCommand(strUpdateQuery, connectOR)
-                            'UpdCommand.CommandTimeout = 120
-                            'rowsAffected = UpdCommand.ExecuteNonQuery()
-                            'Try
-                            '    UpdCommand.Dispose()
-                            'Catch ex As Exception
 
-                            'End Try
-                            'If rowsAffected = 0 Then
-                            '    bNoErrors = False
-                            '    objStreamWriter.WriteLine("Order status change returned: 'rowsAffected = 0' for Order: " & strOrderNo)
-                            'End If
-                        Next
+                        If Not bIsOK Then
+                            If Not root.SelectNodes("Response/Status").Item(0).Attributes(name:="text").Value Is Nothing Then
+                                Try
+                                    bIsOK = (root.SelectNodes("Response/Status").Item(0).Attributes(name:="text").Value.ToUpper = "SUCCESS")
+                                Catch ex As Exception
+                                    bIsOK = False
+                                End Try
+                            End If
+
+                        End If
+                        If Not bIsOK Then
+                            If Not root.SelectNodes("Response/Status").Item(0).Attributes(name:="text").Value Is Nothing Then
+                                Try
+                                    bIsOK = (root.SelectNodes("Response/Status").Item(0).Attributes(name:="text").Value.ToUpper = "OK")
+                                Catch ex As Exception
+                                    bIsOK = False
+                                End Try
+                            End If
+                        End If
                     Catch ex As Exception
+                        bIsOK = False
+                    End Try
+
+                    If bIsOK Then
+                        objStreamWriter.WriteLine("Response XML file checked OK. Changing Order statuses " & Now())
+                        Dim strValueToWrite As String = Now.Year.ToString() & Now.Month.ToString() & Now.Day.ToString() & Now.GetHashCode.ToString()
+                        Dim intNumberToWrite As Long = 0
+                        If IsNumeric(strValueToWrite) Then
+                            intNumberToWrite = CType(strValueToWrite, Long)
+                        Else
+                            intNumberToWrite = Now.GetHashCode
+                        End If
+                        Dim bNoErrors As Boolean = True
+                        Dim strOrderNo As String = ""
+                        connectOR.Open()
+                        Try
+                            Dim iOrdCount As Integer = OrderListDataSet.Tables(0).Rows.Count
+                            ' run this query for every order sent:
+                            ' "update SYSADM.PS_PO_DISPATCHED set ECQUEUEINSTANCE=" & intNumberToWrite & " where po_id='" & "M010373791" & "'"
+                            If connectOR.State = ConnectionState.Open Then
+                            Else
+                                connectOR.Open()
+                            End If
+                            Dim rowsAffected As Integer = 0
+                            Dim iCnt As Integer = 0
+                            For iCnt = 0 To iOrdCount - 1
+                                If iCnt = 1 Then Exit For ' for testing ONLY!
+                                rowsAffected = 0
+                                strOrderNo = OrderListDataSet.Tables(0).Rows(iCnt).Item("po_id").ToString()
+                                'run query
+                                Dim strUpdateQuery As String = "update SYSADM.PS_PO_DISPATCHED set ECQUEUEINSTANCE=" & intNumberToWrite & " where po_id='" & strOrderNo & "'"
+                                'commented out for testing
+                                Dim UpdCommand As OleDbCommand = New OleDbCommand(strUpdateQuery, connectOR)
+                                UpdCommand.CommandTimeout = 120
+                                rowsAffected = UpdCommand.ExecuteNonQuery()
+                                Try
+                                    UpdCommand.Dispose()
+                                Catch ex As Exception
+
+                                End Try
+                                If rowsAffected = 0 Then
+                                    bNoErrors = False
+                                    objStreamWriter.WriteLine("Order status change returned: 'rowsAffected = 0' for Order: " & strOrderNo)
+                                End If
+                            Next
+                        Catch ex As Exception
+                            Try
+                                connectOR.Close()
+                            Catch ex1 As Exception
+
+                            End Try
+                        End Try
                         Try
                             connectOR.Close()
-                        Catch ex1 As Exception
+                        Catch ex As Exception
 
                         End Try
-                    End Try
-                    Try
-                        connectOR.Close()
-                    Catch ex As Exception
-
-                    End Try
-                    If bNoErrors Then
-                        objStreamWriter.WriteLine("Order statuses changed without errors " & Now())
+                        If bNoErrors Then
+                            objStreamWriter.WriteLine("Order statuses changed without errors " & Now())
+                        Else
+                        End If
                     Else
-                    End If
-                Else
-                    objStreamWriter.WriteLine("Response XML file is NOT checked OK " & Now())
-                    Dim msg As String = "" & _
-                                        "Code = " & root.SelectNodes("Response/Status").Item(0).Attributes(0).Value & _
-                                        " Reason = " & root.SelectNodes("Response/Status").Item(0).Attributes(1).Value & _
-                                        "" & vbCrLf
-                    objStreamWriter.WriteLine(msg & " . Timestamp: " & Now())
-                End If
+                        objStreamWriter.WriteLine("Response XML file is NOT checked OK " & Now())
+                        Dim msg As String = "" '  & _
+                        Try
+                            If Not root.SelectNodes("Response/Status").Item(0).Attributes(0) Is Nothing Then
+                                If Not root.SelectNodes("Response/Status").Item(0).Attributes(0).Value Is Nothing Then
+                                    Try
+                                        msg += "'Code' = " & root.SelectNodes("Response/Status").Item(0).Attributes(0).Value '  & _
+                                    Catch ex As Exception
+                                        msg += "'Code' retrieving Error (inner): " & ex.Message
+                                    End Try
+                                Else
+                                    msg += vbCrLf & " 'Code': root.SelectNodes('Response/Status').Item(0).Attributes(0).Value is Nothing"
+                                End If
+                            Else
+                                msg += vbCrLf & " 'Code': root.SelectNodes('Response/Status').Item(0).Attributes(0) is Nothing"
+                            End If
+                        Catch ex As Exception
+                            msg += vbCrLf & "'Code' retrieving Error (outer): " & ex.Message
+                        End Try
 
-            Catch ex As Exception
-                objStreamWriter.WriteLine("Error processing Response: " & ex.Message)
-            End Try
+                        Try
+                            If Not root.SelectNodes("Response/Status").Item(0).Attributes(1) Is Nothing Then
+                                If Not root.SelectNodes("Response/Status").Item(0).Attributes(1).Value Is Nothing Then
+                                    Try
+                                        msg += "'Reason' = " & root.SelectNodes("Response/Status").Item(0).Attributes(1).Value '  & _
+                                    Catch ex As Exception
+                                        msg += "'Reason' retrieving Error (inner): " & ex.Message
+                                    End Try
+                                Else
+                                    msg += vbCrLf & " 'Reason': root.SelectNodes('Response/Status').Item(0).Attributes(1).Value is Nothing"
+                                End If
+                            Else
+                                msg += vbCrLf & " 'Reason': root.SelectNodes('Response/Status').Item(0).Attributes(1) is Nothing"
+                            End If
+                        Catch ex As Exception
+                            msg += vbCrLf & "'Reason' retrieving Error (outer): " & ex.Message
+                        End Try
+
+                        msg += "" & vbCrLf
+                        objStreamWriter.WriteLine(msg & "  Timestamp: " & Now())
+                    End If
+
+                Catch ex As Exception
+                    objStreamWriter.WriteLine("Error processing Response: " & ex.Message)
+                End Try
+            End If
+            
         Else
             ' output is empty - send is unsuccessful at all
             objStreamWriter.WriteLine("Received empty Output string. " & Now())
@@ -558,12 +667,12 @@ Module Module1
 
     Private Sub Send1(ByRef strBox1 As String, ByRef strBox2 As String)
 
-        strBox2 = ""
+        strBox2 = ""   '  my test URL: "http://websrv.sdi.com:8011/SDIwebIn/XmlInSDI.aspx"   '  
 
         Dim sHttpResponse As String = ""
         Dim httpSession As New easyHttp
 
-        httpSession.URL = "http://SDIWebSrv/sdiwebin/default.aspx"  '  "http://localhost/SDIWebIn/default.aspx"  '  "http://localhost/SDIWebProcessors/Default.aspx"  '  "http://localhost:51229/Default.aspx"  '  "https://www.amazon.com/eprocurement/punchout"  '  "https://supplydev.hajoca.com/hajomid/eclipse.ecl"
+        httpSession.URL = "http://websrv.sdi.com:8011/SDIwebIn/XmlInSDI.aspx"   ' "https://https.amazonsedi.com/073dbe31-c230-403f-990c-6f74eeed1510"  '    "https://www.amazon.com/eprocurement/punchout"  ' "http://localhost/SDIWebIn/default.aspx"  '  "http://localhost/SDIWebProcessors/Default.aspx"  '  "http://localhost:51229/Default.aspx"  '   "https://supplydev.hajoca.com/hajomid/eclipse.ecl"
         httpSession.DataToPost = strBox1
         httpSession.ContentType = "text/xml; charset=utf-8"
         httpSession.Method = easyHttp.HTTPMethod.HTTP_POST

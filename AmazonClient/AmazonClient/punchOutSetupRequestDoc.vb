@@ -40,15 +40,19 @@ Public Class punchOutSetupRequestDoc
         Dim randomId As Single
         Randomize()
         randomId = (100000001 * Rnd())
-        m_payloadId = Now.ToString & " " & randomId.ToString("000000000") & "@sdi.com"
 
         Select Case strType
             Case "OrderRequest"
                 m_templatePathFile = System.AppDomain.CurrentDomain.BaseDirectory.ToString & _
                                      SETUP_ORDER_REQUEST_TEMPLATE
+                Dim sNow As String = ""
+                Dim dateOffset As New DateTimeOffset(Now, TimeZoneInfo.Local.GetUtcOffset(Now))
+                sNow = dateOffset.ToString("o")
+                m_payloadId = sNow & "." & randomId.ToString("000000000") & "." & "OrderRequest@sdi.com"
             Case Else
                 m_templatePathFile = System.AppDomain.CurrentDomain.BaseDirectory.ToString & _
                                      FILE_SETUP_REQUEST_TEMPLATE
+                m_payloadId = Now.ToString & " " & randomId.ToString("000000000") & "@sdi.com"
         End Select
     End Sub
 
@@ -355,6 +359,8 @@ Public Class punchOutSetupRequestDoc
 
             stringer.Parameters.Add("{__DOCTYPE}", m_docType)
             stringer.Parameters.Add("{__PAYLOAD_ID}", m_payloadId)
+            Dim dateOffset As New DateTimeOffset(Now, TimeZoneInfo.Local.GetUtcOffset(Now))
+            m_timeStamp = dateOffset.ToString("o")
             stringer.Parameters.Add("{__TIMESTAMP}", m_timeStamp)
 
             ' load the template
@@ -454,7 +460,7 @@ Public Class punchOutSetupRequestDoc
                             Dim nodeOrderReq As XmlNode = docXML.SelectSingleNode(xpath:="//cXML//Request")
 
                             For iLst = 0 To OrderListDataSet.Tables(0).Rows.Count - 1
-                                'If iLst = 2 Then Exit For  '  for debugging only!
+                                If iLst = 1 Then Exit For '  for debugging only!
                                 strOrderNo = OrderListDataSet.Tables(0).Rows(iLst).Item("po_id").ToString()
                                 ' for each order get all order info including lines info
                                 Dim strOrder As String = "select * from SYSADM.PS_ISA_PO_DISP_XML where po_id='" & strOrderNo & "'"
@@ -485,6 +491,9 @@ Public Class punchOutSetupRequestDoc
 
                                                     'add attributes
                                                     Dim strPoDate As String = OrderDataSet.Tables(0).Rows(iOrd).Item("po_dt").ToString()
+                                                    Dim dDate1 As DateTime = CType(strPoDate, DateTime)
+                                                    Dim dateOffset1 As New DateTimeOffset(dDate1, TimeZoneInfo.Local.GetUtcOffset(dDate1))
+                                                    strPoDate = dateOffset1.ToString("o")
                                                     ' (1) orderDate
                                                     attrib = nodeOrderHeader.Attributes.Append(docXML.CreateAttribute(name:="orderDate"))
                                                     attrib.Value = strPoDate ' get from dataset
@@ -819,6 +828,10 @@ Public Class punchOutSetupRequestDoc
                                                         strSupplierPartID = ""
                                                     End Try
                                                 End If
+                                                'for  testing only
+                                                If strSupplierPartID = "" Then
+                                                    strSupplierPartID = "0448439042"
+                                                End If
                                                 node.InnerText = strSupplierPartID
                                                 '          SupplierPartAuxiliaryID under ItemID under ItemOut
                                                 node = nodeItemID.AppendChild(docXML.CreateElement(name:="SupplierPartAuxiliaryID"))
@@ -834,7 +847,11 @@ Public Class punchOutSetupRequestDoc
                                                 '        strSupplierPartAuxiliaryID = ""
                                                 '    End Try
                                                 'End If
-                                                node.InnerText = ""  '  strSupplierPartAuxiliaryID
+
+                                                'node.InnerText = ""  '  strSupplierPartAuxiliaryID
+
+                                                'for  testing only
+                                                node.InnerText = "184-2574155-1031518"  '  strSupplierPartAuxiliaryID
 
                                                 '       ItemDetail under ItemOut
                                                 Dim nodeItemDetail As XmlNode = nodeLine.AppendChild(docXML.CreateElement(name:="ItemDetail"))
