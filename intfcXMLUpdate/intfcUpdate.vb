@@ -198,10 +198,19 @@ Module module1
         '// This is the moving of files to the XMLIN folder ...
         '// ***
 
-        ''Dim dirInfo As DirectoryInfo = New DirectoryInfo("\\contentplus\c$\inetpub\webpartnerplus\xmlprocess\unccxml\")
-        ''Dim dirInfo As DirectoryInfo = New DirectoryInfo("\\contentplus\unccxml\")
-        'Dim dirInfo As DirectoryInfo = New DirectoryInfo("C:\Inetpub\WebPartnerPlus\XMLProcess\UNCCXML\")
-        Dim dirInfo As DirectoryInfo = New DirectoryInfo("\\dazzle\unccInSiteOnlineOrderIN\")
+        ' ''Dim dirInfo As DirectoryInfo = New DirectoryInfo("\\contentplus\c$\inetpub\webpartnerplus\xmlprocess\unccxml\")
+        ' ''Dim dirInfo As DirectoryInfo = New DirectoryInfo("\\contentplus\unccxml\")
+        ''Dim dirInfo As DirectoryInfo = New DirectoryInfo("C:\Inetpub\WebPartnerPlus\XMLProcess\UNCCXML\")
+        'Dim dirInfo As DirectoryInfo = New DirectoryInfo("\\dazzle\unccInSiteOnlineOrderIN\")
+        Dim dirInfo As DirectoryInfo = New DirectoryInfo("\\dazzle2\unccInSiteOnlineOrderIN\")
+        Dim s1 As String = ""
+        Try
+            s1 = CStr(My.Settings("inputDirectory")).Trim
+        Catch ex As Exception
+        End Try
+        If (s1.Length > 0) Then
+            dirInfo = New DirectoryInfo(s1)
+        End If
         ''debug
 
         'dirInfo = New DirectoryInfo("c:\INTFCXML\LOGS\")
