@@ -5,23 +5,28 @@ Imports System.Xml
 Imports System.Text
 Imports System.Web.UI
 Imports System.Net
+Imports System.Net.Mail
 Imports SDI.ApplicationLogger
 Imports SDI.UNCC.WorkOrderAdapter
 
 Module module1
 
     Private m_logger As appLogger = Nothing
+    Private myLoggr1 As appLogger = Nothing
 
     ' disabled since logging functionality was ported to SDI.ApplicationLogger
     'Dim objStreamWriter As StreamWriter
     Dim rootDir As String = "C:\INTFCXML"
     Dim logpath As String = "C:\INTFCXML\LOGS\UpdINTFCXMLIn" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim connectOR As New OleDbConnection("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=prod")
+    Dim sErrLogPath As String = "C:\INTFCXML\LOGS\MyErredSQLs" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+    Dim connectOR As New OleDbConnection("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=PROD")
     Dim connectSQL As New SqlClient.SqlConnection("server=cplus_prod;uid=einternet;pwd=einternet;initial catalog='contentplus'")
     Dim strOverride As String
     Dim bolWarning As Boolean = False
 
-    Private m_arrErrXMLs As New ArrayList
+    'Private m_arrErrXMLs As New ArrayList
+    Private m_arrXMLErrFiles As String
+    Private m_arrErrorsList As String
 
     Sub Main()
 
@@ -31,7 +36,7 @@ Module module1
             connectOR.Close()
             connectOR.Dispose()
             connectOR = Nothing
-            connectOR = New OleDbConnection("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=prod")
+            connectOR = New OleDbConnection("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=PROD")
         Catch ex As Exception
         End Try
 #End If
@@ -138,7 +143,11 @@ Module module1
         arr = Nothing
         param = Nothing
 
-        ' initialize log
+        ' initialize logs
+
+        myLoggr1 = New SDI.ApplicationLogger.appLogger(sErrLogPath, TraceLevel.Error)
+        myLoggr1.WriteErrorLog("Error Log Created")
+
         m_logger = New appLogger(logpath, logLevel)
         m_logger.WriteInformationLog("" & _
                                      System.Reflection.Assembly.GetExecutingAssembly.GetModules()(0).FullyQualifiedName & _
@@ -193,21 +202,21 @@ Module module1
         ''Dim dirInfo As DirectoryInfo = New DirectoryInfo("\\contentplus\unccxml\")
         'Dim dirInfo As DirectoryInfo = New DirectoryInfo("C:\Inetpub\WebPartnerPlus\XMLProcess\UNCCXML\")
         Dim dirInfo As DirectoryInfo = New DirectoryInfo("\\dazzle\unccInSiteOnlineOrderIN\")
-        'debug
-#If DEBUG Then
-        dirInfo = New DirectoryInfo("c:\INTFCXML\LOGS\")
-#End If
+        ''debug
+
+        'dirInfo = New DirectoryInfo("c:\INTFCXML\LOGS\")
+
         'Dim dirInfo As DirectoryInfo = New DirectoryInfo("\\dextest4\c$\inetpub\wwwroot\xmlprocess\unccxml\")
         Dim strFiles As String
         Dim arrOrders As ArrayList
-        'Dim strOrderNO As String
+        Dim strOrderNO As String
         arrOrders = New ArrayList
-        'Dim bolInArray As Boolean
+        Dim bolInArray As Boolean
 
         strFiles = "*.XML"
         Dim aFiles As FileInfo() = dirInfo.GetFiles(strFiles)
         Dim I As Integer
-        'Dim X As Integer
+        Dim X As Integer
 
 
 
@@ -252,7 +261,7 @@ Module module1
 
         If bolError = True Or _
             bolWarning = True Then
-            SendEmail()
+            SendEmail(True)
         End If
         Try
             connectOR.Close()
@@ -286,6 +295,7 @@ Module module1
         Dim XMLContent As String = ""
         Dim strXMLError As String = ""
         Dim bolError As Boolean
+        Dim bLineError As Boolean = False
 
         Dim xmlRequest As New XmlDocument
 
@@ -297,12 +307,103 @@ Module module1
         Dim aFiles As FileInfo() = dirInfo.GetFiles(strFiles)
         Dim root As XmlElement
 
+        '' old code
+
+        ''Try
+        'For I = 0 To aFiles.Length - 1
+        '    'objStreamWriter.WriteLine(" Start File " & aFiles(I).Name)
+        '    m_logger.WriteInformationLog(rtn & " :: Start File " & aFiles(I).Name)
+        '    sr = New System.IO.StreamReader(aFiles(I).FullName)
+        '    XMLContent = sr.ReadToEnd()
+        '    XMLContent = Replace(XMLContent, "&", "&amp;")
+        '    'here where we load the xml into memory
+        '    'XMLContent = Replace(XMLContent, "'", "&#39;")
+        '    'XMLContent = Replace(XMLContent, """", "&quot;")
+        '    sr.Close()
+
+        '    Try
+        '        xmlRequest.LoadXml(XMLContent)
+        '    Catch ex As Exception
+        '        Console.WriteLine("")
+        '        Console.WriteLine("***error - " & ex.ToString)
+        '        Console.WriteLine("")
+        '        'objStreamWriter.WriteLine("     Error " & ex.message.ToString & " in file " & aFiles(I).Name)
+        '        m_logger.WriteErrorLog(rtn & " :: Error " & ex.message.ToString & " in file " & aFiles(I).Name)
+        '        strXMLError = ex.ToString
+        '        bolError = True
+        '    End Try
+        '    If Trim(strXMLError) = "" Then
+        '        root = xmlRequest.DocumentElement
+        '        'firstchild.name = PS_ISA_ORD_INTFC_H
+
+        '        If root.FirstChild Is Nothing Then
+        '            strXMLError = "empty UNCC in file"
+        '        ElseIf root.LastChild.Name.ToUpper = "PS_ISA_ORD_INTFC_L" Or _
+        '            root.LastChild.Name.ToUpper = "EMP_ROW" Then
+        '            strXMLError = ""
+        '        Else
+        '            strXMLError = "Missing last INTFC_L Element"
+        '        End If
+
+        '        If Trim(strXMLError) = "" Then
+        '            If root.LastChild.Name.ToUpper = "PS_ISA_ORD_INTFC_L" Then
+        '                strXMLError = UpdIntfcTable(aFiles(I).FullName)
+        '            ElseIf root.LastChild.Name.ToUpper = "EMP_ROW" Then
+        '                strXMLError = UpdEmpTable(aFiles(I).FullName)
+        '            End If
+        '        End If
+
+        '        If Trim(strXMLError) = "" Or _
+        '            Trim(strXMLError) = "Invalid Status" Then
+        '            Try
+        '                File.Move(aFiles(I).FullName, "C:\INTFCXML\XMLINProcessed\" & aFiles(I).Name)
+        '                If Trim(strXMLError) = "Invalid Status" Then
+        '                    'objStreamWriter.WriteLine(" not status I or C in File " & aFiles(I).Name)
+        '                    m_logger.WriteInformationLog(rtn & " :: not status I or C in File " & aFiles(I).Name)
+        '                End If
+        '                'objStreamWriter.WriteLine(" End - File " & aFiles(I).Name & " has been moved")
+        '                m_logger.WriteInformationLog(rtn & " :: End - File " & aFiles(I).Name & " has been moved")
+        '            Catch ex As Exception
+        '                'objStreamWriter.WriteLine("     Error " & ex.Message.ToString & " in file " & aFiles(I).Name)
+        '                m_logger.WriteErrorLog(rtn & " :: Error " & ex.Message.ToString & " in file " & aFiles(I).Name)
+        '            End Try
+        '            File.Delete(aFiles(I).FullName)
+        '        Else
+        '            'objStreamWriter.WriteLine("**")
+        '            'objStreamWriter.WriteLine("     Error " & strXMLError & " in file " & aFiles(I).Name)
+        '            'objStreamWriter.WriteLine("**")
+        '            m_logger.WriteErrorLog(rtn & " :: ** ")
+        '            m_logger.WriteErrorLog(rtn & " :: Error " & strXMLError & " in file " & aFiles(I).Name)
+        '            m_logger.WriteErrorLog(rtn & " :: ** ")
+        '            bolError = True
+        '            Try
+        '                File.Move(aFiles(I).FullName, "C:\INTFCXML\BadXML\" & aFiles(I).Name)
+        '                File.Delete(aFiles(I).FullName)
+        '            Catch ex As Exception
+        '                'objStreamWriter.WriteLine("**")
+        '                'objStreamWriter.WriteLine("     Error " & ex.Message & " in file " & aFiles(I).Name)
+        '                'objStreamWriter.WriteLine("**")
+        '                m_logger.WriteErrorLog(rtn & " :: ** ")
+        '                m_logger.WriteErrorLog(rtn & " :: Error " & ex.Message & " in file " & aFiles(I).Name)
+        '                m_logger.WriteErrorLog(rtn & " :: ** ")
+        '            End Try
+        '        End If
+
+        '    End If
+
+        '    strXMLError = ""
+        'Next
+
+        'new Erwin code
+
         Dim sXMLFilename As String = ""
 
         Try
+            m_arrXMLErrFiles = ""
+            m_arrErrorsList = ""
             For I = 0 To aFiles.Length - 1
                 sXMLFilename = aFiles(I).Name
-
+                bLineError = False
                 'objStreamWriter.WriteLine(" Start File " & aFiles(I).Name)
                 m_logger.WriteInformationLog(rtn & " :: Start File " & aFiles(I).Name)
                 sr = New System.IO.StreamReader(aFiles(I).FullName)
@@ -323,6 +424,18 @@ Module module1
                     m_logger.WriteErrorLog(rtn & " :: Error " & ex.Message.ToString & " in file " & aFiles(I).Name)
                     strXMLError = ex.ToString
                     bolError = True
+                    bLineError = True
+                    Try
+                        File.Move(aFiles(I).FullName, "C:\INTFCXML\BadXML\" & aFiles(I).Name)
+                        File.Delete(aFiles(I).FullName)
+                    Catch ex24 As Exception
+                        'objStreamWriter.WriteLine("**")
+                        'objStreamWriter.WriteLine("     Error " & ex.Message & " in file " & aFiles(I).Name)
+                        'objStreamWriter.WriteLine("**")
+                        m_logger.WriteErrorLog(rtn & " :: ** ")
+                        m_logger.WriteErrorLog(rtn & " :: Error " & ex24.Message & " in file " & aFiles(I).Name)
+                        m_logger.WriteErrorLog(rtn & " :: ** ")
+                    End Try
                 End Try
                 If Trim(strXMLError) = "" Then
                     root = xmlRequest.DocumentElement
@@ -368,6 +481,7 @@ Module module1
                         m_logger.WriteErrorLog(rtn & " :: Error " & strXMLError & " in file " & aFiles(I).Name)
                         m_logger.WriteErrorLog(rtn & " :: ** ")
                         bolError = True
+                        bLineError = True
                         Try
                             File.Move(aFiles(I).FullName, "C:\INTFCXML\BadXML\" & aFiles(I).Name)
                             File.Delete(aFiles(I).FullName)
@@ -383,9 +497,30 @@ Module module1
 
                 End If
 
-                ' if there's an error, capture the filename of the XML
-                If (Trim(strXMLError) <> "") Or bolError Then
-                    m_arrErrXMLs.Add(sXMLFilename)
+                ' if there's an error, capture the filename of the XML and corresponding error message
+                If (Trim(strXMLError) <> "") Or bLineError Then  '  If (Trim(strXMLError) <> "") Or bolError Then
+                    'm_arrErrXMLs.Add(sXMLFilename)
+                    If Trim(m_arrXMLErrFiles) = "" Then
+                        m_arrXMLErrFiles = sXMLFilename
+                    Else
+                        m_arrXMLErrFiles &= "," & sXMLFilename
+                    End If
+                    If Trim(strXMLError) <> "" Then
+                        If Len(strXMLError) > 250 Then
+                            strXMLError = Microsoft.VisualBasic.Left(strXMLError, 250)
+                        End If
+                        If Trim(m_arrErrorsList) = "" Then
+                            m_arrErrorsList = strXMLError
+                        Else
+                            m_arrErrorsList &= "," & strXMLError
+                        End If
+                    Else
+                        If Trim(m_arrErrorsList) = "" Then
+                            m_arrErrorsList = "No Error Description"
+                        Else
+                            m_arrErrorsList &= "," & "No Error Description"
+                        End If
+                    End If
                 End If
 
                 strXMLError = ""
@@ -393,7 +528,39 @@ Module module1
         Catch ex As Exception
             'strXMLError = ex.ToString
             'bolError = True
-            m_arrErrXMLs.Add(sXMLFilename)
+            'm_arrErrXMLs.Add(sXMLFilename)
+            If Trim(m_arrXMLErrFiles) = "" Then
+                m_arrXMLErrFiles = sXMLFilename
+            Else
+                m_arrXMLErrFiles &= "," & sXMLFilename
+            End If
+            If Trim(strXMLError) <> "" Then
+                If Len(strXMLError) > 250 Then
+                    strXMLError = Microsoft.VisualBasic.Left(strXMLError, 250)
+                End If
+                If Trim(m_arrErrorsList) = "" Then
+                    m_arrErrorsList = strXMLError
+                Else
+                    m_arrErrorsList &= "," & strXMLError
+                End If
+            Else
+                If Trim(m_arrErrorsList) = "" Then
+                    m_arrErrorsList = "No Error Description"
+                Else
+                    m_arrErrorsList &= "," & "No Error Description"
+                End If
+            End If
+            Try
+                File.Move(aFiles(I).FullName, "C:\INTFCXML\BadXML\" & aFiles(I).Name)
+                File.Delete(aFiles(I).FullName)
+            Catch ex32 As Exception
+                'objStreamWriter.WriteLine("**")
+                'objStreamWriter.WriteLine("     Error " & ex.Message & " in file " & aFiles(I).Name)
+                'objStreamWriter.WriteLine("**")
+                m_logger.WriteErrorLog(rtn & " :: ** ")
+                m_logger.WriteErrorLog(rtn & " :: Error " & ex32.Message & " in file " & aFiles(I).Name)
+                m_logger.WriteErrorLog(rtn & " :: ** ")
+            End Try
             Throw New ApplicationException(rtn & "::" & ex.Message, ex)
         End Try
 
@@ -415,10 +582,10 @@ Module module1
         End Try
         reader.Close()
 
-        'Dim X As Integer
-        'Dim H As Integer
-        'Dim L As Integer
-        Dim strEmpError As String = ""
+        Dim X As Integer
+        Dim H As Integer
+        Dim L As Integer
+        Dim strEmpError As String
 
         Dim sr As System.IO.StreamReader
         Dim XMLContent As String
@@ -441,7 +608,7 @@ Module module1
         jobNode = xmlRequest.ChildNodes(1)
         Dim dsRows As New DataSet
         dsRows.ReadXml(New XmlNodeReader(jobNode))
-        Dim strbu As String = ""
+        Dim strbu As String
 
         connectOR.Open()
         connectSQL.Open()
@@ -607,67 +774,67 @@ Module module1
                     End Try
                     Command1.Dispose()
 
-                    strSQLstring = "INSERT INTO usernames" & vbCrLf & _
-                                " (userID, password, lastName, firstName," & vbCrLf & _
-                                " emailAddress, crUser, crDate)" & vbCrLf & _
-                                " VALUES ('" & strEmpID & "'," & vbCrLf & _
-                                " 'temppw'," & vbCrLf & _
-                                " '" & strLastName & "'," & vbCrLf & _
-                                " '" & strFirstName & "'," & vbCrLf & _
-                                " '" & Trim(strEmail) & "'," & vbCrLf & _
-                                " 'INTFCVB'," & vbCrLf & _
-                                " '" & Now() & "')"
-                    Dim Command2 As SqlClient.SqlCommand
-                    Command2 = New SqlClient.SqlCommand(strSQLstring, connectSQL)
-                    Try
-                        rowsaffected = rowsaffected = Command2.ExecuteNonQuery()
-                        If rowsaffected = 0 Then
-                            'objStreamWriter.WriteLine("**")
-                            'objStreamWriter.WriteLine("     Warning - 0 rows affected users tbl for record " & I)
-                            'objStreamWriter.WriteLine("**")
-                            m_logger.WriteWarningLog(rtn & " :: Warning - 0 rows affected users tbl for record " & I)
-                            bolerror = True
-                        End If
-                    Catch sqlExp As SqlClient.SqlException
-                        'objStreamWriter.WriteLine("**")
-                        'objStreamWriter.WriteLine("     Warning - updating users tbl for record " & I)
-                        'objStreamWriter.WriteLine("**")
-                        m_logger.WriteErrorLog(rtn & " :: Error - updating users tbl for record " & I)
-                        bolerror = True
-                    End Try
-                    Command2.Dispose()
+                    'strSQLstring = "INSERT INTO usernames" & vbCrLf & _
+                    '            " (userID, password, lastName, firstName," & vbCrLf & _
+                    '            " emailAddress, crUser, crDate)" & vbCrLf & _
+                    '            " VALUES ('" & strEmpID & "'," & vbCrLf & _
+                    '            " 'temppw'," & vbCrLf & _
+                    '            " '" & strLastName & "'," & vbCrLf & _
+                    '            " '" & strFirstName & "'," & vbCrLf & _
+                    '            " '" & Trim(strEmail) & "'," & vbCrLf & _
+                    '            " 'INTFCVB'," & vbCrLf & _
+                    '            " '" & Now() & "')"
+                    'Dim Command2 As SqlClient.SqlCommand
+                    'Command2 = New SqlClient.SqlCommand(strSQLstring, connectSQL)
+                    'Try
+                    '    rowsaffected = rowsaffected = Command2.ExecuteNonQuery()
+                    '    If rowsaffected = 0 Then
+                    '        'objStreamWriter.WriteLine("**")
+                    '        'objStreamWriter.WriteLine("     Warning - 0 rows affected users tbl for record " & I)
+                    '        'objStreamWriter.WriteLine("**")
+                    '        m_logger.WriteWarningLog(rtn & " :: Warning - 0 rows affected users tbl for record " & I)
+                    '        bolerror = True
+                    '    End If
+                    'Catch sqlExp As SqlClient.SqlException
+                    '    'objStreamWriter.WriteLine("**")
+                    '    'objStreamWriter.WriteLine("     Warning - updating users tbl for record " & I)
+                    '    'objStreamWriter.WriteLine("**")
+                    '    m_logger.WriteErrorLog(rtn & " :: Error - updating users tbl for record " & I)
+                    '    bolerror = True
+                    'End Try
+                    'Command2.Dispose()
 
-                    Dim objEnterprise As New clsEnterprise(strBusinessUnit, connectOR)
-                    Dim strProdView As String = objEnterprise.ProdView
-                    Dim intGroupId As Integer = getGroupID(strProdView)
-                    If intGroupId > 0 Then
-                        strSQLstring = "INSERT INTO GroupUsers" & vbCrLf & _
-                           " (userID, groupID, crUser, crDate, updUser, updDate)" & vbCrLf & _
-                           " VALUES ('" & strEmpID & "'," & vbCrLf & _
-                           " " & intGroupId & "," & vbCrLf & _
-                           " 'INTFCVB'," & vbCrLf & _
-                           " '" & Now() & "'," & vbCrLf & _
-                           " 'INTFCVB'," & vbCrLf & _
-                           " '" & Now() & "')"
-                        Command2 = New SqlClient.SqlCommand(strSQLstring, connectSQL)
-                        Try
-                            rowsaffected = rowsaffected = Command2.ExecuteNonQuery()
-                            If rowsaffected = 0 Then
-                                'objStreamWriter.WriteLine("**")
-                                'objStreamWriter.WriteLine("     Warning - 0 rows affected group users for record " & I)
-                                'objStreamWriter.WriteLine("**")
-                                m_logger.WriteWarningLog(rtn & " :: Warning - 0 rows affected group users for record " & I)
-                                bolerror = True
-                            End If
-                        Catch sqlExp As SqlClient.SqlException
-                            'objStreamWriter.WriteLine("**")
-                            'objStreamWriter.WriteLine("     Warning - updating group users for record " & I)
-                            'objStreamWriter.WriteLine("**")
-                            m_logger.WriteWarningLog(rtn & " :: Warning - updating group users for record " & I)
-                            bolerror = True
-                        End Try
-                        Command2.Dispose()
-                    End If
+                    'Dim objEnterprise As New clsEnterprise(strBusinessUnit, connectOR)
+                    'Dim strProdView = objEnterprise.ProdView
+                    'Dim intGroupId As Integer = getGroupID(strProdView)
+                    'If intGroupId > 0 Then
+                    '    strSQLstring = "INSERT INTO GroupUsers" & vbCrLf & _
+                    '       " (userID, groupID, crUser, crDate, updUser, updDate)" & vbCrLf & _
+                    '       " VALUES ('" & strEmpID & "'," & vbCrLf & _
+                    '       " " & intGroupId & "," & vbCrLf & _
+                    '       " 'INTFCVB'," & vbCrLf & _
+                    '       " '" & Now() & "'," & vbCrLf & _
+                    '       " 'INTFCVB'," & vbCrLf & _
+                    '       " '" & Now() & "')"
+                    '    Command2 = New SqlClient.SqlCommand(strSQLstring, connectSQL)
+                    '    Try
+                    '        rowsaffected = rowsaffected = Command2.ExecuteNonQuery()
+                    '        If rowsaffected = 0 Then
+                    '            'objStreamWriter.WriteLine("**")
+                    '            'objStreamWriter.WriteLine("     Warning - 0 rows affected group users for record " & I)
+                    '            'objStreamWriter.WriteLine("**")
+                    '            m_logger.WriteWarningLog(rtn & " :: Warning - 0 rows affected group users for record " & I)
+                    '            bolerror = True
+                    '        End If
+                    '    Catch sqlExp As SqlClient.SqlException
+                    '        'objStreamWriter.WriteLine("**")
+                    '        'objStreamWriter.WriteLine("     Warning - updating group users for record " & I)
+                    '        'objStreamWriter.WriteLine("**")
+                    '        m_logger.WriteWarningLog(rtn & " :: Warning - updating group users for record " & I)
+                    '        bolerror = True
+                    '    End Try
+                    '    Command2.Dispose()
+                    'End If
                 End If
             End If
             If bolerror = True Then
@@ -700,11 +867,11 @@ Module module1
         End Try
         reader.Close()
 
-        Dim X As Integer = 0
-        Dim H As Integer = 0
-        Dim L As Integer = 0
-        Dim strIntfcError As String = ""
-        Dim strPriority As String = ""
+        Dim X As Integer
+        Dim H As Integer
+        Dim L As Integer
+        Dim strIntfcError As String
+        Dim strPriority As String
 
         Dim sr As System.IO.StreamReader
         Dim XMLContent As String
@@ -738,8 +905,9 @@ Module module1
         checkOut.oleConnectionString = connectOR.ConnectionString
         checkOut.sqlConnectionString = connectSQL.ConnectionString
         checkOut.Logger = m_logger
+        checkOut.MyLogger = myLoggr1
 
-        checkOut.ReadOrderRequest(xmlRequest)
+        checkOut.ReadOrderRequest(xmlRequest, connectOR.ConnectionString)
 
         If checkOut.ValidateOrderRequest Then
             checkOut.SaveOrderRequest()
@@ -760,9 +928,6 @@ Module module1
         If err.Length > 0 Then
             Return err
         End If
-
-        ' if it reaches this point, just return nothing
-        Return Nothing
 
     End Function
 
@@ -799,8 +964,8 @@ Module module1
     Private Function GetSitePrefix1(ByVal sBU As String) As String
 
         Dim rtn As String = "intfcUpdate.GetSitePrefix1"
-        Dim strSitePrefix As String = ""
-        Dim strSQLString As String = "SELECT ISA_SITE_CODE" & vbCrLf & _
+        Dim strSitePrefix
+        Dim strSQLString = "SELECT ISA_SITE_CODE" & vbCrLf & _
             " FROM PS_BUS_UNIT_TBL_OM" & vbCrLf & _
             " WHERE BUSINESS_UNIT = '" & sBU & "'" & vbCrLf
         Try
@@ -817,7 +982,6 @@ Module module1
             connectOR.Close()
             'objStreamWriter.WriteLine("     Warning - error reading PS_BUS_UNIT_TBL_OM table for " & sBU)
             m_logger.WriteErrorLog(rtn & " :: ERROR - error reading PS_BUS_UNIT_TBL_OM table for " & sBU)
-            Return Nothing
         End Try
     End Function
 
@@ -842,7 +1006,11 @@ Module module1
 
         Dim ds As DataSet = ORDBAccess.GetAdapter(strSQLstring, connectOR)
 
-        If ds.Tables(0).Rows.Count = 0 Then
+        If Not ds Is Nothing Then
+            If ds.Tables(0).Rows.Count = 0 Then
+                Exit Sub
+            End If
+        Else
             Exit Sub
         End If
 
@@ -865,35 +1033,76 @@ Module module1
 
     End Sub
 
-    Private Sub SendEmail()
+    Private Sub SendEmail(Optional ByVal bIsSendOut As Boolean = False)
 
         Dim rtn As String = "intfcUpdate.SendEmail"
-        Dim email As New MailMessage
+        Dim email As New System.Web.Mail.MailMessage
+        'Dim myEmail As New System.Net.Mail.MailMessage
 
         'The email address of the sender
         email.From = "TechSupport@sdi.com"
         If (CStr(My.Settings(propertyName:="onErrorEmail_From")) <> "") Then
             email.From = CStr(My.Settings(propertyName:="onErrorEmail_From")).Trim
         End If
+        'myEmail.From = New System.Net.Mail.MailAddress(email.From)
 
         'The email address of the recipient. 
         email.To = "erwin.bautista@sdi.com"
-        If (CStr(My.Settings(propertyName:="onErrorEmail_To")) <> "") Then
-            email.To = CStr(My.Settings(propertyName:="onErrorEmail_To")).Trim
+        If bIsSendOut Then
+            If (CStr(My.Settings(propertyName:="onErrorEmail_To")) <> "") Then
+                email.To = CStr(My.Settings(propertyName:="onErrorEmail_To")).Trim
+            End If
         End If
+
+        'myEmail.To.Add(email.To)
 
         If (CStr(My.Settings(propertyName:="onErrorEmail_CC")) <> "") Then
             email.Cc = CStr(My.Settings(propertyName:="onErrorEmail_CC")).Trim
         End If
 
+        'If email.Cc Is Nothing Then
+        '    email.Cc = ""
+        'Else
+        '    myEmail.CC.Add(email.Cc)
+        'End If
+
         If (CStr(My.Settings(propertyName:="onErrorEmail_BCC")) <> "") Then
             email.Bcc = CStr(My.Settings(propertyName:="onErrorEmail_BCC")).Trim
         End If
 
-        'The Priority attached and displayed for the email
-        email.Priority = MailPriority.High
+        'myEmail.Bcc.Add(email.Bcc)
 
-        email.BodyFormat = MailFormat.Html
+        'The Priority attached and displayed for the email
+        email.Priority = System.Web.Mail.MailPriority.High
+        'myEmail.Priority = Mail.MailPriority.High
+
+        email.BodyFormat = System.Web.Mail.MailFormat.Html
+        'myEmail.IsBodyHtml = True
+
+        '' old code
+        'email.Body = "<html><body><table><tr><td>UNCCXMLIn has completed with "
+        'If bolWarning = True Then
+        '    email.Body = email.Body & "warnings,"
+        '    email.Subject = "UNCC XML Warning"
+        'Else
+        '    email.Body = email.Body & "errors,"
+        '    email.Subject = "UNCC XML In Error"
+        'End If
+
+        'email.Body = email.Body & " review log.</td></tr>"
+        ''email.Body = email.Body & "<tr><td></td><a href='\\BDougherty_XP-l\logs'>\\BDougherty_XP-l\logs\</a></tr></table></body></html>"
+
+        ''Send the email and handle any error that occurs
+        'Try
+        '    UpdEmailOut.UpdEmailOut.UpdEmailOut(email.Subject, email.From, email.To, "", "", "Y", email.Body, connectOR)
+        'Catch ex As Exception
+        '    'objStreamWriter.WriteLine("     Error - the email was not sent")
+        '    m_logger.WriteErrorLog(rtn & " :: Error - the email was not sent.")
+        '    m_logger.WriteErrorLog(rtn & " :: " & ex.ToString)
+        'End Try
+
+        'new Erwin code
+        email.BodyFormat = System.Web.Mail.MailFormat.Html
 
         email.Body = ""
         email.Body &= "<html><body>"
@@ -904,13 +1113,37 @@ Module module1
             email.Body &= "warnings,"
             email.Subject = "UNCC XML IN Warning"
         Else
-            email.Body &= "errors,"
+            email.Body &= "errors;"
             email.Subject = "UNCC XML IN Error"
         End If
-        email.Body &= " review log.</td></tr></table>"
+
+        'VR 12/18/2014 Adding file names and error descriptions in message body
+        Dim sInfoErr As String = ""
+        Try
+
+            sInfoErr &= " XML file name(s) are below.</td></tr>"   '  " review log.</td></tr></table>"
+            If Not m_arrXMLErrFiles Is Nothing Then
+                If Trim(m_arrXMLErrFiles) <> "" Then
+                    Dim arrErrFiles1() As String = Split(m_arrXMLErrFiles, ",")
+                    Dim arrErrDescr2() As String = Split(m_arrErrorsList, ",")
+                    If arrErrFiles1.Length > 0 Then
+                        For i1 As Integer = 0 To arrErrFiles1.Length - 1
+                            sInfoErr &= "<tr><td>" & arrErrFiles1(i1) & "</td><td>&nbsp;&nbsp" & arrErrDescr2(i1) & "</td></tr>"
+                        Next
+                    End If
+                End If
+            End If
+            email.Body &= sInfoErr
+        Catch ex As Exception
+
+            email.Body &= " review log.</td></tr>"
+        End Try
+
+        email.Body &= "</table>"
 
         email.Body &= "&nbsp;<br>Sincerely,<br>&nbsp;<br>SDI Customer Care<br>&nbsp;<br></p></div><BR>"
         email.Body &= "<br />"
+
 
         'email.Body = email.Body & "<tr><td></td><a href='\\BDougherty_XP-l\logs'>\\BDougherty_XP-l\logs\</a></tr></table></body></html>"
 
@@ -926,7 +1159,7 @@ Module module1
         Dim sApp As String = "" & _
                              System.Reflection.Assembly.GetExecutingAssembly.GetModules()(0).Name & _
                              " v" & System.Reflection.Assembly.GetExecutingAssembly.GetName.Version.ToString & _
-                             ""
+                            ""
         Try
             email.Body &= "" & _
                           "<p style=""text-align:right;font-size:10px"">" & _
@@ -939,35 +1172,69 @@ Module module1
         email.Body &= "<br><P><CENTER><SPAN style='FONT-SIZE: 12pt'><SPAN style='FONT-SIZE: 12pt'><FONT color=teal size=2>The information in this communication, including any attachments, is the property of SDI, Inc,&nbsp;</SPAN>is intended only for the addressee and may contain confidential, proprietary, and/or privileged material. Any review, retransmission, dissemination or other use of, or taking of any action in reliance upon, this information by persons or entities other than the intended recipient is prohibited. If you received this in error, please immediately contact the sender by replying to this email and delete the material from all computers.</FONT></SPAN></CENTER></P>"
         email.Body &= "</body></html>"
 
+        'myEmail.Body = email.Body
+
+        '' VR 12/18/2014 Commenting out code below - per Mike Randall: do not send this log file to customer because it is not
+        ''               formatted for customer to clearly understand what is the problem with erred XML file
+        ' VR 12/29/2014 Attaching Error specific log file
         Try
-            email.Attachments.Add(New System.Web.Mail.MailAttachment(filename:=logpath))
+            email.Attachments.Add(New System.Web.Mail.MailAttachment(filename:=sErrLogPath))
         Catch ex As Exception
         End Try
 
-        If Not (m_arrErrXMLs Is Nothing) Then
-            If (m_arrErrXMLs.Count > 0) Then
-                m_logger.WriteInformationLog(rtn & " :: erronuous xml file count = " & m_arrErrXMLs.Count.ToString)
-                Try
-                    For i As Integer = 0 To (m_arrErrXMLs.Count - 1)
-                        If CStr(m_arrErrXMLs(i)).Trim.Length > 0 Then
-                            email.Attachments.Add(New System.Web.Mail.MailAttachment(filename:=CStr(m_arrErrXMLs(i))))
-                        End If
-                    Next
-                Catch ex As Exception
-                End Try
+        Dim int1 As Integer = 0
+        'If Not (m_arrErrXMLs Is Nothing) Then
+        '    If (m_arrErrXMLs.Count > 0) Then
+        '        m_logger.WriteInformationLog(rtn & " :: erronuous xml file count = " & m_arrErrXMLs.Count.ToString)
+        '        Try
+        '            For int1 = 0 To (m_arrErrXMLs.Count - 1)
+        '                If CStr(m_arrErrXMLs(int1)).Trim.Length > 0 Then
+        '                    Dim myFileName1 As String = CStr(m_arrErrXMLs(int1))
+        '                    email.Attachments.Add(New System.Web.Mail.MailAttachment(myFileName1))
+        '                End If
+        '            Next
+        '        Catch ex As Exception
+        '        End Try
+        '    End If
+        'End If
+
+        Try
+            If Not m_arrXMLErrFiles Is Nothing Then
+                If Trim(m_arrXMLErrFiles) <> "" Then
+                    Dim arrErrFiles() As String = Split(m_arrXMLErrFiles, ",")
+                    If arrErrFiles.Length > 0 Then
+                        m_logger.WriteInformationLog(rtn & " :: erroneous xml file count = " & arrErrFiles.Length.ToString)
+                        For int1 = 0 To arrErrFiles.Length - 1
+                            Dim myFileName2 As String = "C:\INTFCXML\BadXML\" & arrErrFiles(int1)
+                            email.Attachments.Add(New System.Web.Mail.MailAttachment(myFileName2))
+                        Next
+                    End If
+                End If
             End If
-        End If
-
-        Try
-            System.Web.Mail.SmtpMail.Send(email)
         Catch ex As Exception
-            m_logger.WriteErrorLog(rtn & " :: Error - the email was not sent.")
-            m_logger.WriteErrorLog(rtn & " :: " & ex.ToString)
+
         End Try
 
+        Dim bSend As Boolean = False
+        Try
+            ''Dim myClt As System.Net.Mail.SmtpClient = New SmtpClient("SDIMBX01.isacs.com")  '  ("localhost")
+            ''myClt.Send(myEmail)
+
+            System.Web.Mail.SmtpMail.Send(email)
+
+            bSend = True
+        Catch ex As Exception    ' this is crashing because 'ex' is Nothing
+
+            'm_logger.WriteErrorLog(rtn & " :: Error - the email was not sent.")
+            'm_logger.WriteErrorLog(rtn & " :: " & ex.ToString())  
+        End Try
+
+        If Not bSend Then
+            m_logger.WriteErrorLog(rtn & " :: Error - the email was not sent.")
+        End If
     End Sub
 
-    Private Sub SendEmail(ByVal mailer As MailMessage)
+    Private Sub SendEmail1(ByVal mailer As System.Web.Mail.MailMessage)
 
         Try
             'If currentApp.Request.ServerVariables("HTTP_HOST").ToString().ToUpper = "LOCALHOST" Then
@@ -975,6 +1242,7 @@ Module module1
             'End If
             'mailer.Bcc = "bob.dougherty@sdi.com"
             'SmtpMail.Send(mailer)
+
             UpdEmailOut.UpdEmailOut.UpdEmailOut(mailer.Subject, mailer.From, mailer.To, mailer.Cc, mailer.Bcc, "N", mailer.Body, connectOR)
         Catch ex As Exception
             SendEmail()
@@ -1288,8 +1556,8 @@ Module module1
                     " TO_DATE('" & dteReqByDate & "', 'MM/DD/YYYY HH:MI:SS AM')," & vbCrLf & _
                     " '', " & decQty & ", 0," & vbCrLf & _
                     " ' ', 'MAIN1','" & strItemID.ToUpper & "'," & vbCrLf & _
-                    " 'MAIN1',' '," & vbCrLf & _
-                    " '0', ' '," & vbCrLf & _
+                    " 'MAIN1','here'," & vbCrLf & _
+                    " '0', 'here_two '," & vbCrLf & _
                     " ' ','" & strShipto & "','" & strCustID & "'," & vbCrLf & _
                     " ' ','" & strUOM.ToUpper & "','" & strMfgID.ToUpper & "','" & strMfgFreeForm.ToUpper & " '," & vbCrLf & _
                     " 0,0," & vbCrLf & _
@@ -1478,7 +1746,7 @@ Module module1
 
         Dim I As Integer
         Dim X As Integer
-        Dim strbodyhead As String = ""
+        Dim strbodyhead As String
         Dim strbodydetl As String
         Dim strItemtype As String
         Dim intGridloop As Integer
@@ -1504,7 +1772,7 @@ Module module1
         Dim strCustName As String
         Dim strCustEmail As String
         Dim strCustPhone As String
-
+        Dim strrefno As String = " "
         connectOR.Open()
         Dim objUserTbl As clsUserTbl
         objUserTbl = New clsUserTbl(dsOrder.Tables(0).Rows(0).Item("EMPLID"), strBU, connectOR)
@@ -1512,8 +1780,23 @@ Module module1
         strCustEmail = objUserTbl.EmployeeEmail
         strCustPhone = objUserTbl.PhoneNum
         connectOR.Close()
+        ' see if there is a order_number (reference number) in the quote table.... if so it is a punchin record
+        connectOR.Open()
+        Dim objRefNo As clsQuote
+        Try
+            objRefNo = New clsQuote(dsOrder.Tables(0).Rows(0).Item("ORDER_NO"), dsOrder.Tables(0).Rows(0).Item("LINE_NO"), connectOR)
+            strrefno = objRefNo.ORDER_NO.ToString
+            If IsDBNull(strrefno) Then
+                strrefno = " "
+            End If
+        Catch ex As Exception
+            strrefno = " "
+            connectOR.Close()
+        End Try
 
-        Dim Mailer = New MailMessage
+
+
+        Dim Mailer As System.Web.Mail.MailMessage = New System.Web.Mail.MailMessage
         Dim strCustomerName As String
         connectOR.Open()
         Dim objEnterprise As New clsEnterprise(strBU, connectOR)
@@ -1525,6 +1808,10 @@ Module module1
         Mailer.cc = ""
         Mailer.bcc = ""
         strbodyhead = strbodyhead & "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI Marketplace</span><center>" & vbCrLf
+        'if there is an order_no in the quote table it is a punchin record
+        If Not Trim(strrefno) = "" Then
+            strbodyhead = strbodyhead + "<br><B><left><span style='font-family:Arial;color: red;font-size:Medium;'> ***NOTE*** THIS IS A PUNCHOUT ORDER!!! </span></B></left>"
+        End If
         strbodyhead = strbodyhead & "&nbsp;" & vbCrLf
 
         strbodydetl = "&nbsp;" & vbCrLf
@@ -1652,7 +1939,6 @@ Module module1
             dtgcart.DataBind()
             dtgcart.CellPadding = 3
             'dtgcart.Width.Percentage(90)
-            'dtgcart.Width = "90%"  '  ??
 
             dtgcart.RenderControl(htmlTWstk)
 
@@ -1671,7 +1957,7 @@ Module module1
             Mailer.Subject = "IntfcXMLUpdate - Material Request - Stock"
             Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
             'SmtpMail.SmtpServer = "localhost"
-            SendEmail(Mailer)
+            SendEmail1(Mailer)
             'SmtpMail.Send(Mailer)
 
             SWstk.Close()
@@ -1727,7 +2013,6 @@ Module module1
             dtgcart.DataBind()
             dtgcart.CellPadding = 3
             'dtgcart.Width.Percentage(90)
-            'dtgcart.Width = "90%"  '  ??
 
             dtgcart.RenderControl(htmlTWnstk)
 
@@ -1749,7 +2034,7 @@ Module module1
 
             Mailer.Subject = "IntfcXMLUpdate - Material Request - Non-Stock "
             Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
-            SendEmail(Mailer)
+            SendEmail1(Mailer)
 
             SWstk.Close()
             htmlTWstk.Close()
@@ -1864,9 +2149,13 @@ Module module1
                     " AND A.ISA_IDENTIFIER = B.ISA_PARENT_IDENT" & vbCrLf & _
                     " AND B.ISA_ORDER_STATUS = '1'"
         Dim ds As DataSet = ORDBAccess.GetAdapter(strSQLstring, connectOR)
-        For I = 0 To ds.Tables(0).Rows.Count - 1
-            strIntfcError = updateIntfcHeader("I0256", ds.Tables(0).Rows(I).Item("ORDER_NO"), "P")
-        Next
+        If Not ds Is Nothing Then
+            If ds.Tables(0).Rows.Count > 0 Then
+                For I = 0 To ds.Tables(0).Rows.Count - 1
+                    strIntfcError = updateIntfcHeader("I0256", ds.Tables(0).Rows(I).Item("ORDER_NO"), "P")
+                Next
+            End If
+        End If
 
     End Sub
 

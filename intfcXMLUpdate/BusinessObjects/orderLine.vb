@@ -213,6 +213,16 @@ Public Class orderLine
             m_Vendor_id = Value
         End Set
     End Property
+    Private m_ITM_ID_VNDR As String = ""
+
+    Public Property ITM_ID_VNDR() As String
+        Get
+            Return m_ITM_ID_VNDR
+        End Get
+        Set(ByVal Value As String)
+            m_ITM_ID_VNDR = Value
+        End Set
+    End Property
     Private m_empId As String = ""
 
     Public Property EmployeeId() As String
@@ -244,7 +254,15 @@ Public Class orderLine
             m_netUnitPrice = Value
         End Set
     End Property
-
+    Private m_netPOPRICE As Double = CDbl("0")
+    Public Property NetPOPrice() As Double
+        Get
+            Return m_netPOPRICE
+        End Get
+        Set(ByVal Value As Double)
+            m_netPOPRICE = Value
+        End Set
+    End Property
     Private m_extendedAmt As Double = CDbl("0")
 
     Public Property ExtendedAmount() As Double

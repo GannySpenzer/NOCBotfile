@@ -37,8 +37,6 @@ End Class
 
 
 Public Class orderProcessMsg
-    Private nLevel As System.Diagnostics.TraceLevel
-    Private sMsg As String
     Public Sub New(ByVal msg As String)
 
     End Sub
@@ -47,18 +45,18 @@ Public Class orderProcessMsg
     End Sub
     Public Property [Level]() As System.Diagnostics.TraceLevel
         Get
-            Return nLevel
+
         End Get
         Set(ByVal Value As System.Diagnostics.TraceLevel)
-            nLevel = Value
+
         End Set
     End Property
     Public Property [Message]() As String
         Get
-            Return sMsg
+
         End Get
         Set(ByVal Value As String)
-            sMsg = Value
+
         End Set
     End Property
 End Class

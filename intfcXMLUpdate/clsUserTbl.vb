@@ -97,7 +97,7 @@ Public Class clsUserTbl
         Dim Command1 As New OleDbCommand
         Command1 = New OleDbCommand(strSQLstring, connectionDB)
 
-        Dim objReader As OleDbDataReader = Nothing
+        Dim objReader As OleDbDataReader
         Try
             objReader = Command1.ExecuteReader()
         Catch objException As Exception

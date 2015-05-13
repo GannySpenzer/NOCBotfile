@@ -143,7 +143,7 @@ Public Class clsQuote
 
         Dim command1 As OleDbCommand
         command1 = New OleDbCommand(strSQLstring, connectOR)
-        Dim objReader As OleDbDataReader = Nothing
+        Dim objReader As OleDbDataReader
 
 
         Try

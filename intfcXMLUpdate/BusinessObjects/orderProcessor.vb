@@ -14,6 +14,7 @@ Public Class orderProcessor
     End Sub
 
     Private m_logger As SDI.ApplicationLogger.IApplicationLogger = New noAppLogger
+    Private myLogger1 As SDI.ApplicationLogger.appLogger = New SDI.ApplicationLogger.appLogger()
 
     Public Property [Logger]() As SDI.ApplicationLogger.IApplicationLogger
         Get
@@ -21,6 +22,15 @@ Public Class orderProcessor
         End Get
         Set(ByVal Value As SDI.ApplicationLogger.IApplicationLogger)
             m_logger = Value
+        End Set
+    End Property
+
+    Public Property [MyLogger]() As SDI.ApplicationLogger.appLogger
+        Get
+            Return myLogger1
+        End Get
+        Set(ByVal Value As SDI.ApplicationLogger.appLogger)
+            myLogger1 = Value
         End Set
     End Property
 
@@ -127,11 +137,11 @@ Public Class orderProcessor
             bIsValid = False
             Me.ProcessMessages.Add(New processMsg(msg:="Retrieved Customer Id is blank.", lvl:=TraceLevel.Error))
         End If
-        ' validate order status
-        If (Me.OrderRequest.OrderStatus.Length = 0) Then
-            bIsValid = False
-            Me.ProcessMessages.Add(New processMsg(msg:="Order Status is blank.", lvl:=TraceLevel.Error))
-        End If
+        '' validate order status
+        'If (Me.OrderRequest.OrderStatus.Length = 0) Then
+        '    bIsValid = False
+        '    Me.ProcessMessages.Add(New processMsg(msg:="Order Status is blank.", lvl:=TraceLevel.Error))
+        'End If
         ' validate site prefix
         If (Me.OrderRequest.SitePrefix.Length = 0) Then
             bIsValid = False
@@ -172,15 +182,20 @@ Public Class orderProcessor
         If cnORA.State = ConnectionState.Open Then
             Dim trnsactSession As OleDbTransaction = cnORA.BeginTransaction
             m_logger.WriteInformationLog(msg:=rtn & "::created transaction object")
+            Dim sql21 As String = ""
+            Dim sOrderNo As String = Me.OrderRequest.OrderNo_Group
+            Dim sLineNo As String = ""
+
             Try
 
                 Dim sdiAssocOrder As order = Nothing
-                Dim sql As String = ""
                 Dim cmd As OleDbCommand = Nothing
                 Dim i As Integer = -1
                 m_logger.WriteVerboseLog(msg:=rtn & "::started processing " & Me.OrderRequest.OrderNo_Group & " order request containing " & Me.OrderRequest.OrderLines.Count.ToString & " line(s).")
 
                 For Each itm As orderLine In Me.OrderRequest.OrderLines
+                    sql21 = ""
+                    sLineNo = itm.OrderLineNo.ToString()
                     If itm.TargetOperation = orderLine.eTargetOperation.AddOrderLine Then
 
                         '//  [ADD]
@@ -200,17 +215,30 @@ Public Class orderProcessor
                                 ' generate sdi order # for this add
                                 Me.OrderRequest.OrderNo_SDI = Me.GetNextSDIOrderNo(Me.OrderRequest.OrderNo_Group, Me.sdiAssociatedOrders)
                                 ' insert
-                                sql = buildHeaderINTFCInsertSQL(Me.OrderRequest)
+                                ' see if it is a punchin or not - reference number coming from the quote table which means it is an f-en punchin
+                                Dim strRefNO As String = ""
+                                Try
+                                    If itm.ReferenceNo.Length > 0 Then
+                                        strRefNO = itm.ReferenceNo.Trim.ToString
+                                    Else
+                                        strRefNO = ""
+                                    End If
+                                Catch ex As Exception
+
+                                End Try
+
+
+                                sql21 = buildHeaderINTFCInsertSQL(Me.OrderRequest, strRefNO)
                                 cmd = cnORA.CreateCommand
-                                cmd.CommandText = sql
+                                cmd.CommandText = sql21
                                 cmd.CommandType = CommandType.Text
                                 cmd.Transaction = trnsactSession
-                                m_logger.WriteVerboseLog(msg:=rtn & "::   executing : " & sql)
+                                m_logger.WriteVerboseLog(msg:=rtn & "::   executing : " & sql21)
                                 i = cmd.ExecuteNonQuery()
                                 m_logger.WriteVerboseLog(msg:=rtn & "::   affected record(s) = " & i.ToString)
                                 cmd = Nothing
                                 ' re-query id
-                                sql = "" & _
+                                sql21 = "" & _
                                       "SELECT A.ISA_IDENTIFIER " & vbCrLf & _
                                       "FROM PS_ISA_ORD_INTFC_H A " & vbCrLf & _
                                       "WHERE " & vbCrLf & _
@@ -218,10 +246,10 @@ Public Class orderProcessor
                                       "  AND A.ORDER_NO = '" & Me.OrderRequest.OrderNo_SDI & "' " & vbCrLf & _
                                       ""
                                 cmd = cnORA.CreateCommand
-                                cmd.CommandText = sql
+                                cmd.CommandText = sql21
                                 cmd.CommandType = CommandType.Text
                                 cmd.Transaction = trnsactSession    ' can't do without the transaction object even on SELECT
-                                m_logger.WriteVerboseLog(msg:=rtn & "::  executing : " & sql)
+                                m_logger.WriteVerboseLog(msg:=rtn & "::  executing : " & sql21)
                                 Dim rdr As OleDbDataReader = cmd.ExecuteReader()
                                 If Not (rdr Is Nothing) Then
                                     If rdr.Read Then
@@ -238,12 +266,12 @@ Public Class orderProcessor
                             End If
 
                             ' save order line
-                            sql = buildLineINTFCInsertSQL(Me.OrderRequest, itm)
+                            sql21 = buildLineINTFCInsertSQL(Me.OrderRequest, itm)
                             cmd = cnORA.CreateCommand
-                            cmd.CommandText = sql
+                            cmd.CommandText = sql21
                             cmd.CommandType = CommandType.Text
                             cmd.Transaction = trnsactSession
-                            m_logger.WriteVerboseLog(msg:=rtn & "::   executing : " & sql)
+                            m_logger.WriteVerboseLog(msg:=rtn & "::   executing : " & sql21)
                             i = cmd.ExecuteNonQuery
                             m_logger.WriteVerboseLog(msg:=rtn & "::   affected record(s) = " & i.ToString)
                             cmd = Nothing
@@ -296,10 +324,10 @@ Public Class orderProcessor
                                     '//     1 - Submitted; 2 - Processing Order; Q - Waiting Quote; W - Waiting Order Approval
                                     '//     B - Waiting Budget Approval; C - Cancelled
                                     ' line
-                                    sql = "" & _
+                                    sql21 = "" & _
                                           "UPDATE PS_ISA_ORD_INTFC_L " & vbCrLf & _
                                           "SET " & vbCrLf & _
-                                          " ISA_ORDER_STATUS = 'Q' " & vbCrLf & _
+                                          " ISA_order_status = 'Q' " & vbCrLf & _
                                           ",QTY_REQ = 0 " & vbCrLf & _
                                           ",LASTUPDDTTM = TO_DATE('" & Now.ToString & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
                                           "WHERE " & vbCrLf & _
@@ -307,27 +335,27 @@ Public Class orderProcessor
                                           "  AND LINE_NBR = '" & sdiAssocOrderLine.OrderLineNo.ToString & "' " & vbCrLf & _
                                           ""
                                     cmd = cnORA.CreateCommand
-                                    cmd.CommandText = sql
+                                    cmd.CommandText = sql21
                                     cmd.CommandType = CommandType.Text
                                     cmd.Transaction = trnsactSession
-                                    m_logger.WriteVerboseLog(msg:=rtn & "::executing : " & sql)
+                                    m_logger.WriteVerboseLog(msg:=rtn & "::executing : " & sql21)
                                     i = cmd.ExecuteNonQuery()
                                     m_logger.WriteVerboseLog(msg:=rtn & "::affected record(s) = " & i.ToString)
                                     cmd = Nothing
                                     ' header status
-                                    sql = "" & _
+                                    sql21 = "" & _
                                           "UPDATE PS_ISA_ORD_INTFC_H " & vbCrLf & _
                                           "SET " & vbCrLf & _
-                                          " ORDER_STATUS = 'P' " & vbCrLf & _
+                                          "ORDER_STATUS  = 'P' " & vbCrLf & _
                                           ",LASTUPDDTTM = TO_DATE('" & Now.ToString & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
                                           "WHERE " & vbCrLf & _
                                           "      ISA_IDENTIFIER = '" & sdiAssocOrder.Id.ToString & "' " & vbCrLf & _
                                           ""
                                     cmd = cnORA.CreateCommand
-                                    cmd.CommandText = sql
+                                    cmd.CommandText = sql21
                                     cmd.CommandType = CommandType.Text
                                     cmd.Transaction = trnsactSession
-                                    m_logger.WriteVerboseLog(msg:=rtn & "::executing : " & sql)
+                                    m_logger.WriteVerboseLog(msg:=rtn & "::executing : " & sql21)
                                     i = cmd.ExecuteNonQuery()
                                     m_logger.WriteVerboseLog(msg:=rtn & "::affected record(s) = " & i.ToString)
                                     cmd = Nothing
@@ -362,8 +390,12 @@ Public Class orderProcessor
                 sdiAssocOrder = Nothing
 
             Catch ex As Exception
-                ' f... something blew up!
+                ' Something blew up!
                 m_logger.WriteErrorLog(msg:=rtn & "::" & ex.ToString)
+                'to do: save erred SQL to a new text file
+                If Trim(sql21) <> "" Then
+                    myLogger1.WriteErrorLog(rtn & ":: Rollback! Order Group No: " & sOrderNo & " :: Order Line No: " & sLineNo & " :: SQL: " & sql21)
+                End If
                 Me.ProcessMessages.Add(New processMsg(msg:=ex.tostring, lvl:=TraceLevel.Error))
                 Try
                     ' rollback!!!
@@ -404,18 +436,28 @@ Public Class orderProcessor
 
 #End Region
 
-    Public Overloads Sub ReadOrderRequest(ByVal orderReqXMLString As String)
+    Public Overloads Sub ReadOrderRequest(ByVal orderReqXMLString As String, Optional ByVal sOraConnString As String = "")
         Dim doc As New XmlDocument
         doc.LoadXml(orderReqXMLString)
-        ParseOrderRequest(doc)
+        ParseOrderRequest(doc, sOraConnString)
     End Sub
 
-    Public Overloads Sub ReadOrderRequest(ByVal orderReqXML As XmlDocument)
-        ParseOrderRequest(orderReqXML)
+    Public Overloads Sub ReadOrderRequest(ByVal orderReqXML As XmlDocument, Optional ByVal sOraConnString As String = "")
+        ParseOrderRequest(orderReqXML, sOraConnString)
     End Sub
 
-    Private Sub ParseOrderRequest(ByVal orderReqXML As XmlDocument)
-        Dim connectOR As New OleDbConnection("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=prod")
+    Private Sub ParseOrderRequest(ByVal orderReqXML As XmlDocument, Optional ByVal sOraConnString As String = "")
+        Dim connectOR As New OleDbConnection()  '  "Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=PROD")
+        Try
+            If Trim(sOraConnString) <> "" Then
+                connectOR.ConnectionString = sOraConnString
+            Else
+                connectOR.ConnectionString = "Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=PROD"
+            End If
+        Catch ex As Exception
+            connectOR.ConnectionString = "Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=PROD"
+        End Try
+        
         Dim rtn As String = "orderProcessor.ParseOrderRequest"
         If Not (orderReqXML Is Nothing) Then
 
@@ -493,8 +535,14 @@ Public Class orderProcessor
                             If itm.ChildNodes.Count > 0 Then
                                 'this is where the lines are created
                                 Dim lne As orderLine = Me.OrderRequest.CreateOrderLine(orderLineNo:=-1)
+
                                 For Each lneElem As XmlNode In itm.ChildNodes
                                     If lneElem.NodeType = XmlNodeType.Element Then
+                                        Try
+                                            connectOR.Close()
+                                        Catch ex As Exception
+
+                                        End Try
                                         Select Case lneElem.Name.Trim.ToUpper
                                             Case "REFERENCE_NUMBER"
                                                 Try
@@ -507,6 +555,22 @@ Public Class orderProcessor
                                                 Catch ex As Exception
 
                                                 End Try
+                                            Case "SHIPTO_ID"
+                                                Try
+                                                    If lne.ReferenceNo.Length > 0 Then
+                                                        connectOR.Open()
+                                                        Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
+                                                        'stringEncoder.escapeString(lneElem.InnerText.Trim)
+                                                        lne.ShipToId = objquoteRn.SHIPTO_ID
+                                                        lne.ShipToId = stringEncoder.escapeString(lne.ShipToId)
+                                                        '     connectOR.Close()
+                                                    Else
+                                                        lne.ShipToId = (lneElem.InnerText.Trim)
+                                                    End If
+                                                Catch ex As Exception
+
+                                                End Try
+
                                             Case "LINE_NBR"
                                                 Try
                                                     lne.OrderLineNo = CInt(lneElem.InnerText.Trim)
@@ -547,29 +611,29 @@ Public Class orderProcessor
                                                         Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
                                                         lne.OrderLineStatus = "P"
                                                         Me.OrderRequest.OrderStatus = "P"
-                                                        connectOR.Close()
+                                                        '   connectOR.Close()
                                                     Else
                                                         lne.OrderLineStatus = (lneElem.InnerText.Trim)
                                                     End If
-                                                    lne.OrderLineStatus = (lneElem.InnerText.Trim)
+                                                    'lne.OrderLineStatus = (lneElem.InnerText.Trim)
                                                 Catch ex As Exception
 
                                                 End Try
+                                                'Try
+                                                '    lne.TargetOperation = orderLine.GetTargetOperation(opId:=lneElem.InnerText.Trim)
+                                                'Catch ex As Exception
+                                                'End Try
+                                            Case "ORDER_DATE"
+                                                ' on the header, but check for overrides
+                                                'Try
+                                                '    lne.OrderDate = lneElem.InnerText.Trim
+                                                'Catch ex As Exception
+                                                'End Try
+                                            Case "INV_ITEM_ID"
                                                 Try
-                                                    lne.TargetOperation = orderLine.GetTargetOperation(opId:=lneElem.InnerText.Trim)
+                                                    lne.InventoryItemId = lneElem.InnerText.Trim.ToUpper
                                                 Catch ex As Exception
                                                 End Try
-                                            Case "ORDER_DATE"
-                                                    ' on the header, but check for overrides
-                                                    'Try
-                                                    '    lne.OrderDate = lneElem.InnerText.Trim
-                                                    'Catch ex As Exception
-                                                    'End Try
-                                            Case "INV_ITEM_ID"
-                                                    Try
-                                                        lne.InventoryItemId = lneElem.InnerText.Trim.ToUpper
-                                                    Catch ex As Exception
-                                                    End Try
                                             Case "MFG_ID"
                                                 Try
                                                     If lne.ReferenceNo.Length > 0 Then
@@ -578,18 +642,15 @@ Public Class orderProcessor
                                                         'stringEncoder.escapeString(lneElem.InnerText.Trim)
                                                         lne.ManufacturerId = objquoteRn.MFG_ID
                                                         lne.ManufacturerId = stringEncoder.escapeString(lne.ManufacturerId)
-                                                        connectOR.Close()
+                                                        '  connectOR.Close()
                                                     Else
-                                                        lne.Quantity = CDbl(lneElem.InnerText.Trim)
+                                                        lne.ManufacturerId = (lneElem.InnerText.Trim)
                                                     End If
                                                 Catch ex As Exception
 
                                                 End Try
-                                                
-                                                'Try
-                                                '    lne.ManufacturerId = lneElem.InnerText.Trim
-                                                'Catch ex As Exception
-                                                'End Try
+
+
                                             Case "MFG_ITM_ID"
                                                 Try
                                                     If lne.ReferenceNo.Length > 0 Then
@@ -597,17 +658,14 @@ Public Class orderProcessor
                                                         Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
                                                         lne.ManufacturerItemId = objquoteRn.MFG_ITM_ID
                                                         lne.ManufacturerItemId = stringEncoder.escapeString(lne.ManufacturerItemId)
-                                                        connectOR.Close()
+                                                        '     connectOR.Close()
                                                     Else
-                                                        lne.Quantity = CDbl(lneElem.InnerText.Trim)
+                                                        lne.ManufacturerItemId = (lneElem.InnerText.Trim)
                                                     End If
                                                 Catch ex As Exception
 
                                                 End Try
-                                                'Try
-                                                '    lne.ManufacturerItemId = lneElem.InnerText.Trim
-                                                'Catch ex As Exception
-                                                'End Try
+
                                                 'Case "VNDR_CATALOG_ID"
                                                 '    Try
                                                 '        If lne.ReferenceNo.Length > 0 Then
@@ -616,35 +674,38 @@ Public Class orderProcessor
                                                 '            lne.VNDR_CATALOG_ID = objquoteRn.VNDR_CATALOG_ID
                                                 '            connectOR.Close()
                                                 '        Else
-                                                '            lne.Quantity = CDbl(lneElem.InnerText.Trim)
+                                                '            lne.VNDR_CATALOG_ID =  (lneElem.InnerText.Trim)
                                                 '        End If
                                                 '    Catch ex As Exception
 
                                                 '    End Try
 
-                                                'Case "ITM_ID_VNDR"
-                                                '    Try
-                                                '        If lne.ReferenceNo.Length > 0 Then
-                                                '            connectOR.Open()
-                                                '            Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
-                                                '            lne.? = objquoteRn.ITM_ID_VNDR
-                                                '            connectOR.Close()
-                                                '        Else
-                                                '            lne.Quantity = CDbl(lneElem.InnerText.Trim)
-                                                '        End If
-                                                '    Catch ex As Exception
+                                            Case "ITM_ID_VNDR"
+                                                Try
+                                                    If lne.ReferenceNo.Length > 0 Then
+                                                        connectOR.Open()
+                                                        Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
+                                                        lne.ITM_ID_VNDR = objquoteRn.ITM_ID_VNDR
+                                                        lne.Location = objquoteRn.VNDR_LOC
+                                                        '  connectOR.Close()
+                                                    Else
+                                                        lne.ITM_ID_VNDR = (lneElem.InnerText.Trim)
+                                                    End If
+                                                Catch ex As Exception
 
-                                                '    End Try
+                                                End Try
                                                 'Try
                                                 '    lne.ManufacturerItemId = lneElem.InnerText.Trim
                                                 'Catch ex As Exception
+                                                'End Try
+
                                             Case "QTY"
                                                 Dim strrefno As String = " "
                                                 If lne.ReferenceNo.Length > 0 Then
                                                     connectOR.Open()
                                                     Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
                                                     lne.Quantity = objquoteRn.QTY_REQ
-                                                    connectOR.Close()
+                                                    '  connectOR.Close()
                                                 Else
                                                     lne.Quantity = CDbl(lneElem.InnerText.Trim)
                                                 End If
@@ -653,15 +714,14 @@ Public Class orderProcessor
                                                 'by this reference numbe line
                                                 '
                                             Case "VENDOR_ID"
-                                                Dim strrefno As String = " "
+                                                '
                                                 If lne.ReferenceNo.Length > 0 Then
                                                     connectOR.Open()
                                                     Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
                                                     lne.Vendor_id = objquoteRn.Vendor_ID
-                                                    connectOR.Close()
+                                                    '   connectOR.Close()
                                                 Else
-                                                    'lne.Vendor_id = CDbl(lneElem.InnerText.Trim)
-                                                    lne.Vendor_id = lneElem.InnerText.Trim
+                                                    lne.Vendor_id = (lneElem.InnerText.Trim)
                                                 End If
                                                 'see if this xml has a reference number
                                                 'if so get the pricing info from the quote table 
@@ -672,10 +732,15 @@ Public Class orderProcessor
                                                 'if so get the pricing info from the quote table 
                                                 'by this reference numbe line
                                                 '
-                                                Try
-                                                    lne.DueDate = lneElem.InnerText.Trim
-                                                Catch ex As Exception
-                                                End Try
+                                                If lne.ReferenceNo.Length > 0 Then
+                                                    connectOR.Open()
+                                                    Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
+                                                    lne.DueDate = CDate(objquoteRn.ISA_REQUIRED_BY_DT)
+                                                    '   connectOR.Close()
+                                                Else
+                                                    lne.DueDate = (lneElem.InnerText.Trim)
+                                                End If
+
                                             Case "EMPLID"
                                                 lne.EmployeeId = lneElem.InnerText.Trim
                                                 ' check if header DOES NOT CARRY A EMPLID
@@ -702,20 +767,21 @@ Public Class orderProcessor
                                                 Dim strrefno As String = " "
                                                 If lne.ReferenceNo.Length > 0 Then
                                                     Try
-
-
                                                         connectOR.Open()
-
 
                                                         Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
                                                         lne.NetUnitPrice = CDbl(objquoteRn.NET_UNIT_PRICE)
-                                                        connectOR.Close()
+                                                        lne.NetPOPrice = CDbl(objquoteRn.Net_PRICE_PO)
+                                                        'put POprice in here
+
+                                                        ' connectOR.Close()
                                                     Catch ex As Exception
 
                                                     End Try
                                                 Else
                                                     Try
                                                         lne.NetUnitPrice = CDbl(lneElem.InnerText.Trim)
+                                                        lne.NetPOPrice = CDbl(lneElem.InnerText.Trim)
                                                     Catch ex As Exception
 
                                                     End Try
@@ -736,7 +802,8 @@ Public Class orderProcessor
                                                         Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
                                                         lne.ExtendedAmount = CDbl(objquoteRn.NET_UNIT_PRICE)
                                                         lne.NetUnitPrice = CDbl(objquoteRn.NET_UNIT_PRICE)
-                                                        connectOR.Close()
+                                                        lne.NetPOPrice = CDbl(objquoteRn.Net_PRICE_PO)
+                                                        '  connectOR.Close()
                                                     Catch ex As Exception
 
                                                     End Try
@@ -754,11 +821,11 @@ Public Class orderProcessor
                                                     lne.WorkOrderNo = lneElem.InnerText.Trim
                                                 Catch ex As Exception
                                                 End Try
-                                            Case "SHIPTO_ID"
-                                                Try
-                                                    lne.ShipToId = lneElem.InnerText.Trim
-                                                Catch ex As Exception
-                                                End Try
+                                                'Case "SHIPTO_ID"
+                                                '    Try
+                                                '        lne.ShipToId = lneElem.InnerText.Trim
+                                                '    Catch ex As Exception
+                                                '    End Try
                                             Case "ISA_CUST_CHARGE_CD"
                                                 Try
                                                     lne.CustomerChargeCode = lneElem.InnerText.Trim
@@ -792,7 +859,7 @@ Public Class orderProcessor
                                                     lne.InventoryItemDescription = stringEncoder.escapeString(lneElem.InnerText.Trim)
                                                 Catch ex As Exception
                                                 End Try
-                                                '''''''''''''z
+
 
                                         End Select
                                     End If
@@ -896,6 +963,7 @@ Public Class orderProcessor
                                                        Me.oleConnectionString)
             m_logger.WriteVerboseLog(msg:=rtn & "::loaded (if any) associated/existing order/order line for this request.")
             If m_arrAssocOrders.Count > 0 Then
+                'pink
                 For Each ord As order In m_arrAssocOrders
                     m_logger.WriteVerboseLog(msg:=rtn & "::order # " & ord.OrderNo_SDI & "(" & ord.Id.ToString & ")/" & ord.OrderNo_Group & " retrieved; status=" & ord.OrderStatus & ".")
                     For Each i As orderLine In ord.OrderLines
@@ -1263,12 +1331,16 @@ Public Class orderProcessor
         Return s
     End Function
 
-    Private Function buildHeaderINTFCInsertSQL(ByVal orderReq As order) As String
+    Private Function buildHeaderINTFCInsertSQL(ByVal orderReq As order, ByVal strRefNO As String) As String
         Dim sql As String = ""
+        'here is where we need to make sure we have a punchin and the right status
+        ' if there is a reference number coming from the quote table it is an f-en punchin
         Dim strOrdstat As String = orderReq.OrderStatus.ToString.ToUpper
-
-        If strOrdstat <> "P" Then
+         
+        If Not strRefNO.Length > 0 Then
             strOrdstat = "S"
+        Else
+            strOrdstat = "P"
         End If
         sql = "" & _
               "INSERT INTO PS_ISA_ORD_INTFC_H " & vbCrLf & _
@@ -1344,10 +1416,6 @@ Public Class orderProcessor
             itemDesc = stringEncoder.formStringForSQL(itemDesc, 254)
         End If
 
-        Dim shipTo As String = CStr(IIf(orderReqLine.Location.Trim.Length = 0, " ", orderReqLine.Location.Trim.ToUpper))
-        If (shipTo.Trim.Length > 0) Then
-            shipTo = stringEncoder.formStringForSQL(shipTo, 10)
-        End If
 
         Dim customerId As String = CStr(IIf(orderReq.SiteInfo.CustID.Trim.Length = 0, " ", orderReq.SiteInfo.CustID.Trim.ToUpper))
         If (customerId.Trim.Length > 0) Then
@@ -1417,12 +1485,46 @@ Public Class orderProcessor
         Catch ex As Exception
             strlineordstat = "1"
         End Try
-       
+
         Dim workOrderNo As String = CStr(IIf(orderReqLine.WorkOrderNo.Trim.Length = 0, " ", orderReqLine.WorkOrderNo.Trim.ToUpper))
         If (workOrderNo.Trim.Length > 0) Then
             workOrderNo = stringEncoder.formStringForSQL(workOrderNo, 20)
         End If
-        '   Here we need to deterimine if it is  a Punchin/Punchout record and here we need to make the isa_order_status = 'Z'
+        '   Here we need to deterimine if it is  a Punchin/Punchout record and here we need to make the isa_ = 'Z'
+        Dim strVendid = orderReqLine.Vendor_id.ToString
+        Dim strItmIDVndr = orderReqLine.ITM_ID_VNDR.ToString
+
+
+        'Dim shipTo As String = CStr(IIf(orderReqLine.Location.Trim.Length = 0, " ", orderReqLine.Location.Trim.ToUpper))
+
+        ' we now get shipto id from quote or if not punchin there is no shipto_id" "  
+        'Dim shipTo As String = CStr(IIf(orderReqLine.Location.Trim.Length = 0, "", orderReqLine.Location.Trim.ToUpper))
+        Dim shipto As String = CStr(IIf(orderReqLine.ShipToId.Trim.Length = 0, " ", orderReqLine.ShipToId.Trim.ToUpper))
+        If (shipto.Trim.Length > 0) Then
+            shipto = stringEncoder.formStringForSQL(shipto, 10)
+        End If
+        Dim strVenloc As String = CStr(IIf(orderReqLine.Location.Trim.Length = 0, " ", orderReqLine.Location.Trim.ToUpper))
+        If (strVenloc.Trim.Length > 0) Then
+            strVenloc = stringEncoder.formStringForSQL(strVenloc, 10)
+        End If
+
+
+
+
+        Try
+            If strVendid = "" Then
+                strVendid = " "
+            End If
+        Catch ex As Exception
+            strVendid = " "
+        End Try
+        Try
+            If strItmIDVndr = "" Then
+                strItmIDVndr = " "
+            End If
+        Catch ex As Exception
+            strItmIDVndr = " "
+        End Try
 
         sql = "" & _
               "INSERT INTO PS_ISA_ORD_INTFC_L " & vbCrLf & _
@@ -1467,7 +1569,7 @@ Public Class orderProcessor
               ",ISA_WORK_ORDER_NO " & vbCrLf & _
               ",ISA_MACHINE_NO " & vbCrLf & _
               ",ISA_INTFC_LN_TYPE " & vbCrLf & _
-              ",ISA_ORDER_STATUS " & vbCrLf & _
+              ",ISA_ORDER_STATUS" & vbCrLf & _
               ",ADD_DTTM " & vbCrLf & _
               ",LASTUPDDTTM " & vbCrLf & _
               ",PROCESS_INSTANCE " & vbCrLf & _
@@ -1479,25 +1581,25 @@ Public Class orderProcessor
               ",' ' " & vbCrLf & _
               ",'" & orderReqLine.OrderLineNo.ToString & "' " & vbCrLf & _
               ",TO_DATE('" & dtRequired.ToString & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
-              ",'' " & vbCrLf & _
+              ",TO_DATE('" & dtRequired.ToString & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
               "," & orderReqLine.Quantity.ToString & " " & vbCrLf & _
               ",0 " & vbCrLf & _
               ",' ' " & vbCrLf & _
               ",'MAIN1' " & vbCrLf & _
               ",'" & itemId & "' " & vbCrLf & _
               ",'MAIN1' " & vbCrLf & _
+              ",'" & strVendid & "' " & vbCrLf & _
+              ",'" & strVenloc & "' " & vbCrLf & _
+              ",'" & strItmIDVndr & "' " & vbCrLf & _
               ",' ' " & vbCrLf & _
-              ",'0' " & vbCrLf & _
-              ",' ' " & vbCrLf & _
-              ",' ' " & vbCrLf & _
-              ",'" & shipTo & "' " & vbCrLf & _
+              ",'" & shipto & "' " & vbCrLf & _
               ",'" & customerId & "' " & vbCrLf & _
               ",' ' " & vbCrLf & _
               ",'" & uom & "' " & vbCrLf & _
               ",'" & mfgId & "' " & vbCrLf & _
               ",'" & mfgFreeForm & "' " & vbCrLf & _
               ",0 " & vbCrLf & _
-              ",0 " & vbCrLf & _
+              ",'" & orderReqLine.NetPOPrice.ToString & "' " & vbCrLf & _
               ",0 " & vbCrLf & _
               ",'" & orderReqLine.NetUnitPrice.ToString & "' " & vbCrLf & _
               ",'N' " & vbCrLf & _

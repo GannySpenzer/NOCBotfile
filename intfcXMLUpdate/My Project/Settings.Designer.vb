@@ -56,7 +56,7 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=PROD")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=RPTG")>  _
         Public ReadOnly Property oraCNString1() As String
             Get
                 Return CType(Me("oraCNString1"),String)
@@ -92,7 +92,7 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("robert.arthur@sdi.com")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("erwin.bautista@sdi.com")>  _
         Public ReadOnly Property onErrorEmail_To() As String
             Get
                 Return CType(Me("onErrorEmail_To"),String)

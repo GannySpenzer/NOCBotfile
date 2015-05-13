@@ -16,6 +16,7 @@ Public Class order
     Private m_sitePrefix As String = ""
     Private m_empId As String = ""
     Private m_status As String = ""
+    Private m_statusl As String = ""
 
     Private m_siteInfo As clsEnterprise = Nothing
 
@@ -133,7 +134,7 @@ Public Class order
 
         End Set
     End Property
-
+   
     Public Property SiteInfo() As clsEnterprise
         Get
             Return m_siteInfo
@@ -180,6 +181,7 @@ Public Class order
         ordLn.PriorityCode = Me.PriorityCode
         ordLn.TargetOperation = Me.TargetOperation
         ordLn.EmployeeId = Me.EmployeeId
+
         ' return orderLine object
         Return ordLn
     End Function
