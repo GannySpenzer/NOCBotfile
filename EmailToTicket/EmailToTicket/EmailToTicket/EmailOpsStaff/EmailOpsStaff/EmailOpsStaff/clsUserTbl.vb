@@ -85,7 +85,8 @@ Public Class clsUserTbl
    
 
     
-    Public Sub New(ByVal Employee_name As String, ByVal Business_unit As String, ByVal connectionDB As OleDbConnection)
+    Public Sub New(ByVal Employee_name As String, ByVal Business_unit As String, ByVal connectionDB As OleDbConnection, _
+                   Optional sEmailAddress As String = " ")
         Dim strSQLstring As String
 
         If Business_unit = " " Then
@@ -134,30 +135,45 @@ Public Class clsUserTbl
         Dim Command1 As New OleDbCommand
         Command1 = New OleDbCommand(strSQLstring, connectionDB)
 
-        Dim objReader As OleDbDataReader
+        Dim objReader As OleDbDataReader = Nothing
         Try
             objReader = Command1.ExecuteReader()
+
+            Dim bFound As Boolean = False
+            Dim bMoreToRead As Boolean = True
+            While bMoreToRead And Not bFound
+                If objReader.Read() Then
+                    strEmployeeEmail = objReader.Item("ISA_EMPLOYEE_EMAIL")
+
+                    If sEmailAddress.Trim.Length > 0 Then
+                        If strEmployeeEmail = sEmailAddress Then
+                            bFound = True
+                        End If
+                    Else
+                        bFound = True
+                    End If
+                    If bFound Then
+                        intUniqueUserID = objReader.Item("ISA_USER_ID")
+                        strFirstNameSrch = objReader.Item("FIRST_NAME_SRCH")
+                        strLastNameSrch = objReader.Item("LAST_NAME_SRCH")
+                        strPasswordEncr = objReader.Item("ISA_PASSWORD_ENCR")
+                        strBusinessUnit = objReader.Item("BUSINESS_UNIT")
+                        strEmployeeName = objReader.Item("ISA_EMPLOYEE_NAME")
+                        strPhoneNum = objReader.Item("PHONE_NUM")
+                        strBU = objReader.Item("Business_unit")
+                        strstatus = objReader.Item("ACTIVE_STATUS")
+                        strEmpID = objReader.Item("ISA_EMPLOYEE_ID")
+                        strSiteName = objReader.Item("Name1")
+                    End If
+                Else
+                    bMoreToRead = False
+                End If
+            End While
+            objReader.Close()
         Catch objException As Exception
             'connectionDB.Close()
-
+            objReader.Close()
         End Try
-        If objReader.Read() Then
-            intUniqueUserID = objReader.Item("ISA_USER_ID")
-            strFirstNameSrch = objReader.Item("FIRST_NAME_SRCH")
-            strLastNameSrch = objReader.Item("LAST_NAME_SRCH")
-            strPasswordEncr = objReader.Item("ISA_PASSWORD_ENCR")
-            strBusinessUnit = objReader.Item("BUSINESS_UNIT")
-            strEmployeeName = objReader.Item("ISA_EMPLOYEE_NAME")
-            strEmployeeEmail = objReader.Item("ISA_EMPLOYEE_EMAIL")
-            strPhoneNum = objReader.Item("PHONE_NUM")
-            strBU = objReader.Item("Business_unit")
-            strstatus = objReader.Item("ACTIVE_STATUS")
-            strEmpID = objReader.Item("ISA_EMPLOYEE_ID")
-            strSiteName = objReader.Item("Name1")
-
-
-        End If
-        objReader.Close()
     End Sub
 
 End Class

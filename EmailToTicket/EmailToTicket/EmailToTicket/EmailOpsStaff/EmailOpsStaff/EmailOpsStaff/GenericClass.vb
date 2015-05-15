@@ -105,10 +105,10 @@ Public Class GenericClass
         Dim strKey As String = currentItem.Id.ToString
         Dim strcc As String = " "
         Dim bLogBodyError As Boolean = False
-
+        Dim sItemEmailAddress As String = " "
 
         Try
-            strcc = FindSDIEmail(currentItem)
+            strcc = FindSDIEmail(currentItem, sItemEmailAddress)
             'strcc = currentItem.DisplayCc.ToString
             'Dim tt As String = Microsoft.Exchange.WebServices.Data.ExchangeService.
             If strcc = "" Then
@@ -186,8 +186,7 @@ Public Class GenericClass
             myemailSender = Regex.Replace(myemailSender, " ", "")
             connectOR.Open()
             Dim objUserTbl As clsUserTbl
-            objUserTbl = New clsUserTbl(myemailSender, " ", connectOR)
-
+            objUserTbl = New clsUserTbl(myemailSender, " ", connectOR, sItemEmailAddress)
 
 
             Dim strCustName As String = objUserTbl.EmployeeName
@@ -754,8 +753,9 @@ Public Class GenericClass
         Command1.Dispose()
     End Function
 
-    Private Function FindSDIEmail(ByVal currentItem As Item) As String
+    Private Function FindSDIEmail(ByVal currentItem As Item, ByRef sItemEmailAddress As String) As String
         Dim sSDIEmail As String = ""
+        sItemEmailAddress = " "
         'Dim itemPropertySet As PropertySet
 
         'itemPropertySet = New PropertySet(BasePropertySet.FirstClassProperties)
@@ -767,6 +767,9 @@ Public Class GenericClass
         myEmailMessage.Load()
         If IsSDIEmail(myEmailMessage.Sender.Address) Then
             sSDIEmail = myEmailMessage.Sender.Name
+            If myEmailMessage.Sender.Address.IndexOf("@") >= 0 Then
+                sItemEmailAddress = myEmailMessage.Sender.Address
+            End If
         ElseIf Not myEmailMessage.DisplayCc Is Nothing Then
             Dim sCCEmails As String()
             Dim i As Integer
@@ -776,10 +779,16 @@ Public Class GenericClass
                 If IsEmailAddress(sCCEmails(i)) Then
                     If IsSDIEmail(sCCEmails(i)) Then
                         sSDIEmail = sCCEmails(i)
+                        If sCCEmails(i).IndexOf("@") >= 0 Then
+                            sItemEmailAddress = sCCEmails(i)
+                        End If
                     End If
                 Else
                     If IsSDIEmailFromDisplayName(sCCEmails(i)) Then
                         sSDIEmail = sCCEmails(i)
+                        If sCCEmails(i).IndexOf("@") >= 0 Then
+                            sItemEmailAddress = sCCEmails(i)
+                        End If
                     End If
                 End If
 
