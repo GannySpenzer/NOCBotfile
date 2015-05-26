@@ -14,7 +14,8 @@ Public Class UpdEmailOut
                     ByVal strMessage As String, _
                     ByVal connection As OleDbConnection)
 
-        Dim myloadbalance As loadbalance.SDI_loadbalance_IO = New loadbalance.SDI_loadbalance_IO
+        'Dim myloadbalance As loadbalance.SDI_loadbalance_IO = New loadbalance.SDI_loadbalance_IO
+        Dim myloadbalance As loadbalance_dazzle2.SDI_loadbalance_IO = New loadbalance_dazzle2.SDI_loadbalance_IO
         'Dim nav As XPathNavigator
         'Dim docnav As XPathDocument
         '' open the xml file Pathlocator.xml
