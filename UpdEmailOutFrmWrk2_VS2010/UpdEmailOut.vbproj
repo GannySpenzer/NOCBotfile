@@ -152,6 +152,11 @@
     <Compile Include="AssemblyInfo.vb">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="My Project\Settings.Designer.vb">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
     <Compile Include="UpdEmailOut.vb">
       <SubType>Code</SubType>
     </Compile>
@@ -161,22 +166,48 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </Compile>
+    <Compile Include="Web References\loadbalance_dazzle2\Reference.vb">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.map</DependentUpon>
+    </Compile>
     <Content Include="PathLocator.xml" />
+    <None Include="app.config" />
+    <None Include="My Project\Settings.settings">
+      <CustomToolNamespace>My</CustomToolNamespace>
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.vb</LastGenOutput>
+    </None>
+    <None Include="Web References\loadbalance_dazzle2\Reference.map">
+      <Generator>MSDiscoCodeGenerator</Generator>
+      <LastGenOutput>Reference.vb</LastGenOutput>
+    </None>
+    <None Include="Web References\loadbalance_dazzle2\SDI_loadbalance_IO.disco" />
     <None Include="Web References\loadbalance\Reference.map">
       <Generator>MSDiscoCodeGenerator</Generator>
       <LastGenOutput>Reference.vb</LastGenOutput>
     </None>
     <None Include="Web References\loadbalance\SDI_loadbalance_IO.disco" />
     <None Include="Web References\loadbalance\SDI_loadbalance_IO.wsdl" />
+    <None Include="Web References\loadbalance_dazzle2\SDI_loadbalance_IO.wsdl" />
     <WebReferences Include="Web References\" />
     <WebReferenceUrl Include="http://dazzle/SDI_loadbalance_IO/SDI_loadbalance_IO.asmx">
       <RelPath>Web References\loadbalance\</RelPath>
       <UrlBehavior>Static</UrlBehavior>
     </WebReferenceUrl>
+    <WebReferenceUrl Include="http://dazzle2/SDI_loadbalance_IO/SDI_loadbalance_IO.asmx">
+      <UrlBehavior>Dynamic</UrlBehavior>
+      <RelPath>Web References\loadbalance_dazzle2\</RelPath>
+      <UpdateFromURL>http://dazzle2/SDI_loadbalance_IO/SDI_loadbalance_IO.asmx</UpdateFromURL>
+      <ServiceLocationURL>
+      </ServiceLocationURL>
+      <CachedDynamicPropName>
+      </CachedDynamicPropName>
+      <CachedAppSettingsObjectName>MySettings</CachedAppSettingsObjectName>
+      <CachedSettingsPropName>UpdEmailOut_loadbalance_dazzle2_SDI_loadbalance_IO</CachedSettingsPropName>
+    </WebReferenceUrl>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="My Project\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
       <Visible>False</Visible>
