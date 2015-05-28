@@ -18,7 +18,7 @@
       <Value Profile="(Default)">MOMBrand_INVADJ_HTTP_SOAP_TableColMap.xml</Value>
     </Setting>
     <Setting Name="INVADJ_UpdateKeyColumns" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">CUST_ID,PLANT,INV_ITEM_ID,ISA_CUST_BIN,QTY,BUSINESS_UNIT_IN,STORAGE_AREA,STOR_LEVEL_1,STOR_LEVEL_2,STOR_LEVEL_3,STOR_LEVEL_4</Value>
+      <Value Profile="(Default)">CUST_ID,PLANT,INV_ITEM_ID,ISA_CUST_BIN,QTY,BUSINESS_UNIT_IN,STORAGE_AREA,STOR_LEVEL_1,STOR_LEVEL_2,STOR_LEVEL_3,STOR_LEVEL_4,REASON_CD</Value>
     </Setting>
     <Setting Name="INVADJ_SelectToSend" Type="System.String" Scope="Application">
       <Value Profile="(Default)">INVADJ_HTTP_SOAP_SelectToSend.sql</Value>

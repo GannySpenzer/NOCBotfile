@@ -181,6 +181,8 @@
                     Dim sBin As String = ""
                     Dim nQty As Decimal = 0
 
+                    Dim sReasonCode As String = ""
+
                     Dim sPrevErrMsg As String = ""
                     Dim sPrevErrMsgDesc As String = ""
 
@@ -228,6 +230,15 @@
                             nQty = CDec(dr("QTY"))
                         Catch ex As Exception
                         End Try
+
+                        sReasonCode = ""
+                        Try
+                            sReasonCode = CStr(dr("REASON_CD")).Trim
+                        Catch ex As Exception
+                        End Try
+                        If (sReasonCode Is Nothing) Then
+                            sReasonCode = ""
+                        End If
 
                         sInitialProcessFlag = ""
                         Try
@@ -313,8 +324,9 @@
                         '   1020 {1} - item/part #
                         '   1030 {2} - bin
                         '   1040 {3} - quantity
+                        '   1050 {4} - REASON_CD
                         sb = New System.Text.StringBuilder
-                        sb.AppendFormat(s, sPlant, sItem, sBin, nQty.ToString())
+                        sb.AppendFormat(s, sPlant, sItem, sBin, nQty.ToString(), sReasonCode)
                         iList &= sb.ToString
                         sb = Nothing
 

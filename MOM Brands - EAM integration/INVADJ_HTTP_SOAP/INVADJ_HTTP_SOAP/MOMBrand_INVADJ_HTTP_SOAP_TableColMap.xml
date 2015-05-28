@@ -13,4 +13,5 @@
   <column Id="10" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_ADJ" targetColumnName="STOR_LEVEL_4" targetColumnLength="4" targetColumnDataType="" />
   <column Id="11" inColumnName="" value="{SYSTEM:PROCESS_INSTANCE}" targetTableName="PS_ISA_MB_ADJ" targetColumnName="PROCESS_INSTANCE" targetColumnLength="0" targetColumnDataType="" />
   <column Id="12" inColumnName="" value="{SYSTEM:DATETIME}" targetTableName="PS_ISA_MB_ADJ" targetColumnName="DT_TIMESTAMP" targetColumnLength="0" targetColumnDataType="" />
+  <column Id="13" inColumnName="" value="{SYSTEM:EMPTY_STRING}" targetTableName="PS_ISA_MB_ADJ" targetColumnName="REASON_CD" targetColumnLength="10" targetColumnDataType="" />
 </tableColumnMappings>
