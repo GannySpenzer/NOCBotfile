@@ -195,6 +195,12 @@ Public Class QuoteNonStockProcessor
                   "                    AND B.REQ_ID = A.REQ_ID " & vbCrLf & _
                   "                 ) " & vbCrLf & _
                   "  AND A.REQ_STATUS = 'Q' " & vbCrLf & _
+                  "  AND NOT EXISTS ( " & vbCrLf & _
+                  "                  SELECT 'X' " & vbCrLf & _
+                  "                  FROM SYSADM.PS_NLINK_CUST_PLNT C " & vbCrLf & _
+                  "                  WHERE C.ISA_SAP_PO_PREF = SUBSTR(A.REQ_ID,1,2) " & vbCrLf & _
+                  "                    AND C.ISA_SAP_PO_PREF <> ' ' " & vbCrLf & _
+                  "                 ) " & vbCrLf & _
                   ""
 
             Dim nRecs As Integer = 0
@@ -356,6 +362,12 @@ Public Class QuoteNonStockProcessor
                                  "                  WHERE B.BUSINESS_UNIT = A.BUSINESS_UNIT" & vbCrLf & _
                                  "                    AND B.REQ_ID = A.REQ_ID" & vbCrLf & _
                                  "                 )" & vbCrLf & _
+                                 "  AND NOT EXISTS ( " & vbCrLf & _
+                                 "                  SELECT 'X' " & vbCrLf & _
+                                 "                  FROM SYSADM.PS_NLINK_CUST_PLNT C " & vbCrLf & _
+                                 "                  WHERE C.ISA_SAP_PO_PREF = SUBSTR(A.REQ_ID,1,2) " & vbCrLf & _
+                                 "                    AND C.ISA_SAP_PO_PREF <> ' ' " & vbCrLf & _
+                                 "                 ) " & vbCrLf & _
                                  "ORDER BY A1.BUSINESS_UNIT, A1.REQ_ID, A1.LINE_NBR " & vbCrLf & _
                                  ""
 
