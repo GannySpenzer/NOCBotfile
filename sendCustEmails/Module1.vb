@@ -10,12 +10,10 @@ Imports System.Xml
 
 Module Module1
 
-    Private m_xmlConfig As XmlDocument
-    Private m_configFile As String = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly.GetModules()(0).FullyQualifiedName) & "\configSetting.xml"
     Dim objStreamWriter As StreamWriter
     Dim rootDir As String = "C:\SendCustEmail"
     Dim logpath As String = "C:\SendCustEmail\LOGS\SendCustEmailOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim connectOR As New OleDbConnection("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=UATC")
+    Dim connectOR As New OleDbConnection("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=PROD")
     'ISA_EMAIL_ID                              NOT NULL NUMBER(38)
     'DATETIME_ADDED                                     DATE
     'EMAIL_SUBJECT_LONG                        NOT NULL VARCHAR2(80)
@@ -43,9 +41,6 @@ Module Module1
         objStreamWriter = File.CreateText(logpath)
         objStreamWriter.WriteLine("Send emails out " & Now())
 
-        m_xmlConfig = New XmlDocument
-        m_xmlConfig.Load(filename:=m_configFile)
-
         Dim bolError As Boolean = buildSendCustEmailOut()
 
         If bolError = True Then
@@ -71,20 +66,6 @@ Module Module1
                     " FROM PS_ISA_OUTBND_EML A" & vbCrLf & _
                     " WHERE A.EMAIL_DATETIME Is NULL" & vbCrLf
 
-        Dim cnString As String = ""
-        Try
-
-            ' retrieve the source DB connection string to use
-            If Not (m_xmlConfig("configuration")("sourceDB").Attributes("cnString").InnerText Is Nothing) Then
-                cnString = m_xmlConfig("configuration")("sourceDB").Attributes("cnString").InnerText.Trim
-            End If
-        Catch ex As Exception
-            cnString = ""
-        End Try
-
-        If Trim(cnString) <> "" Then
-            connectOR.ConnectionString = cnString
-        End If
         Dim Command As OleDbCommand = New OleDbCommand(strSQLstring, connectOR)
         connectOR.Open()
         Dim dataAdapter As OleDbDataAdapter = _
@@ -250,7 +231,7 @@ Module Module1
         End If
 
         If Trim(dr.Item("EMAIL_SUBJECT_LONG")) = "" Then
-            Mailer.Subject = "Email from SDIExchange"
+            Mailer.Subject = "Email from SDI, INC"
         Else
             Mailer.Subject = dr.Item("EMAIL_SUBJECT_LONG")
         End If
@@ -271,8 +252,7 @@ Module Module1
 
         Dim email As New MailMessage
         email.From = "TechSupport@sdi.com"
-        email.To = "erwin.bautista@sdi.com"
-        'email.To = "bob.dougherty@sdi.com"
+        email.To = "bob.dougherty@sdi.com"
         email.Subject = "Sent Cust Email OUT Error"
         email.Priority = MailPriority.High
         email.BodyFormat = MailFormat.Html
@@ -361,7 +341,8 @@ Module Module1
         ' The web service is named SDI_load_balance_IO.
         ' call webservice 
         Try
-            Dim myloadbalance As loadbalance.SDI_loadbalance_IO = New loadbalance.SDI_loadbalance_IO
+            'Dim myloadbalance As loadbalance.SDI_loadbalance_IO = New loadbalance.SDI_loadbalance_IO
+            Dim myloadbalance As loadbalance2.SDI_loadbalance_IO = New loadbalance2.SDI_loadbalance_IO
             'Dim ExtMsgFile1 As String = ctype(strFilePath.) 
             Dim ExtMsgFile As String = (strFilePath)
             Dim readerline As String

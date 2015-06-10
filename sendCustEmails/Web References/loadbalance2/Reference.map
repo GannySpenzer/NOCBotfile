@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DiscoveryClientResultsFile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Results>
+    <DiscoveryClientResult referenceType="System.Web.Services.Discovery.ContractReference" url="http://dazzle2/SDI_loadbalance_IO/SDI_loadbalance_IO.asmx?wsdl" filename="SDI_loadbalance_IO.wsdl" />
+  </Results>
+</DiscoveryClientResultsFile>

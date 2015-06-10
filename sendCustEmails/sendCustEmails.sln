@@ -6,20 +6,26 @@ Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
 		SccNumberOfProjects = 2
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = http://vsfoundations:8080/tfs/insiteonline
+		SccTeamFoundationServer = http://192.168.253.77:8080/tfs/insiteonline
 		SccLocalPath0 = .
 		SccProjectUniqueName1 = sendCustEmails.vbproj
 		SccLocalPath1 = .
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0EF0652A-52B3-463C-B3EA-69682A871286}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0EF0652A-52B3-463C-B3EA-69682A871286}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0EF0652A-52B3-463C-B3EA-69682A871286}.Debug|x86.ActiveCfg = Debug|x86
+		{0EF0652A-52B3-463C-B3EA-69682A871286}.Debug|x86.Build.0 = Debug|x86
 		{0EF0652A-52B3-463C-B3EA-69682A871286}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0EF0652A-52B3-463C-B3EA-69682A871286}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0EF0652A-52B3-463C-B3EA-69682A871286}.Release|x86.ActiveCfg = Release|x86
+		{0EF0652A-52B3-463C-B3EA-69682A871286}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
