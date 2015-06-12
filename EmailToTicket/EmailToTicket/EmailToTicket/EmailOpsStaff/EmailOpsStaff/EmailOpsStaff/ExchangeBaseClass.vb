@@ -59,7 +59,7 @@ Public Class ExchangeBaseClass
 
     Public clsLogger As LoggerClass
 
-    Overridable Function ProcessItem(ByVal currentItem As Item) As Boolean
+    Overridable Function ProcessItem(ByVal currentItem As Item, ByRef bSkipEmail As Boolean) As Boolean
         Dim bReturn As Boolean = False
         Debug.Print(currentItem.Subject)
         currentItem.Load(PropertySet.FirstClassProperties)
@@ -222,14 +222,41 @@ Public Class ExchangeBaseClass
             'ZZZZZZZZZZZ
             'msgbox("entering exchange baseclass items to process = " & InboxItems.Count.ToString)
 
-                Dim bProcessEmail As Boolean = True
-                Dim bMarkAsProcessed As Boolean = False
-                For Each myItem As Item In inboxItems.Items
-                    bProcessEmail = True
-                    ' Debug.Print(InboxItems.Items(0).Subject)
-                    If FilterEmails Then
-                        If SubjectFilterEnabled Then
+            Dim bProcessEmail As Boolean = True
+            Dim bMarkAsProcessed As Boolean = False
+            For Each myItem As Item In inboxItems.Items
+                bProcessEmail = True
+                ' Debug.Print(InboxItems.Items(0).Subject)
+                Dim sLogSender As String = ""
+                Dim sLogSubject As String = ""
+                Dim bGetSenderAlternate As Boolean = False
+                Try
+                    sLogSubject = myItem.Subject
+                Catch ex As Exception
+                End Try
+                Try
+                    sLogSender = myItem.DisplayCc
+                    If sLogSender.Trim.Length = 0 Then
+                        bGetSenderAlternate = True
+                    End If
+                Catch ex As Exception
+                    bGetSenderAlternate = True
+                End Try
+                If bGetSenderAlternate Then
+                    Try
+                        sLogSender = CType(myItem, Microsoft.Exchange.WebServices.Data.EmailMessage).Sender.Name
+                    Catch ex2 As Exception
+                    End Try
+                End If
+                Try
+                    clsLogger.Log_Event("ExchangeBaseClass:ProcessMailbox Begin processing from=" & sLogSender & "; subject=" & sLogSubject)
+                Catch ex As Exception
+                    clsLogger.Log_Event("ExchangeBaseClass:ProcessMailbox Begin processing next message")
+                End Try
+                If FilterEmails Then
+                    If SubjectFilterEnabled Then
                         If Not (InStr(myItem.Subject, SubjectFilter) > 0) Then
+                            clsLogger.Log_Event("ExchangeBaseClass:ProcessMailbox does not pass SubjectFilter; set bProcessEmail to false;")
                             bProcessEmail = False
                         End If
                         '''''''''''ZZZZZZZZZZZZZZ
@@ -258,29 +285,38 @@ Public Class ExchangeBaseClass
                         ' user fieldops/PAM
                         ' dept fieldOPS
                         '
-                        End If
+                    End If
                 End If
                 ' this is where you want to process the message
-                    If bProcessEmail Then
-                    bMarkAsProcessed = ProcessItem(myItem)
 
-                    End If
-                    If ProcessedFolderEnabled Then
+                Dim bSkipEmail As Boolean = False
+                If bProcessEmail Then
+                    bMarkAsProcessed = ProcessItem(myItem, bSkipEmail)
+
+                End If
+                If ProcessedFolderEnabled Then
+                    If Not bSkipEmail Then
                         If bMarkAsProcessed And bProcessEmail Then
+                            clsLogger.Log_Event("ExchangeBaseClass:ProcessMailbox item will move to Processed folder")
                             myItem.Move(processedFolderID)
+                        Else
+                            'Dim myEmailClass As New EmailClass.EmailClass("joe.rank@sdi.com", "", "Email Processor Error", _
+                            '"MailBox: " & MailboxName & vbCrLf & _
+                            '"Error processing email with subject " & myItem.Subject & vbCrLf & _
+                            '"Received " & myItem.DateTimeReceived.ToString) ' joe.rank@sdi.com
+                            'If Not myEmailClass.SendEmail() Then
+                            'clsLogger.Log_Event("ERROR SENDING EMAIL")
+                            'End If
+                            'myEmailClass = Nothing
+                            clsLogger.Log_Event("ExchangeBaseClass:ProcessMailbox item will move to InComplete folder; bMarkAsProcessed=" & _
+                                                bMarkAsProcessed.ToString & " bProcessEmail=" & bProcessEmail.ToString)
+                            myItem.Move(reviewedFolderID)
+                        End If
                     Else
-                        'Dim myEmailClass As New EmailClass.EmailClass("joe.rank@sdi.com", "", "Email Processor Error", _
-                        '"MailBox: " & MailboxName & vbCrLf & _
-                        '"Error processing email with subject " & myItem.Subject & vbCrLf & _
-                        '"Received " & myItem.DateTimeReceived.ToString) ' joe.rank@sdi.com
-                        'If Not myEmailClass.SendEmail() Then
-                        'clsLogger.Log_Event("ERROR SENDING EMAIL")
-                        'End If
-                        'myEmailClass = Nothing
-                        myItem.Move(reviewedFolderID)
+                        clsLogger.Log_Event("ExchangeBaseClass:ProcessMailbox bSkipEmail set to true")
                     End If
-                    End If
-                Next
+                End If
+            Next
         Catch ex As Exception
             Debug.Print(ex.Message)
             clsLogger.Log_Event("Process mailbox Error: " & ex.Message)
