@@ -208,12 +208,6 @@ Public Class clsUserTbl
                         sEmailAddress = sEmailAddress.ToUpper.Trim
                         iLine = 110
                         If sEmailAddress.Length > 0 Then
-                            iLine = 111
-                            bFound = True
-                            iLine = 112
-                            iFoundUserIndex = 0
-                            iLine = 113
-                        Else
                             Dim iRowIndex As Integer = 0
                             While iRowIndex < ds.Tables(0).Rows.Count And Not bFound
                                 iLine = 114
