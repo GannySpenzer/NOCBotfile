@@ -110,11 +110,11 @@ Public Class clsUserTbl
                                 " FROM PS_ISA_USERS_TBL A, ps_customer B , ps_isa_enterprise C, ps_isa_sdr_bu_loc D " & vbCrLf & _
                                 " WHERE upper(A.ISA_EMPLOYEE_name) like UPPER('" & Employee_name & "%')" & vbCrLf & _
                                 " and C.isa_business_unit = A.Business_unit " & vbCrLf & _
+                                " AND A.active_status <> 'I'" & vbCrLf & _
                                 " AND C.CUST_id = B.CUST_ID" & vbCrLf & _
                                 " AND A.business_unit = D.isa_business_unit" & vbCrLf & _
                                 " AND D.bu_status = '1'" & vbCrLf & _
                                 " AND D.location = 'L' || SUBSTR(D.isa_business_unit,2) || '-01'"
-                '" AND A.active_status <> 'I'" & vbCrLf & _
 
                 iLine = 2
             Else
@@ -134,8 +134,8 @@ Public Class clsUserTbl
                                 " FROM PS_ISA_USERS_TBL A, ps_customer B , ps_isa_enterprise C " & vbCrLf & _
                                 " WHERE upper(A.ISA_EMPLOYEE_name) like UPPER('" & Employee_name & "%')" & vbCrLf & _
                                 " and C.isa_business_unit = A.Business_unit " & vbCrLf & _
+                                " AND A.active_status <> 'I'" & vbCrLf & _
                                 " AND C.CUST_id = B.CUST_ID" & vbCrLf
-                '" AND A.active_status <> 'I'" & vbCrLf & _
                 iLine = 4
                 strSQLstring = strSQLstring & " AND A.BUSINESS_UNIT = '" & Business_unit & "'" & vbCrLf
                 iLine = 5
@@ -167,40 +167,64 @@ Public Class clsUserTbl
 
         If bSuccess Then
             iLine = 50
-            Dim objReader As OleDbDataReader
-            iLine = 51
             Try
                 iLine = 6
                 Dim Command1 As New OleDbCommand
                 iLine = 7
                 Command1 = New OleDbCommand(strSQLstring, connectionDB)
                 iLine = 8
-                objReader = Command1.ExecuteReader()
-                iLine = 11
-                Dim bFound As Boolean = False
-                Dim bMoreToRead As Boolean = True
-                Dim sActiveStatus As String = ""
-                Dim sEmailAddressOrig As String = sEmailAddress
-                sEmailAddress = sEmailAddress.ToUpper.Trim
-                While bMoreToRead And Not bFound
-                    iLine = 12
-                    If objReader.Read() Then
-                        iLine = 120
-                        sActiveStatus = objReader.Item("ACTIVE_STATUS")
-                        iLine = 121
-                        strEmployeeEmail = objReader.Item("ISA_EMPLOYEE_EMAIL").ToString.ToUpper.Trim
-                        iLine = 13
+                Dim ds As New DataSet
+                iLine = 9
+                Command1.CommandTimeout = 120
+                iLine = 10
+                If connectionDB.State <> ConnectionState.Open Then
+                    connectionDB.Open()
+                End If
+                iLine = 101
+                Dim daUsers As OleDbDataAdapter = New OleDbDataAdapter(Command1)
+                iLine = 102
+                daUsers.Fill(ds)
+                iLine = 103
 
-                        If sActiveStatus = "I" Then
-                            iLine = 130
-                            clsLogger.Log_Event("clsUserTbl:New User is inactive; strEmployeeEmail=" & strEmployeeEmail)
-                            iLine = 131
+                ' Get users table records for the user name, BU, etc. 
+                ' If only one record is returned, assume it's the correct user.
+                ' If more than one record is returned, then do the email address comparison.
+                Dim bFound As Boolean = False
+                iLine = 105
+                Dim iFoundUserIndex As Integer
+                iLine = 106
+                If ds.Tables(0).Rows.Count > 0 Then
+                    iLine = 107
+                    Dim sEmailAddressOrig As String = sEmailAddress
+                    iLine = 108
+                    If ds.Tables(0).Rows.Count = 1 Then
+                        iLine = 109
+                        bFound = True
+                        iLine = 1090
+                        iFoundUserIndex = 0
+                        iLine = 1091
+                    Else
+                        iLine = 11
+                        sEmailAddress = sEmailAddress.ToUpper.Trim
+                        iLine = 110
+                        If sEmailAddress.Length > 0 Then
+                            iLine = 111
+                            bFound = True
+                            iLine = 112
+                            iFoundUserIndex = 0
+                            iLine = 113
                         Else
-                            iLine = 14
-                            If sEmailAddress.Length > 0 Then
-                                iLine = 15
+                            Dim iRowIndex As Integer = 0
+                            While iRowIndex < ds.Tables(0).Rows.Count And Not bFound
+                                iLine = 114
+                                Dim dr As DataRow = ds.Tables(0).Rows(iRowIndex)
+                                iLine = 12
+                                strEmployeeEmail = dr.Item("ISA_EMPLOYEE_EMAIL").ToString.ToUpper.Trim
+                                iLine = 13
+
                                 If strEmployeeEmail = sEmailAddress Then
                                     iLine = 16
+                                    iFoundUserIndex = iRowIndex
                                     bFound = True
                                 Else
                                     ' Check if the given email address is somewhere in the email address field.
@@ -221,57 +245,57 @@ Public Class clsUserTbl
                                         strEmployeeEmail.IndexOf(sSemiInBackNoSpace) >= 0 Or _
                                         strEmployeeEmail.IndexOf(sSemiInBackWithSpace) >= 0 Then
                                         iLine = 165
+                                        iFoundUserIndex = iRowIndex
                                         bFound = True
                                     End If
                                 End If
-                            Else
-                                iLine = 150
-                                bFound = True
-                            End If
-                            If bFound Then
-                                iLine = 17
-                                intUniqueUserID = objReader.Item("ISA_USER_ID")
-                                iLine = 18
-                                strFirstNameSrch = objReader.Item("FIRST_NAME_SRCH")
-                                iLine = 19
-                                strLastNameSrch = objReader.Item("LAST_NAME_SRCH")
-                                iLine = 20
-                                strPasswordEncr = objReader.Item("ISA_PASSWORD_ENCR")
-                                iLine = 21
-                                strBusinessUnit = objReader.Item("BUSINESS_UNIT")
-                                iLine = 22
-                                strEmployeeName = objReader.Item("ISA_EMPLOYEE_NAME")
-                                iLine = 23
-                                strPhoneNum = objReader.Item("PHONE_NUM")
-                                iLine = 24
-                                strBU = objReader.Item("Business_unit")
-                                iLine = 25
-                                strstatus = objReader.Item("ACTIVE_STATUS")
-                                iLine = 26
-                                strEmpID = objReader.Item("ISA_EMPLOYEE_ID")
-                                iLine = 27
-                                strSiteName = objReader.Item("Name1")
-                                iLine = 28
-                            End If
+
+                                iRowIndex = iRowIndex + 1
+                            End While
                         End If
-                    Else
-                        bMoreToRead = False
                     End If
-                End While
-                If Not bFound Then
+                    If bFound Then
+                        Dim drUser As DataRow = ds.Tables(0).Rows(iFoundUserIndex)
+                        iLine = 166
+                        strEmployeeEmail = drUser.Item("ISA_EMPLOYEE_EMAIL").ToString.ToUpper.Trim
+                        iLine = 17
+                        intUniqueUserID = drUser.Item("ISA_USER_ID")
+                        iLine = 18
+                        strFirstNameSrch = drUser.Item("FIRST_NAME_SRCH")
+                        iLine = 19
+                        strLastNameSrch = drUser.Item("LAST_NAME_SRCH")
+                        iLine = 20
+                        strPasswordEncr = drUser.Item("ISA_PASSWORD_ENCR")
+                        iLine = 21
+                        strBusinessUnit = drUser.Item("BUSINESS_UNIT")
+                        iLine = 22
+                        strEmployeeName = drUser.Item("ISA_EMPLOYEE_NAME")
+                        iLine = 23
+                        strPhoneNum = drUser.Item("PHONE_NUM")
+                        iLine = 24
+                        strBU = drUser.Item("Business_unit")
+                        iLine = 25
+                        strstatus = drUser.Item("ACTIVE_STATUS")
+                        iLine = 26
+                        strEmpID = drUser.Item("ISA_EMPLOYEE_ID")
+                        iLine = 27
+                        strSiteName = drUser.Item("Name1")
+                        iLine = 28
+                    Else
+                        bSuccess = False
+                        clsLogger.Log_Event("clsUserTbl:New - User record for email not found; sEmailAddress=" & _
+                                            sEmailAddressOrig & " strSQLstring=" & strSQLstring)
+                    End If
+                    iLine = 29
+                Else
                     bSuccess = False
-                    clsLogger.Log_Event("clsUserTbl:New User record for email not found; sEmailAddress=" & sEmailAddressOrig)
+                    Dim sError As String = "clsUserTbl:New - No records found for user. " & vbCrLf & _
+                        "strSQLstring=" & strSQLstring
+                    clsLogger.Log_Event(sError)
                 End If
-                iLine = 29
-                objReader.Close()
-                iLine = 30
             Catch objException As Exception
                 bSuccess = False
-                'connectionDB.Close()
-                clsLogger.Log_Event("clsUserTbl:New iLine=" & iLine.ToString & " strSQLString=" & strSQLstring & " ERROR: " & objException.Message)
-                If objReader IsNot Nothing Then
-                    objReader.Close()
-                End If
+                clsLogger.Log_Event("clsUserTbl:New - iLine=" & iLine.ToString & " strSQLString=" & strSQLstring & " ERROR: " & objException.Message)
             End Try
         End If
     End Sub
