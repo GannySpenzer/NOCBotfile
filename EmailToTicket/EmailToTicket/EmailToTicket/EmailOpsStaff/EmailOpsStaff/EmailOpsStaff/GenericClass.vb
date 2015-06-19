@@ -922,7 +922,9 @@ Public Class GenericClass
             iLine = 2
             myEmailMessage.Load()
             iLine = 3
-            If myEmailMessage.Subject.ToUpper.StartsWith("RE:") Or myEmailMessage.Subject.ToUpper.StartsWith("FW:") Then
+            If myEmailMessage.Subject.ToUpper.StartsWith("RE:") Or _
+                myEmailMessage.Subject.ToUpper.StartsWith("FW:") Or _
+                myEmailMessage.Subject.ToUpper.StartsWith("FWD:") Then
                 iLine = 31
                 bSkipEmail = True
                 clsLogger.Log_Event("EmailOpsStaff:GenericClass:FindSDIEmail set bSkipEmail to true; myEmailMessage.Subject=" & myEmailMessage.Subject)
