@@ -44,6 +44,7 @@
       <toItem name="Michael Randall" addy="Michael.Randall@sdi.com" />
       <toItem name="Vitaly Rovensky" addy="Vitaly.Rovensky@sdi.com" />
       <toItem name="Erwin Bautista" addy="erwin.bautista@sdi.com" />
+      <toItem name="Eva Bard" addy="eva.bard@sdi.com" />
     </noRecepientDefaultTo>
     <!-- for testing
 			<ccItem name="Erwin Bautista" addy="erwin.bautista@sdi.com" />

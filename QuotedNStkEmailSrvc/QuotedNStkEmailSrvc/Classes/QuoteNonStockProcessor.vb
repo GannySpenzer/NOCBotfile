@@ -1296,7 +1296,7 @@ Public Class QuoteNonStockProcessor
         Try
 
             If Not (sTO.Trim.Length > 0) Then
-                cMsg &= "<p style=""COLOR: red""><b>IMPORTANT:</b>&nbsp;&nbsp;<i>Please be advice that this message <b>DOES NOT</b> contain valid recepient.</i></p>"
+                cMsg &= "<p style=""COLOR: red""><b>IMPORTANT:</b>&nbsp;&nbsp;<i>Please be advised that this message <b>DOES NOT</b> contain valid recipient.</i></p>"
             End If
 
             Return cMsg
