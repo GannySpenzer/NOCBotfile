@@ -318,6 +318,14 @@ Module Module1
         Mailer.Body = strbodyhead1 & strbodydet1
         ' ++++++++++++++++++++++++++++++++++++++++++
         Mailer.To = "Peter.Casale@sdi.com;Michael.Marrinan@sdi.com;erwin.bautista@sdi.com"
+        Dim sTO As String = ""
+        Try
+            sTO = CStr(My.Settings("sendEmailToAgent_TO")).Trim
+        Catch ex As Exception
+        End Try
+        If (sTO.Trim.Length > 0) Then
+            Mailer.To = sTO
+        End If
 
         Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
         UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer.Subject, Mailer.From, Mailer.To, "", Mailer.Bcc, "N", Mailer.Body, connectOR)
