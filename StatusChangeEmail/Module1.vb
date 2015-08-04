@@ -1565,15 +1565,12 @@ Module Module1
         Dim I As Integer
         Dim strpo_no As String
         Dim strSQLstring As String = "SELECT PO_ID B " & vbCrLf & _
-                        "from" & vbCrLf & _
-                          "ps_isa_ordstat_eml A, ps_recv_ln B   " & vbCrLf & _
-                            " WHERE A.EMAIL_DATETIME Is NULL " & vbCrLf & _
-                             " and A.order_no= '" & strorderno & "' " & vbCrLf & _
-                             " AND A.RECV_LN_NBR = B.RECV_LN_NBR" & vbCrLf & _
-                             " AND A.RECEIVER_ID = B.RECEIVER_ID" & vbCrLf & _
-                             "and B.Business_unit= '" & strSiteBU & "' " & vbCrLf & _
-                             " AND A.BUSINESS_UNIT_OM = '" & strBU & "' "
-
+                         "from " & vbCrLf & _
+                           "ps_po_line_distrib   " & vbCrLf & _
+                             " WHERE req_id= '" & strorderno & "' " & vbCrLf & _
+                              " AND req_line_nbr = " & CType(strlineno, Integer) & " " & vbCrLf & _
+                              "and Business_unit= '" & strSiteBU & "' " & vbCrLf & _
+                              " AND BUSINESS_UNIT_IN = '" & strBU & "' "
 
         Try
             If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
