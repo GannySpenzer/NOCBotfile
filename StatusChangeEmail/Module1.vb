@@ -120,6 +120,8 @@ Module Module1
                 " FROM PS_PO_LOADER_DFL A" & vbCrLf & _
                 " WHERE A.LOADER_BU = '" & strBU & "'" & vbCrLf
 
+        objStreamWriter.WriteLine("  CheckNonStock (1): " & strSQLstring)
+
         Command = New OleDbCommand(strSQLstring, connectOR)
         connectOR.Open()
         Try
@@ -165,6 +167,8 @@ Module Module1
                 " AND E.RECV_LN_NBR = G.RECV_LN_NBR" & vbCrLf & _
                 " AND G.ISA_ORDER_STATUS = 'R')" & vbCrLf & _
                 " ORDER BY ORDER_NO, LINE_NBR, RECEIVER_ID, RECV_LN_NBR"
+
+        objStreamWriter.WriteLine("  CheckNonStock (2): " & strSQLstring)
 
         Command = New OleDbCommand(strSQLstring, connectOR)
         connectOR.Open()
@@ -334,6 +338,8 @@ Module Module1
                 " AND E.DEMAND_LINE_NO = G.DEMAND_LINE_NO" & vbCrLf & _
                 " AND G.ISA_ORDER_STATUS = '7')" & vbCrLf & _
                 " ORDER BY ORDER_NO, INTFC_LINE_NUM, ORDER_INT_LINE_NO, DEMAND_LINE_NO"
+
+        objStreamWriter.WriteLine("  CheckStock: " & strSQLstring)
 
         Dim Command = New OleDbCommand(strSQLstring, connectOR)
         connectOR.Open()
@@ -1053,6 +1059,8 @@ Module Module1
             " FROM PS_ISAORDSTATUSLOG A" & vbCrLf & _
              " WHERE A.BUSINESS_UNIT_OM = '" & strBU & "' "
         Try
+            objStreamWriter.WriteLine("  CheckAllStatus_7 (1): " & strSQLstring)
+
             Dim command As OleDbCommand
             command = New OleDbCommand(strSQLstring, connectOR)
             connectOR.Open()
@@ -1171,6 +1179,8 @@ Module Module1
         ' We are going to check for priveleges in the upd_email_out program that sends the emails out.
 
         Try
+            objStreamWriter.WriteLine("  CheckAllStatus_7 (2): " & strSQLstring)
+
             ds = ORDBAccess.GetAdapter(strSQLstring, connectOR)
 
         Catch OleDBExp As OleDbException
@@ -1229,6 +1239,8 @@ Module Module1
             strSQLstring = "SELECT A.BUSINESS_UNIT" & vbCrLf & _
                     " FROM PS_PO_LOADER_DFL A" & vbCrLf & _
                     " WHERE A.LOADER_BU = '" & strBU & "'" & vbCrLf
+
+            objStreamWriter.WriteLine("  CheckAllStatus_7 (3): " & strSQLstring)
 
             Command = New OleDbCommand(strSQLstring, connectOR)
             connectOR.Open()
@@ -1569,10 +1581,12 @@ Module Module1
                            "ps_po_line_distrib   " & vbCrLf & _
                              " WHERE req_id= '" & strorderno & "' " & vbCrLf & _
                               " AND req_line_nbr = " & CType(strlineno, Integer) & " " & vbCrLf & _
-                              "and Business_unit= '" & strSiteBU & "' " & vbCrLf & _
-                              " AND BUSINESS_UNIT_IN = '" & strBU & "' "
+                              "and Business_unit= '" & strSiteBU & "' " '& vbCrLf & _
+        '" AND BUSINESS_UNIT_IN = '" & strBU & "' "
 
         Try
+            objStreamWriter.WriteLine("  GetPO_ID: " & strSQLstring)
+
             If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
                 connectOR.Close()
             End If
