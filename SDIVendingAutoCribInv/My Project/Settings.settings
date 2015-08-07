@@ -1,0 +1,15 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="My" GeneratedClassName="MySettings" UseMySettingsClassName="true">
+  <Profiles />
+  <Settings>
+    <Setting Name="SDIVendingAutoCrib_net_autocrib_www24_AutoCribWS" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">http://www24.autocrib.net/webservices/AutocribWS.asmx</Value>
+    </Setting>
+    <Setting Name="SDIVendingAutoCrib_net_autocrib_www241_AutoCribWSPost" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">http://www24.autocrib.net/webservices/AutocribWSPost.asmx</Value>
+    </Setting>
+    <Setting Name="SDIVendingAutoCribInv_net_autocrib_www24_AutoCribWS" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">http://www24.autocrib.net/webservices/autocribws.asmx</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

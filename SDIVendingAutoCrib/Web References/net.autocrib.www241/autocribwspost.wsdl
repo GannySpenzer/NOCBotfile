@@ -1,0 +1,1009 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="https://www.autocrib.net/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" targetNamespace="https://www.autocrib.net/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="https://www.autocrib.net/">
+      <s:element name="ProcessBins">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="xDoc">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessBinsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ProcessBinsResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessDeletHst">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="xDoc">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessDeletHstResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ProcessDeletHstResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessDept">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="xDoc">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessDeptResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ProcessDeptResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessEmp">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="xDoc">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessEmpResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ProcessEmpResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessErrors">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="xDoc">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessErrorsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ProcessErrorsResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessGages">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="xDoc">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessGagesResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ProcessGagesResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessIssue">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="xDoc">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessIssueResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ProcessIssueResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessItem">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="xDoc">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessItemResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ProcessItemResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessJob">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="xDoc">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessJobResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ProcessJobResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessJobItems">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="xDoc">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessJobItemsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ProcessJobItemsResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessMachine">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="xDoc">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessMachineResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ProcessMachineResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessMfg">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="xDoc">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessMfgResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ProcessMfgResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessPO">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="xDoc">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessPOResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ProcessPOResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessPart">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="xDoc">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessPartResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ProcessPartResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessReason">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="xDoc">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessReasonResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ProcessReasonResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessSupplier">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="xDoc">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessSupplierResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ProcessSupplierResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessTrans">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="xDoc">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessTransResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ProcessTransResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessUser">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="xDoc">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ProcessUserResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ProcessUserResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="ProcessBinsSoapIn">
+    <wsdl:part name="parameters" element="tns:ProcessBins" />
+  </wsdl:message>
+  <wsdl:message name="ProcessBinsSoapOut">
+    <wsdl:part name="parameters" element="tns:ProcessBinsResponse" />
+  </wsdl:message>
+  <wsdl:message name="ProcessDeletHstSoapIn">
+    <wsdl:part name="parameters" element="tns:ProcessDeletHst" />
+  </wsdl:message>
+  <wsdl:message name="ProcessDeletHstSoapOut">
+    <wsdl:part name="parameters" element="tns:ProcessDeletHstResponse" />
+  </wsdl:message>
+  <wsdl:message name="ProcessDeptSoapIn">
+    <wsdl:part name="parameters" element="tns:ProcessDept" />
+  </wsdl:message>
+  <wsdl:message name="ProcessDeptSoapOut">
+    <wsdl:part name="parameters" element="tns:ProcessDeptResponse" />
+  </wsdl:message>
+  <wsdl:message name="ProcessEmpSoapIn">
+    <wsdl:part name="parameters" element="tns:ProcessEmp" />
+  </wsdl:message>
+  <wsdl:message name="ProcessEmpSoapOut">
+    <wsdl:part name="parameters" element="tns:ProcessEmpResponse" />
+  </wsdl:message>
+  <wsdl:message name="ProcessErrorsSoapIn">
+    <wsdl:part name="parameters" element="tns:ProcessErrors" />
+  </wsdl:message>
+  <wsdl:message name="ProcessErrorsSoapOut">
+    <wsdl:part name="parameters" element="tns:ProcessErrorsResponse" />
+  </wsdl:message>
+  <wsdl:message name="ProcessGagesSoapIn">
+    <wsdl:part name="parameters" element="tns:ProcessGages" />
+  </wsdl:message>
+  <wsdl:message name="ProcessGagesSoapOut">
+    <wsdl:part name="parameters" element="tns:ProcessGagesResponse" />
+  </wsdl:message>
+  <wsdl:message name="ProcessIssueSoapIn">
+    <wsdl:part name="parameters" element="tns:ProcessIssue" />
+  </wsdl:message>
+  <wsdl:message name="ProcessIssueSoapOut">
+    <wsdl:part name="parameters" element="tns:ProcessIssueResponse" />
+  </wsdl:message>
+  <wsdl:message name="ProcessItemSoapIn">
+    <wsdl:part name="parameters" element="tns:ProcessItem" />
+  </wsdl:message>
+  <wsdl:message name="ProcessItemSoapOut">
+    <wsdl:part name="parameters" element="tns:ProcessItemResponse" />
+  </wsdl:message>
+  <wsdl:message name="ProcessJobSoapIn">
+    <wsdl:part name="parameters" element="tns:ProcessJob" />
+  </wsdl:message>
+  <wsdl:message name="ProcessJobSoapOut">
+    <wsdl:part name="parameters" element="tns:ProcessJobResponse" />
+  </wsdl:message>
+  <wsdl:message name="ProcessJobItemsSoapIn">
+    <wsdl:part name="parameters" element="tns:ProcessJobItems" />
+  </wsdl:message>
+  <wsdl:message name="ProcessJobItemsSoapOut">
+    <wsdl:part name="parameters" element="tns:ProcessJobItemsResponse" />
+  </wsdl:message>
+  <wsdl:message name="ProcessMachineSoapIn">
+    <wsdl:part name="parameters" element="tns:ProcessMachine" />
+  </wsdl:message>
+  <wsdl:message name="ProcessMachineSoapOut">
+    <wsdl:part name="parameters" element="tns:ProcessMachineResponse" />
+  </wsdl:message>
+  <wsdl:message name="ProcessMfgSoapIn">
+    <wsdl:part name="parameters" element="tns:ProcessMfg" />
+  </wsdl:message>
+  <wsdl:message name="ProcessMfgSoapOut">
+    <wsdl:part name="parameters" element="tns:ProcessMfgResponse" />
+  </wsdl:message>
+  <wsdl:message name="ProcessPOSoapIn">
+    <wsdl:part name="parameters" element="tns:ProcessPO" />
+  </wsdl:message>
+  <wsdl:message name="ProcessPOSoapOut">
+    <wsdl:part name="parameters" element="tns:ProcessPOResponse" />
+  </wsdl:message>
+  <wsdl:message name="ProcessPartSoapIn">
+    <wsdl:part name="parameters" element="tns:ProcessPart" />
+  </wsdl:message>
+  <wsdl:message name="ProcessPartSoapOut">
+    <wsdl:part name="parameters" element="tns:ProcessPartResponse" />
+  </wsdl:message>
+  <wsdl:message name="ProcessReasonSoapIn">
+    <wsdl:part name="parameters" element="tns:ProcessReason" />
+  </wsdl:message>
+  <wsdl:message name="ProcessReasonSoapOut">
+    <wsdl:part name="parameters" element="tns:ProcessReasonResponse" />
+  </wsdl:message>
+  <wsdl:message name="ProcessSupplierSoapIn">
+    <wsdl:part name="parameters" element="tns:ProcessSupplier" />
+  </wsdl:message>
+  <wsdl:message name="ProcessSupplierSoapOut">
+    <wsdl:part name="parameters" element="tns:ProcessSupplierResponse" />
+  </wsdl:message>
+  <wsdl:message name="ProcessTransSoapIn">
+    <wsdl:part name="parameters" element="tns:ProcessTrans" />
+  </wsdl:message>
+  <wsdl:message name="ProcessTransSoapOut">
+    <wsdl:part name="parameters" element="tns:ProcessTransResponse" />
+  </wsdl:message>
+  <wsdl:message name="ProcessUserSoapIn">
+    <wsdl:part name="parameters" element="tns:ProcessUser" />
+  </wsdl:message>
+  <wsdl:message name="ProcessUserSoapOut">
+    <wsdl:part name="parameters" element="tns:ProcessUserResponse" />
+  </wsdl:message>
+  <wsdl:portType name="AutoCribWSPostSoap">
+    <wsdl:operation name="ProcessBins">
+      <wsdl:input message="tns:ProcessBinsSoapIn" />
+      <wsdl:output message="tns:ProcessBinsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ProcessDeletHst">
+      <wsdl:input message="tns:ProcessDeletHstSoapIn" />
+      <wsdl:output message="tns:ProcessDeletHstSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ProcessDept">
+      <wsdl:input message="tns:ProcessDeptSoapIn" />
+      <wsdl:output message="tns:ProcessDeptSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ProcessEmp">
+      <wsdl:input message="tns:ProcessEmpSoapIn" />
+      <wsdl:output message="tns:ProcessEmpSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ProcessErrors">
+      <wsdl:input message="tns:ProcessErrorsSoapIn" />
+      <wsdl:output message="tns:ProcessErrorsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ProcessGages">
+      <wsdl:input message="tns:ProcessGagesSoapIn" />
+      <wsdl:output message="tns:ProcessGagesSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ProcessIssue">
+      <wsdl:input message="tns:ProcessIssueSoapIn" />
+      <wsdl:output message="tns:ProcessIssueSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ProcessItem">
+      <wsdl:input message="tns:ProcessItemSoapIn" />
+      <wsdl:output message="tns:ProcessItemSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ProcessJob">
+      <wsdl:input message="tns:ProcessJobSoapIn" />
+      <wsdl:output message="tns:ProcessJobSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ProcessJobItems">
+      <wsdl:input message="tns:ProcessJobItemsSoapIn" />
+      <wsdl:output message="tns:ProcessJobItemsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ProcessMachine">
+      <wsdl:input message="tns:ProcessMachineSoapIn" />
+      <wsdl:output message="tns:ProcessMachineSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ProcessMfg">
+      <wsdl:input message="tns:ProcessMfgSoapIn" />
+      <wsdl:output message="tns:ProcessMfgSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ProcessPO">
+      <wsdl:input message="tns:ProcessPOSoapIn" />
+      <wsdl:output message="tns:ProcessPOSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ProcessPart">
+      <wsdl:input message="tns:ProcessPartSoapIn" />
+      <wsdl:output message="tns:ProcessPartSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ProcessReason">
+      <wsdl:input message="tns:ProcessReasonSoapIn" />
+      <wsdl:output message="tns:ProcessReasonSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ProcessSupplier">
+      <wsdl:input message="tns:ProcessSupplierSoapIn" />
+      <wsdl:output message="tns:ProcessSupplierSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ProcessTrans">
+      <wsdl:input message="tns:ProcessTransSoapIn" />
+      <wsdl:output message="tns:ProcessTransSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ProcessUser">
+      <wsdl:input message="tns:ProcessUserSoapIn" />
+      <wsdl:output message="tns:ProcessUserSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType name="AutoCribWSPostHttpGet" />
+  <wsdl:portType name="AutoCribWSPostHttpPost" />
+  <wsdl:binding name="AutoCribWSPostSoap" type="tns:AutoCribWSPostSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="ProcessBins">
+      <soap:operation soapAction="https://www.autocrib.net/ProcessBins" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessDeletHst">
+      <soap:operation soapAction="https://www.autocrib.net/ProcessDeletHst" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessDept">
+      <soap:operation soapAction="https://www.autocrib.net/ProcessDept" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessEmp">
+      <soap:operation soapAction="https://www.autocrib.net/ProcessEmp" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessErrors">
+      <soap:operation soapAction="https://www.autocrib.net/ProcessErrors" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessGages">
+      <soap:operation soapAction="https://www.autocrib.net/ProcessGages" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessIssue">
+      <soap:operation soapAction="https://www.autocrib.net/ProcessIssue" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessItem">
+      <soap:operation soapAction="https://www.autocrib.net/ProcessItem" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessJob">
+      <soap:operation soapAction="https://www.autocrib.net/ProcessJob" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessJobItems">
+      <soap:operation soapAction="https://www.autocrib.net/ProcessJobItems" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessMachine">
+      <soap:operation soapAction="https://www.autocrib.net/ProcessMachine" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessMfg">
+      <soap:operation soapAction="https://www.autocrib.net/ProcessMfg" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessPO">
+      <soap:operation soapAction="https://www.autocrib.net/ProcessPO" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessPart">
+      <soap:operation soapAction="https://www.autocrib.net/ProcessPart" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessReason">
+      <soap:operation soapAction="https://www.autocrib.net/ProcessReason" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessSupplier">
+      <soap:operation soapAction="https://www.autocrib.net/ProcessSupplier" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessTrans">
+      <soap:operation soapAction="https://www.autocrib.net/ProcessTrans" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessUser">
+      <soap:operation soapAction="https://www.autocrib.net/ProcessUser" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="AutoCribWSPostSoap12" type="tns:AutoCribWSPostSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="ProcessBins">
+      <soap12:operation soapAction="https://www.autocrib.net/ProcessBins" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessDeletHst">
+      <soap12:operation soapAction="https://www.autocrib.net/ProcessDeletHst" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessDept">
+      <soap12:operation soapAction="https://www.autocrib.net/ProcessDept" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessEmp">
+      <soap12:operation soapAction="https://www.autocrib.net/ProcessEmp" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessErrors">
+      <soap12:operation soapAction="https://www.autocrib.net/ProcessErrors" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessGages">
+      <soap12:operation soapAction="https://www.autocrib.net/ProcessGages" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessIssue">
+      <soap12:operation soapAction="https://www.autocrib.net/ProcessIssue" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessItem">
+      <soap12:operation soapAction="https://www.autocrib.net/ProcessItem" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessJob">
+      <soap12:operation soapAction="https://www.autocrib.net/ProcessJob" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessJobItems">
+      <soap12:operation soapAction="https://www.autocrib.net/ProcessJobItems" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessMachine">
+      <soap12:operation soapAction="https://www.autocrib.net/ProcessMachine" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessMfg">
+      <soap12:operation soapAction="https://www.autocrib.net/ProcessMfg" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessPO">
+      <soap12:operation soapAction="https://www.autocrib.net/ProcessPO" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessPart">
+      <soap12:operation soapAction="https://www.autocrib.net/ProcessPart" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessReason">
+      <soap12:operation soapAction="https://www.autocrib.net/ProcessReason" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessSupplier">
+      <soap12:operation soapAction="https://www.autocrib.net/ProcessSupplier" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessTrans">
+      <soap12:operation soapAction="https://www.autocrib.net/ProcessTrans" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ProcessUser">
+      <soap12:operation soapAction="https://www.autocrib.net/ProcessUser" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="AutoCribWSPostHttpGet" type="tns:AutoCribWSPostHttpGet">
+    <http:binding verb="GET" />
+  </wsdl:binding>
+  <wsdl:binding name="AutoCribWSPostHttpPost" type="tns:AutoCribWSPostHttpPost">
+    <http:binding verb="POST" />
+  </wsdl:binding>
+  <wsdl:service name="AutoCribWSPost">
+    <wsdl:port name="AutoCribWSPostSoap" binding="tns:AutoCribWSPostSoap">
+      <soap:address location="http://www24.autocrib.net/webservices/autocribwspost.asmx" />
+    </wsdl:port>
+    <wsdl:port name="AutoCribWSPostSoap12" binding="tns:AutoCribWSPostSoap12">
+      <soap12:address location="http://www24.autocrib.net/webservices/autocribwspost.asmx" />
+    </wsdl:port>
+    <wsdl:port name="AutoCribWSPostHttpGet" binding="tns:AutoCribWSPostHttpGet">
+      <http:address location="http://www24.autocrib.net/webservices/autocribwspost.asmx" />
+    </wsdl:port>
+    <wsdl:port name="AutoCribWSPostHttpPost" binding="tns:AutoCribWSPostHttpPost">
+      <http:address location="http://www24.autocrib.net/webservices/autocribwspost.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
