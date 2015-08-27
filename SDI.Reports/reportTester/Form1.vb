@@ -90,6 +90,7 @@ Public Class Form1
                                oraCN_default_DB
 
         oPicking.Logger = Me
+        'oPicking.ExecutionPath = "C:\Projects\SDI.Reports\SDI.PickingReports\bin\"
         oPicking.GenerateReports(PickingReports.ReportGenerator.ePickingReportType.packingSlipRegPick)
         'oPicking.GenerateReports(PickingReports.ReportGenerator.ePickingReportType.shippingDocRegPick)
         oPicking = Nothing
