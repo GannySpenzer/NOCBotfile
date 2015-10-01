@@ -80,10 +80,10 @@ Module SDIVendingAutocribInv
                 autocribUName = dsAutocriEntInfo.Tables(0).Rows(I).Item("ISA_AUTOCRIB_USER")
                 autocribPwd = dsAutocriEntInfo.Tables(0).Rows(I).Item("ISA_AUTOCRIB_PWD")
                 businessUnit = dsAutocriEntInfo.Tables(0).Rows(I).Item("ISA_BUSINESS_UNIT")
-                SDITransactions = handler.GetBins(autocribUName, autocribPwd, autocribDBName, "", "", "", "", True)
-
-                'retrieve transactions
                 Try
+                    SDITransactions = handler.GetBins(autocribUName, autocribPwd, autocribDBName, "", "", "", "", True)
+
+                    'retrieve transactions
                     If (SDITransactions.InnerXml = "") Then
                         Console.WriteLine("No Inventory returned ")
                         objStreamWriterLog.WriteLine("No Invenntory returned")
@@ -128,8 +128,19 @@ Module SDIVendingAutocribInv
             Dim commandOR1 As New OleDbCommand(strSQL, connectOR)
             For Each row As DataRow In dsRows.Tables(4).Rows
                 strItem = row("Item")
+                If strItem.Trim().Length > 18 Then
+                    strItem = strItem.Substring(0, 18)
+                End If
+
                 strCrib = row("Station")
+                If strCrib.Trim().Length > 30 Then
+                    strCrib.Substring(0, 30)
+                End If
+
                 strBin = row("MyNo")
+                If strBin.Trim().Length > 10 Then
+                    strBin = strBin.Substring(0, 10)
+                End If
                 intOnhand = row("OnHand")
                 intPack = row("PackQty")
 
@@ -156,7 +167,7 @@ Module SDIVendingAutocribInv
                     Console.WriteLine("")
                     objStreamWriterLog.WriteLine(OLEDBExp.ToString)
                     objStreamWriterLog.WriteLine(commandOR1.CommandText)
-                    Exit Sub
+                    'Exit Sub
                 Finally
                     'Do the final cleanup such as closing the Database connection
                 End Try
