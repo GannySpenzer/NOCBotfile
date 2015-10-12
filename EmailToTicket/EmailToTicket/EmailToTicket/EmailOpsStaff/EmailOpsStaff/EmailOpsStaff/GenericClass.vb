@@ -1111,5 +1111,14 @@ Public Class GenericClass
         End If
         Return sReturn
     End Function
+	
+	public sub SetORACN(byval oraCNString as string)
+		connectOR = New OleDbConnection(oraCNString)
+	end sub
+	
+	public sub SetSQLCN(byval sqlCNString as string)
+		connectSQL = New SqlClient.SqlConnection(sqlCNString)
+	end sub
+	
 End Class
 
