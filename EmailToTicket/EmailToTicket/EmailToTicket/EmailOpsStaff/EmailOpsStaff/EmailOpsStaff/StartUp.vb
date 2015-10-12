@@ -44,6 +44,14 @@
                             ClsLogger.Log_Event("Processing RunName: " & runInfo.RunName & " at " & CurrentRunTime.ToString)
 
                             Processor = New ProcessorClass(runInfo, ClsLogger)
+                            Try
+                                Processor.oraCNString = CStr(My.Settings("oraCNString")).Trim
+                            Catch ex As Exception
+                            End Try
+                            Try
+                                Processor.sqlCNString = CStr(My.Settings("sqlCNString")).Trim
+                            Catch ex As Exception
+                            End Try
                             ClsLogger.Log_Event("After process class instantiation")
                             If Processor.Main(CurrentRunTime) Then
                                 ClsLogger.Log_Event("Processor.Main returned True")
