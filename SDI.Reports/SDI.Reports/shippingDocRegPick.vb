@@ -7,10 +7,13 @@ Imports System.Xml
 Public Class shippingDocRegPick
 
     Inherits PrintDocument
+    Implements ISDiReport
 
     Private Const oraCN_default_provider As String = "Provider=MSDAORA.1;"
     Private Const oraCN_default_creden As String = "User ID=einternet;Password=einternet;"
     Private Const oraCN_default_DB As String = "Data Source=prod"
+
+    Private Const CNTR_STATE_EXCLUDE As String = "'PROCESSED','ZERO PICK','LOADED','PRINTED'"
 
     Private m_bIsIgnoreShipDTTM As Boolean = False
     Private m_logger As SDI.ApplicationLogger.IApplicationLogger = New SDI.ApplicationLogger.noAppLogger
@@ -23,12 +26,14 @@ Public Class shippingDocRegPick
     Private m_pathSQLs As String = ""
     Private m_executionPath As String = ""
     Private m_cntrTypes As ArrayList = Nothing
+    Private m_partialPickExcludeState As String = ""
 
 
     ''This line was added to allow printing as a DLL
     'Protected WithEvents LinearBarcode1 As IDAutomation.LinearServerControl.LinearBarcode
     Private WithEvents linearBarcoder As IDAutomation.LinearServerControl.LinearBarcode = Nothing
 
+    Public Event AssignedPrintedPickedOrderLines(ByVal sender As Object, ByVal e As EventArgs) Implements ISDiReport.AssignedPrintedPickedOrderLines
 
     Public Property SourceBusinessUnit() As String
         Get
@@ -78,6 +83,15 @@ Public Class shippingDocRegPick
         End Set
     End Property
 
+    Public Property PartialPickExcludeState() As String
+        Get
+            Return m_partialPickExcludeState
+        End Get
+        Set(ByVal Value As String)
+            m_partialPickExcludeState = Value
+        End Set
+    End Property
+
     Public Property ExecutionPath() As String
         Get
             Return m_executionPath
@@ -92,6 +106,17 @@ Public Class shippingDocRegPick
                 m_pathSQLs = m_executionPath & dllName & ".SQLs\"
             End If
         End Set
+    End Property
+
+    Private m_lines As PrintedPickedOrderLines = Nothing
+
+    Public ReadOnly Property PrintedPickedOrderLines() As PrintedPickedOrderLines Implements ISDiReport.PrintedPickedOrderLines
+        Get
+            If (m_lines Is Nothing) Then
+                m_lines = New PrintedPickedOrderLines
+            End If
+            Return m_lines
+        End Get
     End Property
 
 #Region " Event declarations "
@@ -163,6 +188,8 @@ Public Class shippingDocRegPick
         MyBase.DefaultPageSettings.Margins.Top = 50
         MyBase.DefaultPageSettings.Landscape = True
 
+        m_partialPickExcludeState = CNTR_STATE_EXCLUDE
+
     End Sub
 
     Public Sub New(ByVal srcbu As String, ByVal orderNo As String, ByVal strDB As String)
@@ -175,6 +202,8 @@ Public Class shippingDocRegPick
         MyBase.DefaultPageSettings.Margins.Top = 50
         MyBase.DefaultPageSettings.Landscape = True
         arrItemIDC = New ArrayList
+
+        m_partialPickExcludeState = CNTR_STATE_EXCLUDE
 
     End Sub
 
@@ -189,6 +218,8 @@ Public Class shippingDocRegPick
         MyBase.DefaultPageSettings.Margins.Top = 50
         MyBase.DefaultPageSettings.Landscape = True
         arrItemIDC = New ArrayList
+
+        m_partialPickExcludeState = CNTR_STATE_EXCLUDE
 
     End Sub
 
@@ -396,8 +427,8 @@ Public Class shippingDocRegPick
         Dim strSQLstring As String
         Dim I As Integer
         Dim Z As Integer
-        Dim arrNotes As ArrayList
-        Dim arrDescr As ArrayList
+        Dim arrNotes As ArrayList = New ArrayList
+        Dim arrDescr As ArrayList = New ArrayList
         Dim strFoot1 As String
         Dim strFoot2 As String
         Dim strFoot3 As String
@@ -413,10 +444,33 @@ Public Class shippingDocRegPick
         Dim bolCityState As Boolean
 
 
-        Dim strNotes As String
+        Dim strNotes As String = ""
 
-        If ds1.Tables(0).Rows.Count > 0 Then
-            strNotes = ds1.Tables(0).Rows(0).Item("ISA_CUST_NOTES")
+        ' since we added this (ISA_CUST_NOTES) as part of the main SELECT
+        '   grab this from ds (instead of ds1) - Erwin 2015.09.14
+        'If ds1.Tables(0).Rows.Count > 0 Then
+        '    strNotes = ds1.Tables(0).Rows(0).Item("ISA_CUST_NOTES")
+        'End If
+        If (ds.Tables(0).Rows.Count > 0) Then
+            Dim sep1 As String = ";"
+            Dim sNote As String = ""
+            For Each row As DataRow In ds.Tables(0).Rows
+                sNote = ""
+                Try
+                    sNote = CStr(row("ISA_CUST_NOTES")).Trim.ToUpper
+                Catch ex As Exception
+                End Try
+                If (sNote.Length > 0) Then
+                    If (strNotes.Length = 0) Then
+                        ' if I don't have any note yet
+                        strNotes &= sNote & sep1
+                    ElseIf (strNotes.IndexOf(sNote) = -1) Then
+                        ' if I didn't find this specific note on my string
+                        strNotes &= sNote & sep1
+                    End If
+                End If
+            Next
+            strNotes = strNotes.TrimEnd(sep1)
         End If
 
         ' generate the header
@@ -543,13 +597,18 @@ Public Class shippingDocRegPick
                     .WriteLine(strShipToCityState, shippingDocRegPickLineJustification.col4)
                     bolCityState = True
                 End If
-                If Not IsDBNull(ds1.Tables(0).Rows(0).Item("ISA_CUST_NOTES")) Then
+
+                ' don't use ds1 for the notes - Erwin 2015.09.14
+                'If Not IsDBNull(ds1.Tables(0).Rows(0).Item("ISA_CUST_NOTES")) Then
+                '    arrNotes = FormatWrap(e, strNotes.ToUpper, arial8, 900)
+                'End If
+                If (strNotes.Length > 0) Then
                     arrNotes = FormatWrap(e, strNotes.ToUpper, arial8, 900)
                 End If
 
                 .CurrentF = arial10B
                 .CurrentH = arial10B.Height
-                .WriteLine("Delivery Notes:7", shippingDocRegPickLineJustification.Left)
+                .WriteLine("Delivery Notes: ", shippingDocRegPickLineJustification.Left)
                 .CurrentF = arial8
                 .CurrentH = arial8.Height
                 For I = 0 To arrNotes.Count - 1
@@ -611,6 +670,7 @@ Public Class shippingDocRegPick
                         strcurrentShipContainer = ds.Tables(0).Rows(I).Item("SHIP_CNTR_ID")
                     End If
 
+                    Dim bIsCntrTypeWritten As Boolean = False
                     Dim bIsCntrIdWritten As Boolean = False
                     If Not strpreviousShipContainer = strcurrentShipContainer Then
                         .HorizontalRule(2)
@@ -656,13 +716,29 @@ Public Class shippingDocRegPick
                         Catch ex As Exception
                         End Try
                         .Write(containerType, shippingDocRegPickLineJustification.colShipCntrID)
+                        bIsCntrTypeWritten = True
                     End If
                     If Not Trim(ds.Tables(0).Rows(I).Item("ISA_USER_DEFINED_3")) = "" Then
                         .Write("Staged Loc - " & ds.Tables(0).Rows(I).Item("ISA_USER_DEFINED_3"), shippingDocRegPickLineJustification.colLineSched)
                     End If
 
                     If arrDescr.Count > 1 Then
-                        For Z = 1 To arrDescr.Count - 1
+                        .WriteLine(arrDescr(1), shippingDocRegPickLineJustification.colDescr)
+                    End If
+
+                    If bIsCntrTypeWritten Then
+                        Dim s As String = ""
+                        Try
+                            s = CStr(ds.Tables(0).Rows(I).Item("ISA_CUST_NOTES")).Trim
+                        Catch ex As Exception
+                        End Try
+                        If (s.Length > 0) Then
+                            .Write(s, shippingDocRegPickLineJustification.colShipCntrID)
+                        End If
+                    End If
+
+                    If arrDescr.Count > 2 Then
+                        For Z = 2 To arrDescr.Count - 1
                             .WriteLine(arrDescr(Z), shippingDocRegPickLineJustification.colDescr)
                         Next
                     Else
@@ -670,9 +746,11 @@ Public Class shippingDocRegPick
                             .WriteLine()
                         End If
                     End If
+
                     If I = ds.Tables(0).Rows.Count - 1 Then
                         .HorizontalRule(2)
                     End If
+
                     mRow += 1
 
                 Next
@@ -712,47 +790,53 @@ Public Class shippingDocRegPick
 
     Private Function FormatWrap(ByVal e As shippingDocRegPickEventArgs, ByVal currentText As String, ByVal pFont As Font, ByVal fieldsize As Integer) As ArrayList
 
-        Dim lengthOfText As Integer
-        Dim maxLengthOfALine As Integer
-        Dim startingPosition As Integer
-        Dim endingPosition As Integer
-        Dim lineLength As Integer
-        Dim line As String
-        Dim decDiv As Decimal
-        Dim I As Integer
         Dim arrText As ArrayList
         arrText = New ArrayList
 
-        endingPosition = currentText.Length
-        lengthOfText = CInt(e.Graphics.MeasureString(currentText, pFont).Width)
-        decDiv = lengthOfText / fieldsize
-        maxLengthOfALine = endingPosition / decDiv
-        lineLength = maxLengthOfALine
-        If endingPosition < maxLengthOfALine Then
-            arrText.Add(currentText)
-            Return arrText
-        End If
-        ' start looping through the text until
-        While lineLength + startingPosition <= endingPosition
-            While currentText.Substring(startingPosition + lineLength - 1, 1) <> Chr(32)
+        Try
+            Dim lengthOfText As Integer
+            Dim maxLengthOfALine As Integer
+            Dim startingPosition As Integer
+            Dim endingPosition As Integer
+            Dim lineLength As Integer
+            Dim line As String
+            Dim decDiv As Decimal
+            Dim I As Integer
 
-                lineLength -= 1
-                If lineLength < (maxLengthOfALine - 9) Then
-                    lineLength = lineLength + 8
-                    Exit While
-                End If
-            End While
-            line = currentText.Substring(startingPosition, lineLength)
-            arrText.Add(line)
-            startingPosition += line.Length
+            endingPosition = currentText.Length
+            lengthOfText = CInt(e.Graphics.MeasureString(currentText, pFont).Width)
+            decDiv = lengthOfText / fieldsize
+            maxLengthOfALine = endingPosition / decDiv
             lineLength = maxLengthOfALine
-        End While
-        If startingPosition + lineLength > endingPosition Then
-            line = currentText.Substring(startingPosition)
-            arrText.Add(line)
-        End If
+            If endingPosition < maxLengthOfALine Then
+                arrText.Add(currentText)
+                Return arrText
+            End If
+            ' start looping through the text until
+            While lineLength + startingPosition <= endingPosition
+                While currentText.Substring(startingPosition + lineLength - 1, 1) <> Chr(32)
 
-        FormatWrap = arrText
+                    lineLength -= 1
+                    If lineLength < (maxLengthOfALine - 9) Then
+                        lineLength = lineLength + 8
+                        Exit While
+                    End If
+                End While
+                line = currentText.Substring(startingPosition, lineLength)
+                arrText.Add(line)
+                startingPosition += line.Length
+                lineLength = maxLengthOfALine
+            End While
+            If startingPosition + lineLength > endingPosition Then
+                line = currentText.Substring(startingPosition)
+                arrText.Add(line)
+            End If
+        Catch ex As Exception
+            arrText.Add(currentText)
+        End Try
+
+        'FormatWrap = arrText
+        Return (arrText)
 
     End Function
 
@@ -820,8 +904,11 @@ Public Class shippingDocRegPick
                         " AND A.SEQ_NBR = B.SEQ_NBR" & vbCrLf & _
                         " AND A.RECEIVER_ID = B.RECEIVER_ID" & vbCrLf & _
                         " AND A.RECV_LN_NBR = B.RECV_LN_NBR" & vbCrLf & _
-                        " AND NOT B.ENDDTTM IS NULL" & vbCrLf & _
+                        " AND B.ENDDTTM IS NOT NULL" & vbCrLf & _
                         " AND B.QTY_PICKED > 0" & vbCrLf
+            If (Me.PartialPickExcludeState.Trim.Length > 0) Then
+                strSQLstring = strSQLstring & " AND B.ISA_USER_DEFINED_1 NOT IN (" & Me.PartialPickExcludeState & ") " & vbCrLf
+            End If
             If Not mOverRide = "Y" Then
                 strSQLstring = strSQLstring & " AND B.SHIP_DTTM IS NULL" & vbCrLf
             End If
@@ -838,8 +925,7 @@ Public Class shippingDocRegPick
                         " FROM PS_ISA_PICKING_INT A, PS_ISA_ORD_INTFC_M B" & vbCrLf & _
                         " WHERE A.SOURCE_BUS_UNIT = '" & mSrcBU & "'" & vbCrLf & _
                         " AND A.ORDER_NO = '" & mOrderNo & "'" & vbCrLf & _
-                        " AND A.ORDER_NO = B.ORDER_NO" & vbCrLf & _
-                        " AND A.INV_ITEM_ID = B.INV_ITEM_ID" & vbCrLf & _
+                        " AND A.REFERENCE_ID = B.ORDER_NO" & vbCrLf & _
                         " AND A.ORDER_INT_LINE_NO = B.LINE_NBR" & vbCrLf & _
                         " AND ROWNUM < 2"
 
@@ -999,334 +1085,204 @@ Public Class shippingDocRegPick
 
         Dim rtn As String = "shippingDocRegPick.buildDatasets"
 
+        Dim bu3 As String = "" 'mSrcBU
+        Try
+            bu3 = mSrcBU.Trim.ToUpper.Substring(2, 3)
+        Catch ex As Exception
+            bu3 = "~" 'to prevent from grabbing any B/U
+        End Try
+
         Dim strSQLstring As String = ""
         strSQLstring = "" & _
-                       "SELECT " & vbCrLf & _
-                       " ORDER_NO " & vbCrLf & _
-                       ",ORDER_INT_LINE_NO " & vbCrLf & _
-                       ",SCHED_LINE_NO " & vbCrLf & _
-                       ",INV_ITEM_ID " & vbCrLf & _
-                       ",SHIP_CNTR_ID " & vbCrLf & _
-                       ",ISA_WORK_ORDER_NO " & vbCrLf & _
-                       ",DESCR254 " & vbCrLf & _
-                       ",PICK_DATE " & vbCrLf & _
-                       ",ISA_USER_DEFINED_3 " & vbCrLf & _
-                       ",QTY_PICKED " & vbCrLf & _
-                       ",DEMAND_SOURCE " & vbCrLf & _
-                       ",UNIT_OF_MEASURE " & vbCrLf & _
-                       ",QTY_ORDERED " & vbCrLf & _
-                       ",ORDER_DATE " & vbCrLf & _
-                       ",ISA_EMPLOYEE_ID " & vbCrLf & _
-                       ",ISA_EMPLOYEE_NAME " & vbCrLf & _
-                       ",CONTAINER_TYPE " & vbCrLf & _
-                       "FROM " & vbCrLf & _
-                       "("
-        strSQLstring &= "SELECT A.ORDER_NO," & vbCrLf & _
-                    " A.ORDER_INT_LINE_NO, A.SCHED_LINE_NO," & vbCrLf & _
-                    " A.INV_ITEM_ID, B.SHIP_CNTR_ID, L.ISA_WORK_ORDER_NO," & vbCrLf & _
-                    " (E.DESCR254 ||' MFG: '||M.MFG_ID||'/'||M.MFG_ITM_ID) as DESCR254," & vbCrLf & _
-                    " TO_CHAR(A.ISA_PACK_DTTM,'YYYY-MM-DD') as pick_date," & vbCrLf & _
-                    " A.ISA_USER_DEFINED_3," & vbCrLf & _
-                    " (SELECT SUM(I.QTY_PICKED)" & vbCrLf & _
-                    "  FROM PS_ISA_PICKING_INT I" & vbCrLf & _
-                    "  WHERE I.ORDER_NO = A.ORDER_NO " & vbCrLf & _
-                    "    AND I.ORDER_INT_LINE_NO = A.ORDER_INT_LINE_NO " & vbCrLf & _
-                    "    AND I.INV_ITEM_ID = A.INV_ITEM_ID) AS QTY_PICKED, A.DEMAND_SOURCE," & vbCrLf & _
-                    " L.UNIT_OF_MEASURE, L.QTY_ORDERED," & vbCrLf & _
-                    " TO_CHAR(C.ADD_DTTM,'MM/DD/YY') as ORDER_DATE," & vbCrLf & _
-                    " L.ISA_EMPLOYEE_ID, G.ISA_EMPLOYEE_NAME " & vbCrLf & _
-                    " ,B.CONTAINER_TYPE " & vbCrLf & _
-                    " FROM PS_ISA_PICKING_CNT B, PS_ISA_PICKING_INT A," & vbCrLf & _
-                    " PS_ORD_LINE L, PS_ISA_ORD_INTFC_H C," & vbCrLf & _
-                    " PS_INV_ITEMS E, PS_ISA_EMPL_TBL G, PS_ITEM_MFG M" & vbCrLf & _
-                    " WHERE A.SOURCE_BUS_UNIT = '" & mSrcBU & "'" & vbCrLf & _
-                    " AND A.ORDER_NO = '" & mOrderNo & "'" & vbCrLf & _
-                    " AND A.BUSINESS_UNIT = B.BUSINESS_UNIT(+)" & vbCrLf & _
-                    " AND A.DEMAND_SOURCE = B.DEMAND_SOURCE(+)" & vbCrLf & _
-                    " AND A.SOURCE_BUS_UNIT = B.SOURCE_BUS_UNIT(+)" & vbCrLf & _
-                    " AND A.ORDER_NO = B.ORDER_NO(+)" & vbCrLf & _
-                    " AND A.ORDER_INT_LINE_NO = B.ORDER_INT_LINE_NO(+)" & vbCrLf & _
-                    " AND A.SCHED_LINE_NO = B.SCHED_LINE_NO(+)" & vbCrLf & _
-                    " AND A.INV_ITEM_ID = B.INV_ITEM_ID(+)" & vbCrLf & _
-                    " AND A.DEMAND_LINE_NO = B.DEMAND_LINE_NO(+)" & vbCrLf & _
-                    " AND A.SEQ_NBR = B.SEQ_NBR(+)" & vbCrLf & _
-                    " AND A.RECEIVER_ID = B.RECEIVER_ID(+)" & vbCrLf & _
-                    " AND A.RECV_LN_NBR = B.RECV_LN_NBR(+)" & vbCrLf & _
-                    " AND NOT A.ENDDTTM IS NULL" & vbCrLf
-        If Not mOverRide = "Y" Then
-            strSQLstring = strSQLstring & " AND A.SHIP_DTTM IS NULL" & vbCrLf
-        End If
-        strSQLstring = strSQLstring & " AND A.QTY_PICKED > 0" & vbCrLf & _
-                    " AND A.ORDER_NO = L.ORDER_NO" & vbCrLf & _
-                    " AND A.ORDER_INT_LINE_NO = L.ORDER_INT_LINE_NO" & vbCrLf & _
-                    " AND A.ORDER_NO = C.ORDER_NO" & vbCrLf & _
-                    " AND E.INV_ITEM_ID = A.INV_ITEM_ID" & vbCrLf & _
-                    " AND E.EFFDT =" & vbCrLf & _
-                    " (SELECT MAX(E_ED.EFFDT) FROM PS_INV_ITEMS E_ED" & vbCrLf & _
-                    " WHERE E.SETID = E_ED.SETID" & vbCrLf & _
-                    " AND E.INV_ITEM_ID = E_ED.INV_ITEM_ID" & vbCrLf & _
-                    " AND E_ED.EFFDT <= SYSDATE)" & vbCrLf & _
-                    " AND L.BUSINESS_UNIT = G.BUSINESS_UNIT(+)" & vbCrLf & _
-                    " AND L.ISA_EMPLOYEE_ID = G.ISA_EMPLOYEE_ID(+)" & vbCrLf & _
-                    " AND E.SETID = M.SETID (+)" & vbCrLf & _
-                    " AND E.INV_ITEM_ID = M.INV_ITEM_ID (+)" & vbCrLf & _
-                    " AND M.PREFERRED_MFG (+) = 'Y'" & vbCrLf & _
-                    " GROUP BY A.ORDER_NO, A.ORDER_INT_LINE_NO, A.SCHED_LINE_NO," & vbCrLf & _
-                    " A.INV_ITEM_ID, B.SHIP_CNTR_ID, L.ISA_WORK_ORDER_NO," & vbCrLf & _
-                    " (E.DESCR254 ||' MFG: '||M.MFG_ID||'/'||M.MFG_ITM_ID)," & vbCrLf & _
-                    " TO_CHAR(A.ISA_PACK_DTTM,'YYYY-MM-DD'), A.DEMAND_SOURCE," & vbCrLf & _
-                    " L.UNIT_OF_MEASURE, L.QTY_ORDERED," & vbCrLf & _
-                    " C.ADD_DTTM, L.ISA_EMPLOYEE_ID, G.ISA_EMPLOYEE_NAME, A.ISA_USER_DEFINED_3, B.CONTAINER_TYPE " & vbCrLf & _
-                    " UNION ALL" & vbCrLf & _
-                    " SELECT A.ORDER_NO," & vbCrLf & _
-                    " A.ORDER_INT_LINE_NO, A.SCHED_LINE_NO," & vbCrLf & _
-                    " A.INV_ITEM_ID, B.SHIP_CNTR_ID, L.ISA_WORK_ORDER_NO," & vbCrLf & _
-                    " (E.DESCR254 ||' MFG: '||M.MFG_ID||'/'||M.MFG_ITM_ID) as DESCR254," & vbCrLf & _
-                    " TO_CHAR(A.ISA_PACK_DTTM,'YYYY-MM-DD') as pick_date," & vbCrLf & _
-                    " A.ISA_USER_DEFINED_3," & vbCrLf & _
-                    " (SELECT SUM(I.QTY_PICKED)" & vbCrLf & _
-                    "  FROM PS_ISA_PICKING_INT I" & vbCrLf & _
-                    "  WHERE I.ORDER_NO = A.ORDER_NO" & vbCrLf & _
-                    "    AND I.ORDER_INT_LINE_NO = A.ORDER_INT_LINE_NO " & vbCrLf & _
-                    "    AND I.INV_ITEM_ID = A.INV_ITEM_ID) AS QTY_PICKED, A.DEMAND_SOURCE," & vbCrLf & _
-                    " L.UNIT_OF_MEASURE, L.QTY_ORDERED," & vbCrLf & _
-                    " TO_CHAR(C.ADD_DTTM,'MM/DD/YY') as ORDER_DATE," & vbCrLf & _
-                    " L.ISA_EMPLOYEE_ID, G.ISA_EMPLOYEE_NAME " & vbCrLf & _
-                    " ,B.CONTAINER_TYPE " & vbCrLf & _
-                    " FROM PS_ISA_PICKING_CNT B, PS_ISA_PICKING_INT A," & vbCrLf & _
-                    " PS_ORD_LINE L, PS_ISA_ORD_INTFC_H C," & vbCrLf & _
-                    " PS_INV_ITEMS E, PS_ISA_EMPL_TBL G, PS_ITEM_MFG M" & vbCrLf & _
-                    " WHERE A.SOURCE_BUS_UNIT = '" & mSrcBU & "'" & vbCrLf & _
-                    " AND A.ORDER_NO = '" & mOrderNo & "'" & vbCrLf & _
-                    " AND A.BUSINESS_UNIT = B.BUSINESS_UNIT(+)" & vbCrLf & _
-                    " AND A.DEMAND_SOURCE = B.DEMAND_SOURCE(+)" & vbCrLf & _
-                    " AND A.SOURCE_BUS_UNIT = B.SOURCE_BUS_UNIT(+)" & vbCrLf & _
-                    " AND A.ORDER_NO = B.ORDER_NO(+)" & vbCrLf & _
-                    " AND A.ORDER_INT_LINE_NO = B.ORDER_INT_LINE_NO(+)" & vbCrLf & _
-                    " AND A.SCHED_LINE_NO = B.SCHED_LINE_NO(+)" & vbCrLf & _
-                    " AND A.INV_ITEM_ID = B.INV_ITEM_ID(+)" & vbCrLf & _
-                    " AND A.DEMAND_LINE_NO = B.DEMAND_LINE_NO(+)" & vbCrLf & _
-                    " AND A.SEQ_NBR = B.SEQ_NBR(+)" & vbCrLf & _
-                    " AND A.RECEIVER_ID = B.RECEIVER_ID(+)" & vbCrLf & _
-                    " AND A.RECV_LN_NBR = B.RECV_LN_NBR(+)" & vbCrLf & _
-                    " AND NOT A.ENDDTTM IS NULL" & vbCrLf
-        If Not mOverRide = "Y" Then
-            strSQLstring = strSQLstring & " AND A.SHIP_DTTM IS NULL" & vbCrLf
-        End If
-        strSQLstring = strSQLstring & " AND A.QTY_PICKED = 0" & vbCrLf & _
-                    " AND A.ORDER_NO = L.ORDER_NO" & vbCrLf & _
-                    " AND A.ORDER_INT_LINE_NO = L.ORDER_INT_LINE_NO" & vbCrLf & _
-                    " AND (SELECT COUNT(*)" & vbCrLf & _
-                    "      FROM PS_ISA_PICKING_INT F" & vbCrLf & _
-                    "      WHERE A.ORDER_NO = F.ORDER_NO" & vbCrLf & _
-                    "      AND A.ORDER_INT_LINE_NO = F.ORDER_INT_LINE_NO" & vbCrLf & _
-                    "      AND A.SCHED_LINE_NO = F.SCHED_LINE_NO) = 1" & vbCrLf & _
-                    " AND A.ORDER_NO = C.ORDER_NO" & vbCrLf & _
-                    " AND E.INV_ITEM_ID = A.INV_ITEM_ID" & vbCrLf & _
-                    " AND E.EFFDT =" & vbCrLf & _
-                    " (SELECT MAX(E_ED.EFFDT) FROM PS_INV_ITEMS E_ED" & vbCrLf & _
-                    "  WHERE E.SETID = E_ED.SETID" & vbCrLf & _
-                    "  AND E.INV_ITEM_ID = E_ED.INV_ITEM_ID" & vbCrLf & _
-                    "  AND E_ED.EFFDT <= SYSDATE)" & vbCrLf & _
-                    " AND L.BUSINESS_UNIT = G.BUSINESS_UNIT(+)" & vbCrLf & _
-                    " AND L.ISA_EMPLOYEE_ID = G.ISA_EMPLOYEE_ID(+)" & vbCrLf & _
-                    " AND E.SETID = M.SETID (+)" & vbCrLf & _
-                    " AND E.INV_ITEM_ID = M.INV_ITEM_ID (+)" & vbCrLf & _
-                    " AND M.PREFERRED_MFG (+) = 'Y'" & vbCrLf & _
-                    " GROUP BY A.ORDER_NO, A.ORDER_INT_LINE_NO, A.SCHED_LINE_NO," & vbCrLf & _
-                    " A.INV_ITEM_ID, B.SHIP_CNTR_ID, L.ISA_WORK_ORDER_NO," & vbCrLf & _
-                    " (E.DESCR254 ||' MFG: '||M.MFG_ID||'/'||M.MFG_ITM_ID)," & vbCrLf & _
-                    " TO_CHAR(A.ISA_PACK_DTTM,'YYYY-MM-DD'), A.DEMAND_SOURCE," & vbCrLf & _
-                    " L.UNIT_OF_MEASURE, L.QTY_ORDERED," & vbCrLf & _
-                    " C.ADD_DTTM, L.ISA_EMPLOYEE_ID, G.ISA_EMPLOYEE_NAME, A.ISA_USER_DEFINED_3, B.CONTAINER_TYPE " & vbCrLf & _
-                    ""
-        '" ORDER BY SHIP_CNTR_ID, ORDER_INT_LINE_NO,  SCHED_LINE_NO"
-
-        ' to handle orders with non-stock items only
-        '   - erwin 2009.07.23
-        strSQLstring &= "" & _
-                        "UNION ALL " & vbCrLf & _
                         "SELECT " & vbCrLf & _
-                        " A.ORDER_NO " & vbCrLf & _
-                        ",A.ORDER_INT_LINE_NO " & vbCrLf & _
-                        ",A.SCHED_LINE_NO " & vbCrLf & _
-                        ",A.INV_ITEM_ID " & vbCrLf & _
-                        ",B.SHIP_CNTR_ID " & vbCrLf & _
-                        ",REQ.ISA_WORK_ORDER_NO " & vbCrLf & _
-                        ",(REQ.DESCR254_MIXED ||' MFG: '||REQ.MFG_ID||'/'||REQ.MFG_ITM_ID) AS DESCR254 " & vbCrLf & _
-                        ",TO_CHAR(A.ISA_PACK_DTTM,'YYYY-MM-DD') AS PICK_DATE " & vbCrLf & _
-                        ",A.ISA_USER_DEFINED_3 " & vbCrLf & _
-                        ",(" & vbCrLf & _
-                        "  SELECT SUM(I.QTY_PICKED)" & vbCrLf & _
-                        "  FROM PS_ISA_PICKING_INT I" & vbCrLf & _
-                        "  WHERE I.ORDER_NO = A.ORDER_NO" & vbCrLf & _
-                        "    AND I.ORDER_INT_LINE_NO = A.ORDER_INT_LINE_NO" & vbCrLf & _
-                        "    AND I.INV_ITEM_ID = A.INV_ITEM_ID" & vbCrLf & _
-                        " ) AS QTY_PICKED" & vbCrLf & _
-                        ",A.DEMAND_SOURCE" & vbCrLf & _
-                        ",REQ.UNIT_OF_MEASURE" & vbCrLf & _
-                        ",REQ.QTY_REQ AS QTY_ORDERED" & vbCrLf & _
-                        ",TO_CHAR(C.ADD_DTTM,'MM/DD/YY') AS ORDER_DATE" & vbCrLf & _
-                        ",REQ.ISA_EMPLOYEE_ID" & vbCrLf & _
-                        ",G.ISA_EMPLOYEE_NAME" & vbCrLf & _
-                        ",B.CONTAINER_TYPE " & vbCrLf & _
-                        "FROM " & vbCrLf & _
-                        " PS_ISA_PICKING_CNT B" & vbCrLf & _
-                        ",PS_ISA_PICKING_INT A" & vbCrLf & _
-                        ",PS_ISA_ORD_INTFC_H C" & vbCrLf & _
-                        ",PS_ISA_EMPL_TBL G" & vbCrLf & _
-                        ",PS_REQ_LINE REQ" & vbCrLf & _
-                        "WHERE A.SOURCE_BUS_UNIT = '" & mSrcBU & "' " & vbCrLf & _
-                        " AND A.ORDER_NO = '" & mOrderNo & "' " & vbCrLf & _
-                        " AND A.INV_ITEM_ID = 'NSTK'" & vbCrLf & _
-                        " AND A.BUSINESS_UNIT = B.BUSINESS_UNIT(+)" & vbCrLf & _
-                        " AND A.DEMAND_SOURCE = B.DEMAND_SOURCE(+)" & vbCrLf & _
-                        " AND A.SOURCE_BUS_UNIT = B.SOURCE_BUS_UNIT(+)" & vbCrLf & _
-                        " AND A.ORDER_NO = B.ORDER_NO(+)" & vbCrLf & _
-                        " AND A.ORDER_INT_LINE_NO = B.ORDER_INT_LINE_NO(+)" & vbCrLf & _
-                        " AND A.SCHED_LINE_NO = B.SCHED_LINE_NO(+)" & vbCrLf & _
-                        " AND A.INV_ITEM_ID = B.INV_ITEM_ID(+)" & vbCrLf & _
-                        " AND A.DEMAND_LINE_NO = B.DEMAND_LINE_NO(+)" & vbCrLf & _
-                        " AND A.SEQ_NBR = B.SEQ_NBR(+)" & vbCrLf & _
-                        " AND A.RECEIVER_ID = B.RECEIVER_ID(+)" & vbCrLf & _
-                        " AND A.RECV_LN_NBR = B.RECV_LN_NBR(+)" & vbCrLf & _
-                        " AND NOT A.ENDDTTM IS NULL" & vbCrLf
+                        "  VW.ORDER_NO  " & vbCrLf & _
+                        ", VW.ORDER_INT_LINE_NO  " & vbCrLf & _
+                        ", VW.SCHED_LINE_NO  " & vbCrLf & _
+                        ", VW.INV_ITEM_ID  " & vbCrLf & _
+                        ", VW.SHIP_CNTR_ID  " & vbCrLf & _
+                        ", VW.ISA_WORK_ORDER_NO  " & vbCrLf & _
+                        ", VW.DESCR254  " & vbCrLf & _
+                        ", VW.PICK_DATE  " & vbCrLf & _
+                        ", VW.ISA_USER_DEFINED_3  " & vbCrLf & _
+                        ", SUM (VW.QTY_PICKED) AS QTY_PICKED " & vbCrLf & _
+                        ", VW.DEMAND_SOURCE  " & vbCrLf & _
+                        ", VW.UNIT_OF_MEASURE  " & vbCrLf & _
+                        ", VW.QTY_ORDERED  " & vbCrLf & _
+                        ", VW.ORDER_DATE  " & vbCrLf & _
+                        ", VW.ISA_EMPLOYEE_ID  " & vbCrLf & _
+                        ", VW.ISA_EMPLOYEE_NAME  " & vbCrLf & _
+                        ", VW.CONTAINER_TYPE " & vbCrLf & _
+                        ", VW.ISA_CUST_NOTES " & vbCrLf & _
+                        "FROM ( " & vbCrLf & _
+                        "     SELECT DISTINCT  " & vbCrLf & _
+                        "       A.ORDER_NO " & vbCrLf & _
+                        "     , A.ORDER_INT_LINE_NO " & vbCrLf & _
+                        "     , A.SCHED_LINE_NO " & vbCrLf & _
+                        "     , A.INV_ITEM_ID " & vbCrLf & _
+                        "     , B.SHIP_CNTR_ID " & vbCrLf & _
+                        "     , L.ISA_WORK_ORDER_NO " & vbCrLf & _
+                        "     , (E.DESCR254 ||' MFG: '||M.MFG_ID||'/'||M.MFG_ITM_ID) AS DESCR254 " & vbCrLf & _
+                        "     , TO_CHAR(A.ISA_PACK_DTTM,'YYYY-MM-DD') AS PICK_DATE " & vbCrLf & _
+                        "     , A.ISA_USER_DEFINED_3 " & vbCrLf & _
+                        "     , ( " & vbCrLf & _
+                        "		  SELECT SUM (A1.QTY_PICKED) FROM SYSADM.PS_ISA_PICKING_INT A1 " & vbCrLf & _
+                        "		  WHERE A1.ORDER_NO = A.ORDER_NO " & vbCrLf & _
+                        "		    AND A1.ORDER_INT_LINE_NO = A.ORDER_INT_LINE_NO " & vbCrLf & _
+                        "		    AND A1.INV_ITEM_ID = A.INV_ITEM_ID " & vbCrLf & _
+                        "       ) AS QTY_PICKED " & vbCrLf & _
+                        "     , A.DEMAND_SOURCE " & vbCrLf & _
+                        "     , L.UNIT_OF_MEASURE " & vbCrLf & _
+                        "     , L.QTY_ORDERED " & vbCrLf & _
+                        "     , TO_CHAR(C.ADD_DTTM,'MM/DD/YY') AS ORDER_DATE " & vbCrLf & _
+                        "     , L.ISA_EMPLOYEE_ID " & vbCrLf & _
+                        "     , G.ISA_EMPLOYEE_NAME " & vbCrLf & _
+                        "     , B.CONTAINER_TYPE " & vbCrLf & _
+                        "     , X.ISA_CUST_NOTES " & vbCrLf & _
+                        "     FROM SYSADM.PS_ISA_PICKING_INT A " & vbCrLf & _
+                        "     INNER JOIN SYSADM.PS_ORD_LINE L " & vbCrLf & _
+                        "       ON L.ORDER_NO          = A.REFERENCE_ID " & vbCrLf & _
+                        "      AND L.ORDER_INT_LINE_NO = A.ORDER_INT_LINE_NO " & vbCrLf & _
+                        "     LEFT OUTER JOIN SYSADM.PS_ISA_ORD_INTFC_H C " & vbCrLf & _
+                        "       ON C.ORDER_NO          = A.REFERENCE_ID " & vbCrLf & _
+                        "     LEFT OUTER JOIN SYSADM.PS_ISA_ORD_INTFC_L X " & vbCrLf & _
+                        "       ON X.ISA_PARENT_IDENT  = C.ISA_IDENTIFIER " & vbCrLf & _
+                        "      AND X.LINE_NBR          = A.ORDER_INT_LINE_NO " & vbCrLf & _
+                        "     LEFT OUTER JOIN SYSADM.PS_ISA_PICKING_CNT B " & vbCrLf & _
+                        "       ON B.BUSINESS_UNIT     = A.BUSINESS_UNIT " & vbCrLf & _
+                        "      AND B.DEMAND_SOURCE     = A.DEMAND_SOURCE " & vbCrLf & _
+                        "      AND B.SOURCE_BUS_UNIT   = A.SOURCE_BUS_UNIT  " & vbCrLf & _
+                        "      AND B.ORDER_NO          = A.ORDER_NO  " & vbCrLf & _
+                        "      AND B.ORDER_INT_LINE_NO = A.ORDER_INT_LINE_NO  " & vbCrLf & _
+                        "      AND B.SCHED_LINE_NO     = A.SCHED_LINE_NO  " & vbCrLf & _
+                        "      AND B.INV_ITEM_ID       = A.INV_ITEM_ID  " & vbCrLf & _
+                        "      AND B.DEMAND_LINE_NO    = A.DEMAND_LINE_NO  " & vbCrLf & _
+                        "      AND B.SEQ_NBR           = A.SEQ_NBR  " & vbCrLf & _
+                        "      AND B.RECEIVER_ID       = A.RECEIVER_ID  " & vbCrLf & _
+                        "      AND B.RECV_LN_NBR       = A.RECV_LN_NBR  " & vbCrLf & _
+                        "     LEFT OUTER JOIN SYSADM.PS_INV_ITEMS E " & vbCrLf & _
+                        "       ON E.SETID             = 'MAIN1' " & vbCrLf & _
+                        "      AND E.INV_ITEM_ID       = A.INV_ITEM_ID " & vbCrLf & _
+                        "     LEFT OUTER JOIN SYSADM.PS_ISA_EMPL_TBL G " & vbCrLf & _
+                        "       ON G.BUSINESS_UNIT     = C.BUSINESS_UNIT_OM " & vbCrLf & _
+                        "      AND G.ISA_EMPLOYEE_ID   = L.ISA_EMPLOYEE_ID  " & vbCrLf & _
+                        "     LEFT OUTER JOIN SYSADM.PS_ITEM_MFG M " & vbCrLf & _
+                        "       ON M.SETID             = E.SETID  " & vbCrLf & _
+                        "      AND M.INV_ITEM_ID       = E.INV_ITEM_ID " & vbCrLf & _
+                        "      AND M.PREFERRED_MFG     = 'Y' " & vbCrLf & _
+                        "     WHERE  " & vbCrLf & _
+                        "         A.SOURCE_BUS_UNIT LIKE '%" & bu3 & "' " & vbCrLf & _
+                        "     AND A.ORDER_NO = '" & mOrderNo & "' " & vbCrLf & _
+                        "     AND A.DEMAND_SOURCE IN ('OM','IN') " & vbCrLf & _
+                        "     AND A.ENDDTTM IS NOT NULL " & vbCrLf & _
+                        ""
+        If (Me.PartialPickExcludeState.Trim.Length > 0) Then
+            strSQLstring &= "     AND A.ISA_USER_DEFINED_1 NOT IN (" & Me.PartialPickExcludeState & ") " & vbCrLf
+        End If
         If Not mOverRide = "Y" Then
-            strSQLstring = strSQLstring & " AND A.SHIP_DTTM IS NULL" & vbCrLf
+            strSQLstring &= "     AND A.SHIP_DTTM IS NULL " & vbCrLf
         End If
         strSQLstring &= "" & _
-                        " AND A.QTY_PICKED > 0" & vbCrLf & _
-                        " AND A.ORDER_NO = REQ.REQ_ID" & vbCrLf & _
-                        " AND A.ORDER_INT_LINE_NO = REQ.LINE_NBR" & vbCrLf & _
-                        " AND A.ORDER_NO = C.ORDER_NO" & vbCrLf & _
-                        " AND REQ.BUSINESS_UNIT = G.BUSINESS_UNIT (+)" & vbCrLf & _
-                        " AND REQ.ISA_EMPLOYEE_ID = G.ISA_EMPLOYEE_ID (+)" & vbCrLf & _
-                        "GROUP BY " & vbCrLf & _
-                        " A.ORDER_NO" & vbCrLf & _
-                        ",A.ORDER_INT_LINE_NO" & vbCrLf & _
-                        ",A.SCHED_LINE_NO" & vbCrLf & _
-                        ",A.INV_ITEM_ID" & vbCrLf & _
-                        ",B.SHIP_CNTR_ID" & vbCrLf & _
-                        ",REQ.ISA_WORK_ORDER_NO" & vbCrLf & _
-                        ",(REQ.DESCR254_MIXED ||' MFG: '||REQ.MFG_ID||'/'||REQ.MFG_ITM_ID)" & vbCrLf & _
-                        ",TO_CHAR(A.ISA_PACK_DTTM,'YYYY-MM-DD')" & vbCrLf & _
-                        ",A.DEMAND_SOURCE" & vbCrLf & _
-                        ",REQ.UNIT_OF_MEASURE" & vbCrLf & _
-                        ",REQ.QTY_REQ" & vbCrLf & _
-                        ",C.ADD_DTTM" & vbCrLf & _
-                        ",REQ.ISA_EMPLOYEE_ID" & vbCrLf & _
-                        ",G.ISA_EMPLOYEE_NAME" & vbCrLf & _
-                        ",A.ISA_USER_DEFINED_3" & vbCrLf & _
-                        ",B.CONTAINER_TYPE" & vbCrLf & _
+                        "     AND E.EFFDT = ( " & vbCrLf & _
+                        "                       SELECT MAX(E_ED.EFFDT) FROM SYSADM.PS_INV_ITEMS E_ED " & vbCrLf & _
+                        "                       WHERE E.SETID = E_ED.SETID " & vbCrLf & _
+                        "                       AND E.INV_ITEM_ID = E_ED.INV_ITEM_ID " & vbCrLf & _
+                        "                       AND E_ED.EFFDT <= SYSDATE " & vbCrLf & _
+                        "                   ) " & vbCrLf & _
+                        "    UNION " & vbCrLf & _
+                        "    SELECT DISTINCT  " & vbCrLf & _
+                        "      A.ORDER_NO  " & vbCrLf & _
+                        "    , A.ORDER_INT_LINE_NO  " & vbCrLf & _
+                        "    , A.SCHED_LINE_NO  " & vbCrLf & _
+                        "    , A.INV_ITEM_ID  " & vbCrLf & _
+                        "    , B.SHIP_CNTR_ID  " & vbCrLf & _
+                        "    , REQ.ISA_WORK_ORDER_NO  " & vbCrLf & _
+                        "    , (REQ.DESCR254_MIXED ||' MFG: '||REQ.MFG_ID||'/'||REQ.MFG_ITM_ID) AS DESCR254  " & vbCrLf & _
+                        "    , TO_CHAR(A.ISA_PACK_DTTM,'YYYY-MM-DD') AS PICK_DATE  " & vbCrLf & _
+                        "    , A.ISA_USER_DEFINED_3  " & vbCrLf & _
+                        "    , ( " & vbCrLf & _
+                        "		  SELECT SUM (A1.QTY_PICKED) FROM SYSADM.PS_ISA_PICKING_INT A1 " & vbCrLf & _
+                        "		  WHERE A1.ORDER_NO = A.ORDER_NO " & vbCrLf & _
+                        "		    AND A1.ORDER_INT_LINE_NO = A.ORDER_INT_LINE_NO " & vbCrLf & _
+                        "		    AND A1.INV_ITEM_ID = A.INV_ITEM_ID " & vbCrLf & _
+                        "      ) AS QTY_PICKED " & vbCrLf & _
+                        "    , A.DEMAND_SOURCE " & vbCrLf & _
+                        "    , REQ.UNIT_OF_MEASURE " & vbCrLf & _
+                        "    , REQ.QTY_REQ AS QTY_ORDERED " & vbCrLf & _
+                        "    , TO_CHAR(C.ADD_DTTM,'MM/DD/YY') AS ORDER_DATE " & vbCrLf & _
+                        "    , REQ.ISA_EMPLOYEE_ID " & vbCrLf & _
+                        "    , G.ISA_EMPLOYEE_NAME " & vbCrLf & _
+                        "    , B.CONTAINER_TYPE " & vbCrLf & _
+                        "    , X.ISA_CUST_NOTES " & vbCrLf & _
+                        "    FROM SYSADM.PS_ISA_PICKING_INT A " & vbCrLf & _
+                        "    INNER JOIN SYSADM.PS_REQ_LINE REQ " & vbCrLf & _
+                        "       ON REQ.REQ_ID          = A.REFERENCE_ID  " & vbCrLf & _
+                        "      AND REQ.LINE_NBR        = A.ORDER_INT_LINE_NO " & vbCrLf & _
+                        "    LEFT OUTER JOIN SYSADM.PS_ISA_PICKING_CNT B " & vbCrLf & _
+                        "      ON B.BUSINESS_UNIT      = A.BUSINESS_UNIT " & vbCrLf & _
+                        "     AND B.DEMAND_SOURCE      = A.DEMAND_SOURCE  " & vbCrLf & _
+                        "     AND B.SOURCE_BUS_UNIT    = A.SOURCE_BUS_UNIT  " & vbCrLf & _
+                        "     AND B.ORDER_NO           = A.ORDER_NO  " & vbCrLf & _
+                        "     AND B.ORDER_INT_LINE_NO  = A.ORDER_INT_LINE_NO  " & vbCrLf & _
+                        "     AND B.SCHED_LINE_NO      = A.SCHED_LINE_NO  " & vbCrLf & _
+                        "     AND B.INV_ITEM_ID        = A.INV_ITEM_ID  " & vbCrLf & _
+                        "     AND B.DEMAND_LINE_NO     = A.DEMAND_LINE_NO  " & vbCrLf & _
+                        "     AND B.SEQ_NBR            = A.SEQ_NBR  " & vbCrLf & _
+                        "     AND B.RECEIVER_ID        = A.RECEIVER_ID  " & vbCrLf & _
+                        "     AND B.RECV_LN_NBR        = A.RECV_LN_NBR  " & vbCrLf & _
+                        "    LEFT OUTER JOIN SYSADM.PS_ISA_ORD_INTFC_H C " & vbCrLf & _
+                        "      ON C.ORDER_NO           = A.REFERENCE_ID " & vbCrLf & _
+                        "    LEFT OUTER JOIN SYSADM.PS_ISA_ORD_INTFC_L X " & vbCrLf & _
+                        "      ON X.ISA_PARENT_IDENT   = C.ISA_IDENTIFIER " & vbCrLf & _
+                        "     AND X.LINE_NBR           = A.ORDER_INT_LINE_NO " & vbCrLf & _
+                        "    LEFT OUTER JOIN SYSADM.PS_ISA_EMPL_TBL G " & vbCrLf & _
+                        "      ON G.BUSINESS_UNIT      = C.BUSINESS_UNIT_OM " & vbCrLf & _
+                        "     AND G.ISA_EMPLOYEE_ID    = REQ.ISA_EMPLOYEE_ID " & vbCrLf & _
+                        "    WHERE  " & vbCrLf & _
+                        "         A.SOURCE_BUS_UNIT LIKE '%" & bu3 & "' " & vbCrLf & _
+                        "     AND A.ORDER_NO = '" & mOrderNo & "' " & vbCrLf & _
+                        "     AND A.DEMAND_SOURCE = 'OM' " & vbCrLf & _
+                        "     AND A.ENDDTTM IS NOT NULL " & vbCrLf & _
                         ""
-
-        strSQLstring &= "" & _
-                        "UNION ALL " & vbCrLf & _
-                        "SELECT " & vbCrLf & _
-                        " A.ORDER_NO" & vbCrLf & _
-                        ",A.ORDER_INT_LINE_NO" & vbCrLf & _
-                        ",A.SCHED_LINE_NO" & vbCrLf & _
-                        ",A.INV_ITEM_ID" & vbCrLf & _
-                        ",B.SHIP_CNTR_ID" & vbCrLf & _
-                        ",REQ.ISA_WORK_ORDER_NO" & vbCrLf & _
-                        ",(REQ.DESCR254_MIXED ||' MFG: '||REQ.MFG_ID||'/'||REQ.MFG_ITM_ID) AS DESCR254" & vbCrLf & _
-                        ",TO_CHAR(A.ISA_PACK_DTTM,'YYYY-MM-DD') AS PICK_DATE" & vbCrLf & _
-                        ",A.ISA_USER_DEFINED_3" & vbCrLf & _
-                        ",(" & vbCrLf & _
-                        "  SELECT SUM(I.QTY_PICKED)" & vbCrLf & _
-                        "  FROM PS_ISA_PICKING_INT I" & vbCrLf & _
-                        "  WHERE I.ORDER_NO = A.ORDER_NO" & vbCrLf & _
-                        "    AND I.ORDER_INT_LINE_NO = A.ORDER_INT_LINE_NO" & vbCrLf & _
-                        "    AND I.INV_ITEM_ID = A.INV_ITEM_ID" & vbCrLf & _
-                        " ) AS QTY_PICKED" & vbCrLf & _
-                        ",A.DEMAND_SOURCE" & vbCrLf & _
-                        ",REQ.UNIT_OF_MEASURE" & vbCrLf & _
-                        ",REQ.QTY_REQ AS QTY_ORDERED" & vbCrLf & _
-                        ",TO_CHAR(C.ADD_DTTM,'MM/DD/YY') AS ORDER_DATE" & vbCrLf & _
-                        ",REQ.ISA_EMPLOYEE_ID" & vbCrLf & _
-                        ",G.ISA_EMPLOYEE_NAME" & vbCrLf & _
-                        ",B.CONTAINER_TYPE " & vbCrLf & _
-                        "FROM " & vbCrLf & _
-                        " PS_ISA_PICKING_CNT B" & vbCrLf & _
-                        ",PS_ISA_PICKING_INT A" & vbCrLf & _
-                        ",PS_ISA_ORD_INTFC_H C" & vbCrLf & _
-                        ",PS_ISA_EMPL_TBL G" & vbCrLf & _
-                        ",PS_REQ_LINE REQ" & vbCrLf & _
-                        "WHERE A.SOURCE_BUS_UNIT = '" & mSrcBU & "' " & vbCrLf & _
-                        "  AND A.ORDER_NO = '" & mOrderNo & "' " & vbCrLf & _
-                        "  AND A.INV_ITEM_ID = 'NSTK'" & vbCrLf & _
-                        "  AND A.BUSINESS_UNIT = B.BUSINESS_UNIT(+)" & vbCrLf & _
-                        "  AND A.DEMAND_SOURCE = B.DEMAND_SOURCE(+)" & vbCrLf & _
-                        "  AND A.SOURCE_BUS_UNIT = B.SOURCE_BUS_UNIT(+)" & vbCrLf & _
-                        "  AND A.ORDER_NO = B.ORDER_NO(+)" & vbCrLf & _
-                        "  AND A.ORDER_INT_LINE_NO = B.ORDER_INT_LINE_NO(+)" & vbCrLf & _
-                        "  AND A.SCHED_LINE_NO = B.SCHED_LINE_NO(+)" & vbCrLf & _
-                        "  AND A.INV_ITEM_ID = B.INV_ITEM_ID(+)" & vbCrLf & _
-                        "  AND A.DEMAND_LINE_NO = B.DEMAND_LINE_NO(+)" & vbCrLf & _
-                        "  AND A.SEQ_NBR = B.SEQ_NBR(+)" & vbCrLf & _
-                        "  AND A.RECEIVER_ID = B.RECEIVER_ID(+)" & vbCrLf & _
-                        "  AND A.RECV_LN_NBR = B.RECV_LN_NBR(+)" & vbCrLf & _
-                        "  AND NOT A.ENDDTTM IS NULL" & vbCrLf & _
-                        " AND NOT A.ENDDTTM IS NULL" & vbCrLf
+        If (Me.PartialPickExcludeState.Trim.Length > 0) Then
+            strSQLstring &= "     AND A.ISA_USER_DEFINED_1 NOT IN (" & Me.PartialPickExcludeState & ") " & vbCrLf
+        End If
         If Not mOverRide = "Y" Then
-            strSQLstring = strSQLstring & " AND A.SHIP_DTTM IS NULL" & vbCrLf
+            strSQLstring &= "     AND A.SHIP_DTTM IS NULL " & vbCrLf
         End If
         strSQLstring &= "" & _
-                        "  AND A.QTY_PICKED = 0" & vbCrLf & _
-                        "  AND A.ORDER_NO = REQ.REQ_ID" & vbCrLf & _
-                        "  AND A.ORDER_INT_LINE_NO = REQ.LINE_NBR" & vbCrLf & _
-                        "  AND (SELECT COUNT(1)" & vbCrLf & _
-                        "       FROM PS_ISA_PICKING_INT F" & vbCrLf & _
-                        "       WHERE A.ORDER_NO = F.ORDER_NO" & vbCrLf & _
-                        "         AND A.ORDER_INT_LINE_NO = F.ORDER_INT_LINE_NO" & vbCrLf & _
-                        "         AND A.SCHED_LINE_NO = F.SCHED_LINE_NO) = 1" & vbCrLf & _
-                        "  AND A.ORDER_NO = C.ORDER_NO" & vbCrLf & _
-                        "  AND REQ.BUSINESS_UNIT = G.BUSINESS_UNIT(+)" & vbCrLf & _
-                        "  AND REQ.ISA_EMPLOYEE_ID = G.ISA_EMPLOYEE_ID(+)" & vbCrLf & _
-                        "GROUP BY " & vbCrLf & _
-                        " A.ORDER_NO" & vbCrLf & _
-                        ",A.ORDER_INT_LINE_NO" & vbCrLf & _
-                        ",A.SCHED_LINE_NO" & vbCrLf & _
-                        ",A.INV_ITEM_ID" & vbCrLf & _
-                        ",B.SHIP_CNTR_ID" & vbCrLf & _
-                        ",REQ.ISA_WORK_ORDER_NO" & vbCrLf & _
-                        ",(REQ.DESCR254_MIXED ||' MFG: '||REQ.MFG_ID||'/'||REQ.MFG_ITM_ID)" & vbCrLf & _
-                        ",TO_CHAR(A.ISA_PACK_DTTM,'YYYY-MM-DD')" & vbCrLf & _
-                        ",A.DEMAND_SOURCE" & vbCrLf & _
-                        ",REQ.UNIT_OF_MEASURE" & vbCrLf & _
-                        ",REQ.QTY_REQ" & vbCrLf & _
-                        ",C.ADD_DTTM" & vbCrLf & _
-                        ",REQ.ISA_EMPLOYEE_ID" & vbCrLf & _
-                        ",G.ISA_EMPLOYEE_NAME" & vbCrLf & _
-                        ",A.ISA_USER_DEFINED_3 " & vbCrLf & _
-                        ",B.CONTAINER_TYPE " & vbCrLf & _
-                        ""
-
-        strSQLstring &= "" & _
-                        ") " & vbCrLf & _
-                        "ORDER BY SHIP_CNTR_ID, ORDER_INT_LINE_NO, SCHED_LINE_NO " & vbCrLf & _
-                        ""
-
-        ' A.DEMAND_LINE_NO, was removed from the group by
-
-        '" AND A.ORDER_INT_LINE_NO = C.LINE_NBR" & vbCrLf & _
-        '            " AND B.ISA_IDENTIFIER = D.ISA_PARENT_IDENT" & vbCrLf & _
-        '            " AND A.ORDER_INT_LINE_NO = D.LINE_NBR" & vbCrLf & _
-        '            " AND E.INV_ITEM_ID = D.INV_ITEM_ID" & vbCrLf & _
-        '            " ORDER BY A.SHIP_CNTR_ID, A.ORDER_INT_LINE_NO,  A.SCHED_LINE_NO"
-
-        '" ORDER BY A.SHIP_CNTR_ID, A.ORDER_INT_LINE_NO,  A.SCHED_LINE_NO"
-
-        'Dim dbConn As String = _
-        '"Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=" & mDB
+                        ") VW " & vbCrLf & _
+                        "GROUP BY  " & vbCrLf & _
+                        "  VW.ORDER_NO  " & vbCrLf & _
+                        ", VW.ORDER_INT_LINE_NO  " & vbCrLf & _
+                        ", VW.SCHED_LINE_NO  " & vbCrLf & _
+                        ", VW.INV_ITEM_ID  " & vbCrLf & _
+                        ", VW.SHIP_CNTR_ID  " & vbCrLf & _
+                        ", VW.ISA_WORK_ORDER_NO  " & vbCrLf & _
+                        ", VW.DESCR254  " & vbCrLf & _
+                        ", VW.PICK_DATE  " & vbCrLf & _
+                        ", VW.ISA_USER_DEFINED_3  " & vbCrLf & _
+                        ", VW.DEMAND_SOURCE  " & vbCrLf & _
+                        ", VW.UNIT_OF_MEASURE  " & vbCrLf & _
+                        ", VW.QTY_ORDERED  " & vbCrLf & _
+                        ", VW.ORDER_DATE  " & vbCrLf & _
+                        ", VW.ISA_EMPLOYEE_ID  " & vbCrLf & _
+                        ", VW.ISA_EMPLOYEE_NAME  " & vbCrLf & _
+                        ", VW.CONTAINER_TYPE  " & vbCrLf & _
+                        ", VW.ISA_CUST_NOTES " & vbCrLf & _
+                        "ORDER BY  " & vbCrLf & _
+                        "  VW.SHIP_CNTR_ID " & vbCrLf & _
+                        ", VW.ORDER_INT_LINE_NO " & vbCrLf & _
+                        ", VW.SCHED_LINE_NO " & vbCrLf & _
+                       ""
 
         LogVerbose(msg:=rtn & "::CN string : " & Me.oraCNstring)
         LogVerbose(msg:=rtn & "::executing : " & strSQLstring)
 
-        ''"data source=ineroth;initial catalog=pubs;integrated security=SSPI"
-        'Dim da As New OleDb.OleDbDataAdapter(strSQLstring, dbConn)
         Dim da As New OleDb.OleDbDataAdapter(strSQLstring, Me.oraCNstring)
         da.Fill(ds)
+
+        ' fill the "printed picked order lines" and raise the event
+        FillPrintedPickedOrderLinesFromDS(ds)
 
         ' NOTE:
         '   (1) get the first available "shipto_id" of the first available STK item
@@ -1452,5 +1408,68 @@ Public Class shippingDocRegPick
         End Try
         Return sName
     End Function
+
+    Private Sub FillPrintedPickedOrderLinesFromDS(ByVal ds As DataSet)
+        Try
+            ' fill
+            If Not (ds Is Nothing) Then
+                If (ds.Tables.Count > 0) Then
+                    If (ds.Tables(0).Rows.Count > 0) Then
+
+                        Me.PrintedPickedOrderLines.Items.Clear()
+
+                        Dim lne As PrintedPickedOrderLine = Nothing
+
+                        For Each row As DataRow In ds.Tables(0).Rows
+                            lne = New PrintedPickedOrderLine
+
+                            Try
+                                lne.OrderNo = CStr(row("ORDER_NO"))
+                            Catch ex As Exception
+                            End Try
+                            If (lne.OrderNo.Length = 0) Then
+                                lne.OrderNo = " "
+                            End If
+                            Try
+                                lne.OrderLineNo = CInt(row("ORDER_INT_LINE_NO"))
+                            Catch ex As Exception
+                            End Try
+                            Try
+                                lne.SchedLineNo = CInt(row("SCHED_LINE_NO"))
+                            Catch ex As Exception
+                            End Try
+                            Try
+                                lne.InvItemId = CStr(row("INV_ITEM_ID"))
+                            Catch ex As Exception
+                            End Try
+                            If (lne.InvItemId.Length = 0) Then
+                                lne.InvItemId = " "
+                            End If
+                            Try
+                                lne.DemandSource = CStr(row("DEMAND_SOURCE"))
+                            Catch ex As Exception
+                            End Try
+                            If (lne.DemandSource.Length = 0) Then
+                                lne.DemandSource = " "
+                            End If
+                            Try
+                                lne.ContainerId = CStr(row("SHIP_CNTR_ID"))
+                            Catch ex As Exception
+                            End Try
+                            If (lne.ContainerId.Length = 0) Then
+                                lne.ContainerId = " "
+                            End If
+
+                            Me.PrintedPickedOrderLines.Items.Add(lne)
+                        Next
+
+                    End If
+                End If
+            End If
+            ' raise event
+            RaiseEvent AssignedPrintedPickedOrderLines(Me, Nothing)
+        Catch ex As Exception
+        End Try
+    End Sub
 
 End Class

@@ -1,5 +1,7 @@
 Public Class ReportGenerator
 
+    Implements SDI.Reports.ISDiReport
+
     ' shipping document (Transfers)
     Public Const RPT_SHIPPING_DOCUMENT_PRINT_TO As String = "SDI.Reports.shippingDoc.printTo"
     Public Const RPT_SHIPPING_DOCUMENT_PAPERSOURCE As String = "SDI.Reports.shippingDoc.paperSourceId"
@@ -18,8 +20,24 @@ Public Class ReportGenerator
     Public Const RPT_SHIPPING_LABEL_REG_PICK_PAPERSOURCE As String = "SDI.Reports.shippingLabelRegPick.paperSourceId"
     Public Const RPT_SHIPPING_LABEL_REG_PICK_COPY As String = "SDI.Reports.shippingLabelRegPick.copy"
 
+    Public Const RPT_PARTIAL_PICK_EXCLUDE_STATE As String = "SDI.Reports.PartialPickExcludeState"
+
     Public Const DEBUG_LIST_AVAILABLE_PRINTERS As String = "debug.ListAvailPrinter"
     Public Const DEBUG_LIST_AVAIL_PRN_PAPERSOURCES As String = "debug.ListAvailPrnPaperSources"
+
+    Public Const USER_OVERRIDE_USER_ID As String = "userOverride.userId"
+    Public Const USER_OVERRIDE_PRINT_TO As String = "userOverride.printTo"
+    Public Const USER_OVERRIDE_SHIPPING_DOCUMENT_REG_PICK_PAPERSOURCE As String = "userOverride.shippingDocRegPick.paperSourceId"
+    Public Const USER_OVERRIDE_SHIPPING_LABEL_REG_PICK_PAPERSOURCE As String = "userOverride.shippingLabelRegPick.paperSourceId"
+    Public Const USER_OVERRIDE_SHIPPING_DOCUMENT_PAPERSOURCE As String = "userOverride.shippingDoc.paperSourceId"
+    Public Const USER_OVERRIDE_SHIPPING_LABEL_PAPERSOURCE As String = "userOverride.shippingLabel.paperSourceId"
+
+    Public Const BU_INVENTORY_OVERRIDE_ID As String = "buInventoryOverride.BUs"
+    Public Const BU_INVENTORY_OVERRIDE_PRINT_TO As String = "buInventoryOverride.printTo"
+    Public Const BU_INVENTORY_OVERRIDE_SHIPPING_DOCUMENT_REG_PICK_PAPERSOURCE As String = "buInventoryOverride.shippingDocRegPick.paperSourceId"
+    Public Const BU_INVENTORY_OVERRIDE_SHIPPING_LABEL_REG_PICK_PAPERSOURCE As String = "buInventoryOverride.shippingLabelRegPick.paperSourceId"
+    Public Const BU_INVENTORY_OVERRIDE_SHIPPING_DOCUMENT_PAPERSOURCE As String = "buInventoryOverride.shippingDoc.paperSourceId"
+    Public Const BU_INVENTORY_OVERRIDE_SHIPPING_LABEL_PAPERSOURCE As String = "buInventoryOverride.shippingLabel.paperSourceId"
 
     '' printer
     'Public Const PRN_PRINT_TO_OVERRIDE As String = "printToOverride"
@@ -31,6 +49,8 @@ Public Class ReportGenerator
         shippingDocRegPick = 3
         packingSlipRegPick = 4
     End Enum
+
+    Public Event AssignedPrintedPickedOrderLines(ByVal sender As Object, ByVal e As EventArgs) Implements SDI.reports.ISDiReport.AssignedPrintedPickedOrderLines
 
     Private Const oraCN_default_provider As String = "Provider=MSDAORA.1;"
     Private Const oraCN_default_creden As String = "User ID=einternet;Password=einternet;"
@@ -48,6 +68,7 @@ Public Class ReportGenerator
     Private m_oraCN As OleDb.OleDbConnection = Nothing
     Private m_executionPath As String = ""
 
+    Private m_userId As String = ""
 
     Public Sub New()
 
@@ -59,6 +80,17 @@ Public Class ReportGenerator
         End Get
         Set(ByVal Value As String)
             m_bu = Value
+        End Set
+    End Property
+
+    Private m_buInv As String = ""
+
+    Public Property BusinessUnitINV() As String
+        Get
+            Return m_buInv
+        End Get
+        Set(ByVal Value As String)
+            m_buInv = Value
         End Set
     End Property
 
@@ -102,6 +134,26 @@ Public Class ReportGenerator
         End Set
     End Property
 
+    Public Property UserId() As String
+        Get
+            Return m_userId
+        End Get
+        Set(ByVal Value As String)
+            m_userId = Value
+        End Set
+    End Property
+
+    Private m_printCopies As Integer = 0
+
+    Public Property PrintCopies() As Integer
+        Get
+            Return m_printCopies
+        End Get
+        Set(ByVal Value As Integer)
+            m_printCopies = Value
+        End Set
+    End Property
+
     Public Sub SetLogLevel(ByVal lvl As System.Diagnostics.TraceLevel)
         m_logLevel = lvl
     End Sub
@@ -134,9 +186,9 @@ Public Class ReportGenerator
             ' check/load override settings
             Dim cfgSite As siteConfig = CheckLoadOverrides(bu3:=Me.BusinessUnit.Substring(2, 3))
 
-            ' for debugging purposes ONLY
-            '   module will ignore errors and such ... just some additional logging for printer configs
-            ListAvailPrintersAndPaperSources(cfgSite)
+            '' for debugging purposes ONLY
+            ''   module will ignore errors and such ... just some additional logging for printer configs
+            'ListAvailPrintersAndPaperSources(cfgSite)
 
             ' generate reports
             For Each typ As ReportGenerator.ePickingReportType In rptTypes
@@ -145,12 +197,16 @@ Public Class ReportGenerator
                         Dim rpt As New SDI.Reports.shippingLabel
                         rpt.ExecutionPath = Me.ExecutionPath
                         LogVerbose(msg:=rtn & "::BUSINESS_UNIT = " & Me.BusinessUnit)
+                        LogVerbose(msg:=rtn & "::BUSINESS_UNIT (INV) = " & Me.BusinessUnitINV)
                         rpt.SourceBusinessUnit = Me.BusinessUnit
                         LogVerbose(msg:=rtn & "::ORDER_NO = " & Me.OrderNo)
                         rpt.OrderNo = Me.OrderNo
                         LogVerbose(msg:=rtn & "::CN string = " & Me.oraCNstring)
                         rpt.oraCNstring = Me.oraCNstring
                         LogVerbose(msg:=rtn & "::PRINTER NAME = " & sitePrnName)
+                        If (Me.PrintCopies > 0) Then
+                            rpt.PrinterSettings.Copies = Me.PrintCopies
+                        End If
                         Dim paperSrc As String = ""
                         Try
                             paperSrc = rpt.DefaultPageSettings.PaperSource.SourceName
@@ -158,8 +214,8 @@ Public Class ReportGenerator
                         End Try
                         LogVerbose(msg:=rtn & "::PAPER SOURCE INDEX = " & paperSrc)
                         rpt.PrinterSettings.PrinterName = sitePrnName
+                        ' check/override with this printer name
                         If cfgSite.KeyValue.ContainsKey(Me.RPT_SHIPPING_LABEL_PRINT_TO) Then
-                            ' override with this printer name
                             LogVerbose(msg:=rtn & "::(override) PRINTER NAME = " & CStr(cfgSite.KeyValue(Me.RPT_SHIPPING_LABEL_PRINT_TO)))
                             rpt.PrinterSettings.PrinterName = CStr(cfgSite.KeyValue(Me.RPT_SHIPPING_LABEL_PRINT_TO))
                             ' check/override paper source Id, since printer was overridden
@@ -168,6 +224,14 @@ Public Class ReportGenerator
                                 rpt.DefaultPageSettings.PaperSource = rpt.PrinterSettings.PaperSources(CInt(cfgSite.KeyValue(Me.RPT_SHIPPING_LABEL_PAPERSOURCE)))
                             End If
                         End If
+                        ' check/override # of copies - site + print job type
+                        If cfgSite.KeyValue.ContainsKey(Me.RPT_SHIPPING_LABEL_COPY) Then
+                            If IsNumeric(cfgSite.KeyValue.ContainsKey(Me.RPT_SHIPPING_LABEL_COPY)) Then
+                                LogVerbose(msg:=rtn & "::(override) COPIES = " & cfgSite.KeyValue(Me.RPT_SHIPPING_LABEL_COPY))
+                                rpt.PrinterSettings.Copies = CInt(cfgSite.KeyValue(Me.RPT_SHIPPING_LABEL_COPY))
+                            End If
+                        End If
+                        ' logger
                         rpt.Logger = Me.Logger
                         LogVerbose(msg:=rtn & "::IS VALID = " & rpt.PrinterSettings.IsValid.ToString)
                         rpt.Print()
@@ -181,11 +245,15 @@ Public Class ReportGenerator
                         Dim rpt As New SDI.Reports.shippingDoc
                         rpt.ExecutionPath = Me.ExecutionPath
                         LogVerbose(msg:=rtn & "::BUSINESS_UNIT = " & Me.BusinessUnit)
+                        LogVerbose(msg:=rtn & "::BUSINESS_UNIT (INV) = " & Me.BusinessUnitINV)
                         rpt.SourceBusinessUnit = Me.BusinessUnit
                         LogVerbose(msg:=rtn & "::ORDER_NO = " & Me.OrderNo)
                         rpt.OrderNo = Me.OrderNo
                         rpt.oraCNstring = Me.oraCNstring
                         LogVerbose(msg:=rtn & "::PRINTER NAME = " & sitePrnName)
+                        If (Me.PrintCopies > 0) Then
+                            rpt.PrinterSettings.Copies = Me.PrintCopies
+                        End If
                         Dim paperSrc As String = ""
                         Try
                             paperSrc = rpt.DefaultPageSettings.PaperSource.SourceName
@@ -193,8 +261,8 @@ Public Class ReportGenerator
                         End Try
                         LogVerbose(msg:=rtn & "::PAPER SOURCE INDEX = " & paperSrc)
                         rpt.PrinterSettings.PrinterName = sitePrnName
+                        ' check/override target printer - site/ + print job type
                         If cfgSite.KeyValue.ContainsKey(Me.RPT_SHIPPING_DOCUMENT_PRINT_TO) Then
-                            ' override with this printer name
                             LogVerbose(msg:=rtn & "::(override) PRINTER NAME = " & CStr(cfgSite.KeyValue(Me.RPT_SHIPPING_DOCUMENT_PRINT_TO)))
                             rpt.PrinterSettings.PrinterName = CStr(cfgSite.KeyValue(Me.RPT_SHIPPING_DOCUMENT_PRINT_TO))
                             ' check/override paper source Id, since printer was overridden
@@ -203,6 +271,14 @@ Public Class ReportGenerator
                                 rpt.DefaultPageSettings.PaperSource = rpt.PrinterSettings.PaperSources(CInt(cfgSite.KeyValue(Me.RPT_SHIPPING_DOCUMENT_PAPERSOURCE)))
                             End If
                         End If
+                        ' check/override # of copies - site + print job type
+                        If cfgSite.KeyValue.ContainsKey(Me.RPT_SHIPPING_DOCUMENT_COPY) Then
+                            If IsNumeric(cfgSite.KeyValue.ContainsKey(Me.RPT_SHIPPING_DOCUMENT_COPY)) Then
+                                LogVerbose(msg:=rtn & "::(override) COPIES = " & cfgSite.KeyValue(Me.RPT_SHIPPING_DOCUMENT_COPY))
+                                rpt.PrinterSettings.Copies = CInt(cfgSite.KeyValue(Me.RPT_SHIPPING_DOCUMENT_COPY))
+                            End If
+                        End If
+                        ' logger
                         rpt.Logger = Me.Logger
                         LogVerbose(msg:=rtn & "::IS VALID = " & rpt.PrinterSettings.IsValid.ToString)
                         rpt.Print()
@@ -217,13 +293,18 @@ Public Class ReportGenerator
                         '// print to printer
                         Try
                             rpt = New SDI.Reports.shippingDocRegPick
+                            AddHandler rpt.AssignedPrintedPickedOrderLines, AddressOf Me.AssignedPrintedPickedOrderLinesHandler
                             rpt.ExecutionPath = Me.ExecutionPath
                             LogVerbose(msg:=rtn & "::BUSINESS_UNIT = " & Me.BusinessUnit)
+                            LogVerbose(msg:=rtn & "::BUSINESS_UNIT (INV) = " & Me.BusinessUnitINV)
                             rpt.SourceBusinessUnit = Me.BusinessUnit
                             LogVerbose(msg:=rtn & "::ORDER_NO = " & Me.OrderNo)
                             rpt.OrderNo = Me.OrderNo
                             rpt.oraCNstring = Me.oraCNstring
                             LogVerbose(msg:=rtn & "::PRINTER NAME = " & sitePrnName)
+                            If (Me.PrintCopies > 0) Then
+                                rpt.PrinterSettings.Copies = Me.PrintCopies
+                            End If
                             Dim paperSrc As String = ""
                             Try
                                 paperSrc = rpt.DefaultPageSettings.PaperSource.SourceName
@@ -231,8 +312,8 @@ Public Class ReportGenerator
                             End Try
                             LogVerbose(msg:=rtn & "::PAPER SOURCE INDEX = " & paperSrc)
                             rpt.PrinterSettings.PrinterName = sitePrnName
+                            ' check/override target printer - site/ + print job type
                             If cfgSite.KeyValue.ContainsKey(Me.RPT_SHIPPING_DOCUMENT_REG_PICK_PRINT_TO) Then
-                                ' override with this printer name
                                 LogVerbose(msg:=rtn & "::(override) PRINTER NAME = " & CStr(cfgSite.KeyValue(Me.RPT_SHIPPING_DOCUMENT_REG_PICK_PRINT_TO)))
                                 rpt.PrinterSettings.PrinterName = CStr(cfgSite.KeyValue(Me.RPT_SHIPPING_DOCUMENT_REG_PICK_PRINT_TO))
                                 ' check/override paper source Id, since printer was overridden
@@ -241,13 +322,66 @@ Public Class ReportGenerator
                                     rpt.DefaultPageSettings.PaperSource = rpt.PrinterSettings.PaperSources(CInt(cfgSite.KeyValue(Me.RPT_SHIPPING_DOCUMENT_REG_PICK_PAPERSOURCE)))
                                 End If
                             End If
+                            ' check/override # of copies - site + print job type
+                            If cfgSite.KeyValue.ContainsKey(Me.RPT_SHIPPING_DOCUMENT_REG_PICK_COPY) Then
+                                If IsNumeric(cfgSite.KeyValue.ContainsKey(Me.RPT_SHIPPING_DOCUMENT_REG_PICK_COPY)) Then
+                                    LogVerbose(msg:=rtn & "::(override) COPIES = " & cfgSite.KeyValue(Me.RPT_SHIPPING_DOCUMENT_REG_PICK_COPY))
+                                    rpt.PrinterSettings.Copies = CInt(cfgSite.KeyValue(Me.RPT_SHIPPING_DOCUMENT_REG_PICK_COPY))
+                                End If
+                            End If
+                            '' user override target printer / papersource
+                            'Try
+                            '    If cfgSite.KeyValue.ContainsKey(Me.USER_OVERRIDE_USER_ID) Then
+                            '        Dim cfgUserId As String = CStr(cfgSite.KeyValue(Me.USER_OVERRIDE_USER_ID)).Trim
+                            '        If (cfgUserId.Length > 0) And (cfgUserId.ToUpper.IndexOf(m_userId.Trim.ToUpper) > -1) Then
+                            '            ' printer
+                            '            If cfgSite.KeyValue.ContainsKey(Me.USER_OVERRIDE_PRINT_TO) Then
+                            '                LogVerbose(msg:=rtn & "::(user level override) PRINTER NAME = " & CStr(cfgSite.KeyValue(Me.USER_OVERRIDE_PRINT_TO)))
+                            '                rpt.PrinterSettings.PrinterName = CStr(cfgSite.KeyValue(Me.USER_OVERRIDE_PRINT_TO))
+                            '            End If
+                            '            ' papersource
+                            '            If cfgSite.KeyValue.ContainsKey(Me.USER_OVERRIDE_SHIPPING_DOCUMENT_REG_PICK_PAPERSOURCE) Then
+                            '                LogVerbose(msg:=rtn & "::(user level override) PAPER SOURCE INDEX = " & cfgSite.KeyValue(Me.USER_OVERRIDE_SHIPPING_DOCUMENT_REG_PICK_PAPERSOURCE))
+                            '                rpt.DefaultPageSettings.PaperSource = rpt.PrinterSettings.PaperSources(CInt(cfgSite.KeyValue(Me.USER_OVERRIDE_SHIPPING_DOCUMENT_REG_PICK_PAPERSOURCE)))
+                            '            End If
+                            '        End If
+                            '    End If
+                            'Catch ex As Exception
+                            'End Try
+                            ' inventory B/U override target printer / papersource
+                            Try
+                                If cfgSite.KeyValue.ContainsKey(Me.BU_INVENTORY_OVERRIDE_ID) Then
+                                    Dim cfgBUs As String = CStr(cfgSite.KeyValue(Me.BU_INVENTORY_OVERRIDE_ID)).Trim
+                                    If ((cfgBUs.Length > 0) And (Me.BusinessUnitINV.Trim.Length > 0) And (cfgBUs.ToUpper.IndexOf(Me.BusinessUnitINV.Trim.ToUpper) > -1)) Then
+                                        ' printer
+                                        If cfgSite.KeyValue.ContainsKey(Me.BU_INVENTORY_OVERRIDE_PRINT_TO) Then
+                                            LogVerbose(msg:=rtn & "::(inventory b/u level override) PRINTER NAME = " & CStr(cfgSite.KeyValue(Me.BU_INVENTORY_OVERRIDE_PRINT_TO)))
+                                            rpt.PrinterSettings.PrinterName = CStr(cfgSite.KeyValue(Me.BU_INVENTORY_OVERRIDE_PRINT_TO))
+                                        End If
+                                        ' papersource
+                                        If cfgSite.KeyValue.ContainsKey(Me.BU_INVENTORY_OVERRIDE_SHIPPING_DOCUMENT_REG_PICK_PAPERSOURCE) Then
+                                            LogVerbose(msg:=rtn & "::(inventory b/u level override) PAPER SOURCE INDEX = " & cfgSite.KeyValue(Me.BU_INVENTORY_OVERRIDE_SHIPPING_DOCUMENT_REG_PICK_PAPERSOURCE))
+                                            rpt.DefaultPageSettings.PaperSource = rpt.PrinterSettings.PaperSources(CInt(cfgSite.KeyValue(Me.BU_INVENTORY_OVERRIDE_SHIPPING_DOCUMENT_REG_PICK_PAPERSOURCE)))
+                                        End If
+                                    End If
+                                End If
+                            Catch ex As Exception
+                            End Try
+                            ' partially-picked order filter
+                            If cfgSite.KeyValue.ContainsKey(Me.RPT_PARTIAL_PICK_EXCLUDE_STATE) Then
+                                ' override with what was in config, even when blank
+                                LogVerbose(msg:=rtn & "::(override) PARTIAL PICK FILTER = " & CStr(cfgSite.KeyValue(Me.RPT_PARTIAL_PICK_EXCLUDE_STATE)).Trim)
+                                rpt.PartialPickExcludeState = CStr(cfgSite.KeyValue(Me.RPT_PARTIAL_PICK_EXCLUDE_STATE)).Trim
+                            End If
+                            ' logger
                             rpt.Logger = Me.Logger
                             LogVerbose(msg:=rtn & "::IS VALID = " & rpt.PrinterSettings.IsValid.ToString)
                             Try
                                 rpt.Print()
                             Catch ex As Exception
-                                LogError(msg:=rtn & "::IS VALID = " & rpt.PrinterSettings.IsValid.ToString)
+                                LogError(msg:=rtn & "::" & ex.ToString())
                             End Try
+                            RemoveHandler rpt.AssignedPrintedPickedOrderLines, AddressOf Me.AssignedPrintedPickedOrderLinesHandler
                         Catch ex As Exception
                         End Try
                         Try
@@ -256,58 +390,64 @@ Public Class ReportGenerator
                         Finally
                             rpt = Nothing
                         End Try
-                        '// print to file and rename
-                        Try
-                            rpt = New SDI.Reports.shippingDocRegPick
-                            rpt.ExecutionPath = Me.ExecutionPath
-                            rpt.SourceBusinessUnit = Me.BusinessUnit
-                            rpt.OrderNo = Me.OrderNo
-                            rpt.oraCNstring = Me.oraCNstring
-                            Try
-                                rpt.PrinterSettings.PrinterName = "shipDoc"
-                                rpt.print()
-                            Catch ex As Exception
-                                ' ignore
-                            End Try
-                            Try
-                                rpt.Dispose()
-                            Catch ex As Exception
-                            Finally
-                                rpt = Nothing
-                            End Try
-                            Dim ctr As Integer = 0
-                            Dim s As String = "MMddHHmmssffff"
-                            While True
-                                Threading.Thread.Sleep(3000)
-                                Dim fi As New System.IO.FileInfo(fileName:="c:\Temp\nyc.printouts\shippingDocs\shippingDoc.output")
-                                If Not (fi Is Nothing) Then
-                                    If fi.Exists Then
-                                        fi.MoveTo(destFileName:="c:\Temp\nyc.printouts\shippingDocs\sd" & Now.ToString(Format:=s) & ".output")
-                                    Else
-                                        Exit While
-                                    End If
-                                End If
-                                fi = Nothing
-                                ctr += 1
-                                If ctr > 5 Then
-                                    Exit While
-                                End If
-                            End While
-                        Catch ex As Exception
-                        End Try
+                        ' DISABLE THIS!
+                        '   this was the work-around when NYC's network is NOT working and for Wenjia to send these reports as fax - erwin
+                        ''// print to file and rename
+                        'Try
+                        '    rpt = New SDI.Reports.shippingDocRegPick
+                        '    rpt.ExecutionPath = Me.ExecutionPath
+                        '    rpt.SourceBusinessUnit = Me.BusinessUnit
+                        '    rpt.OrderNo = Me.OrderNo
+                        '    rpt.oraCNstring = Me.oraCNstring
+                        '    Try
+                        '        rpt.PrinterSettings.PrinterName = "shipDoc"
+                        '        rpt.print()
+                        '    Catch ex As Exception
+                        '        ' ignore
+                        '    End Try
+                        '    Try
+                        '        rpt.Dispose()
+                        '    Catch ex As Exception
+                        '    Finally
+                        '        rpt = Nothing
+                        '    End Try
+                        '    Dim ctr As Integer = 0
+                        '    Dim s As String = "MMddHHmmssffff"
+                        '    While True
+                        '        Threading.Thread.Sleep(3000)
+                        '        Dim fi As New System.IO.FileInfo(fileName:="c:\Temp\nyc.printouts\shippingDocs\shippingDoc.output")
+                        '        If Not (fi Is Nothing) Then
+                        '            If fi.Exists Then
+                        '                fi.MoveTo(destFileName:="c:\Temp\nyc.printouts\shippingDocs\sd" & Now.ToString(Format:=s) & ".output")
+                        '            Else
+                        '                Exit While
+                        '            End If
+                        '        End If
+                        '        fi = Nothing
+                        '        ctr += 1
+                        '        If ctr > 5 Then
+                        '            Exit While
+                        '        End If
+                        '    End While
+                        'Catch ex As Exception
+                        'End Try
                     Case ePickingReportType.packingSlipRegPick
-                        '// print to printer
                         Dim rpt As SDI.Reports.shippingLabelRegPick = Nothing
+                        '// print to printer
                         Try
                             rpt = New SDI.Reports.shippingLabelRegPick
                             rpt.ExecutionPath = Me.ExecutionPath
                             LogVerbose(msg:=rtn & "::BUSINESS_UNIT = " & Me.BusinessUnit)
+                            LogVerbose(msg:=rtn & "::BUSINESS_UNIT (INV) = " & Me.BusinessUnitINV)
                             rpt.SourceBusinessUnit = Me.BusinessUnit
                             LogVerbose(msg:=rtn & "::ORDER_NO = " & Me.OrderNo)
                             rpt.OrderNo = Me.OrderNo
                             LogVerbose(msg:=rtn & "::CN string = " & Me.oraCNstring)
                             rpt.oraCNstring = Me.oraCNstring
                             LogVerbose(msg:=rtn & "::PRINTER NAME = " & sitePrnName)
+                            If (Me.PrintCopies > 0) Then
+                                rpt.PrinterSettings.Copies = Me.PrintCopies
+                            End If
                             Dim paperSrc As String = ""
                             Try
                                 paperSrc = rpt.DefaultPageSettings.PaperSource.SourceName
@@ -315,8 +455,8 @@ Public Class ReportGenerator
                             End Try
                             LogVerbose(msg:=rtn & "::PAPER SOURCE INDEX = " & paperSrc)
                             rpt.PrinterSettings.PrinterName = sitePrnName
+                            ' check/override with this printer name
                             If cfgSite.KeyValue.ContainsKey(Me.RPT_SHIPPING_LABEL_REG_PICK_PRINT_TO) Then
-                                ' override with this printer name
                                 LogVerbose(msg:=rtn & "::(override) PRINTER NAME = " & CStr(cfgSite.KeyValue(Me.RPT_SHIPPING_LABEL_REG_PICK_PRINT_TO)))
                                 rpt.PrinterSettings.PrinterName = CStr(cfgSite.KeyValue(Me.RPT_SHIPPING_LABEL_REG_PICK_PRINT_TO))
                                 ' check/override paper source Id, since printer was overridden
@@ -325,12 +465,64 @@ Public Class ReportGenerator
                                     rpt.DefaultPageSettings.PaperSource = rpt.PrinterSettings.PaperSources(CInt(cfgSite.KeyValue(Me.RPT_SHIPPING_LABEL_REG_PICK_PAPERSOURCE)))
                                 End If
                             End If
+                            ' check/override # of copies - site + print job type
+                            If cfgSite.KeyValue.ContainsKey(Me.RPT_SHIPPING_LABEL_REG_PICK_COPY) Then
+                                If IsNumeric(cfgSite.KeyValue.ContainsKey(Me.RPT_SHIPPING_LABEL_REG_PICK_COPY)) Then
+                                    LogVerbose(msg:=rtn & "::(override) COPIES = " & cfgSite.KeyValue(Me.RPT_SHIPPING_LABEL_REG_PICK_COPY))
+                                    rpt.PrinterSettings.Copies = CInt(cfgSite.KeyValue(Me.RPT_SHIPPING_LABEL_REG_PICK_COPY))
+                                End If
+                            End If
+                            '' user override target printer
+                            'Try
+                            '    If cfgSite.KeyValue.ContainsKey(Me.USER_OVERRIDE_USER_ID) Then
+                            '        Dim cfgUserId As String = CStr(cfgSite.KeyValue(Me.USER_OVERRIDE_USER_ID)).Trim
+                            '        If (cfgUserId.Length > 0) And (cfgUserId.ToUpper.IndexOf(m_userId.Trim.ToUpper) > -1) Then
+                            '            ' printer
+                            '            If cfgSite.KeyValue.ContainsKey(Me.USER_OVERRIDE_PRINT_TO) Then
+                            '                LogVerbose(msg:=rtn & "::(user level override) PRINTER NAME = " & CStr(cfgSite.KeyValue(Me.USER_OVERRIDE_PRINT_TO)))
+                            '                rpt.PrinterSettings.PrinterName = CStr(cfgSite.KeyValue(Me.USER_OVERRIDE_PRINT_TO))
+                            '            End If
+                            '            ' papersource
+                            '            If cfgSite.KeyValue.ContainsKey(Me.USER_OVERRIDE_SHIPPING_LABEL_REG_PICK_PAPERSOURCE) Then
+                            '                LogVerbose(msg:=rtn & "::(user level override) PAPER SOURCE INDEX = " & cfgSite.KeyValue(Me.USER_OVERRIDE_SHIPPING_LABEL_REG_PICK_PAPERSOURCE))
+                            '                rpt.DefaultPageSettings.PaperSource = rpt.PrinterSettings.PaperSources(CInt(cfgSite.KeyValue(Me.USER_OVERRIDE_SHIPPING_LABEL_REG_PICK_PAPERSOURCE)))
+                            '            End If
+                            '        End If
+                            '    End If
+                            'Catch ex As Exception
+                            'End Try
+                            ' inventory B/U override target printer / papersource
+                            Try
+                                If cfgSite.KeyValue.ContainsKey(Me.BU_INVENTORY_OVERRIDE_ID) Then
+                                    Dim cfgBUs As String = CStr(cfgSite.KeyValue(Me.BU_INVENTORY_OVERRIDE_ID)).Trim
+                                    If ((cfgBUs.Length > 0) And (Me.BusinessUnitINV.Trim.Length > 0) And (cfgBUs.ToUpper.IndexOf(Me.BusinessUnitINV.Trim.ToUpper) > -1)) Then
+                                        ' printer
+                                        If cfgSite.KeyValue.ContainsKey(Me.BU_INVENTORY_OVERRIDE_PRINT_TO) Then
+                                            LogVerbose(msg:=rtn & "::(inventory b/u level override) PRINTER NAME = " & CStr(cfgSite.KeyValue(Me.BU_INVENTORY_OVERRIDE_PRINT_TO)))
+                                            rpt.PrinterSettings.PrinterName = CStr(cfgSite.KeyValue(Me.BU_INVENTORY_OVERRIDE_PRINT_TO))
+                                        End If
+                                        ' papersource
+                                        If cfgSite.KeyValue.ContainsKey(Me.BU_INVENTORY_OVERRIDE_SHIPPING_LABEL_REG_PICK_PAPERSOURCE) Then
+                                            LogVerbose(msg:=rtn & "::(inventory b/u level override) PAPER SOURCE INDEX = " & cfgSite.KeyValue(Me.BU_INVENTORY_OVERRIDE_SHIPPING_LABEL_REG_PICK_PAPERSOURCE))
+                                            rpt.DefaultPageSettings.PaperSource = rpt.PrinterSettings.PaperSources(CInt(cfgSite.KeyValue(Me.BU_INVENTORY_OVERRIDE_SHIPPING_LABEL_REG_PICK_PAPERSOURCE)))
+                                        End If
+                                    End If
+                                End If
+                            Catch ex As Exception
+                            End Try
+                            ' partially-picked order filter
+                            If cfgSite.KeyValue.ContainsKey(Me.RPT_PARTIAL_PICK_EXCLUDE_STATE) Then
+                                ' override with what was in config, even when blank
+                                LogVerbose(msg:=rtn & "::(override) PARTIAL PICK FILTER = " & CStr(cfgSite.KeyValue(Me.RPT_PARTIAL_PICK_EXCLUDE_STATE)).Trim)
+                                rpt.PartialPickExcludeState = CStr(cfgSite.KeyValue(Me.RPT_PARTIAL_PICK_EXCLUDE_STATE)).Trim
+                            End If
+                            ' logger
                             rpt.Logger = Me.Logger
                             LogVerbose(msg:=rtn & "::IS VALID = " & rpt.PrinterSettings.IsValid.ToString)
                             Try
                                 rpt.Print()
                             Catch ex As Exception
-                                LogError(msg:=rtn & "::IS VALID = " & rpt.PrinterSettings.IsValid.ToString)
+                                LogError(msg:=rtn & "::" & ex.ToString())
                             End Try
                         Catch ex As Exception
                         End Try
@@ -340,45 +532,47 @@ Public Class ReportGenerator
                         Finally
                             rpt = Nothing
                         End Try
-                        '// print to file and rename
-                        Try
-                            rpt = New SDI.Reports.shippingLabelRegPick
-                            rpt.ExecutionPath = Me.ExecutionPath
-                            rpt.SourceBusinessUnit = Me.BusinessUnit
-                            rpt.OrderNo = Me.OrderNo
-                            rpt.oraCNstring = Me.oraCNstring
-                            Try
-                                rpt.PrinterSettings.PrinterName = "packSlip"
-                                rpt.Print()
-                            Catch ex As Exception
-                                ' ignore
-                            End Try
-                            Try
-                                rpt.Dispose()
-                            Catch ex As Exception
-                            Finally
-                                rpt = Nothing
-                            End Try
-                            Dim s As String = "MMddHHmmssffff"
-                            Dim ctr As Integer = 0
-                            While True
-                                Threading.Thread.Sleep(3000)
-                                Dim fi As New System.IO.FileInfo(fileName:="c:\Temp\nyc.printouts\packingSlips\packingSlip.output")
-                                If Not (fi Is Nothing) Then
-                                    If fi.Exists Then
-                                        fi.MoveTo(destFileName:="c:\Temp\nyc.printouts\packingSlips\ps" & Now.ToString(Format:=s) & ".output")
-                                    Else
-                                        Exit While
-                                    End If
-                                End If
-                                fi = Nothing
-                                ctr += 1
-                                If ctr > 5 Then
-                                    Exit While
-                                End If
-                            End While
-                        Catch ex As Exception
-                        End Try
+                        ' DISABLE THIS!
+                        '   this was the work-around when NYC's network is NOT working and for Wenjia to send these reports as fax - erwin
+                        ''// print to file and rename
+                        'Try
+                        '    rpt = New SDI.Reports.shippingLabelRegPick
+                        '    rpt.ExecutionPath = Me.ExecutionPath
+                        '    rpt.SourceBusinessUnit = Me.BusinessUnit
+                        '    rpt.OrderNo = Me.OrderNo
+                        '    rpt.oraCNstring = Me.oraCNstring
+                        '    Try
+                        '        rpt.PrinterSettings.PrinterName = "packSlip"
+                        '        rpt.Print()
+                        '    Catch ex As Exception
+                        '        ' ignore
+                        '    End Try
+                        '    Try
+                        '        rpt.Dispose()
+                        '    Catch ex As Exception
+                        '    Finally
+                        '        rpt = Nothing
+                        '    End Try
+                        '    Dim s As String = "MMddHHmmssffff"
+                        '    Dim ctr As Integer = 0
+                        '    While True
+                        '        Threading.Thread.Sleep(3000)
+                        '        Dim fi As New System.IO.FileInfo(fileName:="c:\Temp\nyc.printouts\packingSlips\packingSlip.output")
+                        '        If Not (fi Is Nothing) Then
+                        '            If fi.Exists Then
+                        '                fi.MoveTo(destFileName:="c:\Temp\nyc.printouts\packingSlips\ps" & Now.ToString(Format:=s) & ".output")
+                        '            Else
+                        '                Exit While
+                        '            End If
+                        '        End If
+                        '        fi = Nothing
+                        '        ctr += 1
+                        '        If ctr > 5 Then
+                        '            Exit While
+                        '        End If
+                        '    End While
+                        'Catch ex As Exception
+                        'End Try
                 End Select
             Next
         End If
@@ -637,5 +831,31 @@ Public Class ReportGenerator
     Private Sub LogError(ByVal msg As String)
         Me.Logger.WriteErrorLog(msg)
     End Sub
+
+    Private Sub AssignedPrintedPickedOrderLinesHandler(ByVal sender As Object, ByVal e As EventArgs)
+        ' copy underlying report's order line lists
+        Me.PrintedPickedOrderLines.Items.Clear()
+        If (TypeOf sender Is SDI.Reports.ISDiReport) Then
+            Dim arr As SDI.Reports.PrintedPickedOrderLines = CType(sender, SDI.Reports.ISDiReport).PrintedPickedOrderLines
+            If Not (arr Is Nothing) Then
+                For Each item As SDI.Reports.PrintedPickedOrderLine In arr.Items
+                    Me.PrintedPickedOrderLines.Items.Add(item)
+                Next
+            End If
+        End If
+        ' then, we'll just have to echo this event out ...
+        RaiseEvent AssignedPrintedPickedOrderLines(Me, Nothing)
+    End Sub
+
+    Private m_lines As SDI.Reports.PrintedPickedOrderLines = Nothing
+
+    Public ReadOnly Property PrintedPickedOrderLines() As SDI.Reports.PrintedPickedOrderLines Implements SDI.Reports.ISDiReport.PrintedPickedOrderLines
+        Get
+            If (m_lines Is Nothing) Then
+                m_lines = New SDI.Reports.PrintedPickedOrderLines
+            End If
+            Return m_lines
+        End Get
+    End Property
 
 End Class

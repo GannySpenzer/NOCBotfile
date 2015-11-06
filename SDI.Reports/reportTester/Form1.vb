@@ -83,8 +83,8 @@ Public Class Form1
 
         Dim oPicking As New SDI.PickingReports.ReportGenerator
 
-        oPicking.BusinessUnit = "I0469"
-        oPicking.OrderNo = "N230003224"
+        oPicking.BusinessUnit = "I0260"  '  "I0469"
+        oPicking.OrderNo = "NY00301727"  '  N230003224"
         oPicking.oraCNstring = oraCN_default_provider & _
                                oraCN_default_creden & _
                                oraCN_default_DB

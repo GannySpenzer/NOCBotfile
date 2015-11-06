@@ -994,6 +994,21 @@ Public Class shippingLabel
             .WriteLine()
             .Write("Shipping Container: ", shippingLabelRptLineJustification.col6)
             .Write(CStr(ds.Tables(0).Rows(mRow).Item("SHIP_CNTR_ID")))
+
+            Dim s As String = "INVENTORY TRANSFER"
+            If (s.Length > 0) Then
+                If (s.Length > 55) Then
+                    s = s.Substring(0, 51) & " ..."
+                End If
+                .WriteLine()
+                .CurrentY = 500
+                .CurrentF = arial10
+                .CurrentH = arial10.Height
+                .Write(s, shippingLabelRptLineJustification.col6)
+                .CurrentF = arial12B
+                .CurrentH = arial12B.Height
+            End If
+
             strPrevCntrID = CStr(ds.Tables(0).Rows(mRow).Item("SHIP_CNTR_ID"))
             .CurrentY = intEndY
         End With
@@ -1360,7 +1375,7 @@ Public Class shippingLabel
 
         Dim NewBarcode As New IDAutomation.LinearServerControl.LinearBarcode
         NewBarcode.SymbologyID = IDAutomation.LinearServerControl.LinearBarcode.Symbologies.Code128
-        NewBarcode.BarHeightCM = "2.000"
+        NewBarcode.BarHeightCM = "1.350"
         NewBarcode.CheckCharacter = True
         NewBarcode.CheckCharacterInText = False
         'NewBarcode.Code128Set = IDAutomation.Windows.Forms.LinearBarCode.Barcode.Code128CharacterSets.Auto

@@ -154,9 +154,11 @@
     <Compile Include="demandQty.vb">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ISDiReport.vb" />
     <Compile Include="myCommon.vb">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="PrintedPickedOrderLines.vb" />
     <Compile Include="shippingDoc.vb">
       <SubType>Component</SubType>
     </Compile>

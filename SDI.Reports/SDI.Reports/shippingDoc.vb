@@ -1279,7 +1279,7 @@ Public Class shippingDoc
 
         Dim NewBarcode As New IDAutomation.LinearServerControl.LinearBarcode
         NewBarcode.SymbologyID = IDAutomation.LinearServerControl.LinearBarcode.Symbologies.Code128
-        NewBarcode.BarHeightCM = "2.000"
+        NewBarcode.BarHeightCM = "1.350"
         NewBarcode.CheckCharacter = True
         NewBarcode.CheckCharacterInText = False
         'NewBarcode.Code128Set = IDAutomation.Windows.Forms.LinearBarCode.Barcode.Code128CharacterSets.Auto
