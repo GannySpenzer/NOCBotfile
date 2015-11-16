@@ -52,7 +52,7 @@ Public Class ReportGenerator
 
     Public Event AssignedPrintedPickedOrderLines(ByVal sender As Object, ByVal e As EventArgs) Implements SDI.reports.ISDiReport.AssignedPrintedPickedOrderLines
 
-    Private Const oraCN_default_provider As String = "Provider=MSDAORA.1;"
+    Private Const oraCN_default_provider As String = "Provider=OraOLEDB.Oracle.1;"
     Private Const oraCN_default_creden As String = "User ID=einternet;Password=einternet;"
     Private Const oraCN_default_DB As String = "Data Source=RPTG"
 
@@ -215,20 +215,20 @@ Public Class ReportGenerator
                         LogVerbose(msg:=rtn & "::PAPER SOURCE INDEX = " & paperSrc)
                         rpt.PrinterSettings.PrinterName = sitePrnName
                         ' check/override with this printer name
-                        If cfgSite.KeyValue.ContainsKey(Me.RPT_SHIPPING_LABEL_PRINT_TO) Then
-                            LogVerbose(msg:=rtn & "::(override) PRINTER NAME = " & CStr(cfgSite.KeyValue(Me.RPT_SHIPPING_LABEL_PRINT_TO)))
-                            rpt.PrinterSettings.PrinterName = CStr(cfgSite.KeyValue(Me.RPT_SHIPPING_LABEL_PRINT_TO))
+                        If cfgSite.KeyValue.ContainsKey(RPT_SHIPPING_LABEL_PRINT_TO) Then
+                            LogVerbose(msg:=rtn & "::(override) PRINTER NAME = " & CStr(cfgSite.KeyValue(RPT_SHIPPING_LABEL_PRINT_TO)))
+                            rpt.PrinterSettings.PrinterName = CStr(cfgSite.KeyValue(RPT_SHIPPING_LABEL_PRINT_TO))
                             ' check/override paper source Id, since printer was overridden
-                            If cfgSite.KeyValue.ContainsKey(Me.RPT_SHIPPING_LABEL_PAPERSOURCE) Then
-                                LogVerbose(msg:=rtn & "::(override) PAPER SOURCE INDEX = " & cfgSite.KeyValue(Me.RPT_SHIPPING_LABEL_PAPERSOURCE))
-                                rpt.DefaultPageSettings.PaperSource = rpt.PrinterSettings.PaperSources(CInt(cfgSite.KeyValue(Me.RPT_SHIPPING_LABEL_PAPERSOURCE)))
+                            If cfgSite.KeyValue.ContainsKey(RPT_SHIPPING_LABEL_PAPERSOURCE) Then
+                                LogVerbose(msg:=rtn & "::(override) PAPER SOURCE INDEX = " & cfgSite.KeyValue(RPT_SHIPPING_LABEL_PAPERSOURCE))
+                                rpt.DefaultPageSettings.PaperSource = rpt.PrinterSettings.PaperSources(CInt(cfgSite.KeyValue(RPT_SHIPPING_LABEL_PAPERSOURCE)))
                             End If
                         End If
                         ' check/override # of copies - site + print job type
-                        If cfgSite.KeyValue.ContainsKey(Me.RPT_SHIPPING_LABEL_COPY) Then
-                            If IsNumeric(cfgSite.KeyValue.ContainsKey(Me.RPT_SHIPPING_LABEL_COPY)) Then
-                                LogVerbose(msg:=rtn & "::(override) COPIES = " & cfgSite.KeyValue(Me.RPT_SHIPPING_LABEL_COPY))
-                                rpt.PrinterSettings.Copies = CInt(cfgSite.KeyValue(Me.RPT_SHIPPING_LABEL_COPY))
+                        If cfgSite.KeyValue.ContainsKey(RPT_SHIPPING_LABEL_COPY) Then
+                            If IsNumeric(cfgSite.KeyValue.ContainsKey(RPT_SHIPPING_LABEL_COPY)) Then
+                                LogVerbose(msg:=rtn & "::(override) COPIES = " & cfgSite.KeyValue(RPT_SHIPPING_LABEL_COPY))
+                                rpt.PrinterSettings.Copies = CInt(cfgSite.KeyValue(RPT_SHIPPING_LABEL_COPY))
                             End If
                         End If
                         ' logger
@@ -262,20 +262,20 @@ Public Class ReportGenerator
                         LogVerbose(msg:=rtn & "::PAPER SOURCE INDEX = " & paperSrc)
                         rpt.PrinterSettings.PrinterName = sitePrnName
                         ' check/override target printer - site/ + print job type
-                        If cfgSite.KeyValue.ContainsKey(Me.RPT_SHIPPING_DOCUMENT_PRINT_TO) Then
-                            LogVerbose(msg:=rtn & "::(override) PRINTER NAME = " & CStr(cfgSite.KeyValue(Me.RPT_SHIPPING_DOCUMENT_PRINT_TO)))
-                            rpt.PrinterSettings.PrinterName = CStr(cfgSite.KeyValue(Me.RPT_SHIPPING_DOCUMENT_PRINT_TO))
+                        If cfgSite.KeyValue.ContainsKey(RPT_SHIPPING_DOCUMENT_PRINT_TO) Then
+                            LogVerbose(msg:=rtn & "::(override) PRINTER NAME = " & CStr(cfgSite.KeyValue(RPT_SHIPPING_DOCUMENT_PRINT_TO)))
+                            rpt.PrinterSettings.PrinterName = CStr(cfgSite.KeyValue(RPT_SHIPPING_DOCUMENT_PRINT_TO))
                             ' check/override paper source Id, since printer was overridden
-                            If cfgSite.KeyValue.ContainsKey(Me.RPT_SHIPPING_DOCUMENT_PAPERSOURCE) Then
-                                LogVerbose(msg:=rtn & "::(override) PAPER SOURCE INDEX = " & cfgSite.KeyValue(Me.RPT_SHIPPING_DOCUMENT_PAPERSOURCE))
-                                rpt.DefaultPageSettings.PaperSource = rpt.PrinterSettings.PaperSources(CInt(cfgSite.KeyValue(Me.RPT_SHIPPING_DOCUMENT_PAPERSOURCE)))
+                            If cfgSite.KeyValue.ContainsKey(RPT_SHIPPING_DOCUMENT_PAPERSOURCE) Then
+                                LogVerbose(msg:=rtn & "::(override) PAPER SOURCE INDEX = " & cfgSite.KeyValue(RPT_SHIPPING_DOCUMENT_PAPERSOURCE))
+                                rpt.DefaultPageSettings.PaperSource = rpt.PrinterSettings.PaperSources(CInt(cfgSite.KeyValue(RPT_SHIPPING_DOCUMENT_PAPERSOURCE)))
                             End If
                         End If
                         ' check/override # of copies - site + print job type
-                        If cfgSite.KeyValue.ContainsKey(Me.RPT_SHIPPING_DOCUMENT_COPY) Then
-                            If IsNumeric(cfgSite.KeyValue.ContainsKey(Me.RPT_SHIPPING_DOCUMENT_COPY)) Then
-                                LogVerbose(msg:=rtn & "::(override) COPIES = " & cfgSite.KeyValue(Me.RPT_SHIPPING_DOCUMENT_COPY))
-                                rpt.PrinterSettings.Copies = CInt(cfgSite.KeyValue(Me.RPT_SHIPPING_DOCUMENT_COPY))
+                        If cfgSite.KeyValue.ContainsKey(RPT_SHIPPING_DOCUMENT_COPY) Then
+                            If IsNumeric(cfgSite.KeyValue.ContainsKey(RPT_SHIPPING_DOCUMENT_COPY)) Then
+                                LogVerbose(msg:=rtn & "::(override) COPIES = " & cfgSite.KeyValue(RPT_SHIPPING_DOCUMENT_COPY))
+                                rpt.PrinterSettings.Copies = CInt(cfgSite.KeyValue(RPT_SHIPPING_DOCUMENT_COPY))
                             End If
                         End If
                         ' logger
@@ -313,20 +313,20 @@ Public Class ReportGenerator
                             LogVerbose(msg:=rtn & "::PAPER SOURCE INDEX = " & paperSrc)
                             rpt.PrinterSettings.PrinterName = sitePrnName
                             ' check/override target printer - site/ + print job type
-                            If cfgSite.KeyValue.ContainsKey(Me.RPT_SHIPPING_DOCUMENT_REG_PICK_PRINT_TO) Then
-                                LogVerbose(msg:=rtn & "::(override) PRINTER NAME = " & CStr(cfgSite.KeyValue(Me.RPT_SHIPPING_DOCUMENT_REG_PICK_PRINT_TO)))
-                                rpt.PrinterSettings.PrinterName = CStr(cfgSite.KeyValue(Me.RPT_SHIPPING_DOCUMENT_REG_PICK_PRINT_TO))
+                            If cfgSite.KeyValue.ContainsKey(RPT_SHIPPING_DOCUMENT_REG_PICK_PRINT_TO) Then
+                                LogVerbose(msg:=rtn & "::(override) PRINTER NAME = " & CStr(cfgSite.KeyValue(RPT_SHIPPING_DOCUMENT_REG_PICK_PRINT_TO)))
+                                rpt.PrinterSettings.PrinterName = CStr(cfgSite.KeyValue(RPT_SHIPPING_DOCUMENT_REG_PICK_PRINT_TO))
                                 ' check/override paper source Id, since printer was overridden
-                                If cfgSite.KeyValue.ContainsKey(Me.RPT_SHIPPING_DOCUMENT_REG_PICK_PAPERSOURCE) Then
-                                    LogVerbose(msg:=rtn & "::(override) PAPER SOURCE INDEX = " & cfgSite.KeyValue(Me.RPT_SHIPPING_DOCUMENT_REG_PICK_PAPERSOURCE))
-                                    rpt.DefaultPageSettings.PaperSource = rpt.PrinterSettings.PaperSources(CInt(cfgSite.KeyValue(Me.RPT_SHIPPING_DOCUMENT_REG_PICK_PAPERSOURCE)))
+                                If cfgSite.KeyValue.ContainsKey(RPT_SHIPPING_DOCUMENT_REG_PICK_PAPERSOURCE) Then
+                                    LogVerbose(msg:=rtn & "::(override) PAPER SOURCE INDEX = " & cfgSite.KeyValue(RPT_SHIPPING_DOCUMENT_REG_PICK_PAPERSOURCE))
+                                    rpt.DefaultPageSettings.PaperSource = rpt.PrinterSettings.PaperSources(CInt(cfgSite.KeyValue(RPT_SHIPPING_DOCUMENT_REG_PICK_PAPERSOURCE)))
                                 End If
                             End If
                             ' check/override # of copies - site + print job type
-                            If cfgSite.KeyValue.ContainsKey(Me.RPT_SHIPPING_DOCUMENT_REG_PICK_COPY) Then
-                                If IsNumeric(cfgSite.KeyValue.ContainsKey(Me.RPT_SHIPPING_DOCUMENT_REG_PICK_COPY)) Then
-                                    LogVerbose(msg:=rtn & "::(override) COPIES = " & cfgSite.KeyValue(Me.RPT_SHIPPING_DOCUMENT_REG_PICK_COPY))
-                                    rpt.PrinterSettings.Copies = CInt(cfgSite.KeyValue(Me.RPT_SHIPPING_DOCUMENT_REG_PICK_COPY))
+                            If cfgSite.KeyValue.ContainsKey(RPT_SHIPPING_DOCUMENT_REG_PICK_COPY) Then
+                                If IsNumeric(cfgSite.KeyValue.ContainsKey(RPT_SHIPPING_DOCUMENT_REG_PICK_COPY)) Then
+                                    LogVerbose(msg:=rtn & "::(override) COPIES = " & cfgSite.KeyValue(RPT_SHIPPING_DOCUMENT_REG_PICK_COPY))
+                                    rpt.PrinterSettings.Copies = CInt(cfgSite.KeyValue(RPT_SHIPPING_DOCUMENT_REG_PICK_COPY))
                                 End If
                             End If
                             '' user override target printer / papersource
@@ -350,28 +350,28 @@ Public Class ReportGenerator
                             'End Try
                             ' inventory B/U override target printer / papersource
                             Try
-                                If cfgSite.KeyValue.ContainsKey(Me.BU_INVENTORY_OVERRIDE_ID) Then
-                                    Dim cfgBUs As String = CStr(cfgSite.KeyValue(Me.BU_INVENTORY_OVERRIDE_ID)).Trim
-                                    If ((cfgBUs.Length > 0) And (Me.BusinessUnitINV.Trim.Length > 0) And (cfgBUs.ToUpper.IndexOf(Me.BusinessUnitINV.Trim.ToUpper) > -1)) Then
+                                If cfgSite.KeyValue.ContainsKey(BU_INVENTORY_OVERRIDE_ID) Then
+                                    Dim cfgBUs As String = CStr(cfgSite.KeyValue(BU_INVENTORY_OVERRIDE_ID)).Trim
+                                    If ((cfgBUs.Length > 0) And (BusinessUnitINV.Trim.Length > 0) And (cfgBUs.ToUpper.IndexOf(BusinessUnitINV.Trim.ToUpper) > -1)) Then
                                         ' printer
-                                        If cfgSite.KeyValue.ContainsKey(Me.BU_INVENTORY_OVERRIDE_PRINT_TO) Then
-                                            LogVerbose(msg:=rtn & "::(inventory b/u level override) PRINTER NAME = " & CStr(cfgSite.KeyValue(Me.BU_INVENTORY_OVERRIDE_PRINT_TO)))
-                                            rpt.PrinterSettings.PrinterName = CStr(cfgSite.KeyValue(Me.BU_INVENTORY_OVERRIDE_PRINT_TO))
+                                        If cfgSite.KeyValue.ContainsKey(BU_INVENTORY_OVERRIDE_PRINT_TO) Then
+                                            LogVerbose(msg:=rtn & "::(inventory b/u level override) PRINTER NAME = " & CStr(cfgSite.KeyValue(BU_INVENTORY_OVERRIDE_PRINT_TO)))
+                                            rpt.PrinterSettings.PrinterName = CStr(cfgSite.KeyValue(BU_INVENTORY_OVERRIDE_PRINT_TO))
                                         End If
                                         ' papersource
-                                        If cfgSite.KeyValue.ContainsKey(Me.BU_INVENTORY_OVERRIDE_SHIPPING_DOCUMENT_REG_PICK_PAPERSOURCE) Then
-                                            LogVerbose(msg:=rtn & "::(inventory b/u level override) PAPER SOURCE INDEX = " & cfgSite.KeyValue(Me.BU_INVENTORY_OVERRIDE_SHIPPING_DOCUMENT_REG_PICK_PAPERSOURCE))
-                                            rpt.DefaultPageSettings.PaperSource = rpt.PrinterSettings.PaperSources(CInt(cfgSite.KeyValue(Me.BU_INVENTORY_OVERRIDE_SHIPPING_DOCUMENT_REG_PICK_PAPERSOURCE)))
+                                        If cfgSite.KeyValue.ContainsKey(BU_INVENTORY_OVERRIDE_SHIPPING_DOCUMENT_REG_PICK_PAPERSOURCE) Then
+                                            LogVerbose(msg:=rtn & "::(inventory b/u level override) PAPER SOURCE INDEX = " & cfgSite.KeyValue(BU_INVENTORY_OVERRIDE_SHIPPING_DOCUMENT_REG_PICK_PAPERSOURCE))
+                                            rpt.DefaultPageSettings.PaperSource = rpt.PrinterSettings.PaperSources(CInt(cfgSite.KeyValue(BU_INVENTORY_OVERRIDE_SHIPPING_DOCUMENT_REG_PICK_PAPERSOURCE)))
                                         End If
                                     End If
                                 End If
                             Catch ex As Exception
                             End Try
                             ' partially-picked order filter
-                            If cfgSite.KeyValue.ContainsKey(Me.RPT_PARTIAL_PICK_EXCLUDE_STATE) Then
+                            If cfgSite.KeyValue.ContainsKey(RPT_PARTIAL_PICK_EXCLUDE_STATE) Then
                                 ' override with what was in config, even when blank
-                                LogVerbose(msg:=rtn & "::(override) PARTIAL PICK FILTER = " & CStr(cfgSite.KeyValue(Me.RPT_PARTIAL_PICK_EXCLUDE_STATE)).Trim)
-                                rpt.PartialPickExcludeState = CStr(cfgSite.KeyValue(Me.RPT_PARTIAL_PICK_EXCLUDE_STATE)).Trim
+                                LogVerbose(msg:=rtn & "::(override) PARTIAL PICK FILTER = " & CStr(cfgSite.KeyValue(RPT_PARTIAL_PICK_EXCLUDE_STATE)).Trim)
+                                rpt.PartialPickExcludeState = CStr(cfgSite.KeyValue(RPT_PARTIAL_PICK_EXCLUDE_STATE)).Trim
                             End If
                             ' logger
                             rpt.Logger = Me.Logger
@@ -456,20 +456,20 @@ Public Class ReportGenerator
                             LogVerbose(msg:=rtn & "::PAPER SOURCE INDEX = " & paperSrc)
                             rpt.PrinterSettings.PrinterName = sitePrnName
                             ' check/override with this printer name
-                            If cfgSite.KeyValue.ContainsKey(Me.RPT_SHIPPING_LABEL_REG_PICK_PRINT_TO) Then
-                                LogVerbose(msg:=rtn & "::(override) PRINTER NAME = " & CStr(cfgSite.KeyValue(Me.RPT_SHIPPING_LABEL_REG_PICK_PRINT_TO)))
-                                rpt.PrinterSettings.PrinterName = CStr(cfgSite.KeyValue(Me.RPT_SHIPPING_LABEL_REG_PICK_PRINT_TO))
+                            If cfgSite.KeyValue.ContainsKey(RPT_SHIPPING_LABEL_REG_PICK_PRINT_TO) Then
+                                LogVerbose(msg:=rtn & "::(override) PRINTER NAME = " & CStr(cfgSite.KeyValue(RPT_SHIPPING_LABEL_REG_PICK_PRINT_TO)))
+                                rpt.PrinterSettings.PrinterName = CStr(cfgSite.KeyValue(RPT_SHIPPING_LABEL_REG_PICK_PRINT_TO))
                                 ' check/override paper source Id, since printer was overridden
-                                If cfgSite.KeyValue.ContainsKey(Me.RPT_SHIPPING_LABEL_REG_PICK_PAPERSOURCE) Then
-                                    LogVerbose(msg:=rtn & "::(override) PAPER SOURCE INDEX = " & cfgSite.KeyValue(Me.RPT_SHIPPING_LABEL_REG_PICK_PAPERSOURCE))
-                                    rpt.DefaultPageSettings.PaperSource = rpt.PrinterSettings.PaperSources(CInt(cfgSite.KeyValue(Me.RPT_SHIPPING_LABEL_REG_PICK_PAPERSOURCE)))
+                                If cfgSite.KeyValue.ContainsKey(RPT_SHIPPING_LABEL_REG_PICK_PAPERSOURCE) Then
+                                    LogVerbose(msg:=rtn & "::(override) PAPER SOURCE INDEX = " & cfgSite.KeyValue(RPT_SHIPPING_LABEL_REG_PICK_PAPERSOURCE))
+                                    rpt.DefaultPageSettings.PaperSource = rpt.PrinterSettings.PaperSources(CInt(cfgSite.KeyValue(RPT_SHIPPING_LABEL_REG_PICK_PAPERSOURCE)))
                                 End If
                             End If
                             ' check/override # of copies - site + print job type
-                            If cfgSite.KeyValue.ContainsKey(Me.RPT_SHIPPING_LABEL_REG_PICK_COPY) Then
-                                If IsNumeric(cfgSite.KeyValue.ContainsKey(Me.RPT_SHIPPING_LABEL_REG_PICK_COPY)) Then
-                                    LogVerbose(msg:=rtn & "::(override) COPIES = " & cfgSite.KeyValue(Me.RPT_SHIPPING_LABEL_REG_PICK_COPY))
-                                    rpt.PrinterSettings.Copies = CInt(cfgSite.KeyValue(Me.RPT_SHIPPING_LABEL_REG_PICK_COPY))
+                            If cfgSite.KeyValue.ContainsKey(RPT_SHIPPING_LABEL_REG_PICK_COPY) Then
+                                If IsNumeric(cfgSite.KeyValue.ContainsKey(RPT_SHIPPING_LABEL_REG_PICK_COPY)) Then
+                                    LogVerbose(msg:=rtn & "::(override) COPIES = " & cfgSite.KeyValue(RPT_SHIPPING_LABEL_REG_PICK_COPY))
+                                    rpt.PrinterSettings.Copies = CInt(cfgSite.KeyValue(RPT_SHIPPING_LABEL_REG_PICK_COPY))
                                 End If
                             End If
                             '' user override target printer
@@ -493,28 +493,28 @@ Public Class ReportGenerator
                             'End Try
                             ' inventory B/U override target printer / papersource
                             Try
-                                If cfgSite.KeyValue.ContainsKey(Me.BU_INVENTORY_OVERRIDE_ID) Then
-                                    Dim cfgBUs As String = CStr(cfgSite.KeyValue(Me.BU_INVENTORY_OVERRIDE_ID)).Trim
-                                    If ((cfgBUs.Length > 0) And (Me.BusinessUnitINV.Trim.Length > 0) And (cfgBUs.ToUpper.IndexOf(Me.BusinessUnitINV.Trim.ToUpper) > -1)) Then
+                                If cfgSite.KeyValue.ContainsKey(BU_INVENTORY_OVERRIDE_ID) Then
+                                    Dim cfgBUs As String = CStr(cfgSite.KeyValue(BU_INVENTORY_OVERRIDE_ID)).Trim
+                                    If ((cfgBUs.Length > 0) And (BusinessUnitINV.Trim.Length > 0) And (cfgBUs.ToUpper.IndexOf(BusinessUnitINV.Trim.ToUpper) > -1)) Then
                                         ' printer
-                                        If cfgSite.KeyValue.ContainsKey(Me.BU_INVENTORY_OVERRIDE_PRINT_TO) Then
-                                            LogVerbose(msg:=rtn & "::(inventory b/u level override) PRINTER NAME = " & CStr(cfgSite.KeyValue(Me.BU_INVENTORY_OVERRIDE_PRINT_TO)))
-                                            rpt.PrinterSettings.PrinterName = CStr(cfgSite.KeyValue(Me.BU_INVENTORY_OVERRIDE_PRINT_TO))
+                                        If cfgSite.KeyValue.ContainsKey(BU_INVENTORY_OVERRIDE_PRINT_TO) Then
+                                            LogVerbose(msg:=rtn & "::(inventory b/u level override) PRINTER NAME = " & CStr(cfgSite.KeyValue(BU_INVENTORY_OVERRIDE_PRINT_TO)))
+                                            rpt.PrinterSettings.PrinterName = CStr(cfgSite.KeyValue(BU_INVENTORY_OVERRIDE_PRINT_TO))
                                         End If
                                         ' papersource
-                                        If cfgSite.KeyValue.ContainsKey(Me.BU_INVENTORY_OVERRIDE_SHIPPING_LABEL_REG_PICK_PAPERSOURCE) Then
-                                            LogVerbose(msg:=rtn & "::(inventory b/u level override) PAPER SOURCE INDEX = " & cfgSite.KeyValue(Me.BU_INVENTORY_OVERRIDE_SHIPPING_LABEL_REG_PICK_PAPERSOURCE))
-                                            rpt.DefaultPageSettings.PaperSource = rpt.PrinterSettings.PaperSources(CInt(cfgSite.KeyValue(Me.BU_INVENTORY_OVERRIDE_SHIPPING_LABEL_REG_PICK_PAPERSOURCE)))
+                                        If cfgSite.KeyValue.ContainsKey(BU_INVENTORY_OVERRIDE_SHIPPING_LABEL_REG_PICK_PAPERSOURCE) Then
+                                            LogVerbose(msg:=rtn & "::(inventory b/u level override) PAPER SOURCE INDEX = " & cfgSite.KeyValue(BU_INVENTORY_OVERRIDE_SHIPPING_LABEL_REG_PICK_PAPERSOURCE))
+                                            rpt.DefaultPageSettings.PaperSource = rpt.PrinterSettings.PaperSources(CInt(cfgSite.KeyValue(BU_INVENTORY_OVERRIDE_SHIPPING_LABEL_REG_PICK_PAPERSOURCE)))
                                         End If
                                     End If
                                 End If
                             Catch ex As Exception
                             End Try
                             ' partially-picked order filter
-                            If cfgSite.KeyValue.ContainsKey(Me.RPT_PARTIAL_PICK_EXCLUDE_STATE) Then
+                            If cfgSite.KeyValue.ContainsKey(RPT_PARTIAL_PICK_EXCLUDE_STATE) Then
                                 ' override with what was in config, even when blank
-                                LogVerbose(msg:=rtn & "::(override) PARTIAL PICK FILTER = " & CStr(cfgSite.KeyValue(Me.RPT_PARTIAL_PICK_EXCLUDE_STATE)).Trim)
-                                rpt.PartialPickExcludeState = CStr(cfgSite.KeyValue(Me.RPT_PARTIAL_PICK_EXCLUDE_STATE)).Trim
+                                LogVerbose(msg:=rtn & "::(override) PARTIAL PICK FILTER = " & CStr(cfgSite.KeyValue(RPT_PARTIAL_PICK_EXCLUDE_STATE)).Trim)
+                                rpt.PartialPickExcludeState = CStr(cfgSite.KeyValue(RPT_PARTIAL_PICK_EXCLUDE_STATE)).Trim
                             End If
                             ' logger
                             rpt.Logger = Me.Logger
@@ -750,8 +750,8 @@ Public Class ReportGenerator
                 ' for listing installed printers on this machine
                 Dim bIsListAvailPrinters As Boolean = False
                 Try
-                    If cfgSite.KeyValue.ContainsKey(Me.DEBUG_LIST_AVAILABLE_PRINTERS) Then
-                        bIsListAvailPrinters = CBool(cfgSite.KeyValue(Me.DEBUG_LIST_AVAILABLE_PRINTERS))
+                    If cfgSite.KeyValue.ContainsKey(DEBUG_LIST_AVAILABLE_PRINTERS) Then
+                        bIsListAvailPrinters = CBool(cfgSite.KeyValue(DEBUG_LIST_AVAILABLE_PRINTERS))
                     End If
                 Catch ex As Exception
                 End Try
@@ -761,8 +761,8 @@ Public Class ReportGenerator
                 Try
                     ' only consider if we're going to list available printers
                     If bIsListAvailPrinters Then
-                        If cfgSite.KeyValue.ContainsKey(Me.DEBUG_LIST_AVAIL_PRN_PAPERSOURCES) Then
-                            bIsListAvailPrnPaperSources = CBool(cfgSite.KeyValue(Me.DEBUG_LIST_AVAIL_PRN_PAPERSOURCES))
+                        If cfgSite.KeyValue.ContainsKey(DEBUG_LIST_AVAIL_PRN_PAPERSOURCES) Then
+                            bIsListAvailPrnPaperSources = CBool(cfgSite.KeyValue(DEBUG_LIST_AVAIL_PRN_PAPERSOURCES))
                         End If
                     End If
                 Catch ex As Exception

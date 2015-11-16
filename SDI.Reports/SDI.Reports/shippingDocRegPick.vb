@@ -9,9 +9,9 @@ Public Class shippingDocRegPick
     Inherits PrintDocument
     Implements ISDiReport
 
-    Private Const oraCN_default_provider As String = "Provider=MSDAORA.1;"
+    Private Const oraCN_default_provider As String = "Provider=OraOLEDB.Oracle.1;"
     Private Const oraCN_default_creden As String = "User ID=einternet;Password=einternet;"
-    Private Const oraCN_default_DB As String = "Data Source=prod"
+    Private Const oraCN_default_DB As String = "Data Source=RPTG"  '  prod"
 
     Private Const CNTR_STATE_EXCLUDE As String = "'PROCESSED','ZERO PICK','LOADED','PRINTED'"
 

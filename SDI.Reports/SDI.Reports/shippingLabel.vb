@@ -12,9 +12,9 @@ Public Class shippingLabel
 
     Inherits PrintDocument
 
-    Private Const oraCN_default_provider As String = "Provider=MSDAORA.1;"
+    Private Const oraCN_default_provider As String = "Provider=OraOLEDB.Oracle.1;"
     Private Const oraCN_default_creden As String = "User ID=einternet;Password=einternet;"
-    Private Const oraCN_default_DB As String = "Data Source=prod"
+    Private Const oraCN_default_DB As String = "Data Source=RPTG"  '  prod"
 
     ''This line was added to allow printing as a DLL
     'Protected WithEvents LinearBarcode1 As IDAutomation.LinearServerControl.LinearBarcode
