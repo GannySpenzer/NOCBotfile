@@ -226,7 +226,9 @@
     <Content Include="bin\SDI.ApplicationLogger.dll" />
     <Content Include="bin\SDI.Reports.dll" />
     <Content Include="bin\SDI.Reports.pdb" />
-    <Content Include="containerType.xml" />
+    <Content Include="containerType.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="references\IDAutomation.LinearServerControl.dll" />
     <Content Include="references\SDI.ApplicationLogger.dll" />
     <Content Include="SDI.Reports.SQLs\getApprover_InvTransfer_SELECT.sql" />

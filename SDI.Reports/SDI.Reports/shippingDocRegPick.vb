@@ -906,12 +906,12 @@ Public Class shippingDocRegPick
                         " AND A.RECV_LN_NBR = B.RECV_LN_NBR" & vbCrLf & _
                         " AND B.ENDDTTM IS NOT NULL" & vbCrLf & _
                         " AND B.QTY_PICKED > 0" & vbCrLf
-            If (Me.PartialPickExcludeState.Trim.Length > 0) Then
-                strSQLstring = strSQLstring & " AND B.ISA_USER_DEFINED_1 NOT IN (" & Me.PartialPickExcludeState & ") " & vbCrLf
-            End If
-            If Not mOverRide = "Y" Then
-                strSQLstring = strSQLstring & " AND B.SHIP_DTTM IS NULL" & vbCrLf
-            End If
+            'If (Me.PartialPickExcludeState.Trim.Length > 0) Then
+            '    strSQLstring = strSQLstring & " AND B.ISA_USER_DEFINED_1 NOT IN (" & Me.PartialPickExcludeState & ") " & vbCrLf
+            'End If
+            'If Not mOverRide = "Y" Then
+            '    strSQLstring = strSQLstring & " AND B.SHIP_DTTM IS NULL" & vbCrLf
+            'End If
 
             LogVerbose(msg:=rtn & "::CN string : " & Me.oraCNstring)
             LogVerbose(msg:=rtn & "::executing : " & strSQLstring)
@@ -1142,11 +1142,14 @@ Public Class shippingDocRegPick
                         "     INNER JOIN SYSADM.PS_ORD_LINE L " & vbCrLf & _
                         "       ON L.ORDER_NO          = A.REFERENCE_ID " & vbCrLf & _
                         "      AND L.ORDER_INT_LINE_NO = A.ORDER_INT_LINE_NO " & vbCrLf & _
+                        "     LEFT OUTER JOIN SYSADM.PS_ISA_ORD_INTFC_O O " & vbCrLf & _
+                        "       ON O.ORDER_NO = A.REFERENCE_ID " & vbCrLf & _
+                        "       AND O.ORDER_INT_LINE_NO = A.ORDER_INT_LINE_NO " & vbCrLf & _
                         "     LEFT OUTER JOIN SYSADM.PS_ISA_ORD_INTFC_H C " & vbCrLf & _
                         "       ON C.ORDER_NO          = A.REFERENCE_ID " & vbCrLf & _
                         "     LEFT OUTER JOIN SYSADM.PS_ISA_ORD_INTFC_L X " & vbCrLf & _
                         "       ON X.ISA_PARENT_IDENT  = C.ISA_IDENTIFIER " & vbCrLf & _
-                        "      AND X.LINE_NBR          = A.ORDER_INT_LINE_NO " & vbCrLf & _
+                        "      AND X.LINE_NBR          = O.INTFC_LINE_NUM " & vbCrLf & _
                         "     LEFT OUTER JOIN SYSADM.PS_ISA_PICKING_CNT B " & vbCrLf & _
                         "       ON B.BUSINESS_UNIT     = A.BUSINESS_UNIT " & vbCrLf & _
                         "      AND B.DEMAND_SOURCE     = A.DEMAND_SOURCE " & vbCrLf & _
@@ -1175,12 +1178,12 @@ Public Class shippingDocRegPick
                         "     AND A.DEMAND_SOURCE IN ('OM','IN') " & vbCrLf & _
                         "     AND A.ENDDTTM IS NOT NULL " & vbCrLf & _
                         ""
-        If (Me.PartialPickExcludeState.Trim.Length > 0) Then
-            strSQLstring &= "     AND A.ISA_USER_DEFINED_1 NOT IN (" & Me.PartialPickExcludeState & ") " & vbCrLf
-        End If
-        If Not mOverRide = "Y" Then
-            strSQLstring &= "     AND A.SHIP_DTTM IS NULL " & vbCrLf
-        End If
+        'If (Me.PartialPickExcludeState.Trim.Length > 0) Then
+        '    strSQLstring &= "     AND A.ISA_USER_DEFINED_1 NOT IN (" & Me.PartialPickExcludeState & ") " & vbCrLf
+        'End If
+        'If Not mOverRide = "Y" Then
+        '    strSQLstring &= "     AND A.SHIP_DTTM IS NULL " & vbCrLf
+        'End If
         strSQLstring &= "" & _
                         "     AND E.EFFDT = ( " & vbCrLf & _
                         "                       SELECT MAX(E_ED.EFFDT) FROM SYSADM.PS_INV_ITEMS E_ED " & vbCrLf & _
@@ -1243,12 +1246,12 @@ Public Class shippingDocRegPick
                         "     AND A.DEMAND_SOURCE = 'OM' " & vbCrLf & _
                         "     AND A.ENDDTTM IS NOT NULL " & vbCrLf & _
                         ""
-        If (Me.PartialPickExcludeState.Trim.Length > 0) Then
-            strSQLstring &= "     AND A.ISA_USER_DEFINED_1 NOT IN (" & Me.PartialPickExcludeState & ") " & vbCrLf
-        End If
-        If Not mOverRide = "Y" Then
-            strSQLstring &= "     AND A.SHIP_DTTM IS NULL " & vbCrLf
-        End If
+        'If (Me.PartialPickExcludeState.Trim.Length > 0) Then
+        '    strSQLstring &= "     AND A.ISA_USER_DEFINED_1 NOT IN (" & Me.PartialPickExcludeState & ") " & vbCrLf
+        'End If
+        'If Not mOverRide = "Y" Then
+        '    strSQLstring &= "     AND A.SHIP_DTTM IS NULL " & vbCrLf
+        'End If
         strSQLstring &= "" & _
                         ") VW " & vbCrLf & _
                         "GROUP BY  " & vbCrLf & _
