@@ -1,0 +1,85 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5C2BED88-3B35-4803-8202-E7141DC0FA5F}"
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "EmailOpsStaff", "EmailOpsStaff\EmailOpsStaff.vbproj", "{77BE4BDF-FAFD-491A-B79A-1AF0648B83A4}"
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "UpdEmailOut", "..\..\UpdEmailOut\UpdEmailOut.vbproj", "{6152251A-E5CC-4A13-BBC4-9273C168CE9C}"
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "ExchangeAttachmentProcessor", "..\..\ExchangeAttachmentProcessor\ExchangeAttachmentProcessor\ExchangeAttachmentProcessor\ExchangeAttachmentProcessor\ExchangeAttachmentProcessor.vbproj", "{25BA30AC-8809-4DD1-A606-2A330FF498ED}"
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "XMLSerialization", "..\..\ExchangeAttachmentProcessor\ExchangeAttachmentProcessor\XMLSerialization\XMLSerialization\XMLSerialization.vbproj", "{35A352DA-DBF9-436D-9EA6-70A43CAE4F1E}"
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "EmailClass", "..\..\EmailClass\EmailClass\EmailClass.vbproj", "{EE6EBF7A-5B7B-4B51-9F48-3DA8204CF3B8}"
+EndProject
+Global
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 6
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = http://vsfoundations:8080/tfs/insiteonline
+		SccProjectUniqueName0 = EmailOpsStaff\\EmailOpsStaff.vbproj
+		SccProjectName0 = EmailOpsStaff
+		SccLocalPath0 = EmailOpsStaff
+		SccLocalPath1 = .
+		SccProjectUniqueName2 = ..\\..\\EmailClass\\EmailClass\\EmailClass.vbproj
+		SccProjectName2 = ../../EmailClass/EmailClass
+		SccLocalPath2 = ..\\..\\EmailClass\\EmailClass
+		SccProjectUniqueName3 = ..\\..\\ExchangeAttachmentProcessor\\ExchangeAttachmentProcessor\\ExchangeAttachmentProcessor\\ExchangeAttachmentProcessor\\ExchangeAttachmentProcessor.vbproj
+		SccProjectName3 = ../../ExchangeAttachmentProcessor/ExchangeAttachmentProcessor/ExchangeAttachmentProcessor/ExchangeAttachmentProcessor
+		SccLocalPath3 = ..\\..\\ExchangeAttachmentProcessor\\ExchangeAttachmentProcessor\\ExchangeAttachmentProcessor\\ExchangeAttachmentProcessor
+		SccProjectUniqueName4 = ..\\..\\ExchangeAttachmentProcessor\\ExchangeAttachmentProcessor\\XMLSerialization\\XMLSerialization\\XMLSerialization.vbproj
+		SccProjectName4 = ../../ExchangeAttachmentProcessor/ExchangeAttachmentProcessor/XMLSerialization/XMLSerialization
+		SccLocalPath4 = ..\\..\\ExchangeAttachmentProcessor\\ExchangeAttachmentProcessor\\XMLSerialization\\XMLSerialization
+		SccProjectUniqueName5 = ..\\..\\UpdEmailOut\\UpdEmailOut.vbproj
+		SccProjectName5 = ../../UpdEmailOut
+		SccLocalPath5 = ..\\..\\UpdEmailOut
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{77BE4BDF-FAFD-491A-B79A-1AF0648B83A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77BE4BDF-FAFD-491A-B79A-1AF0648B83A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77BE4BDF-FAFD-491A-B79A-1AF0648B83A4}.Debug|x86.ActiveCfg = Debug|x86
+		{77BE4BDF-FAFD-491A-B79A-1AF0648B83A4}.Debug|x86.Build.0 = Debug|x86
+		{77BE4BDF-FAFD-491A-B79A-1AF0648B83A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77BE4BDF-FAFD-491A-B79A-1AF0648B83A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77BE4BDF-FAFD-491A-B79A-1AF0648B83A4}.Release|x86.ActiveCfg = Release|x86
+		{77BE4BDF-FAFD-491A-B79A-1AF0648B83A4}.Release|x86.Build.0 = Release|x86
+		{6152251A-E5CC-4A13-BBC4-9273C168CE9C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6152251A-E5CC-4A13-BBC4-9273C168CE9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6152251A-E5CC-4A13-BBC4-9273C168CE9C}.Debug|x86.ActiveCfg = Debug|x86
+		{6152251A-E5CC-4A13-BBC4-9273C168CE9C}.Debug|x86.Build.0 = Debug|x86
+		{6152251A-E5CC-4A13-BBC4-9273C168CE9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6152251A-E5CC-4A13-BBC4-9273C168CE9C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6152251A-E5CC-4A13-BBC4-9273C168CE9C}.Release|x86.ActiveCfg = Release|x86
+		{25BA30AC-8809-4DD1-A606-2A330FF498ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25BA30AC-8809-4DD1-A606-2A330FF498ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25BA30AC-8809-4DD1-A606-2A330FF498ED}.Debug|x86.ActiveCfg = Debug|x86
+		{25BA30AC-8809-4DD1-A606-2A330FF498ED}.Debug|x86.Build.0 = Debug|x86
+		{25BA30AC-8809-4DD1-A606-2A330FF498ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25BA30AC-8809-4DD1-A606-2A330FF498ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{25BA30AC-8809-4DD1-A606-2A330FF498ED}.Release|x86.ActiveCfg = Release|x86
+		{35A352DA-DBF9-436D-9EA6-70A43CAE4F1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35A352DA-DBF9-436D-9EA6-70A43CAE4F1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35A352DA-DBF9-436D-9EA6-70A43CAE4F1E}.Debug|x86.ActiveCfg = Debug|x86
+		{35A352DA-DBF9-436D-9EA6-70A43CAE4F1E}.Debug|x86.Build.0 = Debug|x86
+		{35A352DA-DBF9-436D-9EA6-70A43CAE4F1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35A352DA-DBF9-436D-9EA6-70A43CAE4F1E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35A352DA-DBF9-436D-9EA6-70A43CAE4F1E}.Release|x86.ActiveCfg = Release|x86
+		{EE6EBF7A-5B7B-4B51-9F48-3DA8204CF3B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE6EBF7A-5B7B-4B51-9F48-3DA8204CF3B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE6EBF7A-5B7B-4B51-9F48-3DA8204CF3B8}.Debug|x86.ActiveCfg = Debug|x86
+		{EE6EBF7A-5B7B-4B51-9F48-3DA8204CF3B8}.Debug|x86.Build.0 = Debug|x86
+		{EE6EBF7A-5B7B-4B51-9F48-3DA8204CF3B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE6EBF7A-5B7B-4B51-9F48-3DA8204CF3B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE6EBF7A-5B7B-4B51-9F48-3DA8204CF3B8}.Release|x86.ActiveCfg = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
