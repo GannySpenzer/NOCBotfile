@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<TaskLists xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <NewTicketInformation>
+    <TicketInfo>
+      <EmailSubject>Check Servers - BARDE1</EmailSubject>
+      <Priority>Medium</Priority>
+      <AssigneeID>BARDE2</AssigneeID>
+      <RequestorID>BARDE1</RequestorID>
+      <TicketType>Ticket</TicketType>
+      <IncludeWeekends>False</IncludeWeekends>
+      <EmailCCs>BardE1;BardE2</EmailCCs>
+      <Tasks>
+        <Task>Check server space</Task>
+        <Task>Check vsFoundations is running</Task>
+        <Task>Get coffee</Task>
+      </Tasks>
+    </TicketInfo>
+    <TicketInfo>
+      <EmailSubject>Daily Tasks - BARDE2</EmailSubject>
+      <AssigneeID>BARDE1</AssigneeID>
+      <Priority>Low</Priority>
+      <RequestorID>BARDE2</RequestorID>
+      <TicketType>Work Order</TicketType>
+      <IncludeWeekends>False</IncludeWeekends>
+      <EmailCCs>BardE1; eva.bard@sdi.com</EmailCCs>
+      <Tasks>
+        <Task>First task</Task>
+        <Task>Second task</Task>
+        <Task>Third task</Task>
+        <Task>Fourth task</Task>
+      </Tasks>
+    </TicketInfo>
+  </NewTicketInformation>
+</TaskLists>

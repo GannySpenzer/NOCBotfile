@@ -68,6 +68,16 @@ Public Class TicketInfo
         End Set
     End Property
 
+    Private m_sIncludeWeekends As String
+    Public Property IncludeWeekends As String
+        Get
+            IncludeWeekends = m_sIncludeWeekends
+        End Get
+        Set(value As String)
+            m_sIncludeWeekends = value
+        End Set
+    End Property
+
     Private m_sEmailCCs As String
     Public Property EmailCCs As String
         Get

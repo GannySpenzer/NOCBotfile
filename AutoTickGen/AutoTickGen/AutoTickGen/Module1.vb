@@ -68,6 +68,7 @@ Module Module1
                 m_oLogger.WriteLine("Priority = " & oTicketInfo.Priority)
                 m_oLogger.WriteLine("RequestorID = " & oTicketInfo.RequestorID)
                 m_oLogger.WriteLine("TicketType = " & oTicketInfo.TicketType)
+                m_oLogger.WriteLine("IncludeWeekends = " & oTicketInfo.IncludeWeekends)
                 For iCC As Integer = 0 To oTicketInfo.EmailCCList.Count - 1
                     m_oLogger.WriteLine("EmailCCList(" & iCC.ToString & ") = " & oTicketInfo.EmailCCList(iCC).ToString)
                 Next
@@ -94,19 +95,23 @@ Module Module1
             m_oLogger.WriteLine("START Module1.CreateTickets")
 
             For Each oTicketInfo As TicketInfo In oTaskLists.NewTicketInformation
-                Dim oTicketMgr As New TicketMgr(IsProductionEnvironment)
+                If IsCreateTicketToday(oTicketInfo) Then
+                    Dim oTicketMgr As New TicketMgr(IsProductionEnvironment)
 
-                If oTicketMgr.AddTicket(oTicketInfo) Then
-                    m_oLogger.WriteLine("Module1.CreateTickets: Created ticket " & oTicketMgr.TicketID & " for " & oTicketInfo.AssigneeID & " (" & oTicketInfo.AssigneeInfo.EmailUser & ")")
-                    If oTicketInfo.AssigneeInfo.ExistsUser Then
-                        If Not oTicketMgr.SendEmail(oTicketInfo) Then
-                            m_oLogger.WriteLine("Module1." & cFunction & ": Error from oTicket.SendEmail for ticket ID " & oTicketMgr.TicketID & ": " & oTicketMgr.LastError)
+                    If oTicketMgr.AddTicket(oTicketInfo) Then
+                        m_oLogger.WriteLine("Module1." & cFunction & ": Created ticket " & oTicketMgr.TicketID & " for " & oTicketInfo.AssigneeID & " (" & oTicketInfo.AssigneeInfo.EmailUser & ")")
+                        If oTicketInfo.AssigneeInfo.ExistsUser Then
+                            If Not oTicketMgr.SendEmail(oTicketInfo) Then
+                                m_oLogger.WriteLine("Module1." & cFunction & ": Error from oTicket.SendEmail for ticket ID " & oTicketMgr.TicketID & ": " & oTicketMgr.LastError)
+                            End If
+                        Else
+                            m_oLogger.WriteLine("Module1." & cFunction & ": For ticket ID " & oTicketMgr.TicketID & ", email was not sent to assignee " & oTicketInfo.AssigneeID & " since this user doesn't exist")
                         End If
                     Else
-                        m_oLogger.WriteLine("Module1." & cFunction & ": For ticket ID " & oTicketMgr.TicketID & ", email was not sent to assignee " & oTicketInfo.AssigneeID & " since this user doesn't exist")
+                        m_oLogger.WriteLine("Module1." & cFunction & ": Error from oTicket.AddTicket: " & oTicketMgr.LastError)
                     End If
                 Else
-                    m_oLogger.WriteLine("Module1.CreateTickets: Error from oTicket.AddTicket: " & oTicketMgr.LastError)
+                    m_oLogger.WriteLine("Module1." & cFunction & ": It's the weekend so don't create a ticket for subject " & oTicketInfo.EmailSubject)
                 End If
             Next
 
@@ -126,5 +131,45 @@ Module Module1
 
     Private Function IsProductionEnvironment() As Boolean
         Return (My.Settings.ProductionMode.ToUpper = "TRUE")
+    End Function
+
+    Private Function IsCreateTicketToday(oTicketInfo As TicketInfo) As Boolean
+        Const cFunction As String = "IsCreateTicketToday"
+
+        Dim bCreateTicket As Boolean = False
+
+        Try
+            If IsWeekend() Then
+                ' If it's a weekend, check if the user wants the ticket
+                ' created on the weekend.
+                If oTicketInfo.IncludeWeekends.Trim.ToUpper = "TRUE" Then
+                    bCreateTicket = True
+                Else
+                    bCreateTicket = False
+                End If
+            Else
+                ' If it's a weekday, create the ticket.
+                bCreateTicket = True
+            End If
+
+        Catch ex As Exception
+            bCreateTicket = False
+            LogError(cFunction, ex)
+        End Try
+
+        Return bCreateTicket
+    End Function
+
+    Private Function IsWeekend() As Boolean
+        Dim bIsWeekend As Boolean = False
+
+        Select Case Weekday(Now)
+            Case vbSaturday, vbSunday
+                bIsWeekend = True
+            Case Else
+                bIsWeekend = False
+        End Select
+
+        Return bIsWeekend
     End Function
 End Module
