@@ -120,6 +120,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="AutoTickGen Tech and Users Doc.docx" />
     <None Include="AutoTickGen.exe.configPROD" />
     <None Include="AutoTickGen.exe.configTEST" />
     <None Include="My Project\Application.myapp">
