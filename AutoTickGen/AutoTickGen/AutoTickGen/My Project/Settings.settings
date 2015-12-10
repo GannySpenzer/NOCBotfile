@@ -1,0 +1,24 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="My" GeneratedClassName="MySettings" UseMySettingsClassName="true">
+  <Profiles />
+  <Settings>
+    <Setting Name="oraCNStringPROD" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User Id=sdiexchange;Data Source=PROD</Value>
+    </Setting>
+    <Setting Name="sqlCNStringPROD" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">server=SQL2012;uid=einternet;pwd=E1nternet$;initial catalog='pubs'</Value>
+    </Setting>
+    <Setting Name="oraCNString" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Provider=MSDAORA.1;Password=sd1exchange;User Id=sdiexchange;Data Source=RPTG</Value>
+    </Setting>
+    <Setting Name="sqlCNString" Type="System.String" Scope="User">
+      <Value Profile="(Default)">server=DAZZLE2;uid=sa;pwd=sdiadmin;initial catalog='pubs'</Value>
+    </Setting>
+    <Setting Name="ProductionMode" Type="System.String" Scope="User">
+      <Value Profile="(Default)">false</Value>
+    </Setting>
+    <Setting Name="AutoTickGen_SDiEmailUtilityService_EmailServices" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
