@@ -78,6 +78,16 @@ Public Class TicketInfo
         End Set
     End Property
 
+    Private m_sFrequency As String = ""
+    Public Property Frequency As String
+        Get
+            Frequency = m_sFrequency
+        End Get
+        Set(value As String)
+            m_sFrequency = value
+        End Set
+    End Property
+
     Private m_sEmailCCs As String
     Public Property EmailCCs As String
         Get

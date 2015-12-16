@@ -8,6 +8,7 @@
       <RequestorID>BARDE1</RequestorID>
       <TicketType>Ticket</TicketType>
       <IncludeWeekends>False</IncludeWeekends>
+      <Frequency></Frequency>
       <EmailCCs>BardE1;BardE2</EmailCCs>
       <Tasks>
         <Task>Check server space</Task>
@@ -22,6 +23,7 @@
       <RequestorID>BARDE2</RequestorID>
       <TicketType>Work Order</TicketType>
       <IncludeWeekends>False</IncludeWeekends>
+      <Frequency>Daily</Frequency>
       <EmailCCs>BardE1; eva.bard@sdi.com</EmailCCs>
       <Tasks>
         <Task>First task</Task>
