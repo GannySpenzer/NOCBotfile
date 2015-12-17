@@ -98,20 +98,20 @@ Module Module1
 
             For Each oTicketInfo As TicketInfo In oTaskLists.NewTicketInformation
                 If IsCreateTicketToday(oTicketInfo) Then
-                    'Dim oTicketMgr As New TicketMgr(IsProductionEnvironment)
+                    Dim oTicketMgr As New TicketMgr(IsProductionEnvironment)
 
-                    'If oTicketMgr.AddTicket(oTicketInfo) Then
-                    '    m_oLogger.WriteLine("Module1." & cFunction & ": Created ticket " & oTicketMgr.TicketID & " for " & oTicketInfo.AssigneeID & " (" & oTicketInfo.AssigneeInfo.EmailUser & ")")
-                    '    If oTicketInfo.AssigneeInfo.ExistsUser Then
-                    '        If Not oTicketMgr.SendEmail(oTicketInfo) Then
-                    '            m_oLogger.WriteLine("Module1." & cFunction & ": Error from oTicket.SendEmail for ticket ID " & oTicketMgr.TicketID & ": " & oTicketMgr.LastError)
-                    '        End If
-                    '    Else
-                    '        m_oLogger.WriteLine("Module1." & cFunction & ": For ticket ID " & oTicketMgr.TicketID & ", email was not sent to assignee " & oTicketInfo.AssigneeID & " since this user doesn't exist")
-                    '    End If
-                    'Else
-                    '    m_oLogger.WriteLine("Module1." & cFunction & ": Error from oTicket.AddTicket: " & oTicketMgr.LastError)
-                    'End If
+                    If oTicketMgr.AddTicket(oTicketInfo) Then
+                        m_oLogger.WriteLine("Module1." & cFunction & ": Created ticket " & oTicketMgr.TicketID & " for " & oTicketInfo.AssigneeID & " (" & oTicketInfo.AssigneeInfo.EmailUser & ")")
+                        If oTicketInfo.AssigneeInfo.ExistsUser Then
+                            If Not oTicketMgr.SendEmail(oTicketInfo) Then
+                                m_oLogger.WriteLine("Module1." & cFunction & ": Error from oTicket.SendEmail for ticket ID " & oTicketMgr.TicketID & ": " & oTicketMgr.LastError)
+                            End If
+                        Else
+                            m_oLogger.WriteLine("Module1." & cFunction & ": For ticket ID " & oTicketMgr.TicketID & ", email was not sent to assignee " & oTicketInfo.AssigneeID & " since this user doesn't exist")
+                        End If
+                    Else
+                        m_oLogger.WriteLine("Module1." & cFunction & ": Error from oTicket.AddTicket: " & oTicketMgr.LastError)
+                    End If
                 End If
             Next
 
