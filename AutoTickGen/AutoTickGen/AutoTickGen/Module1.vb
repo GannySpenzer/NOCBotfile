@@ -215,7 +215,7 @@ Module Module1
                     If oTicketInfo.IncludeWeekends.Trim.ToUpper = "TRUE" Then
                         bCreateTicket = True
                     Else
-                        m_oLogger.WriteLine("Module1." & cFunction & ": No frequency was specified so we default to daily but weekends are not included and today is " & Now.DayOfWeek & " so don't create a ticket for subject " & oTicketInfo.EmailSubject)
+                        m_oLogger.WriteLine("Module1." & cFunction & ": No frequency was specified so we default to daily but weekends are not included and today is " & Now.DayOfWeek.ToString & " so don't create a ticket for subject " & oTicketInfo.EmailSubject)
                     End If
                 Else
                     ' If it's a weekday, create the ticket.
@@ -235,7 +235,7 @@ Module Module1
         Dim bIsWeekend As Boolean = False
 
         Select Case Weekday(Now)
-            Case DayOfWeek.Saturday, DayOfWeek.Sunday
+            Case vbSaturday, vbSunday
                 bIsWeekend = True
             Case Else
                 bIsWeekend = False
@@ -247,7 +247,7 @@ Module Module1
     Private Function IsMonday() As Boolean
         Dim bIsMonday As Boolean = False
 
-        If Weekday(Now) = DayOfWeek.Monday Then
+        If Weekday(Now) = vbMonday Then
             bIsMonday = True
         End If
 
