@@ -136,7 +136,7 @@
                                     " '" & oTicketInfo.RequestorInfo.SiteName & "', '" & oTicketInfo.AssigneeID.ToUpper & "', '" & oTicketInfo.AssigneeInfo.BU & " '," & vbCrLf & _
                                     " '" & oTicketInfo.AssigneeInfo.EmailUser & "', '" & oTicketInfo.AssigneeInfo.PhoneUser & "', '" & oTicketInfo.AssigneeInfo.SiteName & " ' ," & vbCrLf & _
                                     " '" & cEstTimeComp & "', '" & cSpecsDesignNeeded & "', '" & cDesignComp & "'," & vbCrLf & _
-                                    " '" & cUserTestingNeeded & "', '" & cUserTestingCompleted & "', '" & oTicketInfo.Description & "', " & vbCrLf & _
+                                    " '" & cUserTestingNeeded & "', '" & cUserTestingCompleted & "', '" & oTicketInfo.Description.Replace("'", "''") & "', " & vbCrLf & _
                                     "'" & oTicketInfo.RequestorInfo.Phone & "')"
 
                     Dim rows_affected As Integer
@@ -185,7 +185,7 @@
                         " VALUES  (" & vbCrLf & _
                                 " '" & TicketID & "', getdate(), '" & cStatusAssigned & "'," & vbCrLf & _
                                 " '" & cStartDate & "', getdate(), '" & cDateCompleted & "'," & vbCrLf & _
-                                " '" & oTicketInfo.RequestorID.ToUpper & "', '" & cResolution & "', '" & oTicketInfo.Description & "'," & vbCrLf & _
+                                " '" & oTicketInfo.RequestorID.ToUpper & "', '" & cResolution & "', '" & oTicketInfo.Description.Replace("'", "''") & "'," & vbCrLf & _
                                 " '" & oTicketInfo.AssigneeID.ToUpper & "', '" & oTicketInfo.AssigneeInfo.Department & "', '" & oTicketInfo.AssigneeInfo.PhoneAssignee & "'," & vbCrLf & _
                                 " '" & oTicketInfo.AssigneeInfo.EmailAssignee & "', '" & oTicketInfo.AssigneeInfo.Department & "', '" & oTicketInfo.RequestorID & "')"
 

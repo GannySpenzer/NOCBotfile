@@ -141,6 +141,7 @@ Public Class TicketInfo
             While i < value.length
                 Dim elem As System.Xml.XmlElement = CType(value(i), System.Xml.XmlElement)
                 m_arrTasks.Add(elem.InnerText)
+
                 If i = 0 Then
                     sDescription = elem.InnerText
                 Else
@@ -155,7 +156,9 @@ Public Class TicketInfo
             ' between them don't show up in the email.
             sDescription = sDescription.Replace("<", "(")
             sDescription = sDescription.Replace(">", ")")
+
             m_sDescription = sDescription
+
         End Set
     End Property
 
@@ -173,5 +176,75 @@ Public Class TicketInfo
     Public Function Description() As String
         Return m_sDescription
     End Function
+
+    ' NOTE: This Tasks property is currently commented out. It's an updated version of
+    ' the Tasks property which has code that stores a URL with the delimiters
+    ' to let a label control show the URL as a link. We're commenting this out now
+    ' because SDiExchange crashes when trying to close the ticket with the URL like this.
+    ' We need to figure out why SDiExchange crashes so, for now, we'll comment out
+    ' this code -- which seems to work when following the link from SDiExchange's
+    ' Ticket System but not, as already mentioned, when saving the ticket.
+    'Private m_oTasks As Object
+    'Public Property Tasks As Object
+    '    Get
+    '        Return m_oTasks
+    '    End Get
+    '    Set(value As Object)
+    '        m_oTasks = value
+
+    '        Const cStartURLDelim As String = "<![CDATA["
+    '        Const cEndURLDelim As String = "]]"
+
+    '        m_arrTasks = New ArrayList
+    '        Dim sDescription As String = ""
+    '        Dim i As Integer = 0
+    '        Dim bHasURL As Boolean = False
+    '        While i < value.length
+    '            Dim elem As System.Xml.XmlElement = CType(value(i), System.Xml.XmlElement)
+    '            m_arrTasks.Add(elem.InnerText)
+
+    '            If i > 0 Then
+    '                sDescription &= ControlChars.NewLine
+    '            End If
+
+    '            Dim iURLDelimStartPosition As Integer = elem.InnerXml.IndexOf(cStartURLDelim)
+    '            If iURLDelimStartPosition >= 0 Then
+    '                bHasURL = True
+
+    '                ' get any text before the URL
+    '                Dim iURLDelimEndPosition As Integer = elem.InnerXml.IndexOf(cEndURLDelim)
+    '                If iURLDelimStartPosition > 0 Then
+    '                    sDescription &= elem.InnerXml.Substring(0, iURLDelimStartPosition)
+    '                End If
+
+    '                ' get URL itself
+    '                Dim iURLStartPos As Integer = iURLDelimStartPosition + cStartURLDelim.Length
+    '                Dim iURLLength As Integer = iURLDelimEndPosition - iURLStartPos
+    '                sDescription &= "<a href='" & elem.InnerXml.Substring(iURLStartPos, iURLLength) & "'>" & elem.InnerXml.Substring(iURLStartPos, iURLLength) & "</a>"
+
+    '                ' get any text after the URL
+    '                If iURLDelimEndPosition < (elem.InnerXml.Length - 1) Then
+    '                    sDescription &= elem.InnerXml.Substring(iURLDelimEndPosition + cEndURLDelim.Length + 1)
+    '                End If
+    '            Else
+    '                sDescription &= elem.InnerText
+    '            End If
+
+
+    '            i = i + 1
+    '        End While
+
+    '        ' For now, replace angle brackets with parentheses just to get this
+    '        ' deployed. If we don't replace the angle brackets, they and the contents
+    '        ' between them don't show up in the email.
+    '        If Not bHasURL Then
+    '            sDescription = sDescription.Replace("<", "(")
+    '            sDescription = sDescription.Replace(">", ")")
+    '        End If
+
+    '        m_sDescription = sDescription
+
+    '    End Set
+    'End Property
 
 End Class
