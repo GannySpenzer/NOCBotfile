@@ -259,7 +259,7 @@ Module Module1
 
         Try
             Dim dtFirstMonday As DateTime = GetFirstMondayInMonth(Now.Year, Now.Month)
-            If dtFirstMonday = Now Then
+            If dtFirstMonday.ToString("MM/dd/yyyy") = Now.ToString("MM/dd/yyyy") Then
                 bIsFirstMonday = True
             End If
         Catch ex As Exception
@@ -275,7 +275,7 @@ Module Module1
 
         Try
             Dim dtFirstMonday As DateTime = GetFirstMondayInMonth(Now.Year, cJanuary)
-            If dtFirstMonday = Now Then
+            If dtFirstMonday.ToString("MM/dd/yyyy") = Now.ToString("MM/dd/yyyy") Then
                 bIsFirstMonday = True
             End If
         Catch ex As Exception
