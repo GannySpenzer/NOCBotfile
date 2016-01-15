@@ -172,6 +172,12 @@ Module Module1
                         Else
                             m_oLogger.WriteLine("Module1." & cFunction & ": Frequency is YEARLY but it's not the first Monday of the year so don't create a ticket for subject " & oTicketInfo.EmailSubject)
                         End If
+                    Case "QUARTERLY"
+                        If IsFirstMondayOfQuarter Then
+                            bCreateTicket = True
+                        Else
+                            m_oLogger.WriteLine("Module1." & cFunction & ": Frequency is QUARTERLY but it's not the first Monday of the quarter so don't create a ticket for subject " & oTicketInfo.EmailSubject)
+                        End If
                     Case Else
                         Dim iDateOfMonth As Integer
                         If Integer.TryParse(sFrequency, iDateOfMonth) Then
@@ -373,5 +379,37 @@ Module Module1
         End Try
 
         Return bIsDayName
+    End Function
+
+    Private Function IsFirstMondayOfQuarter() As Boolean
+        Dim bIsFirstMonday As Boolean = False
+        Dim arrQtr As New ArrayList
+
+        Try
+            If IsFirstMonthOfQtr() Then
+                If IsFirstMondayOfMonth() Then
+                    bIsFirstMonday = True
+                End If
+            End If
+        Catch ex As Exception
+        End Try
+
+        Return bIsFirstMonday
+    End Function
+
+    Private Function IsFirstMonthOfQtr() As Boolean
+        Const cJan As Integer = 1
+        Const cApr As Integer = 4
+        Const cJul As Integer = 7
+        Const cOct As Integer = 10
+
+        Dim bIsFirstMonth As Boolean = False
+
+        Select Case Now.Month
+            Case cJan, cApr, cJul, cOct
+                bIsFirstMonth = True
+        End Select
+
+        Return bIsFirstMonth
     End Function
 End Module
