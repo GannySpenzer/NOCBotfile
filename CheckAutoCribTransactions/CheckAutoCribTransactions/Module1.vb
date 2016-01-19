@@ -34,12 +34,12 @@ Module Module1
         Console.WriteLine("Started to check Auto Crib Transactions ")
         Console.WriteLine("")
 
-        If Dir(rootDir, FileAttribute.Directory) = "" Then
-            MkDir(rootDir)
-        End If
-        If Dir(rootDir & "\LOGS", FileAttribute.Directory) = "" Then
-            MkDir(rootDir & "\LOGS")
-        End If
+        'If Dir(rootDir, FileAttribute.Directory) = "" Then
+        '    MkDir(rootDir)
+        'End If
+        'If Dir(rootDir & "\LOGS", FileAttribute.Directory) = "" Then
+        '    MkDir(rootDir & "\LOGS")
+        'End If
 
         objStreamWriter = File.CreateText(logpath)
         objStreamWriter.WriteLine("Started to check Auto Crib Transactions " & Now())
