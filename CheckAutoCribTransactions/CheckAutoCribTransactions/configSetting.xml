@@ -8,8 +8,8 @@
 	<sourceDB cnstring="Provider=MSDAORA.1;Data Source=PLGR;User ID=ewindows;Password=ewindows;"
 		type="oracle8" />
 	//-->
-	<sourceDB cnString="Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=RPTG"
-		type="oracle8" />
+	<sourceDB cnString="Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=RPTG"
+		type="oracle11g" />
 	<!-- TIMER
 		 timer object properties for checking newly added quoted non-stock items on the database.  this
 		 parameter (as for the moment) doesn't recognize other units other than "secs" so don't change
@@ -28,7 +28,7 @@
 		<statusNotify name="John Waters" addy="john.waters@isacs.com" />
 	//-->
 	<serviceNotification notifySubject="SDI Quoted Non-Stock Email Service Notification" notifyFrom="service.notification@sdi.com">
-		<statusNotify name="Erwin Bautista" addy="erwin.bautista@sdi.com" />
+		<statusNotify name="Vitaly Rovensky" addy="vitaly.rovensky@sdi.com" />
 	</serviceNotification>
 	<!-- EMAIL DEFAULT AND/OR INCLUDES
 		<subject defaultText="SDI Quoted Non-Stock Email Service" />
