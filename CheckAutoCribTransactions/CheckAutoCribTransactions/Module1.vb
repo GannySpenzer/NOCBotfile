@@ -13,8 +13,8 @@ Module Module1
     Private m_xmlConfig As XmlDocument
     Private m_configFile As String = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly.GetModules()(0).FullyQualifiedName) & "\configSetting.xml"
     Dim objStreamWriter As StreamWriter
-    Dim rootDir As String = "C:\Program Files\sdi\CheckAutoCribTrans"
-    Dim logpath As String = "C:\Program Files\sdi\CheckAutoCribTrans\LOGS\CheckAutoCribTransOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+    Dim rootDir As String = "C:\Program Files (x86)\SDI\CheckAutoCribTrans"
+    Dim logpath As String = "C:\Program Files (x86)\SDI\CheckAutoCribTrans\LOGS\CheckAutoCribTransOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
     Dim connectOR As New OleDbConnection("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=RPTG")
     'ISA_EMAIL_ID                              NOT NULL NUMBER(38)
     'DATETIME_ADDED                                     DATE
@@ -275,9 +275,9 @@ Module Module1
     Private Function sendemail(ByVal mailer As MailMessage) As Boolean
         Dim bNoError As Boolean = False
         Try
-            SmtpMail.Send(mailer)
+            'SmtpMail.Send(mailer)
 
-            'UpdEmailOut.UpdEmailOut.UpdEmailOut(mailer.Subject, mailer.From, mailer.To, "", "", "N", mailer.Body, connectOR)
+            UpdEmailOut.UpdEmailOut.UpdEmailOut(mailer.Subject, mailer.From, mailer.To, "", "", "N", mailer.Body, connectOR)
 
             bNoError = True
         Catch ex As Exception
@@ -299,11 +299,22 @@ Module Module1
 
         'Send the email and handle any error that occurs
         Try
-            SmtpMail.Send(email)
+            'SmtpMail.Send(email)
+            SendEmail1(email)
         Catch
             objStreamWriter.WriteLine("     Error - an Error email was not sent")
         End Try
 
+    End Sub
+
+    Private Sub SendEmail1(ByVal mailer As System.Web.Mail.MailMessage)
+
+        Try
+            
+            UpdEmailOut.UpdEmailOut.UpdEmailOut(mailer.Subject, mailer.From, mailer.To, "", "", "N", mailer.Body, connectOR)
+        Catch ex As Exception
+
+        End Try
     End Sub
 
 End Module
