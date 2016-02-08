@@ -14,7 +14,7 @@ Module Module1
     'Dim objStreamWriter As StreamWriter
     Dim rootDir As String = "C:\INTFCXML"
     Dim logpath As String = "C:\INTFCXML\LOGS\StatusXMLOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim connectOR As New OleDbConnection("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=prod")
+    Dim connectOR As New OleDbConnection("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=RPTG")
 
     Sub Main()
 
@@ -63,24 +63,24 @@ Module Module1
         End If
         '   END : 3/19/2014 erwin
 
-        If Dir(rootDir, FileAttribute.Directory) = "" Then
-            MkDir(rootDir)
-        End If
-        If Dir(rootDir & "\LOGS", FileAttribute.Directory) = "" Then
-            MkDir(rootDir & "\LOGS")
-        End If
-        If Dir(rootDir & "\XMLIN", FileAttribute.Directory) = "" Then
-            MkDir(rootDir & "\XMLIN")
-        End If
-        If Dir(rootDir & "\XMLOUT", FileAttribute.Directory) = "" Then
-            MkDir(rootDir & "\XMLOUT")
-        End If
-        If Dir(rootDir & "\XMLINProcessed", FileAttribute.Directory) = "" Then
-            MkDir(rootDir & "\XMLINProcessed")
-        End If
-        If Dir(rootDir & "\XMLOUTProcessed", FileAttribute.Directory) = "" Then
-            MkDir(rootDir & "\XMLOUTProcessed")
-        End If
+        'If Dir(rootDir, FileAttribute.Directory) = "" Then
+        '    MkDir(rootDir)
+        'End If
+        'If Dir(rootDir & "\LOGS", FileAttribute.Directory) = "" Then
+        '    MkDir(rootDir & "\LOGS")
+        'End If
+        'If Dir(rootDir & "\XMLIN", FileAttribute.Directory) = "" Then
+        '    MkDir(rootDir & "\XMLIN")
+        'End If
+        'If Dir(rootDir & "\XMLOUT", FileAttribute.Directory) = "" Then
+        '    MkDir(rootDir & "\XMLOUT")
+        'End If
+        'If Dir(rootDir & "\XMLINProcessed", FileAttribute.Directory) = "" Then
+        '    MkDir(rootDir & "\XMLINProcessed")
+        'End If
+        'If Dir(rootDir & "\XMLOUTProcessed", FileAttribute.Directory) = "" Then
+        '    MkDir(rootDir & "\XMLOUTProcessed")
+        'End If
 
         ' default log level
         Dim logLevel As System.Diagnostics.TraceLevel = TraceLevel.Info
@@ -248,6 +248,7 @@ Module Module1
 
         Dim sdiOrderNo As String = ""
         Dim unccOrderNo As String = ""
+        Dim strOrdStatusToCheck As String = ""
 
         For I = 0 To ds.Tables(0).Rows.Count - 1
 
@@ -266,7 +267,15 @@ Module Module1
             objXMLWriter.WriteElementString("ORDER_NO", unccOrderNo)
             objXMLWriter.WriteElementString("LINE_NBR", ds.Tables(0).Rows(I).Item("LINE_NBR"))
             objXMLWriter.WriteElementString("DTTM_STAMP", ds.Tables(0).Rows(I).Item("DTTM_STAMP"))
-            objXMLWriter.WriteElementString("ISA_ORDER_STATUS", ds.Tables(0).Rows(I).Item("ISA_ORDER_STATUS"))
+            strOrdStatusToCheck = ds.Tables(0).Rows(I).Item("ISA_ORDER_STATUS")
+            'Try
+            '    If UCase(Trim(strOrdStatusToCheck)) = "CS" Then
+            '        strOrdStatusToCheck = "6"
+            '    End If
+            'Catch ex As Exception
+
+            'End Try
+            objXMLWriter.WriteElementString("ISA_ORDER_STATUS", strOrdStatusToCheck)
 
             objXMLWriter.WriteEndElement()
 
