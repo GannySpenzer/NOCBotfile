@@ -18,7 +18,8 @@ Module Module1
     Dim objStreamWriter As StreamWriter
     Dim rootDir As String = "C:\ContainerLoad"
     Dim logpath As String = "C:\ContainerLoad\LOGS\ContainerLoad" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim connectOR As New OleDbConnection("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=prod")
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=PROD")
+
     Sub Main()
 
         'As what we have talked about last night. 
@@ -48,12 +49,12 @@ Module Module1
         Console.WriteLine("Start ContainerLoad")
         Console.WriteLine("")
 
-        If Dir(rootDir, FileAttribute.Directory) = "" Then
-            MkDir(rootDir)
-        End If
-        If Dir(rootDir & "\LOGS", FileAttribute.Directory) = "" Then
-            MkDir(rootDir & "\LOGS")
-        End If
+        'If Dir(rootDir, FileAttribute.Directory) = "" Then
+        '    MkDir(rootDir)
+        'End If
+        'If Dir(rootDir & "\LOGS", FileAttribute.Directory) = "" Then
+        '    MkDir(rootDir & "\LOGS")
+        'End If
 
         objStreamWriter = File.CreateText(logpath)
         objStreamWriter.WriteLine("Sending email to Moveway out " & Now())
@@ -76,10 +77,10 @@ Module Module1
         Dim dteStr As String = Now().ToString("yyMMdd")
         Dim d As String = dteStrDate.ToString
 
-        Dim dd As String
+        'Dim dd As String
 
 
-        'AND A.ADD_DTTM > TO_DATE('" & dteStrDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
+        ''AND A.ADD_DTTM > TO_DATE('" & dteStrDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
 
 
 
@@ -129,7 +130,7 @@ Module Module1
             dataAdapter.Fill(ds)
             connectOR.Close()
         Catch ex As Exception
-            objStreamWriter.WriteLine("     error slecting from Container Load - Table PS_ISA_Load_INIT")
+            objStreamWriter.WriteLine("     error selecting from Container Load - Table PS_ISA_Load_INIT")
             objStreamWriter.WriteLine("         " & ex.Message)
             connectOR.Close()
             Return True
@@ -191,10 +192,7 @@ Module Module1
 
         Next
 
-
-
-
-        Dim bolEmailSent As Boolean
+        'Dim bolEmailSent As Boolean
 
         connectOR.Open()
         'For I = 0 To ds.Tables(0).Rows.Count - 1
@@ -204,15 +202,10 @@ Module Module1
         '    End If
 
         'Next
-        objStreamWriter.WriteLine("  Container Load - send selected emails = " & ds.Tables(0).Rows.Count)
+        objStreamWriter.WriteLine("  Container Load e-mail sent. Number of lnes in grid = " & ds.Tables(0).Rows.Count)
         connectOR.Close()
     End Function
-    'Function SendErrEmail()
-
-    'Private Sub sendEmailtoAgent(ByVal dsEmail As DataTable, ByVal strLoadID As String, ByVal strStopNum As String, ByVal strContainerType As String, ByVal strShipTo As String, _
-    '                      ByVal strcontainerid As String, ByVal strOrderNo As String, ByVal strLoadStatus As String)
-
-
+    
     Private Sub sendEmailtoAgent(ByVal dsEmail As DataTable)
 
         '  we want to read the emailSites xml to get the userid and the business unit then read user table to load the email address and the employee name.
@@ -223,8 +216,8 @@ Module Module1
         Dim strAssignedtoname As String = "Mike Rayes"
         Dim strToLastName As String = "Rayes"
         Dim strToFirstName As String = "Mike"
-        Dim strfromLastName As String = "Bautista"
-        Dim strfromFirstName As String = "Erwin"
+        Dim strfromLastName As String = "Rovensky"
+        Dim strfromFirstName As String = "Vitaly"
 
         Dim strbodyhead1 As String
         Dim strbodydet1 As String
@@ -238,12 +231,12 @@ Module Module1
         Dim bolSelectItem1 As Boolean
 
          
-        Dim Mailer1 As MailMessage = New MailMessage
-        Dim strccfirst1 As String = "erwin.bautista"  '  "pete.doyle"
+        'Dim Mailer1 As MailMessage = New MailMessage
+        Dim strccfirst1 As String = "vitaly.rovensky"  '  "erwin.bautista"
         Dim strcclast1 As String = "sdi.com"
-        Mailer1.From = "SDIExhange@SDI.com"  '  "Insiteonline@SDI.com"
-        Mailer1.Cc = ""
-        Mailer1.Bcc = strccfirst1 & "@" & strcclast1
+        Mailer.From = "SDIExhange@SDI.com"
+        Mailer.Cc = ""
+        Mailer.Bcc = strccfirst1 & "@" & strcclast1
         strbodyhead1 = "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI Marketplace</span></center>" & vbCrLf
         strbodyhead1 = strbodyhead1 & "<center><span >SDiExchange - List of Containers Pending Load  </span></center>"
         strbodyhead1 = strbodyhead1 & "&nbsp;" & vbCrLf
@@ -265,7 +258,7 @@ Module Module1
         'Dim strPurchaserName As String = strCustID
         'Dim strPurchaserName As String = strFirstName & _
         '   " " & strLastName
-        Dim ted As String = ";erwin.bautista@sdi.com"
+        Dim ted As String = ";vitaly.rovensky@sdi.com"
         'Dim strPurchaserEmail As String = strEmail & ted
         'Dim strPurchaserEmail As String = strEmail
         strbodydet1 = "&nbsp;" & vbCrLf
@@ -295,29 +288,9 @@ Module Module1
 
 
 
-        Mailer1.Body = strbodyhead1 & strbodydet1
-        If connectOR.DataSource.ToUpper = "RPTG" Or _
-            connectOR.DataSource.ToUpper = "DEVL" Or _
-            connectOR.DataSource.ToUpper = "PLGR" Then
-            Mailer1.To = "DoNotSendPLGR@sdi.com"
-            'Mailer1.To = strEmail
-        Else
-            'Mailer1.To = strPurchaserEmail
-            'Mailer1.To = strEmail
-            'Mailer1.To = "eric.wilson@sdi.com"
-        End If
-
-        Mailer.Subject = "SDiExchange - List of Containers Pending Load  " & Now.Month & "/" & Now.Day & "/" & Now.Year
-        'Mailer1.Subject = "SDiExchange - Order Status records for Order Number: " & strOrderNo
-        Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
-       
-
-
-
-
         Mailer.Body = strbodyhead1 & strbodydet1
-        ' ++++++++++++++++++++++++++++++++++++++++++
-        Mailer.To = "Peter.Casale@sdi.com;Michael.Marrinan@sdi.com;erwin.bautista@sdi.com"
+
+        Mailer.To = "Peter.Casale@sdi.com;Michael.Marrinan@sdi.com;vitaly.rovensky@sdi.com"
         Dim sTO As String = ""
         Try
             sTO = CStr(My.Settings("sendEmailToAgent_TO")).Trim
@@ -327,9 +300,33 @@ Module Module1
             Mailer.To = sTO
         End If
 
+        If connectOR.DataSource.ToUpper = "RPTG" Or _
+            connectOR.DataSource.ToUpper = "DEVL" Or _
+            connectOR.DataSource.ToUpper = "STAR" Or _
+            connectOR.DataSource.ToUpper = "PLGR" Then
+            Mailer.To = "DoNotSendPLGR@sdi.com"
+            'Mailer1.To = strEmail
+        Else
+            'Mailer1.To = strPurchaserEmail
+            'Mailer1.To = strEmail
+            'Mailer1.To = "eric.wilson@sdi.com"
+        End If
+
+        Mailer.Subject = "SDiExchange - List of Containers Pending Load  " & Now.Month & "/" & Now.Day & "/" & Now.Year
+
         Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
+       
+
+        Mailer.Body = strbodyhead1 & strbodydet1
+        ' ++++++++++++++++++++++++++++++++++++++++++
+
+        Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
+
         UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer.Subject, Mailer.From, Mailer.To, "", Mailer.Bcc, "N", Mailer.Body, connectOR)
 
+        ''    <setting name="sendEmailToAgent_TO" serializeAs="String">
+        ''            <value>Michael.Marrinan@sdi.com;vitaly.rovensky@sdi.com</value>
+        ''    </setting>
     End Sub
-    
+
 End Module

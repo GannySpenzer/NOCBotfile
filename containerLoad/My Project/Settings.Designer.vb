@@ -56,7 +56,7 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("Michael.Marrinan@sdi.com;erwin.bautista@sdi.com")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("vitaly.rovensky@sdi.com")>  _
         Public ReadOnly Property sendEmailToAgent_TO() As String
             Get
                 Return CType(Me("sendEmailToAgent_TO"),String)
