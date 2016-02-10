@@ -59,7 +59,8 @@
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.Xml" />
-    <Reference Include="UpdEmailOut">
+    <Reference Include="UpdEmailOut, Version=1.0.3800.25413, Culture=neutral">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\UpdEmailOut.dll</HintPath>
     </Reference>
   </ItemGroup>
