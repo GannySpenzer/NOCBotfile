@@ -547,9 +547,13 @@ Public Class QuoteNonStockProcessor
     '
     Public Sub Execute()
         Dim cHdr As String = "QuoteNonStockProcessor.Execute: "
+        Dim trackOrderNo As String = ConfigurationManager.AppSettings("TrackOrderNo")
         Try
             'm_eventLogger.WriteEntry("executing business rule(s) ...", EventLogEntryType.Information)
-            SendLogger("Logging execution of Quote Non Stock Utility", "Execution started at " & DateTime.Now.ToShortTimeString(), "LOGGER", "Store", "WebDev@sdi.com", String.Empty, String.Empty)
+            If Not trackOrderNo Is Nothing And trackOrderNo.ToLower().Equals("true") Then
+                SendLogger("Logging execution of Quote Non Stock Utility", "Execution started at " & DateTime.Now.ToShortTimeString(), "LOGGER", "Mail", "WebDev@sdi.com;SDIportalsupport@avasoft.biz", String.Empty, String.Empty)
+            End If
+
             SetConfigXML()
 
             m_colMsgs = New QuotedNStkItemCollection
@@ -576,7 +580,9 @@ Public Class QuoteNonStockProcessor
                 End If
             End If
 
-            SendLogger("Logging execution of Quote Non Stock Utility", "The following Orders were processed " & SBord.ToString().TrimEnd(",") & "by the utility. <br/>Execution is ended at " & DateTime.Now.ToShortTimeString(), "LOGGGER", "Store", "WebDev@sdi.com", String.Empty, String.Empty)
+            If Not trackOrderNo Is Nothing And trackOrderNo.ToLower().Equals("true") Then
+                SendLogger("Logging execution of Quote Non Stock Utility", "The following Orders were processed " & SBord.ToString().TrimEnd(",") & "by the utility. <br/>Execution is ended at " & DateTime.Now.ToShortTimeString(), "LOGGER", "Mail", "WebDev@sdi.com;SDIportalsupport@avasoft.biz", String.Empty, String.Empty)
+            End If
 
             m_CN.Close()
 
