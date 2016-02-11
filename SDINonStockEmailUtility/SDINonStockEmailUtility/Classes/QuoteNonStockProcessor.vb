@@ -30,7 +30,7 @@ Public Class QuoteNonStockProcessor
                                              "in In-Site&reg; Online to approve or decline the order." & _
                                              "<br></p>Sincerely,</p>" & _
                                              "<p>SDI Customer Care</p>"
-   
+
     Private Const LETTER_CONTENT_SDiExchange As String = "<p style=""TEXT-INDENT: 25pt"">" & _
                                              "The above referenced order contains items that required a price " & _
                                              "quote before processing.&nbsp;&nbsp;To view the quoted price either " & _
@@ -38,7 +38,7 @@ Public Class QuoteNonStockProcessor
                                              "in SDiExchange to approve or decline the order." & _
                                              "<br></p>Sincerely,</p>" & _
                                              "<p>SDI Customer Care</p>"
- 
+
     Private Const LETTER_CONTENT_PI As String = "<p style=""TEXT-INDENT: 25pt"">" & _
                                                 "The above referenced order contains items that required a price " & _
                                                 "quote before processing.&nbsp;&nbsp;To view the quoted price, please " & _
@@ -46,7 +46,7 @@ Public Class QuoteNonStockProcessor
                                                 "in In-Site&reg; Online to approve or decline the order." & _
                                                 "<br></p>Sincerely,</p>" & _
                                                 "<p>SDI Customer Care</p>"
-  
+
     Private Const LETTER_CONTENT_PI_SDiExchange As String = "<p style=""TEXT-INDENT: 25pt"">" & _
                                                 "The above referenced order contains items that required a price " & _
                                                 "quote before processing.&nbsp;&nbsp;To view the quoted price, please " & _
@@ -54,7 +54,7 @@ Public Class QuoteNonStockProcessor
                                                 "in SDiExchange to approve or decline the order." & _
                                                 "<br></p>Sincerely,</p>" & _
                                                 "<p>SDI Customer Care</p>"
-   
+
 
     Private Shared m_CN As OleDbConnection
     Private Shared m_cEncryptionKey As String
@@ -541,7 +541,7 @@ Public Class QuoteNonStockProcessor
         Return dstcart
 
     End Function
-  
+
     '
     ' executes process
     '
@@ -549,7 +549,7 @@ Public Class QuoteNonStockProcessor
         Dim cHdr As String = "QuoteNonStockProcessor.Execute: "
         Try
             'm_eventLogger.WriteEntry("executing business rule(s) ...", EventLogEntryType.Information)
-            SendLogger("Quote Non Stock New Utility - Dev", "Execution started at " & DateTime.Now.ToShortTimeString(), "LOGGER", "Store", "WebDev@sdi.com", String.Empty, String.Empty)
+            SendLogger("Logging execution of Quote Non Stock Utility", "Execution started at " & DateTime.Now.ToShortTimeString(), "LOGGER", "Store", "WebDev@sdi.com", String.Empty, String.Empty)
             SetConfigXML()
 
             m_colMsgs = New QuotedNStkItemCollection
@@ -558,22 +558,25 @@ Public Class QuoteNonStockProcessor
             Dim SBstk As New StringBuilder
             Dim SWstk As New StringWriter(SBstk)
             Dim htmlTWstk As New HtmlTextWriter(SWstk)
-
+            Dim SBord As New StringBuilder
             If GetQuotedItems() > 0 Then
 
                 If m_colMsgs.Count > 0 Then
 
                     For Each itmQuoted As QuotedNStkItem In m_colMsgs
+                        SBord.Append(itmQuoted.OrderID + ",")
                         If itmQuoted.PriceBlockFlag = "N" Then
                             SendMessages(itmQuoted)
                         Else
                             PriceUpdate(itmQuoted.OrderID)
+                            UpdateReqEmailLog(itmQuoted)
                             buildNotifyApprover(itmQuoted)
                         End If
                     Next
                 End If
             End If
-            SendLogger("Quote Non Stock New Utility - Dev", "Execution ended at " & DateTime.Now.ToShortTimeString(), "LOGGGER", "Store", "WebDev@sdi.com", String.Empty, String.Empty)
+
+            SendLogger("Logging execution of Quote Non Stock Utility", "The following Orders were processed " & SBord.ToString().TrimEnd(",") & "by the utility. <br/>Execution is ended at " & DateTime.Now.ToShortTimeString(), "LOGGGER", "Store", "WebDev@sdi.com", String.Empty, String.Empty)
 
             m_CN.Close()
 
@@ -730,7 +733,7 @@ Public Class QuoteNonStockProcessor
             End If
 
         Catch ex As Exception
-            SendLogger("Quote Non Stock New Utility - Dev", ex, "ERROR")
+            SendLogger("Error in Quote Non Stock Utility", ex, "ERROR")
             'MyBase.EventLog.WriteEntry(cHdr & vbCrLf & ex.ToString, EventLogEntryType.Error)
         End Try
     End Sub
@@ -750,19 +753,23 @@ Public Class QuoteNonStockProcessor
         End Try
     End Sub
 
-    Public Sub SendLogger(ByVal subject As String, ByVal exception As Exception, ByVal messageType As String)
+    Public Sub SendLogger(ByVal subject As String, ByVal exception As Exception, ByVal messageType As String, Optional ByVal Query As String = "", Optional ByVal ConString As String = "")
         Try
             Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
             Dim MailAttachmentName As String()
             Dim MailAttachmentbytes As New List(Of Byte())()
             Dim objException As String
             Dim objExceptionTrace As String
+            Dim StrQuery As String = String.Empty
+            Dim ConStr As String = String.Empty
             Try
                 objException = "<b> Exception </b> - " & exception.Message & "<br/>"
                 objExceptionTrace = "<b> Exception Trace </b> - " & exception.StackTrace & "<br/>"
+                StrQuery = "<b> Execution Query </b> - " & Query & "<br/>"
+                ConStr = "<b> execution Connection string </b> - " & ConString & "<br/>"
             Catch ex As Exception
             End Try
-            SDIEmailService.EmailUtilityServices("Mail", "SDIExchADMIN@sdi.com", "WebDev@sdi.com", subject, String.Empty, String.Empty, objException & objExceptionTrace, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
+            SDIEmailService.EmailUtilityServices("Mail", "SDIExchADMIN@sdi.com", "WebDev@sdi.com", subject, String.Empty, String.Empty, objException & objExceptionTrace & Query & ConStr, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
         Catch ex As Exception
 
         End Try
@@ -1974,7 +1981,7 @@ Public Class QuoteNonStockProcessor
             SDIApprovalHistoryInsert(ordBu, orderid, oprEnteredBy)
 
         Catch ex As Exception
-            SendLogger("Quote Non Stock New Utility - Dev", ex, "ERROR")
+            SendLogger("Error in Quoted Non Stock Email Utility", ex, "ERROR")
         End Try
     End Sub
 
@@ -2033,6 +2040,97 @@ Public Class QuoteNonStockProcessor
         End Try
     End Sub
 
+    Public Sub UpdateReqEmailLog(ByVal itmQuoted As QuotedNStkItem)
+
+        Dim strInsertQuery As String = String.Empty
+        Dim rowsaffected As Integer = 0
+
+        Try
+
+            Dim eml = New System.Web.Mail.MailMessage
+
+            ' init properties of the mail message
+            eml.From = "SDIExchange@SDI.com"
+            eml.To = ""
+            eml.Cc = ""
+            eml.Bcc = ""
+            eml.Subject = ""
+            eml.Body = ""
+
+            ' assign sender email address from item object 
+            ' or assign the default automated sender
+            If itmQuoted.FROM.Length > 0 Then
+                eml.From = itmQuoted.FROM
+            Else
+                eml.From = m_defaultFROM
+            End If
+
+            ' assign recipient TO email address(es) from records
+            ' and add any defined TOs within the configuration file
+            If itmQuoted.TO.Length > 0 Then
+                eml.To = itmQuoted.TO
+            End If
+            If m_extendedTO.Count > 0 Then
+                For Each sTo As String In m_extendedTO
+                    If Utility.IsValidEmailAdd(sTo) Then
+                        eml.To &= sTo & ";"
+                    End If
+                Next
+            End If
+
+            ' assign recipient CC email address(es)
+            If itmQuoted.CC.Length > 0 Then
+                eml.Cc = itmQuoted.CC
+            End If
+
+            ' assign recipient BCC email address(es)
+            If itmQuoted.BCC.Length > 0 Then
+                eml.Bcc = itmQuoted.BCC
+            Else
+                eml.Bcc = "WebDev@sdi.com"
+            End If
+
+            ' assign the subject of this email
+            ' or use the default subject line from the configuration file (most probably is)
+            If itmQuoted.Subject.Length > 0 Then
+                eml.Subject = itmQuoted.Subject
+            Else
+                eml.Subject = m_defaultSubject
+            End If
+
+            If itmQuoted.FormattedOrderID.Length > 0 Then
+                eml.Subject &= " - " & itmQuoted.FormattedOrderID
+            ElseIf itmQuoted.OrderID.Length > 0 Then
+                eml.Subject &= " - " & itmQuoted.OrderID
+            End If
+
+            ' override for RFQ origin to include (if provided) the work order # on the subject line
+            '   - erwin 3/26/2014
+            If (itmQuoted.OrderOrigin = "RFQ") Then
+                If (itmQuoted.WorkOrderNumber.Length > 0) Then
+                    eml.Subject &= " (Work Order #" & itmQuoted.WorkOrderNumber & ")"
+                End If
+            End If
+
+            strInsertQuery = "INSERT INTO PS_ISA_REQ_EML_LOG " & _
+                "(BUSINESS_UNIT, REQ_ID, ISA_RECIPIENT, ISA_SENDER, ISA_SUBJECT, EMAIL_DATETIME) " & _
+                "VALUES " & _
+                "(" & _
+                    "'" & CType(IIf(itmQuoted.BusinessUnitID.Length > 0, itmQuoted.BusinessUnitID, "."), String) & "', " & _
+                    "'" & CType(IIf(itmQuoted.OrderID.Length > 0, itmQuoted.OrderID, "."), String) & "', " & _
+                    "'" & "TO=" & eml.To & "CC=" & eml.Cc & "BCC=" & eml.Bcc & "', " & _
+                    "'" & CType(IIf(eml.From.Length > 0, eml.From, "."), String) & "', " & _
+                    "'" & CType(IIf(eml.Subject.Length > 0, eml.Subject, "."), String) & "', " & _
+                    "TO_DATE('" & System.DateTime.Now.ToString & "','MM/DD/YYYY HH:MI:SS AM') " & _
+                ")"
+
+            rowsaffected = ExecNonQuery(strInsertQuery)
+
+        Catch ex As Exception
+            SendLogger("Error in Quoted Non Stock Email Utility", ex, "ERROR", strInsertQuery, m_CN.ConnectionString)
+        End Try
+    End Sub
+
     Public Function ExecNonQuery(ByVal p_strQuery As String, Optional ByVal bGoToErrPage As Boolean = True) As Integer
         Try
 
@@ -2048,7 +2146,7 @@ Public Class QuoteNonStockProcessor
 
             Return rowsAffected
         Catch objException As Exception
-            SendLogger("Quote Non Stock New Utility - Dev", objException, "ERROR")
+            SendLogger("Error in Quoted Non Stock Email Utility", objException, "ERROR", p_strQuery, m_CN.ConnectionString)
         End Try
     End Function
 
@@ -2164,7 +2262,7 @@ Public Class QuoteNonStockProcessor
                 getBinLoc = " "
             End If
         Catch objException As Exception
-            SendLogger("Quote Non Stock New Utility - Dev", objException, "ERROR")
+            SendLogger("Error in Quoted Non Stock Email Utility", objException, "ERROR")
         End Try
     End Function
 
