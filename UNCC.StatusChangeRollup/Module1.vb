@@ -13,8 +13,8 @@ Module Module1
     ' disabled since logging functionality was ported to SDI.ApplicationLogger
     'Dim objStreamWriter As StreamWriter
     Dim rootDir As String = "C:\INTFCXML"
-    Dim logpath As String = "C:\INTFCXML\LOGS\StatusXMLOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim connectOR As New OleDbConnection("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=RPTG")
+    Dim logpath As String = "C:\INTFCXML\LOGS\StatusChgRollupUNCC" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=RPTG")
 
     Sub Main()
 
@@ -59,7 +59,7 @@ Module Module1
         Catch ex As Exception
         End Try
         If (sLogPath.Length > 0) Then
-            logpath = sLogPath & "\StatusXMLOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+            logpath = sLogPath & "\StatusChgRollupUNCC" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
         End If
         '   END : 3/19/2014 erwin
 
@@ -83,7 +83,7 @@ Module Module1
         'End If
 
         ' default log level
-        Dim logLevel As System.Diagnostics.TraceLevel = TraceLevel.Info
+        Dim logLevel As System.Diagnostics.TraceLevel = TraceLevel.Verbose
 
         ' get/parse param
         Dim param As String() = Command.Split(" ")
@@ -305,7 +305,7 @@ Module Module1
             objXMLWriter.WriteElementString("DTTM_STAMP", ds.Tables(0).Rows(I).Item("DTTM_STAMP"))
             strOrdStatusToCheck = ds.Tables(0).Rows(I).Item("ISA_ORDER_STATUS")
             'Try
-            '    If UCase(Trim(strOrdStatusToCheck)) = "CS" Then
+            '    If UCase(Trim(strOrdStatusToCheck)) = "8" Then
             '        strOrdStatusToCheck = "6"
             '    End If
             'Catch ex As Exception
@@ -369,7 +369,7 @@ Module Module1
         email.From = "TechSupport@sdi.com"
 
         'The email address of the recipient. 
-        email.To = "bob.dougherty@sdi.com;pete.doyle@sdi.com"
+        email.To = "vitaly.rovensky@sdi.com"
 
         'The subject of the email
         email.Subject = "UNCCStatusChanges XML OUT Error"
