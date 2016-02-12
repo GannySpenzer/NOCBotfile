@@ -1,4 +1,5 @@
 ﻿Imports System.IO
+Imports System.Data
 Imports System.Data.OleDb
 Imports System.Web.Mail
 Imports System.Web.UI
@@ -310,8 +311,24 @@ Module Module1
     Private Sub SendEmail1(ByVal mailer As System.Web.Mail.MailMessage)
 
         Try
-            
-            UpdEmailOut.UpdEmailOut.UpdEmailOut(mailer.Subject, mailer.From, mailer.To, "", "", "N", mailer.Body, connectOR)
+            'SendLogger(eml.Subject, eml.Body, "QUOTEAPPROVAL", "Mail", eml.To, eml.Cc, eml.Bcc)
+            SendLogger(mailer.Subject, mailer.Body, "CHECKAUTOCRIBTRANSACTNS", "Mail", mailer.To, "", "")
+            'UpdEmailOut.UpdEmailOut.UpdEmailOut(mailer.Subject, mailer.From, mailer.To, "", "", "N", mailer.Body, connectOR)
+        Catch ex As Exception
+
+        End Try
+    End Sub
+
+    Public Sub SendLogger(ByVal subject As String, ByVal body As String, ByVal messageType As String, ByVal MailType As String, ByVal EmailTo As String, ByVal EmailCc As String, ByVal EmailBcc As String)
+        Try
+            Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
+            Dim MailAttachmentName As String()
+            Dim MailAttachmentbytes As New List(Of Byte())()
+            Dim objException As String
+            Dim objExceptionTrace As String
+
+            SDIEmailService.EmailUtilityServices(MailType, "SDIExchADMIN@sdi.com", EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
+            ' '   http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx
         Catch ex As Exception
 
         End Try
