@@ -22,7 +22,7 @@ Module Module1
     Dim logpath As String = "C:\Program Files\sdi\AmazonClient\AmazonLOGS\AmazonClientOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
     Dim filePath As String = "C:\Program Files\sdi\AmazonClient\AmazonXMLFiles\AmazonClientXMLOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".xml"
     Dim filePathResponse As String = "C:\Program Files\sdi\AmazonClient\AmazonXMLFiles\AmznClntXMLRspns" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".xml"
-    Dim connectOR As New OleDbConnection("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=DEVL")
+    Dim connectOR As New OleDbConnection("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=STAR")
 
     Sub Main()
 
@@ -270,6 +270,8 @@ Module Module1
                                 End If
                             Next
                         Catch ex As Exception
+                            bNoErrors = False
+                            objStreamWriter.WriteLine("Error trying to update Order: " & strOrderNo & " Error Message: " & ex.Message)
                             Try
                                 connectOR.Close()
                             Catch ex1 As Exception
@@ -667,12 +669,13 @@ Module Module1
 
     Private Sub Send1(ByRef strBox1 As String, ByRef strBox2 As String)
 
-        strBox2 = ""   '  my test URL: "http://websrv.sdi.com:8011/SDIwebIn/XmlInSDI.aspx"   '  
+        strBox2 = ""   '  my test URL: "http://websrv.sdi.com/sdiwebin/xmlinsdi.aspx"   '  
+        ' "https://https.amazonsedi.com/073dbe31-c230-403f-990c-6f74eeed1510"  '  
 
         Dim sHttpResponse As String = ""
         Dim httpSession As New easyHttp
 
-        httpSession.URL = "http://websrv.sdi.com:8011/SDIwebIn/XmlInSDI.aspx"   ' "https://https.amazonsedi.com/073dbe31-c230-403f-990c-6f74eeed1510"  '    "https://www.amazon.com/eprocurement/punchout"  ' "http://localhost/SDIWebIn/default.aspx"  '  "http://localhost/SDIWebProcessors/Default.aspx"  '  "http://localhost:51229/Default.aspx"  '   "https://supplydev.hajoca.com/hajomid/eclipse.ecl"
+        httpSession.URL = "http://websrv.sdi.com/sdiwebin/xmlinsdi.aspx"  '"http://localhost/SDIWebProcessors/XmlInSDI.aspx"   '  "http://websrv.sdi.com/sdiwebin/xmlinsdi.aspx"  '   "https://https.amazonsedi.com/073dbe31-c230-403f-990c-6f74eeed1510"  '    "https://www.amazon.com/eprocurement/punchout"  '    "https://supplydev.hajoca.com/hajomid/eclipse.ecl"
         httpSession.DataToPost = strBox1
         httpSession.ContentType = "text/xml; charset=utf-8"
         httpSession.Method = easyHttp.HTTPMethod.HTTP_POST

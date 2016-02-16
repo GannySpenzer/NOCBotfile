@@ -817,41 +817,51 @@ Public Class punchOutSetupRequestDoc
                                                 '          SupplierPartID under ItemID under ItemOut
                                                 node = nodeItemID.AppendChild(docXML.CreateElement(name:="SupplierPartID"))
                                                 Dim strSupplierPartID As String = ""
-                                                If Not OrderDataSet.Tables(0).Rows(iOrd).Item("itm_id_vndr").ToString() Is Nothing Then
-                                                    Try
-                                                        If Trim(OrderDataSet.Tables(0).Rows(iOrd).Item("itm_id_vndr").ToString()) <> "" Then
-                                                            strSupplierPartID = Trim(OrderDataSet.Tables(0).Rows(iOrd).Item("itm_id_vndr").ToString())
-                                                        Else
+                                                If IsDBNull(OrderDataSet.Tables(0).Rows(iOrd).Item("itm_id_vndr").ToString()) Then
+                                                    strSupplierPartID = ""
+                                                Else
+                                                    If Not OrderDataSet.Tables(0).Rows(iOrd).Item("itm_id_vndr").ToString() Is Nothing Then
+                                                        Try
+                                                            If Trim(OrderDataSet.Tables(0).Rows(iOrd).Item("itm_id_vndr").ToString()) <> "" Then
+                                                                strSupplierPartID = Trim(OrderDataSet.Tables(0).Rows(iOrd).Item("itm_id_vndr").ToString())
+                                                            Else
+                                                                strSupplierPartID = ""
+                                                            End If
+                                                        Catch ex As Exception
                                                             strSupplierPartID = ""
-                                                        End If
-                                                    Catch ex As Exception
-                                                        strSupplierPartID = ""
-                                                    End Try
+                                                        End Try
+                                                    End If
                                                 End If
-                                                'for  testing only
-                                                If strSupplierPartID = "" Then
-                                                    strSupplierPartID = "0448439042"
-                                                End If
+                                                ''for  testing only
+                                                'If strSupplierPartID = "" Then
+                                                '    strSupplierPartID = "0448439042"
+                                                'End If
                                                 node.InnerText = strSupplierPartID
                                                 '          SupplierPartAuxiliaryID under ItemID under ItemOut
                                                 node = nodeItemID.AppendChild(docXML.CreateElement(name:="SupplierPartAuxiliaryID"))
-                                                'Dim strSupplierPartAuxiliaryID As String = ""
-                                                'If Not OrderDataSet.Tables(0).Rows(iOrd).Item("???").ToString() Is Nothing Then
-                                                '    Try
-                                                '        If Trim(OrderDataSet.Tables(0).Rows(iOrd).Item("???").ToString()) <> "" Then
-                                                '            strSupplierPartAuxiliaryID = Trim(OrderDataSet.Tables(0).Rows(iOrd).Item("???").ToString())
-                                                '        Else
-                                                '            strSupplierPartAuxiliaryID = ""
-                                                '        End If
-                                                '    Catch ex As Exception
-                                                '        strSupplierPartAuxiliaryID = ""
-                                                '    End Try
+                                                Dim strSupplierPartAuxiliaryID As String = ""
+                                                If IsDBNull(OrderDataSet.Tables(0).Rows(iOrd).Item("INV_ITEM_ALIAS").ToString()) Then
+                                                    strSupplierPartAuxiliaryID = ""
+                                                Else
+                                                    If Not OrderDataSet.Tables(0).Rows(iOrd).Item("INV_ITEM_ALIAS").ToString() Is Nothing Then
+                                                        Try
+                                                            If Trim(OrderDataSet.Tables(0).Rows(iOrd).Item("INV_ITEM_ALIAS").ToString()) <> "" Then
+                                                                strSupplierPartAuxiliaryID = Trim(OrderDataSet.Tables(0).Rows(iOrd).Item("INV_ITEM_ALIAS").ToString())
+                                                            Else
+                                                                strSupplierPartAuxiliaryID = ""
+                                                            End If
+                                                        Catch ex As Exception
+                                                            strSupplierPartAuxiliaryID = ""
+                                                        End Try
+                                                    End If
+                                                End If
+
+                                                ''for  testing only
+                                                'If strSupplierPartAuxiliaryID = "" Then
+                                                '    strSupplierPartAuxiliaryID = "184-2574155-1031518"
                                                 'End If
 
-                                                'node.InnerText = ""  '  strSupplierPartAuxiliaryID
-
-                                                'for  testing only
-                                                node.InnerText = "184-2574155-1031518"  '  strSupplierPartAuxiliaryID
+                                                node.InnerText = strSupplierPartAuxiliaryID
 
                                                 '       ItemDetail under ItemOut
                                                 Dim nodeItemDetail As XmlNode = nodeLine.AppendChild(docXML.CreateElement(name:="ItemDetail"))
