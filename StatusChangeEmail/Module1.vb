@@ -4,7 +4,12 @@ Imports System.Data.OleDb
 Imports System.Web.Mail
 Imports System.Web.UI
 Imports System.Text
-
+Imports StatusChangeEmail.SDiEmailUtilityService
+Imports System.Configuration
+Imports System.Linq
+Imports System.Collections
+Imports System.Collections.Generic
+Imports System.Drawing.Color
 
 
 Module Module1
@@ -12,7 +17,7 @@ Module Module1
     Dim objStreamWriter As StreamWriter
     Dim rootDir As String = "C:\StatChg"
     Dim logpath As String = "C:\StatChg\LOGS\StatChgEmailOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim connectOR As New OleDbConnection("Provider=MSDAORA.1;Password=EINTERNET;User ID=EINTERNET;Data Source=PROD")
+    Dim connectOR As New OleDbConnection(Convert.ToString(ConfigurationManager.AppSettings("OLEDBconString")))
 
     Sub Main()
 
@@ -30,6 +35,7 @@ Module Module1
         objStreamWriter.WriteLine("  Send emails out " & Now())
 
         Dim bolError As Boolean = buildstatchgout()
+        bolError = True
         If bolError = True Then
             SendEmail()
         End If
@@ -422,7 +428,7 @@ Module Module1
 
         Select Case strOrderStatus
             Case "7"
-                buildNotifyReceiver = buildNotifyStkReady()
+                buildNotifyReceiver = buildNotifySTKReady()
             Case "R"
                 buildNotifyReceiver = buildNotifyNSTKReady()
         End Select
@@ -868,6 +874,9 @@ Module Module1
                         ByVal strbu As String, _
                         ByVal strOrigin As String)
 
+        Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
+        Dim MailAttachmentName As String()
+        Dim MailAttachmentbytes As New List(Of Byte())()
         Dim strbodyhead As String
         Dim strbodydetl As String
         Dim txtBody As String
@@ -885,10 +894,12 @@ Module Module1
         Mailer.From = "SDIExchange@SDI.com"  '  "Insiteonline@SDI.com"
         Mailer.Cc = ""
         Mailer.Bcc = strccfirst & "@" & strcclast
-        strbodyhead = "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI Marketplace</span></center>" & vbCrLf
-        strbodyhead = strbodyhead & "<center><span >SDiExchange - Order Status</span></center>"
+        'strbodyhead = "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI Marketplace</span></center>" & vbCrLf
+        'strbodyhead = strbodyhead & "<center><span >SDiExchange - Order Status</span></center>"
+        'strbodyhead = strbodyhead & "&nbsp;" & vbCrLf
+        strbodyhead = "<table width='100%'><tbody><tr><td><img src='http://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='82px' vspace='0' hspace='0' /></td><td width='100%'><br /><br /><br /><br /><br /><br /><center><span style='font-family: Arial; font-size: x-large; text-align: center;'>SDI Marketplace</span></center><center><span style='text-align: center; margin: 0px auto;'>SDiExchange - Order Status</span></center></td></tr></tbody></table>"
+        strbodyhead = strbodyhead & "<HR width='100%' SIZE='1'>"
         strbodyhead = strbodyhead & "&nbsp;" & vbCrLf
-
         Dim dtgEmail As WebControls.DataGrid
         dtgEmail = New WebControls.DataGrid
 
@@ -920,56 +931,62 @@ Module Module1
 
         Else
             strbodydetl = strbodydetl & "Your SDiExchange Order Number " & strOrderNo & " has been Processed and Ready for Pickup.<br>"
-            End If
-            strbodydetl = strbodydetl & "&nbsp;<BR>"
-            strbodydetl = strbodydetl & "Order contents:<br>"
-            strbodydetl = strbodydetl & "&nbsp;</p>"
-            strbodydetl = strbodydetl & "<TABLE cellSpacing='1' cellPadding='1' width='100%' border='0'>" & vbCrLf
-            strbodydetl = strbodydetl + "<TR><TD Class='DetailRow' width='100%'>" & dataGridHTML & "</TD></TR>"
-            strbodydetl = strbodydetl + "<TR><TD Class='DetailRow'>&nbsp;</TD></TR>"
-            strbodydetl = strbodydetl & "</TABLE>" & vbCrLf
+        End If
+        strbodydetl = strbodydetl & "&nbsp;<BR>"
+        strbodydetl = strbodydetl & "Order contents:<br>"
+        strbodydetl = strbodydetl & "&nbsp;</p>"
+        strbodydetl = strbodydetl & "<TABLE cellSpacing='1' cellPadding='1' width='100%' border='0'>" & vbCrLf
+        strbodydetl = strbodydetl + "<TR><TD Class='DetailRow' width='100%'>" & dataGridHTML & "</TD></TR>"
+        strbodydetl = strbodydetl + "<TR><TD Class='DetailRow'>&nbsp;</TD></TR>"
+        strbodydetl = strbodydetl & "</TABLE>" & vbCrLf
 
-            strbodydetl = strbodydetl & "&nbsp;<br>"
-            strbodydetl = strbodydetl & "Sincerely,<br>"
-            strbodydetl = strbodydetl & "&nbsp;<br>"
-            strbodydetl = strbodydetl & "SDI Customer Care<br>"
-            strbodydetl = strbodydetl & "&nbsp;<br>"
-            strbodydetl = strbodydetl & "</p>"
-            strbodydetl = strbodydetl & "</div>"
-
-            Mailer.Body = strbodyhead & strbodydetl
-            If connectOR.DataSource.ToUpper = "RPTG" Or _
-                connectOR.DataSource.ToUpper = "DEVL" Or _
-                connectOR.DataSource.ToUpper = "PLGR" Then
-                Mailer.To = "DoNotSendPLGR@sdi.com"
-            Else
-                Mailer.To = strPurchaserEmail
-            End If
+        strbodydetl = strbodydetl & "&nbsp;<br>"
+        strbodydetl = strbodydetl & "Sincerely,<br>"
+        strbodydetl = strbodydetl & "&nbsp;<br>"
+        strbodydetl = strbodydetl & "SDI Customer Care<br>"
+        strbodydetl = strbodydetl & "&nbsp;<br>"
+        strbodydetl = strbodydetl & "</p>"
+        strbodydetl = strbodydetl & "</div>"
+        strbodydetl = strbodydetl & "<HR width='100%' SIZE='1'>" & vbCrLf
+        strbodydetl = strbodydetl & "<img src='http://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & vbCrLf
+        Mailer.Body = strbodyhead & strbodydetl
+        If connectOR.DataSource.ToUpper = "RPTG" Or _
+            connectOR.DataSource.ToUpper = "DEVL" Or _
+            connectOR.DataSource.ToUpper = "PLGR" Then
+            Mailer.To = "DoNotSendPLGR@sdi.com"
+        Else
+            Mailer.To = strPurchaserEmail
+        End If
+        Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
         If strbu = "I0260" Or strbu = "I0206" Then
             If Not strOrigin = "MIS" Then
                 Mailer.Subject = "SDiExchange - Order Status " & strOrderNo & " has been Delivered"
             Else
                 Mailer.Subject = "SDiExchange - Order Status " & strOrderNo & " Picked & Ready for Pickup @ SDI Storeroom"
             End If
+            SDIEmailService.EmailUtilityServices("MailandStore", Mailer.From, Mailer.To, Mailer.Subject, String.Empty, "webdev@sdi.com", Mailer.Body, "StatusChangeEmail0", MailAttachmentName, MailAttachmentbytes.ToArray())
         Else
             Mailer.Subject = "SDiExchange - Order Status " & strOrderNo & " is Ready for Pickup"
         End If
 
-        Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
-        
-        UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer.Subject, Mailer.From, Mailer.To, "", "", "N", Mailer.Body, connectOR)
+        ''Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
 
+        'UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer.Subject, Mailer.From, "sriram.s@avasoft.biz", "", "", "N", Mailer.Body, connectOR) WebDev@sdi.com;sriram.s@avasoft.biz;madhuvanthy.u@avasoft.biz;Karguvelrajan.P@avasoft.biz
+        ''SDIEmailService.EmailUtilityServices("MailandStore", Mailer.From, "WebDev@sdi.com;sriram.s@avasoft.biz;madhuvanthy.u@avasoft.biz;Karguvelrajan.P@avasoft.biz", Mailer.Subject, String.Empty, String.Empty, Mailer.Body, "StatusChangeEmail0", MailAttachmentName, MailAttachmentbytes.ToArray())
     End Sub
 
     Private Sub SendEmail()
 
+        Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
+        Dim MailAttachmentName As String()
+        Dim MailAttachmentbytes As New List(Of Byte())()
         Dim email As New MailMessage
 
         'The email address of the sender
         email.From = "TechSupport@sdi.com"
 
         'The email address of the recipient. 
-        email.To = "erwin.bautista@sdi.com"  '  "pete.doyle@sdi.com"
+        email.To = "webdev@sdi.com"  '  "pete.doyle@sdi.com"
 
         'The subject of the email
         email.Subject = "StatChgEmailOut XML OUT Error_from Normal"
@@ -985,21 +1002,22 @@ Module Module1
 
         'Send the email and handle any error that occurs
         Try
-            UpdEmailOut.UpdEmailOut.UpdEmailOut(email.Subject, email.From, email.To, "", "", "Y", email.Body, connectOR)
+            'UpdEmailOut.UpdEmailOut.UpdEmailOut(email.Subject, email.From, "sriram.s@avasoft.biz", "", "", "Y", email.Body, connectOR)
+            SDIEmailService.EmailUtilityServices("MailandStore", email.From, email.To, email.Subject, String.Empty, String.Empty, email.Body, "StatusChangeEmail0", MailAttachmentName, MailAttachmentbytes.ToArray())
         Catch
             objStreamWriter.WriteLine("     Error - the email was not sent")
         End Try
 
     End Sub
 
-    Private Sub sendemail(ByVal mailer As MailMessage)
+    'Private Sub sendemail(ByVal mailer As MailMessage)
 
-        Try
-            SmtpMail.Send(mailer)
-        Catch ex As Exception
-            objStreamWriter.WriteLine("     Error - in the sendemail to customer SUB")
-        End Try
-    End Sub
+    '    Try
+    '        SmtpMail.Send(mailer)
+    '    Catch ex As Exception
+    '        objStreamWriter.WriteLine("     Error - in the sendemail to customer SUB")
+    '    End Try
+    'End Sub
 
     Private Function updateSendEmailTbl(ByVal strBU As String, ByVal strOrderNo As String, ByVal strOrderStatus As String, ByVal strorigin As String) As Boolean
 
@@ -1220,6 +1238,8 @@ Module Module1
         dsEmail.Columns.Add("Work Order Number")
         dsEmail.Columns.Add("PO #")
 
+        Dim strdescription As String = " "
+        Dim strEmailTo As String = " "
 
         For I = 0 To ds.Tables(0).Rows.Count - 1
             Dim strStatus_code As String = " "
@@ -1276,15 +1296,15 @@ Module Module1
 
             ' "R" nonstock
             ' "7" stock
-            Dim strdescription As String = " "
 
-            Dim strEmail_test As String
+
+
             If ds.Tables(0).Rows(I).Item("Origin") = "MIS" And strBU = "I0206" Then
                 strdescription = "PICKED"
             Else
                 strdescription = ds.Tables(0).Rows(I).Item("ORDER_STATUS_DESC")
             End If
-            Dim strEmailTo As String = ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL")
+            strEmailTo = ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL")
 
             If bIsAscend Then
                 Dim strAscendEmail As String = GetAscendEmailAddress(strBU, stroderno, connectOR)
@@ -1293,8 +1313,10 @@ Module Module1
                         strEmailTo = strAscendEmail
                     End If
                 End If
-                
+
             End If
+
+            Dim strEmail_test As String = String.Empty
             If I = ds.Tables(0).Rows.Count - 1 Then
 
                 strEmail_test = ";tom.rapp@sdi.com"
@@ -1345,6 +1367,7 @@ Module Module1
             End If
 
         Next
+        
 
         If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
             connectOR.Close()
@@ -1426,8 +1449,9 @@ Module Module1
                           ByVal strLastName As String, _
                           ByVal strEmail As String, ByVal strorgin As String)
 
-
-
+        Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
+        Dim MailAttachmentName As String()
+        Dim MailAttachmentbytes As New List(Of Byte())()
         Dim strbodyhead1 As String
         Dim strbodydet1 As String
         Dim txtBody1 As String
@@ -1445,8 +1469,8 @@ Module Module1
         Mailer1.From = "SDIExchange@SDI.com"  '  "Insiteonline@SDI.com"
         Mailer1.Cc = ""
         Mailer1.Bcc = strccfirst1 & "@" & strcclast1
-        strbodyhead1 = "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI Marketplace</span></center>" & vbCrLf
-        strbodyhead1 = strbodyhead1 & "<center><span >SDiExchange - Order Status</span></center>"
+        strbodyhead1 = "<table width='100%'><tbody><tr><td><img src='http://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='82px' vspace='0' hspace='0' /></td><td width='100%'><br /><br /><br /><br /><br /><br /><center><span style='font-family: Arial; font-size: x-large; text-align: center;'>SDI Marketplace</span></center><center><span style='text-align: center; margin: 0px auto;'>SDiExchange - Order Status</span></center></td></tr></tbody></table>"
+        strbodyhead1 = strbodyhead1 & "<HR width='100%' SIZE='1'>"
         strbodyhead1 = strbodyhead1 & "&nbsp;" & vbCrLf
 
         Dim dtgEmail1 As WebControls.DataGrid
@@ -1454,7 +1478,11 @@ Module Module1
 
         dtgEmail1.DataSource = dsEmail
         dtgEmail1.DataBind()
-
+        dtgEmail1.BorderColor = Gray
+        dtgEmail1.HeaderStyle.BackColor = System.Drawing.Color.LightGray
+        dtgEmail1.HeaderStyle.Font.Bold = True
+        dtgEmail1.HeaderStyle.ForeColor = Black
+        WebControls.Unit.Percentage(90)
         dtgEmail1.CellPadding = 3
         'dtgEmail1.Width.Percentage(90)
 
@@ -1470,15 +1498,15 @@ Module Module1
         'Dim strPurchaserEmail As String = strEmail
         strbodydet1 = "&nbsp;" & vbCrLf
         strbodydet1 = strbodydet1 & "<div>"
-        strbodydet1 = strbodydet1 & "<p >Hello " & strPurchaserName & ",<br>"
-        'strbodydet1 = strbodydet1 & "&nbsp;<BR>"
-        strbodydet1 = strbodydet1 & "Order Number: " & strOrderNo & " <br> "
-        strbodydet1 = strbodydet1 & "Order contents:<br>"
+        strbodydet1 = strbodydet1 & "<p >Hello " & strPurchaserName & ",</p>"
+        'strbodydet1 = strbodydet1 & "&nbsp;<BR>" 
+        strbodydet1 = strbodydet1 & "<p style='font-weight:bold;'>Order Number: " & strOrderNo & " </p> "
+        strbodydet1 = strbodydet1 & "<p style='font-weight:bold;'>Order contents: </p>"
         'strbodydet1 = strbodydet1 & "&nbsp;<BR>"
         ' strbodydet1 = strbodydet1 & "Order Status:  " & strOrderStatDesc & " <br>"
         'strbodydet1 = strbodydet1 & "Order Number:  " & strOrderNo & " <br>"
         ' strbodydet1 = strbodydet1 & "Line Number:  " & strLineNbr & " <br>"
-        strbodydet1 = strbodydet1 & "&nbsp;</p>"
+        strbodydet1 = strbodydet1 & "&nbsp;"
         strbodydet1 = strbodydet1 & "<TABLE cellSpacing='1' cellPadding='1' width='100%' border='0'>" & vbCrLf
         strbodydet1 = strbodydet1 + "<TR><TD Class='DetailRow' width='100%'>" & dataGridHTML1 & "</TD></TR>"
         strbodydet1 = strbodydet1 + "<TR><TD Class='DetailRow'>&nbsp;</TD></TR>"
@@ -1491,7 +1519,8 @@ Module Module1
         strbodydet1 = strbodydet1 & "&nbsp;<br>"
         strbodydet1 = strbodydet1 & "</p>"
         strbodydet1 = strbodydet1 & "</div>"
-
+        strbodydet1 = strbodydet1 & "<HR width='100%' SIZE='1'>" & vbCrLf
+        strbodydet1 = strbodydet1 & "<img src='http://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & vbCrLf
 
 
 
@@ -1509,9 +1538,9 @@ Module Module1
 
         Mailer1.Subject = "SDiExchange - Order Status records for Order Number: " & strOrderNo
         Mailer1.BodyFormat = System.Web.Mail.MailFormat.Html
-        
-        UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer1.Subject, Mailer1.From, Mailer1.To, "", Mailer1.Bcc, "N", Mailer1.Body, connectOR)
 
+        'UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer1.Subject, Mailer1.From, "sriram.s@avasoft.biz", "", Mailer1.Bcc, "N", Mailer1.Body, connectOR)
+        SDIEmailService.EmailUtilityServices("MailandStore", Mailer1.From, Mailer1.To, Mailer1.Subject, String.Empty, "webdev@sdi.com", Mailer1.Body, "StatusChangeEmail1", MailAttachmentName, MailAttachmentbytes.ToArray())
     End Sub
     Private Function updateEnterprise(ByVal strBU As String, ByVal dteEndDate As DateTime) As Boolean
         connectOR.Close()
