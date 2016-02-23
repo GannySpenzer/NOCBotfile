@@ -24,18 +24,18 @@ Module Module1
         Console.WriteLine("Start StatChg Email send")
         Console.WriteLine("")
 
-        If Dir(rootDir, FileAttribute.Directory) = "" Then
-            MkDir(rootDir)
-        End If
-        If Dir(rootDir & "\LOGS", FileAttribute.Directory) = "" Then
-            MkDir(rootDir & "\LOGS")
-        End If
+        'If Dir(rootDir, FileAttribute.Directory) = "" Then
+        '    MkDir(rootDir)
+        'End If
+        'If Dir(rootDir & "\LOGS", FileAttribute.Directory) = "" Then
+        '    MkDir(rootDir & "\LOGS")
+        'End If
 
         objStreamWriter = File.CreateText(logpath)
         objStreamWriter.WriteLine("  Send emails out " & Now())
 
         Dim bolError As Boolean = buildstatchgout()
-        bolError = True
+
         If bolError = True Then
             SendEmail()
         End If
@@ -424,7 +424,7 @@ Module Module1
 
     End Function
 
-    Private Function buildNotifyReceiver(ByVal strOrderStatus) As Boolean
+    Private Function buildNotifyReceiver(ByVal strOrderStatus As String) As Boolean
 
         Select Case strOrderStatus
             Case "7"
@@ -989,14 +989,14 @@ Module Module1
         email.To = "webdev@sdi.com"  '  "pete.doyle@sdi.com"
 
         'The subject of the email
-        email.Subject = "StatChgEmailOut XML OUT Error_from Normal"
+        email.Subject = "Error in the 'Status Change Email' Console App."
 
         'The Priority attached and displayed for the email
         email.Priority = MailPriority.High
 
         email.BodyFormat = MailFormat.Html
 
-        email.Body = "<html><body><table><tr><td>StatusChangeEmail has completed with errors, review log.</td></tr>"
+        email.Body = "<html><body><table><tr><td>StatusChangeEmail has completed with errors, review log (C:\StatChg) </td></tr>"
 
         'email.Body = email.Body & "<tr><td></td><a href='\\BDougherty_XP-l\logs'>\\BDougherty_XP-l\logs\</a></tr></table></body></html>"
 
@@ -1316,10 +1316,10 @@ Module Module1
 
             End If
 
-            Dim strEmail_test As String = String.Empty
+            'Dim strEmail_test As String = String.Empty
             If I = ds.Tables(0).Rows.Count - 1 Then
 
-                strEmail_test = ";tom.rapp@sdi.com"
+                'strEmail_test = ";tom.rapp@sdi.com"
                 sendCustEmail1(dsEmail, _
                 ds.Tables(0).Rows(I).Item("ORDER_NO"), _
                 dteCompanyID, _
@@ -1342,7 +1342,7 @@ Module Module1
                           & ds.Tables(0).Rows(I + 1).Item("ORDER_NO") <> _
                           ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM") _
                           & ds.Tables(0).Rows(I).Item("ORDER_NO") Then
-                strEmail_test = ";tom.rapp@sdi.com"
+                'strEmail_test = ";tom.rapp@sdi.com"
                 sendCustEmail1(dsEmail, _
                ds.Tables(0).Rows(I).Item("ORDER_NO"), _
                dteCompanyID, _
@@ -1493,7 +1493,7 @@ Module Module1
         'Dim strPurchaserName As String = strCustID
         Dim strPurchaserName As String = strFirstName & _
            " " & strLastName
-        Dim ted As String = ";erwin.bautista@sdi.com"
+        'Dim ted As String = ";erwin.bautista@sdi.com"
         Dim strPurchaserEmail As String = strEmail
         'Dim strPurchaserEmail As String = strEmail
         strbodydet1 = "&nbsp;" & vbCrLf
@@ -1621,7 +1621,13 @@ Module Module1
             End If
             connectOR.Open()
             strpo_no = ORDBAccess.GetScalar(strSQLstring, connectOR)
+            connectOR.Close()
         Catch ex As Exception
+            Try
+                connectOR.Close()
+            Catch ex3 As Exception
+
+            End Try
             strpo_no = 0
         End Try
         'Dim ds1 As DataSet = ORDBAccess.GetScalar(strSQLstring, connectOR)
