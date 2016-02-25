@@ -147,7 +147,7 @@ Module Module1
 
         strSQLstring = "select * from SYSADM.ps_isa_autocrb_trx " & vbCrLf & _
                     " where business_unit='" & dr.Item("isa_business_unit") & "' " & vbCrLf & _
-                    " and trunc(dt_timestamp, 'DDD') > trunc(sysdate - 2, 'DDD')"
+                    " AND INV_ITEM_ID != ' ' and trunc(dt_timestamp, 'DDD') > trunc(sysdate - 2, 'DDD')"
 
         Dim dDate As Date = CDate(Now())
         Try
