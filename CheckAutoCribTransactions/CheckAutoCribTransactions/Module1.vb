@@ -16,7 +16,7 @@ Module Module1
     Dim objStreamWriter As StreamWriter
     Dim rootDir As String = "C:\Program Files (x86)\SDI\CheckAutoCribTrans"
     Dim logpath As String = "C:\Program Files (x86)\SDI\CheckAutoCribTrans\LOGS\CheckAutoCribTransOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim connectOR As New OleDbConnection("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=RPTG")
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=RPTG")
     'ISA_EMAIL_ID                              NOT NULL NUMBER(38)
     'DATETIME_ADDED                                     DATE
     'EMAIL_SUBJECT_LONG                        NOT NULL VARCHAR2(80)
@@ -278,7 +278,9 @@ Module Module1
         Try
             'SmtpMail.Send(mailer)
 
-            UpdEmailOut.UpdEmailOut.UpdEmailOut(mailer.Subject, mailer.From, mailer.To, "", "", "N", mailer.Body, connectOR)
+            'UpdEmailOut.UpdEmailOut.UpdEmailOut(mailer.Subject, mailer.From, mailer.To, "", "", "N", mailer.Body, connectOR)
+
+            SendEmail1(mailer)
 
             bNoError = True
         Catch ex As Exception
@@ -297,6 +299,7 @@ Module Module1
         email.Priority = MailPriority.High
         email.BodyFormat = MailFormat.Html
         email.Body = "<html><body><table><tr><td>CheckAutoCribTransactions has completed with errors, review log.</td></tr>"
+        email.Bcc = "vitaly.rovensky@sdi.com"
 
         'Send the email and handle any error that occurs
         Try
@@ -312,14 +315,15 @@ Module Module1
 
         Try
             'SendLogger(eml.Subject, eml.Body, "QUOTEAPPROVAL", "Mail", eml.To, eml.Cc, eml.Bcc)
-            SendLogger(mailer.Subject, mailer.Body, "CHECKAUTOCRIBTRANSACTNS", "Mail", mailer.To, "", "")
+            SendLogger(mailer.Subject, mailer.Body, "CHECKAUTOCRIBTRANSACTNS", "Mail", mailer.To, "", mailer.Bcc, mailer.From)
             'UpdEmailOut.UpdEmailOut.UpdEmailOut(mailer.Subject, mailer.From, mailer.To, "", "", "N", mailer.Body, connectOR)
         Catch ex As Exception
 
         End Try
     End Sub
 
-    Public Sub SendLogger(ByVal subject As String, ByVal body As String, ByVal messageType As String, ByVal MailType As String, ByVal EmailTo As String, ByVal EmailCc As String, ByVal EmailBcc As String)
+    Public Sub SendLogger(ByVal subject As String, ByVal body As String, ByVal messageType As String, ByVal MailType As String, _
+                   ByVal EmailTo As String, ByVal EmailCc As String, ByVal EmailBcc As String, ByVal EmailFrom As String)
         Try
             Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
             Dim MailAttachmentName As String()
@@ -327,7 +331,7 @@ Module Module1
             Dim objException As String
             Dim objExceptionTrace As String
 
-            SDIEmailService.EmailUtilityServices(MailType, "SDIExchADMIN@sdi.com", EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
+            SDIEmailService.EmailUtilityServices(MailType, EmailFrom, EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
             ' '   http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx
         Catch ex As Exception
 
