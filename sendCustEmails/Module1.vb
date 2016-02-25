@@ -7,13 +7,14 @@ Imports System.Web.Services
 Imports System.Web.Services.Protocols
 Imports System.Xml.Serialization
 Imports System.Xml
+Imports System.Collections.Generic
 
 Module Module1
 
     Dim objStreamWriter As StreamWriter
     Dim rootDir As String = "C:\SendCustEmail"
     Dim logpath As String = "C:\SendCustEmail\LOGS\SendCustEmailOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim connectOR As New OleDbConnection("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=PROD")
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=RPTG")
     'ISA_EMAIL_ID                              NOT NULL NUMBER(38)
     'DATETIME_ADDED                                     DATE
     'EMAIL_SUBJECT_LONG                        NOT NULL VARCHAR2(80)
@@ -31,11 +32,33 @@ Module Module1
         Console.WriteLine("Start SendCustEmail")
         Console.WriteLine("")
 
-        If Dir(rootDir, FileAttribute.Directory) = "" Then
-            MkDir(rootDir)
-        End If
-        If Dir(rootDir & "\LOGS", FileAttribute.Directory) = "" Then
-            MkDir(rootDir & "\LOGS")
+        'If Dir(rootDir, FileAttribute.Directory) = "" Then
+        '    MkDir(rootDir)
+        'End If
+        'If Dir(rootDir & "\LOGS", FileAttribute.Directory) = "" Then
+        '    MkDir(rootDir & "\LOGS")
+        'End If
+
+        '   (1) connection string / db connection
+        Dim cnString As String = ""
+        Try
+            cnString = My.Settings("oraCNString1").ToString.Trim
+        Catch ex As Exception
+            cnString = "Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=RPTG"
+        End Try
+        If Trim(cnString) <> "" Then
+            cnString = Trim(cnString)
+            ' drop current connection and re-create
+            Try
+                connectOR.Dispose()
+            Catch ex As Exception
+            End Try
+            connectOR = Nothing
+            Try
+                connectOR = New OleDbConnection(cnString)
+            Catch ex As Exception
+                connectOR = New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=PROD")
+            End Try
         End If
 
         objStreamWriter = File.CreateText(logpath)
@@ -184,7 +207,7 @@ Module Module1
         Else
             ' get external file
             Dim strExtMessage As String = getExternalMessageFile(dr.Item("ISA_EMAIL_TXT_FILE"))
-            If Trim(strextmessage) = "" Then
+            If Trim(strExtMessage) = "" Then
                 objStreamWriter.WriteLine("  error no email message - " & strEmailEmpEmail & " for " & strEmailEmpName & " at " & Now())
                 Return True
             Else
@@ -252,15 +275,18 @@ Module Module1
 
         Dim email As New MailMessage
         email.From = "TechSupport@sdi.com"
-        email.To = "bob.dougherty@sdi.com"
+        email.To = "webdev@sdi.com"
         email.Subject = "Sent Cust Email OUT Error"
         email.Priority = MailPriority.High
         email.BodyFormat = MailFormat.Html
         email.Body = "<html><body><table><tr><td>sendCustEmails has completed with errors, review log.</td></tr>"
+        email.Bcc = "vitaly.rovensky@sdi.com"
 
         'Send the email and handle any error that occurs
         Try
-            SmtpMail.Send(email)
+            'SmtpMail.Send(email)
+
+            SendEmail1(email)
         Catch
             objStreamWriter.WriteLine("     Error - the email was not sent")
         End Try
@@ -270,11 +296,41 @@ Module Module1
     Private Function sendemail(ByVal mailer As MailMessage) As Boolean
 
         Try
-            SmtpMail.Send(mailer)
+            'SmtpMail.Send(mailer)
+
+            SendEmail1(mailer)
         Catch ex As Exception
             objStreamWriter.WriteLine("     Error - in the sendemail to customer SUB")
         End Try
     End Function
+
+    Private Sub SendEmail1(ByVal mailer As System.Web.Mail.MailMessage)
+
+        Try
+            SendLogger(mailer.Subject, mailer.Body, "SENDCUSTEMAILS", "Mail", mailer.To, "", mailer.Bcc, mailer.From)
+            'UpdEmailOut.UpdEmailOut.UpdEmailOut(mailer.Subject, mailer.From, mailer.To, "", "", "N", mailer.Body, connectOR)
+        Catch ex As Exception
+
+        End Try
+    End Sub
+
+    Public Sub SendLogger(ByVal subject As String, ByVal body As String, ByVal messageType As String, ByVal MailType As String, _
+                   ByVal EmailTo As String, ByVal EmailCc As String, ByVal EmailBcc As String, ByVal EmailFrom As String)
+        Try
+            Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
+            Dim MailAttachmentName As String()
+            Dim MailAttachmentbytes As New List(Of Byte())()
+            Dim objException As String
+            Dim objExceptionTrace As String
+
+            SDIEmailService.EmailUtilityServices(MailType, EmailFrom, EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
+            ' '   http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx
+
+            ''  http://sdiwebsrv:8011/SDIEmailSvcProd/EmailServices.asmx
+        Catch ex As Exception
+
+        End Try
+    End Sub
 
     Private Function updateSendEmailTbl(ByVal dr As DataRow) As Boolean
 

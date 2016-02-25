@@ -63,6 +63,25 @@ Namespace My
                 Return CType(Me("sendCustEmails_loadbalance2_SDI_loadbalance_IO"),String)
             End Get
         End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=RPTG")>  _
+        Public ReadOnly Property oraCNString1() As String
+            Get
+                Return CType(Me("oraCNString1"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.SpecialSettingAttribute(Global.System.Configuration.SpecialSetting.WebServiceUrl),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx")>  _
+        Public ReadOnly Property sendCustEmails_SDiEmailUtilityService_EmailServices() As String
+            Get
+                Return CType(Me("sendCustEmails_SDiEmailUtilityService_EmailServices"),String)
+            End Get
+        End Property
     End Class
 End Namespace
 

@@ -169,12 +169,22 @@
     <Compile Include="Web References\loadbalance\Reference.vb">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Web References\SDiEmailUtilityService\Reference.vb">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.map</DependentUpon>
+    </Compile>
     <Content Include="configSetting.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Web References\loadbalance\Reference.map" />
     <Content Include="Web References\loadbalance\SDI_loadbalance_IO.disco" />
     <Content Include="Web References\loadbalance\SDI_loadbalance_IO.wsdl" />
+    <None Include="Web References\SDiEmailUtilityService\EmailServices.disco" />
+    <None Include="Web References\SDiEmailUtilityService\Reference.map">
+      <Generator>MSDiscoCodeGenerator</Generator>
+      <LastGenOutput>Reference.vb</LastGenOutput>
+    </None>
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
@@ -209,6 +219,17 @@
       <CachedAppSettingsObjectName>MySettings</CachedAppSettingsObjectName>
       <CachedSettingsPropName>sendCustEmails_loadbalance2_SDI_loadbalance_IO</CachedSettingsPropName>
     </WebReferenceUrl>
+    <WebReferenceUrl Include="http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx">
+      <UrlBehavior>Dynamic</UrlBehavior>
+      <RelPath>Web References\SDiEmailUtilityService\</RelPath>
+      <UpdateFromURL>http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx</UpdateFromURL>
+      <ServiceLocationURL>
+      </ServiceLocationURL>
+      <CachedDynamicPropName>
+      </CachedDynamicPropName>
+      <CachedAppSettingsObjectName>MySettings</CachedAppSettingsObjectName>
+      <CachedSettingsPropName>sendCustEmails_SDiEmailUtilityService_EmailServices</CachedSettingsPropName>
+    </WebReferenceUrl>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -222,6 +243,7 @@
       <LastGenOutput>Reference.vb</LastGenOutput>
     </None>
     <None Include="Web References\loadbalance2\SDI_loadbalance_IO.wsdl" />
+    <None Include="Web References\SDiEmailUtilityService\EmailServices.wsdl" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <PropertyGroup>
