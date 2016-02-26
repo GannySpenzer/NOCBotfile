@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="oraCNString" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=PROD</Value>
+      <Value Profile="(Default)">Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=RPTG</Value>
     </Setting>
     <Setting Name="sqlCNString" Type="System.String" Scope="Application">
       <Value Profile="(Default)">server=SQL2012;uid=einternet;pwd=E1nternet$;initial catalog='pubs'</Value>
