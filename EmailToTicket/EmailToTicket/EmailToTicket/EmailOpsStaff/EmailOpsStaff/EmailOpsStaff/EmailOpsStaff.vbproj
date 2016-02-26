@@ -7,7 +7,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{77BE4BDF-FAFD-491A-B79A-1AF0648B83A4}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <StartupObject>EmailOpsStaff.EmailOpsStaff</StartupObject>
+    <StartupObject>Sub Main</StartupObject>
     <RootNamespace>EmailOpsStaff</RootNamespace>
     <AssemblyName>EmailOpsStaff</AssemblyName>
     <FileAlignment>512</FileAlignment>
@@ -215,6 +215,7 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <CustomToolNamespace>My</CustomToolNamespace>
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
+      <SubType>Designer</SubType>
     </None>
   </ItemGroup>
   <ItemGroup>

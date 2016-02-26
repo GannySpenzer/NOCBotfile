@@ -1,7 +1,7 @@
 ﻿Module StartUp
     Public ClsLogger As LoggerClass
 
-    Sub Main()
+    Sub Main1()
 
 
 

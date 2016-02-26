@@ -7,7 +7,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{25BA30AC-8809-4DD1-A606-2A330FF498ED}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <StartupObject>Sub Main</StartupObject>
+    <StartupObject>ExchangeAttachmentProcessor.StartUp</StartupObject>
     <RootNamespace>ExchangeAttachmentProcessor</RootNamespace>
     <AssemblyName>ExchangeAttachmentProcessor</AssemblyName>
     <FileAlignment>512</FileAlignment>
