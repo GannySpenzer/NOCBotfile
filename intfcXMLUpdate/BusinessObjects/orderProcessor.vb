@@ -452,10 +452,10 @@ Public Class orderProcessor
             If Trim(sOraConnString) <> "" Then
                 connectOR.ConnectionString = sOraConnString
             Else
-                connectOR.ConnectionString = "Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=PROD"
+                connectOR.ConnectionString = "Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=PROD"
             End If
         Catch ex As Exception
-            connectOR.ConnectionString = "Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=PROD"
+            connectOR.ConnectionString = "Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=PROD"
         End Try
         
         Dim rtn As String = "orderProcessor.ParseOrderRequest"

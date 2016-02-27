@@ -19,7 +19,7 @@ Module module1
     Dim rootDir As String = "C:\INTFCXML"
     Dim logpath As String = "C:\INTFCXML\LOGS\UpdINTFCXMLIn" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
     Dim sErrLogPath As String = "C:\INTFCXML\LOGS\MyErredSQLs" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim connectOR As New OleDbConnection("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=PROD")
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=PROD")
     Dim connectSQL As New SqlClient.SqlConnection("server=cplus_prod;uid=einternet;pwd=einternet;initial catalog='contentplus'")
     Dim strOverride As String
     Dim bolWarning As Boolean = False
@@ -30,13 +30,15 @@ Module module1
 
     Sub Main()
 
+        '<setting name="onErrorEmail_To" serializeAs="String">
+        '    <value>breese1@uncc.edu</value>
         'debug
 #If DEBUG Then
         Try
             connectOR.Close()
             connectOR.Dispose()
             connectOR = Nothing
-            connectOR = New OleDbConnection("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=PROD")
+            connectOR = New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=PROD")
         Catch ex As Exception
         End Try
 #End If
@@ -46,8 +48,7 @@ Module module1
         strOverride = "N"
 
         ' default log level
-        Dim logLevel As System.Diagnostics.TraceLevel = TraceLevel.Info
-
+        Dim logLevel As System.Diagnostics.TraceLevel = TraceLevel.Verbose
         '
         ' read confirugation values ...
         '   values on app.config will always win!
@@ -173,18 +174,18 @@ Module module1
         Console.WriteLine("Start INTFC XML in")
         Console.WriteLine("")
 
-        If Dir(rootDir, FileAttribute.Directory) = "" Then
-            MkDir(rootDir)
-        End If
-        If Dir(rootDir & "\LOGS", FileAttribute.Directory) = "" Then
-            MkDir(rootDir & "\LOGS")
-        End If
-        If Dir(rootDir & "\XMLINProcessed", FileAttribute.Directory) = "" Then
-            MkDir(rootDir & "\XMLINProcessed")
-        End If
-        If Dir(rootDir & "\BadXML", FileAttribute.Directory) = "" Then
-            MkDir(rootDir & "\BadXML")
-        End If
+        'If Dir(rootDir, FileAttribute.Directory) = "" Then
+        '    MkDir(rootDir)
+        'End If
+        'If Dir(rootDir & "\LOGS", FileAttribute.Directory) = "" Then
+        '    MkDir(rootDir & "\LOGS")
+        'End If
+        'If Dir(rootDir & "\XMLINProcessed", FileAttribute.Directory) = "" Then
+        '    MkDir(rootDir & "\XMLINProcessed")
+        'End If
+        'If Dir(rootDir & "\BadXML", FileAttribute.Directory) = "" Then
+        '    MkDir(rootDir & "\BadXML")
+        'End If
 
         ' disabled since logging functionality was ported to SDI.ApplicationLogger
         'objStreamWriter = File.CreateText(logpath)
@@ -202,7 +203,7 @@ Module module1
         ' ''Dim dirInfo As DirectoryInfo = New DirectoryInfo("\\contentplus\unccxml\")
         ''Dim dirInfo As DirectoryInfo = New DirectoryInfo("C:\Inetpub\WebPartnerPlus\XMLProcess\UNCCXML\")
         'Dim dirInfo As DirectoryInfo = New DirectoryInfo("\\dazzle\unccInSiteOnlineOrderIN\")
-        Dim dirInfo As DirectoryInfo = New DirectoryInfo("\\dazzle2\unccInSiteOnlineOrderIN\")
+        Dim dirInfo As DirectoryInfo = New DirectoryInfo("C:\INTFCXML\XmlInSource\")
         Dim s1 As String = ""
         Try
             s1 = CStr(My.Settings("inputDirectory")).Trim
@@ -218,14 +219,14 @@ Module module1
         'Dim dirInfo As DirectoryInfo = New DirectoryInfo("\\dextest4\c$\inetpub\wwwroot\xmlprocess\unccxml\")
         Dim strFiles As String
         Dim arrOrders As ArrayList
-        Dim strOrderNO As String
+        'Dim strOrderNO As String
         arrOrders = New ArrayList
-        Dim bolInArray As Boolean
+        'Dim bolInArray As Boolean
 
         strFiles = "*.XML"
         Dim aFiles As FileInfo() = dirInfo.GetFiles(strFiles)
         Dim I As Integer
-        Dim X As Integer
+        'Dim X As Integer
 
 
 
@@ -1229,8 +1230,9 @@ Module module1
             ''Dim myClt As System.Net.Mail.SmtpClient = New SmtpClient("SDIMBX01.isacs.com")  '  ("localhost")
             ''myClt.Send(myEmail)
 
-            System.Web.Mail.SmtpMail.Send(email)
+            'System.Web.Mail.SmtpMail.Send(email)
 
+            SendEmail1(email)
             bSend = True
         Catch ex As Exception    ' this is crashing because 'ex' is Nothing
 
@@ -1246,15 +1248,10 @@ Module module1
     Private Sub SendEmail1(ByVal mailer As System.Web.Mail.MailMessage)
 
         Try
-            'If currentApp.Request.ServerVariables("HTTP_HOST").ToString().ToUpper = "LOCALHOST" Then
-            '    SmtpMail.SmtpServer = "127.0.0.1"
-            'End If
-            'mailer.Bcc = "bob.dougherty@sdi.com"
-            'SmtpMail.Send(mailer)
-
+            
             UpdEmailOut.UpdEmailOut.UpdEmailOut(mailer.Subject, mailer.From, mailer.To, mailer.Cc, mailer.Bcc, "N", mailer.Body, connectOR)
         Catch ex As Exception
-            SendEmail()
+            'SendEmail()
         End Try
     End Sub
 

@@ -56,15 +56,6 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=PROD")>  _
-        Public ReadOnly Property oraCNString1() As String
-            Get
-                Return CType(Me("oraCNString1"),String)
-            End Get
-        End Property
-        
-        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
-         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.DefaultSettingValueAttribute("server=cplus_prod;uid=einternet;pwd=einternet;initial catalog='contentplus'")>  _
         Public ReadOnly Property sqlCNString1() As String
             Get
@@ -87,15 +78,6 @@ Namespace My
         Public ReadOnly Property logPath() As String
             Get
                 Return CType(Me("logPath"),String)
-            End Get
-        End Property
-        
-        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
-         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("breese1@uncc.edu")>  _
-        Public ReadOnly Property onErrorEmail_To() As String
-            Get
-                Return CType(Me("onErrorEmail_To"),String)
             End Get
         End Property
         
@@ -128,10 +110,28 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("\\dazzle\unccInSiteOnlineOrderIN\")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("C:\INTFCXML\XmlInSource\")>  _
         Public ReadOnly Property inputDirectory() As String
             Get
                 Return CType(Me("inputDirectory"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=RPTG")>  _
+        Public ReadOnly Property oraCNString1() As String
+            Get
+                Return CType(Me("oraCNString1"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("vitaly.rovensky@sdi.com")>  _
+        Public ReadOnly Property onErrorEmail_To() As String
+            Get
+                Return CType(Me("onErrorEmail_To"),String)
             End Get
         End Property
     End Class
