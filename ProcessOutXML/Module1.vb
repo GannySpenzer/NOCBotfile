@@ -18,22 +18,29 @@ Module Module1
     Dim rootDir As String = "C:\INTFCXML"
     Dim logpath As String = "C:\INTFCXML\LOGS\UpdINTFCXMLOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
     Dim logpath1 As String = "C:\INTFCXML\LOGS\UpdINTFCXMLloggerOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim connectOR As New System.Data.OleDb.OleDbConnection("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=prod")
+    Dim connectOR As New System.Data.OleDb.OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=prod")
     Dim strOverride As String
 
-    Private m_unixServer_IOH As String = "\\Instprd2\PSSHARE\efi\I0256\outbound\IOH"
-    Private m_unixServer_ITM As String = "\\Instprd2\PSSHARE\efi\I0256\outbound\ITM"
-    Private m_unixServer_REQCST As String = "\\Instprd2\PSSHARE\efi\I0256\outbound\REQCST"
+    Private m_unixServer_IOH As String = "\\solaris2\PSSHARE\efi\I0256\outbound\IOH"
+    Private m_unixServer_ITM As String = "\\solaris2\PSSHARE\efi\I0256\outbound\ITM"
+    Private m_unixServer_REQCST As String = "\\solaris2\PSSHARE\efi\I0256\outbound\REQCST"
 
     Private m_onError_emailFrom As String = "TechSupport@sdi.com"
     Private m_onError_emailTo As String = "michael.randall@sdi.com;vitaly.rovensky@sdi.com;"
     Private m_onError_emailSubject As String = "UNCC XML OUT Error"
 
-    Private m_url_archibus_uncc_edu As String = "http://archibus.uncc.edu:8080/webtier/receivexml.jsp"
+    Private m_url_archibus_uncc_edu As String = "http://websrv.sdi.com/sdiwebin/xmlinsdi.aspx"
+
+    '   "http://archibus.uncc.edu:8080/webtier/receivexml.jsp"
 
     Sub Main()
 
-        Dim logLevel As System.Diagnostics.TraceLevel = TraceLevel.Info
+        Dim logLevel As System.Diagnostics.TraceLevel = TraceLevel.Verbose
+
+
+        ''<setting name="url_archibus_uncc_edu" serializeAs="String">
+        ''    <value>http://archibus.uncc.edu:8080/webtier/receivexml.jsp</value>
+        ''</setting>
 
         '
         ' read configuration values ...
@@ -197,24 +204,24 @@ Module Module1
         Console.WriteLine("Start UNCC XML out")
         Console.WriteLine("")
 
-        If Dir(rootDir, FileAttribute.Directory) = "" Then
-            MkDir(rootDir)
-        End If
-        If Dir(rootDir & "\LOGS", FileAttribute.Directory) = "" Then
-            MkDir(rootDir & "\LOGS")
-        End If
-        If Dir(rootDir & "\XMLIN", FileAttribute.Directory) = "" Then
-            MkDir(rootDir & "\XMLIN")
-        End If
-        If Dir(rootDir & "\XMLOUT", FileAttribute.Directory) = "" Then
-            MkDir(rootDir & "\XMLOUT")
-        End If
-        If Dir(rootDir & "\XMLINProcessed", FileAttribute.Directory) = "" Then
-            MkDir(rootDir & "\XMLINProcessed")
-        End If
-        If Dir(rootDir & "\XMLOUTProcessed", FileAttribute.Directory) = "" Then
-            MkDir(rootDir & "\XMLOUTProcessed")
-        End If
+        'If Dir(rootDir, FileAttribute.Directory) = "" Then
+        '    MkDir(rootDir)
+        'End If
+        'If Dir(rootDir & "\LOGS", FileAttribute.Directory) = "" Then
+        '    MkDir(rootDir & "\LOGS")
+        'End If
+        'If Dir(rootDir & "\XMLIN", FileAttribute.Directory) = "" Then
+        '    MkDir(rootDir & "\XMLIN")
+        'End If
+        'If Dir(rootDir & "\XMLOUT", FileAttribute.Directory) = "" Then
+        '    MkDir(rootDir & "\XMLOUT")
+        'End If
+        'If Dir(rootDir & "\XMLINProcessed", FileAttribute.Directory) = "" Then
+        '    MkDir(rootDir & "\XMLINProcessed")
+        'End If
+        'If Dir(rootDir & "\XMLOUTProcessed", FileAttribute.Directory) = "" Then
+        '    MkDir(rootDir & "\XMLOUTProcessed")
+        'End If
 
         objStreamWriter = File.CreateText(logpath)
         objStreamWriter.WriteLine("  Update of SP Processing XML out " & Now())
