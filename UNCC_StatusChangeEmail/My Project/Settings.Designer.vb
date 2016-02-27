@@ -56,7 +56,7 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=RPTG")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=RPTG")>  _
         Public ReadOnly Property oraCNString1() As String
             Get
                 Return CType(Me("oraCNString1"),String)
@@ -65,7 +65,7 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("C:\INTFCXML")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("C:\StatChg")>  _
         Public ReadOnly Property myDr1() As String
             Get
                 Return CType(Me("myDr1"),String)
@@ -74,7 +74,7 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("C:\INTFCXML\LOGS")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("C:\StatChg\LOGS")>  _
         Public ReadOnly Property logPath() As String
             Get
                 Return CType(Me("logPath"),String)

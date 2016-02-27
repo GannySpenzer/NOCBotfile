@@ -9,21 +9,57 @@ Module Module1
 
     Dim objStreamWriter As StreamWriter
     Dim rootDir As String = "C:\StatChg"
-    Dim logpath As String = "C:\StatChg\LOGS\StatChgEmailOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim connectOR As New OleDbConnection("Provider=MSDAORA.1;Password=EINTERNET;User ID=EINTERNET;Data Source=prod")
+    Dim logpath As String = "C:\StatChg\LOGS\StatChgEmailOutUNCC" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=EINTERNET;User ID=EINTERNET;Data Source=RPTG")
 
     Sub Main()
 
         Console.WriteLine("Start StatChg Email send")
         Console.WriteLine("")
 
-        If Dir(rootDir, FileAttribute.Directory) = "" Then
-            MkDir(rootDir)
-        End If
-        If Dir(rootDir & "\LOGS", FileAttribute.Directory) = "" Then
-            MkDir(rootDir & "\LOGS")
-        End If
+        'If Dir(rootDir, FileAttribute.Directory) = "" Then
+        '    MkDir(rootDir)
+        'End If
+        'If Dir(rootDir & "\LOGS", FileAttribute.Directory) = "" Then
+        '    MkDir(rootDir & "\LOGS")
+        'End If
         
+        'read settings
+
+        '   (1) connection string / db connection
+        Dim cnString As String = ""
+        Try
+            cnString = My.Settings("oraCNString1").ToString.Trim
+        Catch ex As Exception
+        End Try
+        If (cnString.Length > 0) Then
+            ' drop current connection and re-create
+            Try
+                connectOR.Dispose()
+            Catch ex As Exception
+            End Try
+            connectOR = Nothing
+            connectOR = New OleDbConnection(cnString)
+        End If
+        '   (2) root directory
+        Dim rDir As String = ""
+        Try
+            rDir = My.Settings("myDr1").ToString.Trim
+        Catch ex As Exception
+        End Try
+        If (rDir.Length > 0) Then
+            rootDir = rDir
+        End If
+        '   (3) log path/file
+        Dim sLogPath As String = ""
+        Try
+            sLogPath = My.Settings("logPath").ToString.Trim
+        Catch ex As Exception
+        End Try
+        If (sLogPath.Length > 0) Then
+            logpath = sLogPath & "\StatChgEmailOutUNCC" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+        End If
+
         objStreamWriter = File.CreateText(logpath)
         objStreamWriter.WriteLine("  Send emails out " & Now())
 
@@ -788,9 +824,9 @@ Module Module1
         Dim bolSelectItem As Boolean
 
         Dim Mailer As MailMessage = New MailMessage
-        Dim strccfirst As String = "erwin.bautista"  '  "pete.doyle"
+        Dim strccfirst As String = "vitaly.rovensky"
         Dim strcclast As String = "sdi.com"
-        Mailer.From = "SDIExchange@SDI.com"  '  "Insiteonline@SDI.com"
+        Mailer.From = "SDIExchange@SDI.com"
         Mailer.Cc = ""
         Mailer.Bcc = strccfirst & "@" & strcclast
         strbodyhead = "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI Marketplace</span></center>" & vbCrLf
@@ -837,6 +873,7 @@ Module Module1
         Mailer.Body = strbodyhead & strbodydetl
         If connectOR.DataSource.ToUpper = "RPTG" Or _
             connectOR.DataSource.ToUpper = "DEVL" Or _
+            connectOR.DataSource.ToUpper = "STAR" Or _
             connectOR.DataSource.ToUpper = "PLGR" Then
             Mailer.To = "DoNotSendPLGR@sdi.com"
         Else
@@ -847,8 +884,10 @@ Module Module1
         Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
         'SmtpMail.Send(Mailer)
         'SendEmail(Mailer)
+
         UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer.Subject, Mailer.From, Mailer.To, "", "", "N", Mailer.Body, connectOR)
 
+        'objStreamWriter.WriteLine("The email was sent: SDiExchange - Order Status: " & strOrderNo & " is ready for pickup")
     End Sub
 
     Private Sub SendEmail()
@@ -859,7 +898,7 @@ Module Module1
         email.From = "TechSupport@sdi.com"
 
         'The email address of the recipient. 
-        email.To = "erwin.bautista@sdi.com"  '  "pete.doyle@sdi.com"
+        email.To = "vtaly.rovensky@sdi.com"
 
         'The subject of the email
         email.Subject = "UNCC StatChgEmailOut XML OUT Error"
@@ -875,6 +914,7 @@ Module Module1
 
         'Send the email and handle any error that occurs
         Try
+            'objStreamWriter.WriteLine("The email was sent: UNCC_StatusChangeEmail has completed with errors, review log")
             UpdEmailOut.UpdEmailOut.UpdEmailOut(email.Subject, email.From, email.To, "", "", "Y", email.Body, connectOR)
         Catch
             objStreamWriter.WriteLine("     Error - the email was not sent")
@@ -885,7 +925,7 @@ Module Module1
     Private Sub sendemail(ByVal mailer As MailMessage)
 
         Try
-            SmtpMail.Send(mailer)
+            'SmtpMail.Send(mailer)
         Catch ex As Exception
             objStreamWriter.WriteLine("     Error - in the sendemail to customer SUB")
         End Try
@@ -944,6 +984,11 @@ Module Module1
             connectOR.Close()
 
         Catch OleDBExp As OleDbException
+            Try
+                connectOR.Close()
+            Catch exOR As Exception
+
+            End Try
             objStreamWriter.WriteLine("     Error - error reading end date FROM PS_ISAORDSTATUSLOG A")
             Return True
         End Try
@@ -1079,7 +1124,7 @@ Module Module1
 
             If I = ds.Tables(0).Rows.Count - 1 Then
 
-                strEmail_test = ";erwin.bautista@sdi.com"
+                strEmail_test = ";vitaly.rovensky@sdi.com"
                 sendCustEmail1(dsEmail, _
                 ds.Tables(0).Rows(I).Item("ORDER_NO"), _
                 dteCompanyID, _
@@ -1125,6 +1170,8 @@ Module Module1
             End If
 
         Next
+        objStreamWriter.WriteLine("  StatChg Email send allstatus emails = " & ds.Tables(0).Rows.Count & " for I0256")
+
 
         If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
             connectOR.Close()
@@ -1164,9 +1211,9 @@ Module Module1
         Dim bolSelectItem1 As Boolean
 
         Dim Mailer1 As MailMessage = New MailMessage
-        Dim strccfirst1 As String = "erwin.bautista"  '  "pete.doyle"
+        Dim strccfirst1 As String = "vitaly.rovensky"
         Dim strcclast1 As String = "sdi.com"
-        Mailer1.From = "SDIExchange@SDI.com"  '  "Insiteonline@SDI.com"
+        Mailer1.From = "SDIExchange@SDI.com"
         Mailer1.Cc = ""
         Mailer1.Bcc = strccfirst1 & "@" & strcclast1
         strbodyhead1 = "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI Marketplace</span></center>" & vbCrLf
@@ -1221,9 +1268,10 @@ Module Module1
         Mailer1.Body = strbodyhead1 & strbodydet1
         If connectOR.DataSource.ToUpper = "RPTG" Or _
             connectOR.DataSource.ToUpper = "DEVL" Or _
+            connectOR.DataSource.ToUpper = "STAR" Or _
             connectOR.DataSource.ToUpper = "PLGR" Then
-            ' Mailer1.To = "DoNotSendPLGR@sdi.com"
-            Mailer1.To = strEmail
+            Mailer1.To = "DoNotSendPLGR@sdi.com"
+            'Mailer1.To = strEmail
         Else
             'Mailer1.To = strPurchaserEmail
             Mailer1.To = strEmail
@@ -1235,8 +1283,10 @@ Module Module1
         Mailer1.BodyFormat = System.Web.Mail.MailFormat.Html
         'SmtpMail.Send(Mailer)
         'SendEmail(Mailer)
+
         UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer1.Subject, Mailer1.From, Mailer1.To, "", Mailer1.Bcc, "N", Mailer1.Body, connectOR)
 
+        'objStreamWriter.WriteLine("The email was sent: SDiExchange - Order Status records for ORDER NUMBER: " & strOrderNo)
     End Sub
     'Private Function updateEnterprise(ByVal strBU As String, ByVal dteEndDate As DateTime) As Boolean
     '    connectOR.Close()

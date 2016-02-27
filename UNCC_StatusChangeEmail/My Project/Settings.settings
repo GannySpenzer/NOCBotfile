@@ -3,13 +3,13 @@
   <Profiles />
   <Settings>
     <Setting Name="oraCNString1" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=RPTG</Value>
+      <Value Profile="(Default)">Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=RPTG</Value>
     </Setting>
     <Setting Name="myDr1" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">C:\INTFCXML</Value>
+      <Value Profile="(Default)">C:\StatChg</Value>
     </Setting>
     <Setting Name="logPath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">C:\INTFCXML\LOGS</Value>
+      <Value Profile="(Default)">C:\StatChg\LOGS</Value>
     </Setting>
   </Settings>
 </SettingsFile>
