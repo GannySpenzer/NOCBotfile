@@ -5,5 +5,26 @@
     <Setting Name="CheckAutoCribTransactions_SDiEmailUtilityService_EmailServices" Type="(Web Service URL)" Scope="Application">
       <Value Profile="(Default)">http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx</Value>
     </Setting>
+    <Setting Name="BU_I090X_VISTEON" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Uriel.Serrano@sdi.com;Flavio.Gomez@sdi.com;esteban.rios@sdi.com;daniel.munoz@sdi.com;Humberto.Mora@sdi.com;</Value>
+    </Setting>
+    <Setting Name="BU_I0278" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Edward.Eaves@sdi.com;</Value>
+    </Setting>
+    <Setting Name="BU_I0405" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Kirk.SanRoman@sdi.com;</Value>
+    </Setting>
+    <Setting Name="BU_I0277" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Kirk.SanRoman@sdi.com;</Value>
+    </Setting>
+    <Setting Name="BU_I0440" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Jonathan.Schaefers@sdi.com;Bruce.Stallworth@sdi.com;</Value>
+    </Setting>
+    <Setting Name="BU_I0450" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Brandon.Carr@sdi.com;Robert.Hall@sdi.com;</Value>
+    </Setting>
+    <Setting Name="BU_I0469" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Michael.Mason@sdi.com;Emile.Barnett@sdi.com;</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

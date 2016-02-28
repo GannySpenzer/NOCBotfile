@@ -63,6 +63,70 @@ Namespace My
                 Return CType(Me("CheckAutoCribTransactions_SDiEmailUtilityService_EmailServices"),String)
             End Get
         End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("Uriel.Serrano@sdi.com;Flavio.Gomez@sdi.com;esteban.rios@sdi.com;daniel.munoz@sdi."& _ 
+            "com;Humberto.Mora@sdi.com;")>  _
+        Public ReadOnly Property BU_I090X_VISTEON() As String
+            Get
+                Return CType(Me("BU_I090X_VISTEON"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("Edward.Eaves@sdi.com;")>  _
+        Public ReadOnly Property BU_I0278() As String
+            Get
+                Return CType(Me("BU_I0278"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("Kirk.SanRoman@sdi.com;")>  _
+        Public ReadOnly Property BU_I0405() As String
+            Get
+                Return CType(Me("BU_I0405"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("Kirk.SanRoman@sdi.com;")>  _
+        Public ReadOnly Property BU_I0277() As String
+            Get
+                Return CType(Me("BU_I0277"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("Jonathan.Schaefers@sdi.com;Bruce.Stallworth@sdi.com;")>  _
+        Public ReadOnly Property BU_I0440() As String
+            Get
+                Return CType(Me("BU_I0440"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("Brandon.Carr@sdi.com;Robert.Hall@sdi.com;")>  _
+        Public ReadOnly Property BU_I0450() As String
+            Get
+                Return CType(Me("BU_I0450"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("Michael.Mason@sdi.com;Emile.Barnett@sdi.com;")>  _
+        Public ReadOnly Property BU_I0469() As String
+            Get
+                Return CType(Me("BU_I0469"),String)
+            End Get
+        End Property
     End Class
 End Namespace
 

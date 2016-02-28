@@ -144,9 +144,10 @@ Module Module1
         Dim strSQLstring As String
         'Dim strFirstName As String
         'Dim strLastName As String
+        Dim strBusUnitMy As String = dr.Item("isa_business_unit")
 
         strSQLstring = "select * from SYSADM.ps_isa_autocrb_trx " & vbCrLf & _
-                    " where business_unit='" & dr.Item("isa_business_unit") & "' " & vbCrLf & _
+                    " where business_unit='" & strBusUnitMy & "' " & vbCrLf & _
                     " AND INV_ITEM_ID != ' ' and trunc(dt_timestamp, 'DDD') > trunc(sysdate - 2, 'DDD')"
 
         Dim dDate As Date = CDate(Now())
@@ -174,7 +175,9 @@ Module Module1
 
             If Not ds1 Is Nothing Then
                 If ds1.Tables.Count > 0 Then
-                    If ds1.Tables(0).Rows.Count = 0 Then
+                    Dim iMy As Integer = ds1.Tables(0).Rows.Count
+
+                    If iMy = 0 Then
                         'send e-mail
 
                         Dim Mailer As MailMessage = New MailMessage
@@ -201,7 +204,15 @@ Module Module1
                             End If
                         End If
                         If Trim(strTo) = "" Then
-                            strTo = "Donna.Ciampoli@sdi.com"
+                            strTo = "Donna.Ciampoli@sdi.com;"
+                        End If
+
+                        ' add extra To based on BU
+                        Dim strExtraToBasedOnBusUnit As String = ""
+                        strExtraToBasedOnBusUnit = GetExtraToBasedBusUnit(strBusUnitMy)
+
+                        If Trim(strExtraToBasedOnBusUnit) <> "" Then
+                            strTo = strTo & strExtraToBasedOnBusUnit
                         End If
 
                         Dim strBcc As String = ""
@@ -236,10 +247,10 @@ Module Module1
 
                             dDate = dDate.AddDays(-1)
 
-                            .Subject = "No Autocrib Transaction for " & dr.Item("ISA_COMPANY_ID") & " (BU: " & dr.Item("isa_business_unit") & ") on " & dDate.ToShortDateString()
+                            .Subject = "No Autocrib Transaction for " & dr.Item("ISA_COMPANY_ID") & " (BU: " & strBusUnitMy & ") on " & dDate.ToShortDateString()
                             .Priority = MailPriority.High
                             .BodyFormat = MailFormat.Html
-                            .Body = "<html><body><table><tr><td>No transactions processed for site " & dr.Item("ISA_COMPANY_ID") & " (BU: " & dr.Item("isa_business_unit") & ") via autocrib web services on " & dDate.ToShortDateString() & "</td></tr>"
+                            .Body = "<html><body><table><tr><td>No transactions processed for site " & dr.Item("ISA_COMPANY_ID") & " (BU: " & strBusUnitMy & ") via autocrib web services on " & dDate.ToShortDateString() & "</td></tr>"
 
 
                         End With
@@ -250,27 +261,118 @@ Module Module1
                         If bReslt = False Then
                             objStreamWriter.WriteLine("  Error sending email to: " & Mailer.To & ", from: " & Mailer.From & ", - at " & Now().ToString())
                         Else
-                            objStreamWriter.WriteLine("E-mail was sent successfully for " & dr.Item("ISA_COMPANY_ID") & " BU: " & dr.Item("isa_business_unit") & "")
+                            objStreamWriter.WriteLine("E-mail was sent successfully for " & dr.Item("ISA_COMPANY_ID") & " BU: " & strBusUnitMy & "")
                         End If
                     Else
                         If ds1.Tables(0).Rows.Count > 0 Then
                             bReslt = True
-                            objStreamWriter.WriteLine("There are " & ds1.Tables(0).Rows.Count & " transactions for " & dr.Item("ISA_COMPANY_ID") & " (BU: " & dr.Item("isa_business_unit") & ") on " & dDate.ToShortDateString())
+                            objStreamWriter.WriteLine("There are " & ds1.Tables(0).Rows.Count & " transactions for " & dr.Item("ISA_COMPANY_ID") & " (BU: " & strBusUnitMy & ") on " & dDate.ToShortDateString())
                         End If
                     End If
                 Else
-                    objStreamWriter.WriteLine("No data from SYSADM.ps_isa_autocrb_trx for " & dr.Item("ISA_COMPANY_ID") & " (BU: " & dr.Item("isa_business_unit") & ") on " & dDate.ToShortDateString())
+                    objStreamWriter.WriteLine("No data from SYSADM.ps_isa_autocrb_trx for " & dr.Item("ISA_COMPANY_ID") & " (BU: " & strBusUnitMy & ") on " & dDate.ToShortDateString())
                 End If
             Else
-                objStreamWriter.WriteLine("No data from SYSADM.ps_isa_autocrb_trx for " & dr.Item("ISA_COMPANY_ID") & " (BU: " & dr.Item("isa_business_unit") & ") on " & dDate.ToShortDateString())
+                objStreamWriter.WriteLine("No data from SYSADM.ps_isa_autocrb_trx for " & dr.Item("ISA_COMPANY_ID") & " (BU: " & strBusUnitMy & ") on " & dDate.ToShortDateString())
             End If
         Catch ex As Exception
             bReslt = False
-            objStreamWriter.WriteLine("Error retrieving data from SYSADM.ps_isa_autocrb_trx for " & dr.Item("ISA_COMPANY_ID") & " (BU: " & dr.Item("isa_business_unit") & ") on " & dDate.ToShortDateString())
+            objStreamWriter.WriteLine("Error retrieving data from SYSADM.ps_isa_autocrb_trx for " & dr.Item("ISA_COMPANY_ID") & " (BU: " & strBusUnitMy & ") on " & dDate.ToShortDateString())
             objStreamWriter.WriteLine("Error: " & ex.Message)
         End Try
 
         Return bReslt
+    End Function
+
+    Private Function GetExtraToBasedBusUnit(ByVal strBusUnitMy As String) As String
+        Dim strExtraTo As String = ""
+        Dim strMySettngsValue As String = ""
+        If Trim(strBusUnitMy) <> "" Then
+            strBusUnitMy = UCase(Trim(strBusUnitMy))
+            Select Case strBusUnitMy
+                Case "I0906", "I0907", "I0908"
+                    Try
+                        strMySettngsValue = My.Settings("BU_I090X_VISTEON").ToString.Trim
+                    Catch ex As Exception
+                        strMySettngsValue = ""
+                    End Try
+                    If Trim(strMySettngsValue) <> "" Then
+                        strExtraTo = strMySettngsValue
+                    Else
+                        strExtraTo = ""
+                    End If
+                Case "I0278"
+                    Try
+                        strMySettngsValue = My.Settings("BU_I0278").ToString.Trim
+                    Catch ex As Exception
+                        strMySettngsValue = ""
+                    End Try
+                    If Trim(strMySettngsValue) <> "" Then
+                        strExtraTo = strMySettngsValue
+                    Else
+                        strExtraTo = ""
+                    End If
+                Case "I0405"
+                    Try
+                        strMySettngsValue = My.Settings("BU_I0405").ToString.Trim
+                    Catch ex As Exception
+                        strMySettngsValue = ""
+                    End Try
+                    If Trim(strMySettngsValue) <> "" Then
+                        strExtraTo = strMySettngsValue
+                    Else
+                        strExtraTo = ""
+                    End If
+                Case "I0277"
+                    Try
+                        strMySettngsValue = My.Settings("BU_I0277").ToString.Trim
+                    Catch ex As Exception
+                        strMySettngsValue = ""
+                    End Try
+                    If Trim(strMySettngsValue) <> "" Then
+                        strExtraTo = strMySettngsValue
+                    Else
+                        strExtraTo = ""
+                    End If
+                Case "I0440"
+                    Try
+                        strMySettngsValue = My.Settings("BU_I0440").ToString.Trim
+                    Catch ex As Exception
+                        strMySettngsValue = ""
+                    End Try
+                    If Trim(strMySettngsValue) <> "" Then
+                        strExtraTo = strMySettngsValue
+                    Else
+                        strExtraTo = ""
+                    End If
+                Case "I0450"
+                    Try
+                        strMySettngsValue = My.Settings("BU_I0450").ToString.Trim
+                    Catch ex As Exception
+                        strMySettngsValue = ""
+                    End Try
+                    If Trim(strMySettngsValue) <> "" Then
+                        strExtraTo = strMySettngsValue
+                    Else
+                        strExtraTo = ""
+                    End If
+                Case "I0469"
+                    Try
+                        strMySettngsValue = My.Settings("BU_I0469").ToString.Trim
+                    Catch ex As Exception
+                        strMySettngsValue = ""
+                    End Try
+                    If Trim(strMySettngsValue) <> "" Then
+                        strExtraTo = strMySettngsValue
+                    Else
+                        strExtraTo = ""
+                    End If
+                Case Else
+                    strExtraTo = ""
+            End Select
+        End If  '  Trim(strBusUnitMy) <> ""
+
+        Return strExtraTo
     End Function
 
     Private Function sendemail(ByVal mailer As MailMessage) As Boolean
@@ -324,18 +426,18 @@ Module Module1
 
     Public Sub SendLogger(ByVal subject As String, ByVal body As String, ByVal messageType As String, ByVal MailType As String, _
                    ByVal EmailTo As String, ByVal EmailCc As String, ByVal EmailBcc As String, ByVal EmailFrom As String)
-        Try
-            Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
-            Dim MailAttachmentName As String()
-            Dim MailAttachmentbytes As New List(Of Byte())()
-            Dim objException As String
-            Dim objExceptionTrace As String
+        'Try
+        '    Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
+        '    Dim MailAttachmentName As String()
+        '    Dim MailAttachmentbytes As New List(Of Byte())()
+        '    Dim objException As String
+        '    Dim objExceptionTrace As String
 
-            SDIEmailService.EmailUtilityServices(MailType, EmailFrom, EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
-            ' '   http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx
-        Catch ex As Exception
+        '    SDIEmailService.EmailUtilityServices(MailType, EmailFrom, EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
+        '    ' '   http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx
+        'Catch ex As Exception
 
-        End Try
+        'End Try
     End Sub
 
 End Module
