@@ -418,6 +418,8 @@ Module Module1
         Try
             'SendLogger(eml.Subject, eml.Body, "QUOTEAPPROVAL", "Mail", eml.To, eml.Cc, eml.Bcc)
             SendLogger(mailer.Subject, mailer.Body, "CHECKAUTOCRIBTRANSACTNS", "Mail", mailer.To, "", mailer.Bcc, mailer.From)
+
+            '' old code
             'UpdEmailOut.UpdEmailOut.UpdEmailOut(mailer.Subject, mailer.From, mailer.To, "", "", "N", mailer.Body, connectOR)
         Catch ex As Exception
 
@@ -426,18 +428,18 @@ Module Module1
 
     Public Sub SendLogger(ByVal subject As String, ByVal body As String, ByVal messageType As String, ByVal MailType As String, _
                    ByVal EmailTo As String, ByVal EmailCc As String, ByVal EmailBcc As String, ByVal EmailFrom As String)
-        'Try
-        '    Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
-        '    Dim MailAttachmentName As String()
-        '    Dim MailAttachmentbytes As New List(Of Byte())()
-        '    Dim objException As String
-        '    Dim objExceptionTrace As String
+        Try
+            Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
+            Dim MailAttachmentName As String()
+            Dim MailAttachmentbytes As New List(Of Byte())()
+            Dim objException As String
+            Dim objExceptionTrace As String
 
-        '    SDIEmailService.EmailUtilityServices(MailType, EmailFrom, EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
-        '    ' '   http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx
-        'Catch ex As Exception
+            SDIEmailService.EmailUtilityServices(MailType, EmailFrom, EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
+            ' '   http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx
+        Catch ex As Exception
 
-        'End Try
+        End Try
     End Sub
 
 End Module
