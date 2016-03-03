@@ -134,7 +134,7 @@ Module SDI_BRT_HeaderLine
                     "SYSADM8.PS_APXVCHR_HDR_STG.SALETX_AMT, SYSADM8.PS_APXVCHR_HDR_STG.FREIGHT_AMT, " & _
                     "SYSADM8.PS_APXVCHR_HDR_STG.VCHR_BLD_KEY_C1 " & _
                     "FROM SYSADM8.PS_APXVCHR_HDR_STG, SYSADM8.PS_VENDOR " & _
-                    "WHERE PS_APXVCHR_HDR_STG.VENDOR_ID = PS_VENDOR.VENDOR_ID " & _
+                    "WHERE PS_APXVCHR_HDR_STG.VENDOR_ID = PS_VENDOR.VENDOR_ID(+) " & _
                   "AND SYSADM8.PS_APXVCHR_HDR_STG.USER_HDR_CHAR1 = ' '"
 
         oledbc = New OleDbConnection(connectionString)
