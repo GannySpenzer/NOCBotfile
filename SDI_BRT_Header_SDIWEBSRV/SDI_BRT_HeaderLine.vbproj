@@ -107,6 +107,14 @@
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="SDI.ApplicationLogger, Version=2.0.0.0, Culture=neutral">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Refrces\SDI.ApplicationLogger.dll</HintPath>
+    </Reference>
+    <Reference Include="SDI.UNCC.WorkOrderAdapter, Version=1.0.0.0, Culture=neutral">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Refrces\SDI.UNCC.WorkOrderAdapter.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Data">
@@ -196,6 +204,8 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Refrces\SDI.ApplicationLogger.dll" />
+    <Content Include="Refrces\SDI.UNCC.WorkOrderAdapter.dll" />
     <Content Include="Refrces\UpdEmailOut.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />

@@ -71,6 +71,15 @@ Namespace My
                 Return CType(Me("myFilePath"),String)
             End Get
         End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("C:\Program Files (x86)\SDI\SDI_BRT_HeaderLine\Logs")>  _
+        Public ReadOnly Property logPath() As String
+            Get
+                Return CType(Me("logPath"),String)
+            End Get
+        End Property
     End Class
 End Namespace
 
