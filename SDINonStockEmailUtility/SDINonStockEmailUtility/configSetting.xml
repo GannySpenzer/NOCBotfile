@@ -2,17 +2,17 @@
 <configuration>
 	<!-- DATABASE CONNECTION
 	*** for PRODUCTION access
-	<sourceDB cnstring="Provider=MSDAORA.1;Data Source=PROD;User ID=einternet;Password=einternet;"
+	<sourceDB cnstring="Provider=OraOLEDB.Oracle.1;Data Source=PROD;User ID=einternet;Password=einternet;"
 		type="oracle8" />
 	*** for TEST DB access
-	<sourceDB cnstring="Provider=MSDAORA.1;Data Source=PLGR;User ID=ewindows;Password=ewindows;"
+	<sourceDB cnstring="Provider=OraOLEDB.Oracle.1;Data Source=PLGR;User ID=ewindows;Password=ewindows;"
 		type="oracle8" />
 	//-->
   <appSettings>
-    <add key="OLEDBconString" value="Provider=MSDAORA.1;Password=sd1exchange;User Id=sdiexchange;Data Source=RPTG" />
+    <add key="OLEDBconString" value="Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User Id=sdiexchange;Data Source=RPTG" />
     <add key="SQLDBconString" value="server=DAZZLE;uid=sa;pwd=sdiadmin;initial catalog='pubs'" />
   </appSettings>
-	<sourceDB cnString="Provider=MSDAORA.1;Data Source=RPTG;User ID=einternet;Password=einternet;" type="oracle8" />
+	<sourceDB cnString="Provider=OraOLEDB.Oracle.1;Data Source=RPTG;User ID=einternet;Password=einternet;" type="oracle8" />
 	<!-- TIMER
 		 timer object properties for checking newly added quoted non-stock items on the database.  this
 		 parameter (as for the moment) doesn't recognize other units other than "secs" so don't change
