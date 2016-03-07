@@ -11,15 +11,17 @@ Imports System.Drawing.Color
 Imports System.Data.SqlClient
 Imports System.Xml
 Imports System.Web
+Imports SDI.ApplicationLogger
 
 
 Public Class QuoteNonStockProcessor
 
-    Private Const LETTER_HEAD_SdiExch As String = "<table><tbody><tr><td style='width:71%;'><img src='http://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></td>" & _
+    Private m_logger As appLogger = Nothing
+    Private Const LETTER_HEAD_SdiExch As String = "<table><tbody><tr><td style='width:71%;'><img src='https://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></td>" & _
                                                     "<td><br/><br/><br/><div align='center'><SPAN style='FONT-SIZE: x-large; WIDTH: 256px; FONT-FAMILY: Arial'>SDI Marketplace</SPAN></div>" & _
                                                     "<div align='center'><SPAN>SDiExchange - Request for Quote</SPAN></div></td></tr></tbody></table>" & _
                                                     "<HR width='100%' SIZE='1'>"
-    Private Const LETTER_HEAD As String = "<div><img src='http://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></div>" & _
+    Private Const LETTER_HEAD As String = "<div><img src='https://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></div>" & _
                                             "<div align=""center""><SPAN style=""FONT-SIZE: x-large; WIDTH: 256px; FONT-FAMILY: Arial"">SDI Marketplace</SPAN></div>" & _
                                             "<div align=""center""><SPAN>In-Site® Online - Request for Quote</SPAN></div><br><br>" & _
                                             "<HR width='100%' SIZE='1'>"
@@ -67,7 +69,7 @@ Public Class QuoteNonStockProcessor
     Private m_cURL As String
     Private m_cURL_SDiExch As String
     Private m_cList_BU_SDiExch As String
-    Private m_eventLogger As System.Diagnostics.EventLog
+    'Private m_eventLogger As System.Diagnostics.EventLog
     Private Shared m_colMsgs As QuotedNStkItemCollection = New QuotedNStkItemCollection
     Private m_config As System.Xml.XmlDocument
     Private m_arrPunchInBUList As New ArrayList
@@ -77,6 +79,7 @@ Public Class QuoteNonStockProcessor
     Private m_xmlConfig As XmlDocument
     Private m_configFile As String = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly.GetModules()(0).FullyQualifiedName) & "\configSetting.xml"
 
+    Dim logpath As String = "C:\Program Files (x86)\SDI\SDINonStockEmailUtility\LOGS\NonStockEmailUtil" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
 
     Public ReadOnly Property DBConnection() As OleDbConnection
         Get
@@ -93,14 +96,14 @@ Public Class QuoteNonStockProcessor
         End Set
     End Property
 
-    Public Property EventLogger() As System.Diagnostics.EventLog
-        Get
-            Return m_eventLogger
-        End Get
-        Set(ByVal Value As System.Diagnostics.EventLog)
-            m_eventLogger = Value
-        End Set
-    End Property
+    'Public Property EventLogger() As System.Diagnostics.EventLog
+    '    Get
+    '        Return m_eventLogger
+    '    End Get
+    '    Set(ByVal Value As System.Diagnostics.EventLog)
+    '        m_eventLogger = Value
+    '    End Set
+    'End Property
 
     Public Property defaultMsgFROM() As String
         Get
@@ -259,7 +262,9 @@ Public Class QuoteNonStockProcessor
             Return (nRecs > 0)
 
         Catch ex As Exception
-            m_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+            'm_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+
+            m_logger.WriteVerboseLog(cHdr & ".  Error:  " & ex.ToString)
             SendAlertMessage(msg:=cHdr & ex.ToString)
         End Try
     End Function
@@ -548,10 +553,29 @@ Public Class QuoteNonStockProcessor
     Public Sub Execute()
         Dim cHdr As String = "QuoteNonStockProcessor.Execute: "
         Dim trackOrderNo As String = ConfigurationManager.AppSettings("TrackOrderNo")
+
+        '    log path/file
+        Dim sLogPath As String = ""
         Try
-            'm_eventLogger.WriteEntry("executing business rule(s) ...", EventLogEntryType.Information)
+            sLogPath = My.Settings("logMyPath").ToString.Trim
+        Catch ex As Exception
+        End Try
+        If (sLogPath.Length > 0) Then
+            logpath = sLogPath & "\NonStockEmailUtil" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+        End If
+
+        ' default log level
+        Dim logLevel As System.Diagnostics.TraceLevel = TraceLevel.Verbose
+
+        ' initialize log
+        m_logger = New appLogger(logpath, logLevel)
+
+        ' log verbose
+        m_logger.WriteVerboseLog(" Start of Quote Non Stock Email Utility process: " & Now())
+
+        Try
             If Not trackOrderNo Is Nothing And trackOrderNo.ToLower().Equals("true") Then
-                SendLogger("Logging execution of Quote Non Stock Utility", "Execution started at " & DateTime.Now.ToShortTimeString(), "LOGGER", "Mail", "WebDev@sdi.com;SDIportalsupport@avasoft.biz", String.Empty, String.Empty)
+                SendLogger("Logging execution of Quote Non Stock Email Utility", "Execution started at " & DateTime.Now.ToShortTimeString(), "LOGGER", "Mail", "WebDev@sdi.com;SDIportalsupport@avasoft.biz", String.Empty, String.Empty)
             End If
 
             SetConfigXML()
@@ -581,7 +605,13 @@ Public Class QuoteNonStockProcessor
             End If
 
             If Not trackOrderNo Is Nothing And trackOrderNo.ToLower().Equals("true") Then
-                SendLogger("Logging execution of Quote Non Stock Utility", "The following Orders were processed " & SBord.ToString().TrimEnd(",") & "by the utility. <br/>Execution is ended at " & DateTime.Now.ToShortTimeString(), "LOGGER", "Mail", "WebDev@sdi.com;SDIportalsupport@avasoft.biz", String.Empty, String.Empty)
+                If m_colMsgs.Count > 0 Then
+                    m_logger.WriteVerboseLog("The following Orders were processed: " & SBord.ToString().TrimEnd(",") & " by Quote Non Stock Email Utility. ")
+                    SendLogger("Logging execution of Quote Non Stock Utility", "The following Orders were processed: " & SBord.ToString().TrimEnd(",") & " by Quote Non Stock Email Utility. <br/>Execution is ended at " & DateTime.Now.ToShortTimeString(), "LOGGER", "Mail", "WebDev@sdi.com;SDIportalsupport@avasoft.biz", String.Empty, String.Empty)
+                Else
+                    m_logger.WriteVerboseLog("No Orders were found. Nothing was processed by Quote Non Stock Email Utility. ")
+                    SendLogger("Logging execution of Quote Non Stock Utility", "No Orders were found. Nothing was processed by Quote Non Stock Email Utility. ", "LOGGER", "Mail", "WebDev@sdi.com;SDIportalsupport@avasoft.biz", String.Empty, String.Empty)
+                End If
             End If
 
             m_CN.Close()
@@ -589,16 +619,19 @@ Public Class QuoteNonStockProcessor
             m_colMsgs = Nothing
 
         Catch ex As Exception
-            'SendLogger("Quote Non Stock New Utility - Dev", ex, "ERROR")
             Try
                 m_CN.Dispose()
                 m_CN.Close()
             Catch ex1 As Exception
 
             End Try
-            m_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+
+            m_logger.WriteVerboseLog(cHdr & ".  Error:  " & ex.ToString)
             SendAlertMessage(msg:=cHdr & ex.ToString)
         End Try
+
+        m_logger.WriteVerboseLog(" End of Quote Non Stock Email Utility process: " & Now())
+
     End Sub
 
     Public Sub SetConfigXML()
@@ -734,17 +767,16 @@ Public Class QuoteNonStockProcessor
                     End If
                 End If
 
-                ' start processing
-                'Execute()
             End If
 
         Catch ex As Exception
-            SendLogger("Error in Quote Non Stock Utility", ex, "ERROR")
+            SendLogger("Error in Quote Non Stock Email Utility", ex, "ERROR")
             'MyBase.EventLog.WriteEntry(cHdr & vbCrLf & ex.ToString, EventLogEntryType.Error)
+            m_logger.WriteVerboseLog("SetConfigXML.  Error:  " & ex.ToString)
         End Try
     End Sub
 
-    Public Sub SendLogger(ByVal subject As String, ByVal body As String, ByVal messageType As String, ByVal MailType As String, ByVal EmailTo As String, ByVal EmailCc As String, ByVal EmailBcc As String)
+    Public Shared Sub SendLogger(ByVal subject As String, ByVal body As String, ByVal messageType As String, ByVal MailType As String, ByVal EmailTo As String, ByVal EmailCc As String, ByVal EmailBcc As String)
         Try
             Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
             Dim MailAttachmentName As String()
@@ -752,30 +784,39 @@ Public Class QuoteNonStockProcessor
             Dim objException As String
             Dim objExceptionTrace As String
 
+            'EmailTo = "vitaly.rovensky@sdi.com"
             SDIEmailService.EmailUtilityServices(MailType, "SDIExchADMIN@sdi.com", EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
+
+            'UpdEmailOut.UpdEmailOut.UpdEmailOut(subject, "SDIExchADMIN@sdi.com", EmailTo, "", EmailBcc, "N", body, m_CN)
 
         Catch ex As Exception
 
         End Try
     End Sub
 
-    Public Sub SendLogger(ByVal subject As String, ByVal exception As Exception, ByVal messageType As String, Optional ByVal Query As String = "", Optional ByVal ConString As String = "")
+    Public Shared Sub SendLogger(ByVal subject As String, ByVal exception As Exception, ByVal messageType As String, Optional ByVal Query As String = "", Optional ByVal ConString As String = "")
         Try
             Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
             Dim MailAttachmentName As String()
             Dim MailAttachmentbytes As New List(Of Byte())()
-            Dim objException As String
-            Dim objExceptionTrace As String
+            Dim objException As String = ""
+            Dim objExceptionTrace As String = ""
             Dim StrQuery As String = String.Empty
             Dim ConStr As String = String.Empty
             Try
                 objException = "<b> Exception </b> - " & exception.Message & "<br/>"
                 objExceptionTrace = "<b> Exception Trace </b> - " & exception.StackTrace & "<br/>"
                 StrQuery = "<b> Execution Query </b> - " & Query & "<br/>"
-                ConStr = "<b> execution Connection string </b> - " & ConString & "<br/>"
+                ConStr = "<b> Database Connection string </b> - " & ConString & "<br/>"
             Catch ex As Exception
             End Try
+
             SDIEmailService.EmailUtilityServices("Mail", "SDIExchADMIN@sdi.com", "WebDev@sdi.com", subject, String.Empty, String.Empty, objException & objExceptionTrace & Query & ConStr, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
+
+            'Dim strBody As String = objException & objExceptionTrace & Query & ConStr
+
+            'UpdEmailOut.UpdEmailOut.UpdEmailOut(subject, "SDIExchADMIN@sdi.com", "WebDev@sdi.com", "", "", "N", strBody, m_CN)
+
         Catch ex As Exception
 
         End Try
@@ -805,13 +846,16 @@ Public Class QuoteNonStockProcessor
         m_cList_BU_SDiExch = ""
 
         m_CN = Nothing
-        m_eventLogger = Nothing
+        'm_eventLogger = Nothing
         m_colMsgs = Nothing
         m_config = Nothing
     End Sub
 
     Public Function GetQuotedItems() As Integer
         Dim cHdr As String = "QuoteNonStockProcessor.GetQuotedItems: "
+        Dim connectionString As String = ConfigurationManager.AppSettings("OLEDBconString")
+        Dim connection As OleDbConnection = New OleDbConnection(connectionString)
+
         Try
             'Dim cSQL As String = _
             '"SELECT A.BUSINESS_UNIT AS BUSINESS_UNIT, A.REQ_ID AS REQ_ID, " & _
@@ -881,8 +925,6 @@ Public Class QuoteNonStockProcessor
                                  ""
 
             Dim rdr As OleDbDataReader
-            Dim connectionString As String = ConfigurationManager.AppSettings("OLEDBconString")
-            Dim connection As OleDbConnection = New OleDbConnection(connectionString)
             'Dim cmd As OleDbCommand = m_CN.CreateCommand
             connection.Open()
 
@@ -1219,12 +1261,58 @@ Public Class QuoteNonStockProcessor
             ' double check and/or search for primary recipient if not defined
             CheckSearchPrimaryRecipient()
 
+            If connection.State = ConnectionState.Closed Then
+
+            Else
+                Try
+                    connection.Close()
+                Catch exCon As Exception
+
+                End Try
+            End If
+
             Return m_colMsgs.Count
 
         Catch ex As Exception
-            m_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+            Try
+                connection.Close()
+            Catch exErr As Exception
+
+            End Try
+            'm_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+
+            m_logger.WriteVerboseLog(cHdr & ".  Error:  " & ex.ToString)
             SendAlertMessage(msg:=cHdr & ex.ToString)
+            Return 0
         End Try
+
+    End Function
+
+    Public Shared Function GetURL() As String
+        Dim sRet As String = ""
+        Dim sWebAppName As String = "ims.sdi.com:8080/sdiconnect/"
+        Dim sCNString As String = m_CN.ConnectionString
+        Dim strDBase As String = "RPTG"
+        If Len(sCNString) > 4 Then
+            strDBase = UCase(Right(sCNString, 4))
+        End If
+        Try
+            sWebAppName = ConfigurationManager.AppSettings("WebAppName")
+            If Trim(sWebAppName) = "" Then
+                sWebAppName = "ims.sdi.com:8080/sdiconnect/"
+            End If
+        Catch ex As Exception
+            sWebAppName = "ims.sdi.com:8080/sdiconnect/"
+        End Try
+
+        Select Case strDBase
+            Case "PROD"
+                sRet = "https://www.sdiexchange.com/"
+            Case Else
+                sRet = "http://" & sWebAppName
+        End Select
+
+        Return sRet
     End Function
 
     Private Sub CheckSearchPrimaryRecipient()
@@ -1339,7 +1427,9 @@ Public Class QuoteNonStockProcessor
             End If
 
         Catch ex As Exception
-            m_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+            'm_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+
+            m_logger.WriteVerboseLog(cHdr & ".  Error:  " & ex.ToString)
             SendAlertMessage(msg:=cHdr & ex.ToString)
         End Try
     End Sub
@@ -1524,7 +1614,7 @@ Public Class QuoteNonStockProcessor
                                         AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
                                         AddVersionNumber() & _
                                         "<HR width='100%' SIZE='1'>" & _
-                                        "<img src='http://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
+                                        "<img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
                                     "</BODY>" & _
                                "</HTML>"
                     Else
@@ -1546,7 +1636,7 @@ Public Class QuoteNonStockProcessor
                                             AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
                                             AddVersionNumber() & _
                                             "<HR width='100%' SIZE='1'>" & _
-                                            "<img src='http://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
+                                            "<img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
                                         "</BODY>" & _
                                    "</HTML>"
                     End If
@@ -1573,7 +1663,7 @@ Public Class QuoteNonStockProcessor
                                         AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
                                         AddVersionNumber() & _
                                         "<HR width='100%' SIZE='1'>" & _
-                                            "<img src='http://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
+                                            "<img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
                                     "</BODY>" & _
                                "</HTML>"
                     Else
@@ -1596,7 +1686,7 @@ Public Class QuoteNonStockProcessor
                                             AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
                                             AddVersionNumber() & _
                                             "<HR width='100%' SIZE='1'>" & _
-                                            "<img src='http://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
+                                            "<img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
                                         "</BODY>" & _
                                    "</HTML>"
                     End If
@@ -1656,6 +1746,11 @@ Public Class QuoteNonStockProcessor
                     "TO_DATE('" & System.DateTime.Now.ToString & "','MM/DD/YYYY HH:MI:SS AM') " & _
                 ")"
 
+                If m_CN.State = ConnectionState.Open Then
+
+                Else
+                    m_CN.Open()
+                End If
                 ' create a new instance of the command object
                 cmd = New OleDbCommand(cmdText:=cSQL, connection:=m_CN)
                 cmd.CommandType = CommandType.Text
@@ -1664,7 +1759,13 @@ Public Class QuoteNonStockProcessor
                 Try
                     cmd.ExecuteNonQuery()
                 Catch ex As Exception
-                    m_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+                    'm_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+                    Try
+                        m_CN.Close()
+                    Catch exErr2 As Exception
+
+                    End Try
+                    m_logger.WriteVerboseLog(cHdr & ".  Error:  " & ex.ToString)
                 End Try
 
                 ' this code is for UNCC buyer tracking purposes
@@ -1689,10 +1790,22 @@ Public Class QuoteNonStockProcessor
                 If Not (cmd Is Nothing) Then
                     cmd.Dispose()
                 End If
+                Try
+                    m_CN.Close()
+                Catch ex111 As Exception
+
+                End Try
             End If
 
         Catch ex As Exception
-            m_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+            'm_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+
+            Try
+                m_CN.Close()
+            Catch ex112 As Exception
+
+            End Try
+            m_logger.WriteVerboseLog(cHdr & ".  Error:  " & ex.ToString)
             SendAlertMessage(msg:=cHdr & ex.ToString)
             'SendLogger("Quote Non Stock New Utility - Dev", ex, "ERROR")
         End Try
@@ -1727,7 +1840,9 @@ Public Class QuoteNonStockProcessor
             Return cInfoHTML
 
         Catch ex As Exception
-            m_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+            'm_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+
+            m_logger.WriteVerboseLog(cHdr & ".  Error:  " & ex.ToString)
             SendAlertMessage(msg:=cHdr & ex.ToString)
         End Try
         Return ""
@@ -1738,7 +1853,8 @@ Public Class QuoteNonStockProcessor
         Dim cHdr As String = "QuoteNonStockProcessor.FormHTMLLink: "
         If bShowLink Then
             Try
-                Dim m_cURL1 As String = "http://" & ConfigurationManager.AppSettings("WebAppName") & "Approvequote.aspx"
+                'Dim m_cURL1 As String = "http://" & ConfigurationManager.AppSettings("WebAppName") & "Approvequote.aspx"
+                Dim m_cURL1 As String = GetURL() & "Approvequote.aspx"
                 Dim boEncrypt As New Encryption64
 
                 Dim cParam As String = "?fer=" & boEncrypt.Encrypt(cOrderID, m_cEncryptionKey) & _
@@ -1757,7 +1873,9 @@ Public Class QuoteNonStockProcessor
                 Return cLink
 
             Catch ex As Exception
-                m_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+                'm_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+
+                m_logger.WriteVerboseLog(cHdr & ".  Error:  " & ex.ToString)
                 SendAlertMessage(msg:=cHdr & ex.ToString)
             End Try
         End If
@@ -1769,7 +1887,8 @@ Public Class QuoteNonStockProcessor
         Dim cHdr As String = "QuoteNonStockProcessor.FormHTMLLink: "
         If bShowLink Then
             Try
-                Dim m_cURL1 As String = "http://" & ConfigurationManager.AppSettings("WebAppName") & "Approvequote.aspx"
+                'Dim m_cURL1 As String = "http://" & ConfigurationManager.AppSettings("WebAppName") & "Approvequote.aspx"
+                Dim m_cURL1 As String = GetURL() & "Approvequote.aspx"
                 Dim boEncrypt As New Encryption64
 
                 Dim cParam As String = "?fer=" & boEncrypt.Encrypt(cOrderID, m_cEncryptionKey) & _
@@ -1789,7 +1908,9 @@ Public Class QuoteNonStockProcessor
                 Return cLink
 
             Catch ex As Exception
-                m_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+                'm_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+
+                m_logger.WriteVerboseLog(cHdr & ".  Error:  " & ex.ToString)
                 SendAlertMessage(msg:=cHdr & ex.ToString)
             End Try
         End If
@@ -1823,7 +1944,9 @@ Public Class QuoteNonStockProcessor
             Return cInfoHTML
 
         Catch ex As Exception
-            m_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+            'm_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+
+            m_logger.WriteVerboseLog(cHdr & ".  Error:  " & ex.ToString)
             SendAlertMessage(msg:=cHdr & ex.ToString)
         End Try
         Return ""
@@ -1841,7 +1964,9 @@ Public Class QuoteNonStockProcessor
             Return cMsg
 
         Catch ex As Exception
-            m_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+            'm_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+
+            m_logger.WriteVerboseLog(cHdr & ".  Error:  " & ex.ToString)
             SendAlertMessage(msg:=cHdr & ex.ToString)
         End Try
         Return (cMsg)
@@ -1919,7 +2044,9 @@ Public Class QuoteNonStockProcessor
             If (msg Is Nothing) Then
                 msg = ""
             End If
-            m_eventLogger.WriteEntry(cHdr & ".  " & msg & ".  " & ex.ToString, EventLogEntryType.Error)
+            'm_eventLogger.WriteEntry(cHdr & ".  " & msg & ".  " & ex.ToString, EventLogEntryType.Error)
+
+            m_logger.WriteVerboseLog(cHdr & ".  " & msg & ".  " & ex.ToString)
         End Try
     End Sub
 
@@ -2367,8 +2494,11 @@ Public Class QuoteNonStockProcessor
         Dim strhref As String
         Dim strhrefAlt As String
 
-        strhref = "http://" & ConfigurationManager.AppSettings("WebAppName") & "approveorder.aspx?fer=" & streOrdnum & "&op=" & streApper & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
-        strhrefAlt = "http://" & ConfigurationManager.AppSettings("WebAppName") & "approveorder.aspx?fer=" & streOrdnum & "&op=" & streApperAlt & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
+        'strhref = "http://" & ConfigurationManager.AppSettings("WebAppName") & "approveorder.aspx?fer=" & streOrdnum & "&op=" & streApper & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
+        'strhrefAlt = "http://" & ConfigurationManager.AppSettings("WebAppName") & "approveorder.aspx?fer=" & streOrdnum & "&op=" & streApperAlt & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
+
+        strhref = GetURL() & "approveorder.aspx?fer=" & streOrdnum & "&op=" & streApper & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
+        strhrefAlt = GetURL() & "approveorder.aspx?fer=" & streOrdnum & "&op=" & streApperAlt & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
 
         If String.Equals(strAppAltUserid.Trim(), strAppUserid.Trim()) Then
             NotifyApprover(strAppUserid, strappName, strreqID, itmQuoted.WorkOrderNumber, stritemid, dataGridHTML, strhref, strHldSts, itmQuoted.BusinessUnitOM)
@@ -2404,12 +2534,12 @@ Public Class QuoteNonStockProcessor
         End If
 
         If strHldSts.ToUpper = "B" Then
-            strbodyhead = "<table width='100%'><tbody><tr><td><img src='http://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></td><td width='100%'><br /><br /><br /><br /><br /><br /><center><span style='font-family: Arial; font-size: x-large; text-align: center;'>SDI Marketplace</span></center><center><span style='text-align: center; margin: 0px auto;'>SDiExchange - Request for Budget Approval</span></center></td></tr></tbody></table>" & vbCrLf
+            strbodyhead = "<table width='100%'><tbody><tr><td><img src='https://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></td><td width='100%'><br /><br /><br /><br /><br /><br /><center><span style='font-family: Arial; font-size: x-large; text-align: center;'>SDI Marketplace</span></center><center><span style='text-align: center; margin: 0px auto;'>SDiExchange - Request for Budget Approval</span></center></td></tr></tbody></table>" & vbCrLf
             strbodyhead = strbodyhead & "<HR width='100%' SIZE='1'>" & vbCrLf
             strbodyhead = strbodyhead & "&nbsp;" & vbCrLf
             strbodyhead = strbodyhead & "&nbsp;" & vbCrLf
         End If
-        strbodyhead = "<table width='100%'><tbody><tr><td><img src='http://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></td><td width='100%'><br /><br /><br /><br /><br /><br /><center><span style='font-family: Arial; font-size: x-large; text-align: center;'>SDI Marketplace</span></center><center><span style='text-align: center; margin: 0px auto;'>SDiExchange - Request for Approval</span></center></td></tr></tbody></table>" & vbCrLf
+        strbodyhead = "<table width='100%'><tbody><tr><td><img src='https://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></td><td width='100%'><br /><br /><br /><br /><br /><br /><center><span style='font-family: Arial; font-size: x-large; text-align: center;'>SDI Marketplace</span></center><center><span style='text-align: center; margin: 0px auto;'>SDiExchange - Request for Approval</span></center></td></tr></tbody></table>" & vbCrLf
         strbodyhead = strbodyhead & "<HR width='100%' SIZE='1'>" & vbCrLf
         strbodyhead = strbodyhead & "&nbsp;" & vbCrLf
         strbodyhead = strbodyhead & "&nbsp;" & vbCrLf
@@ -2453,7 +2583,7 @@ Public Class QuoteNonStockProcessor
         strbodydetl = strbodydetl & "to APPROVE or REJECT order. </p>"
         strbodydetl = strbodydetl & "</div>"
         strbodydetl = strbodydetl & "<HR width='100%' SIZE='1'>" & vbCrLf
-        strbodydetl = strbodydetl & "<img src='http://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & vbCrLf
+        strbodydetl = strbodydetl & "<img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & vbCrLf
 
         MailBody = strbodyhead & strbodydetl
         'MailSub = "SDiExchange - Order Number " & strreqID & " needs approval"
@@ -2463,11 +2593,15 @@ Public Class QuoteNonStockProcessor
             MailSub = "SDiExchange - Order Number " & strreqID & " needs approval"
         End If
         MailTo = AppMail
-        Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
-        Dim MailAttachmentName As String()
-        Dim MailAttachmentbytes As New List(Of Byte())()
 
-        SDIEmailService.EmailUtilityServices("MailandStore", MailFrom, MailTo, MailSub, String.Empty, "WebDev@sdi.com", MailBody, "NotifyApprover", MailAttachmentName, MailAttachmentbytes.ToArray())
+        'Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
+        'Dim MailAttachmentName As String()
+        'Dim MailAttachmentbytes As New List(Of Byte())()
+
+        'SDIEmailService.EmailUtilityServices("MailandStore", MailFrom, MailTo, MailSub, String.Empty, "WebDev@sdi.com", MailBody, "NotifyApprover", MailAttachmentName, MailAttachmentbytes.ToArray())
+        SendLogger(MailSub, MailBody, "NotifyApprover", "MailandStore", MailTo, String.Empty, "WebDev@sdi.com")
+
+        'UpdEmailOut.UpdEmailOut.UpdEmailOut(MailSub, "SDIExchADMIN@sdi.com", MailTo, "", "WebDev@sdi.com", "N", MailBody, m_CN)
 
     End Sub
 
