@@ -69,6 +69,20 @@ Public Class PODueDTChangeEmail
 
     Public Sub Main2()
 
+        Dim sMyDbase As String = ""
+        Try
+            sMyDbase = My.Settings("default_DB").ToString.Trim
+        Catch ex As Exception
+            sMyDbase = ""
+        End Try
+        If (sMyDbase.Length > 0) Then
+            m_oraCNstring = "" & _
+                    oraCN_default_provider & _
+                    oraCN_default_creden & _
+                    sMyDbase & _
+                    ""
+        End If
+
         Dim cHdr As String = m_sCommonMsgText & " Main1 "
         Dim logFile As String = m_logPath & Now.ToString("yyyyMMddHHmmss") & ".txt"
         logger = New appLogger(logFile, m_logLevel)
@@ -106,8 +120,8 @@ Public Class PODueDTChangeEmail
 
                         If sendEmailForPO(tempReq) Then
                             For Each myline As ReqLine In tempReq.ReqLines
-                                'flagPOAsProcessed(tempReq.BusinessUnit, tempReq.ReqId, myline.ReqLineNo, _
-                                '             myline.POLineSched_NBR, myline.newDate, True)
+                                flagPOAsProcessed(tempReq.BusinessUnit, tempReq.ReqId, myline.ReqLineNo, _
+                                             myline.POLineSched_NBR, myline.newDate, True)
 
                             Next
                         End If
@@ -395,10 +409,10 @@ Public Class PODueDTChangeEmail
                                 End If
                                 logger.WriteVerboseLog("PROCESSING Business Unit: " & sBusUnit & " PO: " & sPO_ID & _
                                                                                            "PO Line NBR: " & iLineNBR & " PO Sched Line No : " & iSchedNBR)
-                                'If Not flagPOAsProcessed(sBusUnit, sPO_ID, iLineNBR, iSchedNBR, sPODueDate) Then
-                                '    logger.WriteErrorLog("Updating PODUEDTMON FAILED for Business Unit: " & sBusUnit & " PO: " & sPO_ID & _
-                                '                                                        "PO Line NBR: " & iLineNBR & " PO Sched Line No : " & iSchedNBR)
-                                'End If
+                                If Not flagPOAsProcessed(sBusUnit, sPO_ID, iLineNBR, iSchedNBR, sPODueDate) Then
+                                    logger.WriteErrorLog("Updating PODUEDTMON FAILED for Business Unit: " & sBusUnit & " PO: " & sPO_ID & _
+                                                                                        "PO Line NBR: " & iLineNBR & " PO Sched Line No : " & iSchedNBR)
+                                End If
 
                             Next
 
@@ -1268,7 +1282,6 @@ Public Class PODueDTChangeEmail
         Dim bIsSuccessful As Boolean = True
         Dim sEmailBody As String = ""
         Dim eml As New System.Net.Mail.MailMessage
-        'Dim myClient As New System.Net.Mail.SmtpClient
         Dim sEmailTo As String
         Dim saEmailTos As Array
         Dim sOrigDueDate As String = ""
@@ -1276,7 +1289,7 @@ Public Class PODueDTChangeEmail
         Dim fromAddress As System.Net.Mail.MailAddress
 
 
-        sEmailBody = "<HTML><HEAD><META name=GENERATOR content=""MSHTML 8.00.6001.18876""></HEAD>" & _
+        sEmailBody = "<HTML><HEAD><META name=GENERATOR content=""MSHTML 8.00.6001.18876""><img src='https://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></HEAD>" & _
                              "<BODY><CENTER><SPAN style=""WIDTH: 256px; FONT-FAMILY: Arial; FONT-SIZE: x-large"">SDI Marketplace</SPAN></CENTER>" & _
                              "<CENTER><SPAN>SDiExchange -<B> Order Due Date Change</B></SPAN></CENTER>&nbsp;" & _
                               "&nbsp; <DIV><P>Hello SDI Site Rep,<BR></DIV><BR>There has been a Due Date change for Order Number: <B> " & myReq.ReqId.ToString & _
@@ -1302,12 +1315,12 @@ Public Class PODueDTChangeEmail
         Next
 
         sEmailBody &= vbCrLf & "</TABLE> <br><br>&nbsp;<BR>Sincerely,<BR>SDI Customer " & _
-                     "Care<BR>&nbsp;<BR></P></DIV><DIV>&nbsp;</DIV><DIV>&nbsp;</DIV><HR></BODY></HTML>"
+                     "Care<BR>&nbsp;<BR></P></DIV><DIV>&nbsp;</DIV><DIV>&nbsp;</DIV><HR width='100%' SIZE='1'><img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' /></BODY></HTML>"
 
         Try
 
             sEmailTo = GetPOEmailAddress(myReq.BusinessUnit, myReq.EmployeeId)
-                        ' sEmailTo = "joe.rank@sdi.com;"
+
             If sEmailTo <> "" Then
                 If sEmailTo = "NONE" Then
                     logger.WriteVerboseLog("Email not sent due to lack of email addresses. Order Number: " & myReq.ReqId.ToString & ".")
@@ -1329,22 +1342,16 @@ Public Class PODueDTChangeEmail
                         fromAddress = New System.Net.Mail.MailAddress("service.notification@sdi.com")
                     End Try
 
-                    eml.Subject = "Order Due Date has Changed" & ". Sent from SDIWEBSRV."
+                    eml.Subject = "Order Due Date has Changed"   '  & " - from SDIWEBSRV."
 
                     eml.From = fromAddress
 
-                    ' eml.Bcc.Add("joe.rank@sdi.com")
                     eml.IsBodyHtml = True
                     eml.Body = sEmailBody
-                    '' myClient.Host = "localhost"
-                    'myClient.DeliveryMethod = SmtpDeliveryMethod.PickupDirectoryFromIis
-
+                    
                     logger.WriteInformationLog("Sending email to " & eml.To.ToString)
 
                     Try
-                        'myClient.Send(eml)
-
-                        sEmailTo = "vitaly.rovensky@sdi.com"
                         'UpdEmailOut.UpdEmailOut.UpdEmailOut(eml.Subject, "service.notification@sdi.com", sEmailTo, "", "webdev@sdi.com", "N", sEmailBody, cn)
 
                         SendLogger(eml.Subject, sEmailBody, "PODUEDATECHGEMAIL", "Mail", sEmailTo, "", "webdev@sdi.com")
@@ -1792,7 +1799,6 @@ Public Class PODueDTChangeEmail
             Dim objException As String
             Dim objExceptionTrace As String
 
-            'EmailTo = "vitaly.rovensky@sdi.com"
             SDIEmailService.EmailUtilityServices(MailType, "SDIExchange@sdi.com", EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
 
             'UpdEmailOut.UpdEmailOut.UpdEmailOut(subject, "SDIExchADMIN@sdi.com", EmailTo, "", EmailBcc, "N", body, m_CN)
