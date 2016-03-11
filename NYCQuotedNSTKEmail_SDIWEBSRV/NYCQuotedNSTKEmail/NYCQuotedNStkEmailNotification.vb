@@ -1,18 +1,21 @@
 Imports System
 Imports System.Web
 Imports System.Xml
+Imports SDI.ApplicationLogger
 
 Public Class NYCQuotedNStkEmailNotification
 
-
     Private m_xmlConfig As XmlDocument
     Private m_configFile As String = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly.GetModules()(0).FullyQualifiedName) & "\configSetting.xml"
-    'Private m_sLogSource As String = System.Reflection.Assembly.GetExecutingAssembly.GetModules()(0).Name
+
     Private m_sCommonMsgText As String = "NYC Quoted Non-Stock Email Service:"
     Private m_emlAlert As System.Web.Mail.MailMessage
     Private m_sMachineName As String = System.Environment.MachineName
+    Private m_logPath As String = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly.GetModules()(0).FullyQualifiedName) & "\logs\"
+    Private m_logLevel As System.Diagnostics.TraceLevel = TraceLevel.Verbose
+    Private logger As appLogger
 
-    Private WithEvents m_tmrChkQuotes As System.Timers.Timer
+    'Private WithEvents m_tmrChkQuotes As System.Timers.Timer
 
 
 #Region " Component Designer generated code "
@@ -24,33 +27,121 @@ Public Class NYCQuotedNStkEmailNotification
         InitializeComponent()
 
         ''Add any initialization after the InitializeComponent() call
-        'InitService()
+
     End Sub
 
-    ''UserService overrides dispose to clean up the component list.
-    'Protected Overloads Overrides Sub Dispose(ByVal disposing As Boolean)
-    '    If disposing Then
-    '        If Not (components Is Nothing) Then
-    '            components.Dispose()
-    '        End If
-    '    End If
-    '    MyBase.Dispose(disposing)
-    'End Sub
-
     ' The main entry point for the process
-    <MTAThread()> _
-    Shared Sub Main()
-        'Dim ServicesToRun() As System.ServiceProcess.ServiceBase
+    Sub Main1()
 
-        '' More than one NT Service may run within the same process. To add
-        '' another service to this process, change the following line to
-        '' create a second service object. For example,
-        ''
-        ''   ServicesToRun = New System.ServiceProcess.ServiceBase () {New Service1, New MySecondUserService}
-        ''
-        'ServicesToRun = New System.ServiceProcess.ServiceBase() {New NYCQuotedNStkEmailNotification}
+        Dim logFile As String = m_logPath & Now.ToString("yyyyMMddHHmmss") & ".txt"
+        logger = New appLogger(logFile, m_logLevel)
 
-        'System.ServiceProcess.ServiceBase.Run(ServicesToRun)
+        logger.WriteLog("NYC Quoted Non Stock Email Notification Started", TraceLevel.Info)
+
+        ' load config file
+        m_xmlConfig = New XmlDocument
+        m_xmlConfig.Load(filename:=m_configFile)
+
+        ' retrieve the source DB connection string to use
+        Dim cnString As String = ""
+        If Not (m_xmlConfig("configuration")("sourceDB").Attributes("cnString").InnerText Is Nothing) Then
+            cnString = m_xmlConfig("configuration")("sourceDB").Attributes("cnString").InnerText.Trim
+        End If
+        logger.WriteLog("Oracle connection string: " & cnString, TraceLevel.Info)
+
+        ' instantiate the process engine for checking quoted non-stock and processing messages
+        Dim quoteProcess As New QuoteNonStockProcessor(cnString)
+
+        quoteProcess.Logger = logger
+
+        With quoteProcess
+
+            If .Evaluate Then
+
+                logger.WriteLog("Evaluated OK. Reading Configuration file.", TraceLevel.Info)
+                Dim xmlEmailElement As XmlElement
+
+                ' get encryption key for email use
+                If Not (m_xmlConfig("configuration")("s").Attributes("id").InnerText Is Nothing) Then
+                    If m_xmlConfig("configuration")("s").Attributes("id").InnerText.Trim.Length > 0 Then
+                        .EncryptionKey = m_xmlConfig("configuration")("s").Attributes("id").InnerText.Trim
+                    End If
+                End If
+
+                ' get "email" node of the configuration file
+                If Not (m_xmlConfig("configuration")("email") Is Nothing) Then
+                    xmlEmailElement = m_xmlConfig("configuration")("email")
+                End If
+
+                If Not (xmlEmailElement Is Nothing) Then
+                    ' get the default sender properties
+                    If Not (xmlEmailElement("defaultFrom").Attributes("addy").InnerText Is Nothing) Then
+                        .defaultMsgFROM = xmlEmailElement("defaultFrom").Attributes("addy").InnerText.Trim
+                    End If
+
+                    ' get additional recipient (as TO) email addresses
+                    If Not (xmlEmailElement("additionalTo").ChildNodes Is Nothing) Then
+                        If xmlEmailElement("additionalTo").ChildNodes.Count > 0 Then
+                            For Each toItem As XmlNode In xmlEmailElement("additionalTo").ChildNodes
+                                If toItem.Name = "toItem" And Not (toItem.Attributes("addy").InnerText Is Nothing) Then
+                                    If toItem.Attributes("addy").InnerText.Trim.Length > 0 Then
+                                        .xTO.Add(toItem.Attributes("addy").InnerText.Trim)
+                                    End If
+                                End If
+                            Next
+                        End If
+                    End If
+
+                    ' get additional recipient (as CC) email addresses
+                    If Not (xmlEmailElement("additionalCc").ChildNodes Is Nothing) Then
+                        If xmlEmailElement("additionalCc").ChildNodes.Count > 0 Then
+                            For Each ccItem As XmlNode In xmlEmailElement("additionalCc").ChildNodes
+                                If ccItem.Name = "ccItem" And Not (ccItem.Attributes("addy").InnerText Is Nothing) Then
+                                    If ccItem.Attributes("addy").InnerText.Trim.Length > 0 Then
+                                        .xCC.Add(ccItem.Attributes("addy").InnerText.Trim)
+                                    End If
+                                End If
+                            Next
+                        End If
+                    End If
+
+                    ' get additional recipient (as BCC) email addresses
+                    If Not (xmlEmailElement("additionalBcc").ChildNodes Is Nothing) Then
+                        If xmlEmailElement("additionalBcc").ChildNodes.Count > 0 Then
+                            For Each bccItem As XmlNode In xmlEmailElement("additionalBcc").ChildNodes
+                                If bccItem.Name = "bccItem" And Not (bccItem.Attributes("addy").InnerText Is Nothing) Then
+                                    If bccItem.Attributes("addy").InnerText.Trim.Length > 0 Then
+                                        .xBCC.Add(bccItem.Attributes("addy").InnerText.Trim)
+                                    End If
+                                End If
+                            Next
+                        End If
+                    End If
+
+                    ' get the default subject for this email(s)
+                    If Not (xmlEmailElement("defaultSubject").Attributes("text").InnerText Is Nothing) Then
+                        .SubjectLine = xmlEmailElement("defaultSubject").Attributes("text").InnerText.Trim
+                    End If
+
+                    ' get the URL to use for approving this quoted item
+                    If Not (xmlEmailElement("body").Attributes("linkURL").InnerText Is Nothing) Then
+                        .URL = xmlEmailElement("body").Attributes("linkURL").InnerText.Trim
+                    End If
+                End If
+
+                logger.WriteLog("Start processing (Execute)", TraceLevel.Info)
+                ' start processing
+                .Execute()
+            Else
+                logger.WriteLog("No NYC Quoted Non Stock orders found.", TraceLevel.Info)
+            End If
+        End With
+
+        ' destroy the instance of the process engine
+        quoteProcess = Nothing
+
+        logger.WriteLog("NYC Quoted Non Stock Email Notification Ended", TraceLevel.Info)
+
     End Sub
 
     'Required by the Component Designer
@@ -60,11 +151,7 @@ Public Class NYCQuotedNStkEmailNotification
     ' It can be modified using the Component Designer.  Do not modify it
     ' using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> Private Sub InitializeComponent()
-        ''
-        ''NYCQuotedNStkEmailNotification
-        ''
-        'Me.CanShutdown = True
-        'Me.ServiceName = "NYCQuotedNStkEmailNotification"
+        
 
     End Sub
 
@@ -168,163 +255,157 @@ Public Class NYCQuotedNStkEmailNotification
 
 #Region " Private Methods "
 
-    'Private Sub InitService()
+    'Private Function InitAlertEmailMsg(ByVal xmlConfig As XmlDocument) As System.Web.Mail.MailMessage
+    '    Try
+    '        Dim eml As New System.Web.Mail.MailMessage
+    '        Dim SrvcNotification As XmlElement
 
-    '    ' add code to initialize objects that will exist with the duration of this service itself
+    '        eml.Subject = ""
+    '        eml.From = ""
+    '        eml.To = ""
+    '        eml.Body = ""
 
-    'End Sub
+    '        If Not (xmlConfig("configuration")("serviceNotification") Is Nothing) Then
+    '            SrvcNotification = xmlConfig("configuration")("serviceNotification")
+    '        End If
 
-    Private Function InitAlertEmailMsg(ByVal xmlConfig As XmlDocument) As System.Web.Mail.MailMessage
-        Try
-            Dim eml As New System.Web.Mail.MailMessage
-            Dim SrvcNotification As XmlElement
+    '        If Not (SrvcNotification Is Nothing) Then
+    '            ' get the subject line for this service notification messages
+    '            If Not (SrvcNotification.Attributes("notifySubject").InnerText Is Nothing) Then
+    '                eml.Subject = SrvcNotification.Attributes("notifySubject").InnerText.Trim
+    '            End If
 
-            eml.Subject = ""
-            eml.From = ""
-            eml.To = ""
-            eml.Body = ""
+    '            ' get sender email address (automated)
+    '            If Not (SrvcNotification.Attributes("notifyFrom").InnerText Is Nothing) Then
+    '                eml.From = SrvcNotification.Attributes("notifyFrom").InnerText.Trim
+    '            End If
 
-            If Not (xmlConfig("configuration")("serviceNotification") Is Nothing) Then
-                SrvcNotification = xmlConfig("configuration")("serviceNotification")
-            End If
+    '            ' get email address list on whom will receives this notification
+    '            If Not (SrvcNotification.ChildNodes Is Nothing) Then
+    '                If SrvcNotification.ChildNodes.Count > 0 Then
+    '                    For Each nodeTO As System.Xml.XmlNode In SrvcNotification.ChildNodes
+    '                        If nodeTO.Name = "statusNotify" And Not (nodeTO.Attributes("addy").InnerText Is Nothing) Then
+    '                            If nodeTO.Attributes("addy").InnerText.Trim.Length > 0 Then
+    '                                eml.To &= nodeTO.Attributes("addy").InnerText.Trim & ";"
+    '                            End If
+    '                        End If
+    '                    Next
+    '                End If
+    '            End If
+    '        End If
 
-            If Not (SrvcNotification Is Nothing) Then
-                ' get the subject line for this service notification messages
-                If Not (SrvcNotification.Attributes("notifySubject").InnerText Is Nothing) Then
-                    eml.Subject = SrvcNotification.Attributes("notifySubject").InnerText.Trim
-                End If
+    '        Return eml
 
-                ' get sender email address (automated)
-                If Not (SrvcNotification.Attributes("notifyFrom").InnerText Is Nothing) Then
-                    eml.From = SrvcNotification.Attributes("notifyFrom").InnerText.Trim
-                End If
-
-                ' get email address list on whom will receives this notification
-                If Not (SrvcNotification.ChildNodes Is Nothing) Then
-                    If SrvcNotification.ChildNodes.Count > 0 Then
-                        For Each nodeTO As System.Xml.XmlNode In SrvcNotification.ChildNodes
-                            If nodeTO.Name = "statusNotify" And Not (nodeTO.Attributes("addy").InnerText Is Nothing) Then
-                                If nodeTO.Attributes("addy").InnerText.Trim.Length > 0 Then
-                                    eml.To &= nodeTO.Attributes("addy").InnerText.Trim & ";"
-                                End If
-                            End If
-                        Next
-                    End If
-                End If
-            End If
-
-            Return eml
-
-        Catch ex As Exception
-            'MyBase.EventLog.WriteEntry(m_sCommonMsgText & vbCrLf & ex.ToString, EventLogEntryType.Error)
-        End Try
-    End Function
+    '    Catch ex As Exception
+    '        'MyBase.EventLog.WriteEntry(m_sCommonMsgText & vbCrLf & ex.ToString, EventLogEntryType.Error)
+    '    End Try
+    'End Function
 
 #End Region
 
-    Private Sub m_tmrChkQuotes_Elapsed(ByVal sender As Object, ByVal e As System.Timers.ElapsedEventArgs) Handles m_tmrChkQuotes.Elapsed
-        Try
-            '' stop the timer since this process may take time to accomplish
-            'm_tmrChkQuotes.Stop()
+    'Private Sub m_tmrChkQuotes_Elapsed(ByVal sender As Object, ByVal e As System.Timers.ElapsedEventArgs) Handles m_tmrChkQuotes.Elapsed
+    '    Try
+    '        '' stop the timer since this process may take time to accomplish
+    '        'm_tmrChkQuotes.Stop()
 
-            ' retrieve the source DB connection string to use
-            Dim cnString As String = ""
-            If Not (m_xmlConfig("configuration")("sourceDB").Attributes("cnString").InnerText Is Nothing) Then
-                cnString = m_xmlConfig("configuration")("sourceDB").Attributes("cnString").InnerText.Trim
-            End If
+    '        ' retrieve the source DB connection string to use
+    '        Dim cnString As String = ""
+    '        If Not (m_xmlConfig("configuration")("sourceDB").Attributes("cnString").InnerText Is Nothing) Then
+    '            cnString = m_xmlConfig("configuration")("sourceDB").Attributes("cnString").InnerText.Trim
+    '        End If
 
-            ' instantiate the process engine for checking quoted non-stock and processing messages
-            Dim quoteProcess As New QuoteNonStockProcessor(cnString)
+    '        ' instantiate the process engine for checking quoted non-stock and processing messages
+    '        Dim quoteProcess As New QuoteNonStockProcessor(cnString)
 
-            ' assign needed configuration values
-            With quoteProcess
-                '.EventLogger = MyBase.EventLog
+    '        ' assign needed configuration values
+    '        With quoteProcess
+    '            '.EventLogger = MyBase.EventLog
 
-                If .Evaluate Then
-                    Dim xmlEmailElement As XmlElement
+    '            If .Evaluate Then
+    '                Dim xmlEmailElement As XmlElement
 
-                    ' get encryption key for email use
-                    If Not (m_xmlConfig("configuration")("s").Attributes("id").InnerText Is Nothing) Then
-                        If m_xmlConfig("configuration")("s").Attributes("id").InnerText.Trim.Length > 0 Then
-                            .EncryptionKey = m_xmlConfig("configuration")("s").Attributes("id").InnerText.Trim
-                        End If
-                    End If
+    '                ' get encryption key for email use
+    '                If Not (m_xmlConfig("configuration")("s").Attributes("id").InnerText Is Nothing) Then
+    '                    If m_xmlConfig("configuration")("s").Attributes("id").InnerText.Trim.Length > 0 Then
+    '                        .EncryptionKey = m_xmlConfig("configuration")("s").Attributes("id").InnerText.Trim
+    '                    End If
+    '                End If
 
-                    ' get "email" node of the configuration file
-                    If Not (m_xmlConfig("configuration")("email") Is Nothing) Then
-                        xmlEmailElement = m_xmlConfig("configuration")("email")
-                    End If
+    '                ' get "email" node of the configuration file
+    '                If Not (m_xmlConfig("configuration")("email") Is Nothing) Then
+    '                    xmlEmailElement = m_xmlConfig("configuration")("email")
+    '                End If
 
-                    If Not (xmlEmailElement Is Nothing) Then
-                        ' get the default sender properties
-                        If Not (xmlEmailElement("defaultFrom").Attributes("addy").InnerText Is Nothing) Then
-                            .defaultMsgFROM = xmlEmailElement("defaultFrom").Attributes("addy").InnerText.Trim
-                        End If
+    '                If Not (xmlEmailElement Is Nothing) Then
+    '                    ' get the default sender properties
+    '                    If Not (xmlEmailElement("defaultFrom").Attributes("addy").InnerText Is Nothing) Then
+    '                        .defaultMsgFROM = xmlEmailElement("defaultFrom").Attributes("addy").InnerText.Trim
+    '                    End If
 
-                        ' get additional recipient (as TO) email addresses
-                        If Not (xmlEmailElement("additionalTo").ChildNodes Is Nothing) Then
-                            If xmlEmailElement("additionalTo").ChildNodes.Count > 0 Then
-                                For Each toItem As XmlNode In xmlEmailElement("additionalTo").ChildNodes
-                                    If toItem.Name = "toItem" And Not (toItem.Attributes("addy").InnerText Is Nothing) Then
-                                        If toItem.Attributes("addy").InnerText.Trim.Length > 0 Then
-                                            .xTO.Add(toItem.Attributes("addy").InnerText.Trim)
-                                        End If
-                                    End If
-                                Next
-                            End If
-                        End If
+    '                    ' get additional recipient (as TO) email addresses
+    '                    If Not (xmlEmailElement("additionalTo").ChildNodes Is Nothing) Then
+    '                        If xmlEmailElement("additionalTo").ChildNodes.Count > 0 Then
+    '                            For Each toItem As XmlNode In xmlEmailElement("additionalTo").ChildNodes
+    '                                If toItem.Name = "toItem" And Not (toItem.Attributes("addy").InnerText Is Nothing) Then
+    '                                    If toItem.Attributes("addy").InnerText.Trim.Length > 0 Then
+    '                                        .xTO.Add(toItem.Attributes("addy").InnerText.Trim)
+    '                                    End If
+    '                                End If
+    '                            Next
+    '                        End If
+    '                    End If
 
-                        ' get additional recipient (as CC) email addresses
-                        If Not (xmlEmailElement("additionalCc").ChildNodes Is Nothing) Then
-                            If xmlEmailElement("additionalCc").ChildNodes.Count > 0 Then
-                                For Each ccItem As XmlNode In xmlEmailElement("additionalCc").ChildNodes
-                                    If ccItem.Name = "ccItem" And Not (ccItem.Attributes("addy").InnerText Is Nothing) Then
-                                        If ccItem.Attributes("addy").InnerText.Trim.Length > 0 Then
-                                            .xCC.Add(ccItem.Attributes("addy").InnerText.Trim)
-                                        End If
-                                    End If
-                                Next
-                            End If
-                        End If
+    '                    ' get additional recipient (as CC) email addresses
+    '                    If Not (xmlEmailElement("additionalCc").ChildNodes Is Nothing) Then
+    '                        If xmlEmailElement("additionalCc").ChildNodes.Count > 0 Then
+    '                            For Each ccItem As XmlNode In xmlEmailElement("additionalCc").ChildNodes
+    '                                If ccItem.Name = "ccItem" And Not (ccItem.Attributes("addy").InnerText Is Nothing) Then
+    '                                    If ccItem.Attributes("addy").InnerText.Trim.Length > 0 Then
+    '                                        .xCC.Add(ccItem.Attributes("addy").InnerText.Trim)
+    '                                    End If
+    '                                End If
+    '                            Next
+    '                        End If
+    '                    End If
 
-                        ' get additional recipient (as BCC) email addresses
-                        If Not (xmlEmailElement("additionalBcc").ChildNodes Is Nothing) Then
-                            If xmlEmailElement("additionalBcc").ChildNodes.Count > 0 Then
-                                For Each bccItem As XmlNode In xmlEmailElement("additionalBcc").ChildNodes
-                                    If bccItem.Name = "bccItem" And Not (bccItem.Attributes("addy").InnerText Is Nothing) Then
-                                        If bccItem.Attributes("addy").InnerText.Trim.Length > 0 Then
-                                            .xBCC.Add(bccItem.Attributes("addy").InnerText.Trim)
-                                        End If
-                                    End If
-                                Next
-                            End If
-                        End If
+    '                    ' get additional recipient (as BCC) email addresses
+    '                    If Not (xmlEmailElement("additionalBcc").ChildNodes Is Nothing) Then
+    '                        If xmlEmailElement("additionalBcc").ChildNodes.Count > 0 Then
+    '                            For Each bccItem As XmlNode In xmlEmailElement("additionalBcc").ChildNodes
+    '                                If bccItem.Name = "bccItem" And Not (bccItem.Attributes("addy").InnerText Is Nothing) Then
+    '                                    If bccItem.Attributes("addy").InnerText.Trim.Length > 0 Then
+    '                                        .xBCC.Add(bccItem.Attributes("addy").InnerText.Trim)
+    '                                    End If
+    '                                End If
+    '                            Next
+    '                        End If
+    '                    End If
 
-                        ' get the default subject for this email(s)
-                        If Not (xmlEmailElement("defaultSubject").Attributes("text").InnerText Is Nothing) Then
-                            .SubjectLine = xmlEmailElement("defaultSubject").Attributes("text").InnerText.Trim
-                        End If
+    '                    ' get the default subject for this email(s)
+    '                    If Not (xmlEmailElement("defaultSubject").Attributes("text").InnerText Is Nothing) Then
+    '                        .SubjectLine = xmlEmailElement("defaultSubject").Attributes("text").InnerText.Trim
+    '                    End If
 
-                        ' get the URL to use for approving this quoted item
-                        If Not (xmlEmailElement("body").Attributes("linkURL").InnerText Is Nothing) Then
-                            .URL = xmlEmailElement("body").Attributes("linkURL").InnerText.Trim
-                        End If
-                    End If
+    '                    ' get the URL to use for approving this quoted item
+    '                    If Not (xmlEmailElement("body").Attributes("linkURL").InnerText Is Nothing) Then
+    '                        .URL = xmlEmailElement("body").Attributes("linkURL").InnerText.Trim
+    '                    End If
+    '                End If
 
-                    ' start processing
-                    .Execute()
-                End If
-            End With
+    '                ' start processing
+    '                .Execute()
+    '            End If
+    '        End With
 
-            ' destroy the instance of the process engine
-            quoteProcess = Nothing
+    '        ' destroy the instance of the process engine
+    '        quoteProcess = Nothing
 
-            '' re-start the timer before going out
-            'm_tmrChkQuotes.Start()
+    '        '' re-start the timer before going out
+    '        'm_tmrChkQuotes.Start()
 
-        Catch ex As Exception
-            'MyBase.EventLog.WriteEntry(m_sCommonMsgText & vbCrLf & ex.ToString, EventLogEntryType.Error)
-        End Try
-    End Sub
+    '    Catch ex As Exception
+    '        'MyBase.EventLog.WriteEntry(m_sCommonMsgText & vbCrLf & ex.ToString, EventLogEntryType.Error)
+    '    End Try
+    'End Sub
 
 End Class

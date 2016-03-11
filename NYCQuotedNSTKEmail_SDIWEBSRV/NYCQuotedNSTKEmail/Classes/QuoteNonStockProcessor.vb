@@ -1,8 +1,10 @@
 Imports System.Data.OleDb
+Imports SDI.ApplicationLogger
 
 Public Class QuoteNonStockProcessor
 
-    Private Const LETTER_HEAD As String = "<div align=""center""><SPAN style=""FONT-SIZE: x-large; WIDTH: 256px; FONT-FAMILY: Arial"">SDI Marketplace</SPAN></div>" & _
+    Private Const LETTER_HEAD As String = "<img src='https://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' />" & _
+        "<div align=""center""><SPAN style=""FONT-SIZE: x-large; WIDTH: 256px; FONT-FAMILY: Arial"">SDI Marketplace</SPAN></div>" & _
                                           "<div align=""center""><SPAN>SDiExchange - Request for Quote</SPAN></div><br><br>"
     Private Const LETTER_CONTENT As String = "<p style=""TEXT-INDENT: 25pt"">" & _
                                              "The above referenced order contains items that required a price " & _
@@ -22,8 +24,19 @@ Public Class QuoteNonStockProcessor
     Private m_extendedBCC As ArrayList
     Private m_defaultSubject As String
     Private m_cURL As String
+    Private m_clsLogger As New appLogger
     Private m_eventLogger As System.Diagnostics.EventLog
     Private m_colMsgs As QuotedNStkItemCollection
+    Private m_sCommonMsgText As String = "QuoteNonStockProcessor Class - "
+
+    Public Property Logger() As appLogger
+        Get
+            Logger = m_clsLogger
+        End Get
+        Set(ByVal value As appLogger)
+            m_clsLogger = value
+        End Set
+    End Property
 
     Public ReadOnly Property DBConnection() As OleDbConnection
         Get
@@ -107,24 +120,11 @@ Public Class QuoteNonStockProcessor
     ' process to evaluate/check and returns TRUE or FALSE whether to do execution process
     '
     Public Function Evaluate() As Boolean
+        Dim cHdr As String = m_sCommonMsgText & "Evaluate: "
         Try
-            m_eventLogger.WriteEntry("evaluating busines rule(s) ...", EventLogEntryType.Information)
-
-            'Dim cSQL As String = _
-            '"SELECT COUNT(*) AS RECCOUNT  " & _
-            '"FROM PS_ISA_QUICK_REQ_H A " & _
-            '"WHERE (LPAD(A.BUSINESS_UNIT, 5, ' ') || LPAD(A.REQ_ID, 10, ' ')) NOT IN " & _
-            '      "(SELECT (LPAD(B.BUSINESS_UNIT, 5, ' ') || LPAD(B.REQ_ID, 10, ' ')) AS myKEY " & _
-            '      " FROM PS_ISA_REQ_EML_LOG B) " & _
-            '      "AND A.REQ_STATUS = '" & QUOTED_STATUS & "' "
-            ''"SELECT COUNT(1) AS RECCOUNT " & _
-            ''"FROM PS_ISA_QUICK_REQ_H HDR, " & _
-            ''     "PS_ISA_QUICK_REQ_L LNE " & _
-            ''"WHERE (LPAD(HDR.BUSINESS_UNIT_OM,5,' ') || LPAD(HDR.REQ_ID,10,' ')) NOT IN " & _
-            ''      "(SELECT (LPAD(LOG.BUSINESS_UNIT,5,' ') || LPAD(LOG.REQ_ID,10,' ')) AS myKEY " & _
-            ''      " FROM PS_ISA_REQ_EML_LOG LOG) " & _
-            ''      "AND LNE.BUSINESS_UNIT(+) = HDR.BUSINESS_UNIT AND LNE.REQ_ID(+) = HDR.REQ_ID " & _
-            ''      "AND LNE.ISA_QUOTE_STATUS = '" & QUOTED_STATUS & "' "
+            'm_eventLogger.WriteEntry("evaluating busines rule(s) ...", EventLogEntryType.Information)
+            Logger.WriteInformationLog(cHdr & "evaluating busines rule(s) ...")
+            
             Dim cSQL As String = "" & _
                                  "SELECT COUNT(1) AS RECCOUNT " & vbCrLf & _
                                  "FROM PS_ISA_QUICK_REQ_H A " & vbCrLf & _
@@ -166,7 +166,9 @@ Public Class QuoteNonStockProcessor
             Return (nRecs > 0)
 
         Catch ex As Exception
-            m_eventLogger.WriteEntry(ex.ToString, EventLogEntryType.Error)
+            'm_eventLogger.WriteEntry(ex.ToString, EventLogEntryType.Error)
+            Logger.WriteErrorLog(cHdr & " Error :: " & ex.Message)
+            Return False
         End Try
     End Function
 
@@ -174,8 +176,10 @@ Public Class QuoteNonStockProcessor
     ' executes process
     '
     Public Sub Execute()
+        Dim cHdr As String = m_sCommonMsgText & "Execute: "
         Try
-            m_eventLogger.WriteEntry("executing business rule(s) ...", EventLogEntryType.Information)
+            'm_eventLogger.WriteEntry("executing business rule(s) ...", EventLogEntryType.Information)
+            Logger.WriteInformationLog(cHdr & " executing business rule(s) ... ")
 
             m_colMsgs = New QuotedNStkItemCollection
 
@@ -190,7 +194,12 @@ Public Class QuoteNonStockProcessor
             m_colMsgs = Nothing
 
         Catch ex As Exception
-            m_eventLogger.WriteEntry(ex.ToString, EventLogEntryType.Error)
+            Logger.WriteErrorLog(cHdr & " Error :: " & ex.Message)
+            Try
+                m_CN.Close()
+            Catch exCon As Exception
+
+            End Try
         End Try
     End Sub
 
@@ -216,53 +225,14 @@ Public Class QuoteNonStockProcessor
         m_cURL = ""
 
         m_CN = Nothing
-        m_eventLogger = Nothing
+        'm_eventLogger = Nothing
         m_colMsgs = Nothing
     End Sub
 
     Private Function GetQuotedItems() As Integer
+        Dim cHdr As String = m_sCommonMsgText & "GetQuotedItems: "
         Try
-            'Dim cSQL As String = _
-            '"SELECT HDR.BUSINESS_UNIT_OM AS BUSINESS_UNIT_OM, " & _
-            '       "HDR.REQ_ID AS REQ_ID, " & _
-            '       "HDR.BUSINESS_UNIT AS BUSINESS_UNIT, " & _
-            '       "LNE.LINE_NBR AS LINE_NBR, " & _
-            '       "LNE.EMPLID AS ISA_EMPLOYEE_ID, " & _
-            '       "USERS.ISA_EMPLOYEE_EMAIL AS ISA_EMPLOYEE_EMAIL, " & _
-            '       "USERS.ISA_EMPLOYEE_NAME AS ISA_EMPLOYEE_NAME, " & _
-            '       "ENT.ISA_NONSKREQ_EMAIL AS ISA_NONSKREQ_EMAIL " & _
-            '"FROM PS_ISA_QUICK_REQ_H HDR, " & _
-            '     "PS_ISA_QUICK_REQ_L LNE, " & _
-            '     "PS_ISA_USERS_TBL USERS, " & _
-            '     "PS_ISA_ENTERPRISE ENT " & _
-            '"WHERE (LPAD(HDR.BUSINESS_UNIT_OM,5,' ') || LPAD(HDR.REQ_ID,10,' ')) NOT IN " & _
-            '      "(SELECT (LPAD(LOG.BUSINESS_UNIT,5,' ') || LPAD(LOG.REQ_ID,10,' ')) AS myKEY " & _
-            '      " FROM PS_ISA_REQ_EML_LOG LOG) " & _
-            '      "AND LNE.BUSINESS_UNIT(+) = HDR.BUSINESS_UNIT AND LNE.REQ_ID(+) = HDR.REQ_ID " & _
-            '      "AND ENT.ISA_BUSINESS_UNIT(+) = ('I0' || SUBSTR(HDR.BUSINESS_UNIT_OM,3,3)) " & _
-            '      "AND LNE.EMPLID = USERS.ISA_EMPLOYEE_ID(+) " & _
-            '      "AND HDR.REQ_STATUS = '" & QUOTED_STATUS & "' " & _
-            '      "ORDER BY LNE.BUSINESS_UNIT, LNE.REQ_ID, LNE.LINE_NBR "
-            ''"SELECT HDR.BUSINESS_UNIT_OM AS BUSINESS_UNIT_OM, " & _
-            ''       "HDR.REQ_ID AS REQ_ID, " & _
-            ''       "HDR.BUSINESS_UNIT AS BUSINESS_UNIT, " & _
-            ''       "LNE.LINE_NBR AS LINE_NBR, " & _
-            ''       "LNE.EMPLID AS ISA_EMPLOYEE_ID, " & _
-            ''       "USERS.ISA_EMPLOYEE_EMAIL AS ISA_EMPLOYEE_EMAIL, " & _
-            ''       "USERS.ISA_EMPLOYEE_NAME AS ISA_EMPLOYEE_NAME, " & _
-            ''       "ENT.ISA_NONSKREQ_EMAIL AS ISA_NONSKREQ_EMAIL " & _
-            ''"FROM PS_ISA_QUICK_REQ_H HDR, " & _
-            ''     "PS_ISA_QUICK_REQ_L LNE, " & _
-            ''     "PS_ISA_USERS_TBL USERS, " & _
-            ''     "PS_ISA_ENTERPRISE ENT " & _
-            ''"WHERE (LPAD(HDR.BUSINESS_UNIT_OM,5,' ') || LPAD(HDR.REQ_ID,10,' ')) NOT IN " & _
-            ''      "(SELECT (LPAD(LOG.BUSINESS_UNIT,5,' ') || LPAD(LOG.REQ_ID,10,' ')) AS myKEY " & _
-            ''      " FROM PS_ISA_REQ_EML_LOG LOG) " & _
-            ''      "AND LNE.BUSINESS_UNIT(+) = HDR.BUSINESS_UNIT AND LNE.REQ_ID(+) = HDR.REQ_ID " & _
-            ''      "AND ENT.ISA_BUSINESS_UNIT(+) = ('I0' || SUBSTR(HDR.BUSINESS_UNIT_OM,3,3)) " & _
-            ''      "AND LNE.EMPLID = USERS.ISA_EMPLOYEE_ID(+) " & _
-            ''      "AND LNE.ISA_QUOTE_STATUS = '" & QUOTED_STATUS & "' " & _
-            ''      "ORDER BY LNE.BUSINESS_UNIT, LNE.REQ_ID, LNE.LINE_NBR "
+            
             Dim cSQL As String = "" & _
                                  "SELECT " & vbCrLf & _
                                  " HDR.BUSINESS_UNIT_OM AS BUSINESS_UNIT_OM" & vbCrLf & _
@@ -460,11 +430,14 @@ Public Class QuoteNonStockProcessor
             Return m_colMsgs.Count
 
         Catch ex As Exception
-            m_eventLogger.WriteEntry(ex.ToString, EventLogEntryType.Error)
+            'm_eventLogger.WriteEntry(ex.ToString, EventLogEntryType.Error)
+            Logger.WriteErrorLog(cHdr & " Error :: " & ex.Message)
+            Return 0
         End Try
     End Function
 
     Private Sub SendMessages()
+        Dim cHdr As String = m_sCommonMsgText & "SendMessages: "
         Try
             If m_colMsgs.Count > 0 Then
                 Dim eml As System.Web.Mail.MailMessage
@@ -514,6 +487,7 @@ Public Class QuoteNonStockProcessor
                     Else
                         eml.Subject = m_defaultSubject
                     End If
+                    'eml.Subject = " (TEST) " & eml.Subject
 
                     ' add the order ID on the subject line of this email
                     If itmQuoted.OrderID.Length > 0 Then eml.Subject &= " - " & itmQuoted.OrderID
@@ -535,6 +509,7 @@ Public Class QuoteNonStockProcessor
                                         LETTER_CONTENT & _
                                         FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM) & _
                                         AddVersionNumber() & _
+                                    "<HR width='100%' SIZE='1'><img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
                                     "</BODY>" & _
                                "</HTML>"
 
@@ -548,8 +523,11 @@ Public Class QuoteNonStockProcessor
                     ' email is of HTML format
                     eml.BodyFormat = Web.Mail.MailFormat.Html
 
-                    ' send this email
-                    System.Web.Mail.SmtpMail.Send(message:=eml)
+                    '' send this email
+                    'System.Web.Mail.SmtpMail.Send(message:=eml)
+
+                    SendLogger(eml.Subject, eml.Body, "NYCQUOTEDNSTKEMAILNOTIF", "Mail", eml.To, "", "webdev@sdi.com")
+
 
                     ' build insert SQL command
                     cSQL = _
@@ -573,23 +551,45 @@ Public Class QuoteNonStockProcessor
                     Try
                         cmd.ExecuteNonQuery()
                     Catch ex As Exception
-                        m_eventLogger.WriteEntry(ex.ToString, EventLogEntryType.Error)
+                        'm_eventLogger.WriteEntry(ex.ToString, EventLogEntryType.Error)
+                        Logger.WriteErrorLog(cHdr & " Error :: " & ex.Message)
                     End Try
                 Next
 
                 If Not (cmd Is Nothing) Then
                     cmd.Dispose()
                 End If
+
+                Logger.WriteInformationLog(m_colMsgs.Count.ToString() & " messages sent Total")
             End If
 
         Catch ex As Exception
-            m_eventLogger.WriteEntry(ex.ToString, EventLogEntryType.Error)
+            'm_eventLogger.WriteEntry(ex.ToString, EventLogEntryType.Error)
+            Logger.WriteErrorLog(cHdr & " Error :: " & ex.Message)
+        End Try
+    End Sub
+
+    Public Shared Sub SendLogger(ByVal subject As String, ByVal body As String, ByVal messageType As String, ByVal MailType As String, ByVal EmailTo As String, ByVal EmailCc As String, ByVal EmailBcc As String)
+        Try
+            Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
+            Dim MailAttachmentName As String()
+            Dim MailAttachmentbytes As New List(Of Byte())()
+            Dim objException As String
+            Dim objExceptionTrace As String
+
+            SDIEmailService.EmailUtilityServices(MailType, "SDIExchange@sdi.com", EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
+
+            'UpdEmailOut.UpdEmailOut.UpdEmailOut(subject, "SDIExchADMIN@sdi.com", EmailTo, "", EmailBcc, "N", body, m_CN)
+
+        Catch ex As Exception
+
         End Try
     End Sub
 
     Private Function FormHTMLQouteInfo(ByVal cAddressee As String, ByVal cOrderID As String) As String
+        Dim cHdr As String = m_sCommonMsgText & "FormHTMLQouteInfo: "
+        Dim cInfoHTML As String = ""
         Try
-            Dim cInfoHTML As String = ""
 
             cInfoHTML &= "<TABLE id=""Table1"" cellSpacing=""1"" cellPadding=""1"" width=""100%"" border=""0"">" & _
                                 "<TR>" & _
@@ -598,7 +598,7 @@ Public Class QuoteNonStockProcessor
                                 "</TR>" & _
                                 "<TR>" & _
                                     "<TD style=""WIDTH: 80px"">Date:</TD>" & _
-                                    "<TD>" & DateTime.Now.ToString(Format:="MM/dd/yyyy HH:mm:ss") & "</TD>" & _
+                                    "<TD>" & DateTime.Now.ToString(format:="MM/dd/yyyy HH:mm:ss") & "</TD>" & _
                                 "</TR>" & _
                                 "<TR>" & _
                                     "<TD style=""WIDTH: 80px"">Order:</TD>" & _
@@ -606,14 +606,18 @@ Public Class QuoteNonStockProcessor
                                 "</TR>" & _
                          "</TABLE>"
 
-            Return cInfoHTML
-
         Catch ex As Exception
-            m_eventLogger.WriteEntry(ex.ToString, EventLogEntryType.Error)
+            'm_eventLogger.WriteEntry(ex.ToString, EventLogEntryType.Error)
+            Logger.WriteErrorLog(cHdr & " Error :: " & ex.Message)
         End Try
+
+        Return cInfoHTML
+
     End Function
 
     Private Function FormHTMLLink(ByVal cOrderID As String, ByVal cEmployeeID As String, ByVal cBusinessUnitOM As String) As String
+        Dim cHdr As String = m_sCommonMsgText & "FormHTMLLink: "
+        Dim cLink As String = ""
         Try
             Dim boEncrypt As New Encryption64
 
@@ -621,7 +625,6 @@ Public Class QuoteNonStockProcessor
                                    "&op=" & boEncrypt.Encrypt(cEmployeeID, m_cEncryptionKey) & _
                                    "&xyz=" & boEncrypt.Encrypt(cBusinessUnitOM, m_cEncryptionKey) & _
                                    "&HOME=N"
-            Dim cLink As String = ""
 
             cLink &= "<p>" & _
                         "Click this " & _
@@ -631,14 +634,17 @@ Public Class QuoteNonStockProcessor
 
             boEncrypt = Nothing
 
-            Return cLink
-
         Catch ex As Exception
-            m_eventLogger.WriteEntry(ex.ToString, EventLogEntryType.Error)
+            'm_eventLogger.WriteEntry(ex.ToString, EventLogEntryType.Error)
+            Logger.WriteErrorLog(cHdr & " Error :: " & ex.Message)
         End Try
+
+        Return cLink
+
     End Function
 
     Private Function AddNoRecepientExistNote(ByVal sTO As String) As String
+        Dim cHdr As String = m_sCommonMsgText & "AddNoRecepientExistNote: "
         Try
             Dim cMsg As String = ""
 
@@ -653,7 +659,9 @@ Public Class QuoteNonStockProcessor
             Return cMsg
 
         Catch ex As Exception
-            m_eventLogger.WriteEntry(ex.ToString, EventLogEntryType.Error)
+            'm_eventLogger.WriteEntry(ex.ToString, EventLogEntryType.Error)
+            Logger.WriteErrorLog(cHdr & " Error :: " & ex.Message)
+            Return ""
         End Try
     End Function
 

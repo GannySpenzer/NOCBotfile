@@ -9,7 +9,7 @@
     </SchemaVersion>
     <ProjectGuid>{DC71AF8D-4961-484A-916F-3C6DCD4900BD}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <StartupObject>NYCQuotedNSTKEmail.Module1</StartupObject>
+    <StartupObject>Sub Main</StartupObject>
     <RootNamespace>NYCQuotedNSTKEmail</RootNamespace>
     <AssemblyName>NYCQuotedNSTKEmail</AssemblyName>
     <FileAlignment>512</FileAlignment>
@@ -90,11 +90,25 @@
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="SDI.ApplicationLogger, Version=2.0.0.0, Culture=neutral">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>REFS\SDI.ApplicationLogger.dll</HintPath>
+    </Reference>
+    <Reference Include="SDI.UNCC.WorkOrderAdapter, Version=1.0.0.0, Culture=neutral">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>REFS\SDI.UNCC.WorkOrderAdapter.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
+    <Reference Include="System.EnterpriseServices" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.Services" />
     <Reference Include="System.Xml" />
+    <Reference Include="UpdEmailOut, Version=1.0.3800.25413, Culture=neutral">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>REFS\UpdEmailOut.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Import Include="Microsoft.VisualBasic" />
@@ -129,6 +143,11 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="NYCQuotedNStkEmailNotification.vb" />
+    <Compile Include="Web References\SDiEmailUtilityService\Reference.vb">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.map</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
@@ -149,11 +168,36 @@
       <CustomToolNamespace>My</CustomToolNamespace>
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
+    <None Include="Web References\SDiEmailUtilityService\EmailServices.wsdl" />
+    <None Include="Web References\SDiEmailUtilityService\Reference.map">
+      <Generator>MSDiscoCodeGenerator</Generator>
+      <LastGenOutput>Reference.vb</LastGenOutput>
+    </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="configSetting.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="REFS\SDI.ApplicationLogger.dll" />
     <Content Include="REFS\SDI.UNCC.WorkOrderAdapter.dll" />
     <Content Include="REFS\UpdEmailOut.dll" />
+    <None Include="Web References\SDiEmailUtilityService\EmailServices.disco" />
+  </ItemGroup>
+  <ItemGroup>
+    <WebReferences Include="Web References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <WebReferenceUrl Include="http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx">
+      <UrlBehavior>Dynamic</UrlBehavior>
+      <RelPath>Web References\SDiEmailUtilityService\</RelPath>
+      <UpdateFromURL>http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx</UpdateFromURL>
+      <ServiceLocationURL>
+      </ServiceLocationURL>
+      <CachedDynamicPropName>
+      </CachedDynamicPropName>
+      <CachedAppSettingsObjectName>MySettings</CachedAppSettingsObjectName>
+      <CachedSettingsPropName>NYCQuotedNSTKEmail_SDiEmailUtilityService_EmailServices</CachedSettingsPropName>
+    </WebReferenceUrl>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
