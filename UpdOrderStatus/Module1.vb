@@ -8,7 +8,7 @@ Imports System.Net
 Module Module1
 
     Dim objStreamWriter As StreamWriter
-    Dim logpath As String = "LOGS\UpdOrderStatus" & Now.ToString(format:="yyyyMMddHHmmss") & ".txt"
+    Dim logpath As String = "c:\UpdateOrderStatus\LOGS\UpdOrderStatus" & Now.ToString(format:="yyyyMMddHHmmss") & ".txt"
 
     Dim m_cConnectionString As String = "Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=RPTG"
     'Private Const m_cConnectionString As String = "Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=rptg"
@@ -18,6 +18,14 @@ Module Module1
         Dim dte6mths As Date
         dte6mths = Now.AddMonths(-3).ToString
         Dim I As Integer
+        ' log path
+        Dim sMyPath As String = "c:\UpdateOrderStatus\LOGS"
+        Try
+            sMyPath = My.Settings("MyLogPath").ToString.Trim
+            logpath = sMyPath & "\UpdOrderStatus" & Now.ToString(format:="yyyyMMddHHmmss") & ".txt"
+        Catch ex As Exception
+            logpath = "c:\UpdateOrderStatus\LOGS\UpdOrderStatus" & Now.ToString(format:="yyyyMMddHHmmss") & ".txt"
+        End Try
         objStreamWriter = File.CreateText(logpath)
         objStreamWriter.WriteLine("Start UpdOrderStatus " & Now())
 
@@ -189,7 +197,6 @@ Module Module1
                         checkNSTKstatus(ds.Tables(0).Rows(I))
                     End If
                 End If
-                objStreamWriter.Flush()
             Next
         End If
         objStreamWriter.WriteLine("Complete UpdOrderStatus " & Now())
@@ -198,6 +205,7 @@ Module Module1
         Catch ex As Exception
             objStreamWriter.WriteLine("Error closing connectOR: m_cConnectionString=" & m_cConnectionString & " ERROR=" & ex.Message)
         End Try
+        objStreamWriter.Flush()
         objStreamWriter.Close()
     End Sub
 

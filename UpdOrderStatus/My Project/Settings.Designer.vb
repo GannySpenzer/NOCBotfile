@@ -62,6 +62,15 @@ Namespace My
                 Return CType(Me("OraCNString1"),String)
             End Get
         End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("c:\UpdateOrderStatus\LOGS")>  _
+        Public ReadOnly Property MyLogPath() As String
+            Get
+                Return CType(Me("MyLogPath"),String)
+            End Get
+        End Property
     End Class
 End Namespace
 
