@@ -775,11 +775,15 @@ Module Module1
                     strLnStatus = "6"
                 Else
                     If dr1.Item("QTY_SHIPPED") > 0 Then
-                        bolNeedsUpdate = True
-                        strLnStatus = "5"
-                        'ElseIf Not dsRow.Item("ISA_ORDER_STATUS") = "4" Then
-                        '    bolNeedsUpdate = True
-                        '    strLnStatus = "3"
+                        If dsRow.Item("ISA_ORDER_STATUS") <> "8" Then
+                            ' Don't change status of "closed short" (8) to "partially shipped" (5)
+                            ' Ok to change other statuses to "partially shipped" (5)
+                            bolNeedsUpdate = True
+                            strLnStatus = "5"
+                            'ElseIf Not dsRow.Item("ISA_ORDER_STATUS") = "4" Then
+                            '    bolNeedsUpdate = True
+                            '    strLnStatus = "3"
+                        End If
                     End If
                 End If
             End If
