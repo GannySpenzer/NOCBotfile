@@ -71,6 +71,15 @@ Namespace My
                 Return CType(Me("sqlCNString"),String)
             End Get
         End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("C:\Program Files (x86)\SDI\EmailOpsStaff")>  _
+        Public ReadOnly Property myPath() As String
+            Get
+                Return CType(Me("myPath"),String)
+            End Get
+        End Property
     End Class
 End Namespace
 

@@ -24,9 +24,9 @@ Public Class LoggerClass
 
         Try
 
-            If Not fsoLogFile.FolderExists(sLogPath) Then
-                fsoLogFile.CreateFolder(sLogPath)
-            End If
+            'If Not fsoLogFile.FolderExists(sLogPath) Then
+            '    fsoLogFile.CreateFolder(sLogPath)
+            'End If
 
             g_TextStream = fsoLogFile.OpenTextFile(sLogPath & "\" & "CytecPO_PDF_" & Format(Now, "ddMMMyyyy") & ".log", Scripting.IOMode.ForAppending, True)
             g_TextStream.WriteLine("Log File Opened at " & Format(Now, "dd-MMM-yy hh:mm"))

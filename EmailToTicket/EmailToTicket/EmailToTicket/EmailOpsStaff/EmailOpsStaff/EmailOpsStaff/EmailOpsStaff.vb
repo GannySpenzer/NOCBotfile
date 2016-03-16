@@ -27,10 +27,19 @@ Module EmailOpsStaff
                 Dim runControl As runControl
                 Dim currentRunControlIndex1 As Integer
                 Dim currentRunControlIndex As Integer
-                Dim runFolder As String
+                Dim runFolder As String = ""
                 Dim processor As ProcessorClass
                 Dim currentRunTime As DateTime
-                runFolder = Environment.CurrentDirectory
+                runFolder = "C:\Program Files (x86)\SDI\EmailOpsStaff"  '  Environment.CurrentDirectory
+                Dim strMyPath1 As String = "C:\Program Files (x86)\SDI\EmailOpsStaff"
+                Try
+                    strMyPath1 = My.Settings("myPath").ToString.Trim
+                Catch ex As Exception
+                    strMyPath1 = "C:\Program Files (x86)\SDI\EmailOpsStaff"
+                End Try
+                If Trim(strMyPath1) <> "" Then
+                    runFolder = strMyPath1
+                End If
 
                 ClsLogger = New LoggerClass(runFolder & "\Logs")
                 ClsLogger.Open_Log_file("ExchangeAttachProcessor")
