@@ -304,13 +304,13 @@ Module Module1
             objXMLWriter.WriteElementString("LINE_NBR", ds.Tables(0).Rows(I).Item("LINE_NBR"))
             objXMLWriter.WriteElementString("DTTM_STAMP", ds.Tables(0).Rows(I).Item("DTTM_STAMP"))
             strOrdStatusToCheck = ds.Tables(0).Rows(I).Item("ISA_ORDER_STATUS")
-            'Try
-            '    If UCase(Trim(strOrdStatusToCheck)) = "8" Then
-            '        strOrdStatusToCheck = "6"
-            '    End If
-            'Catch ex As Exception
-
-            'End Try
+            Try
+                If UCase(Trim(strOrdStatusToCheck)) = "8" Then
+                    strOrdStatusToCheck = "6"
+                End If
+            Catch ex As Exception
+                strOrdStatusToCheck = ds.Tables(0).Rows(I).Item("ISA_ORDER_STATUS")
+            End Try
             objXMLWriter.WriteElementString("ISA_ORDER_STATUS", strOrdStatusToCheck)
 
             objXMLWriter.WriteEndElement()
