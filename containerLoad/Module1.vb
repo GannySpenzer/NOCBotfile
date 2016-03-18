@@ -202,8 +202,9 @@ Module Module1
         '    End If
 
         'Next
-        objStreamWriter.WriteLine("  Container Load e-mail sent. Number of lnes in grid = " & ds.Tables(0).Rows.Count)
+        objStreamWriter.WriteLine("  Container Load e-mail sent. Number of lines in grid = " & ds.Tables(0).Rows.Count)
         connectOR.Close()
+
     End Function
     
     Private Sub sendEmailtoAgent(ByVal dsEmail As DataTable)
@@ -228,13 +229,13 @@ Module Module1
         Dim SBnstk1 As New StringBuilder
         Dim SWnstk1 As New StringWriter(SBnstk1)
         Dim htmlTWnstk1 As New HtmlTextWriter(SWnstk1)
-        Dim bolSelectItem1 As Boolean
+        'Dim bolSelectItem1 As Boolean
 
          
         'Dim Mailer1 As MailMessage = New MailMessage
         Dim strccfirst1 As String = "vitaly.rovensky"  '  "erwin.bautista"
         Dim strcclast1 As String = "sdi.com"
-        Mailer.From = "SDIExhange@SDI.com"
+        Mailer.From = "SDIExchange@SDI.com"
         Mailer.Cc = ""
         Mailer.Bcc = strccfirst1 & "@" & strcclast1
         strbodyhead1 = "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI Marketplace</span></center>" & vbCrLf
