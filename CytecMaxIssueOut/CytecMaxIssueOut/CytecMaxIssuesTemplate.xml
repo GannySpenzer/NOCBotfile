@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:int="http://www.mro.com/mx/integration">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <int:MXINVISSUEInterface language="?" version="?">
+      <int:Header operation="Notify" event="?">
+        <int:SenderID type="MAXIMO" majorversion="6" minorversion="2" build="198" dbbuild="V600-609">CY_HTTP</int:SenderID>
+        <int:CreationDateTime>2002-11-05T02:01:03-06:00</int:CreationDateTime>
+        <int:RecipientID>string</int:RecipientID>
+        <int:MessageID>string</int:MessageID>
+      </int:Header>
+      <int:Content>
+        <!--Zero or more repetitions:-->
+        <int:MXINVISSUE>
+          <int:MATUSETRANS action="Add">
+            <!--Optional:-->
+            <int:ITEMNUM changed="true" >1059</int:ITEMNUM>
+            <!--Optional:-->
+            <int:STORELOC changed="true" >GVL</int:STORELOC>
+            <!--Optional:-->
+            <int:TRANSDATE  changed="true">2015-09-01T23:30:00-07:00</int:TRANSDATE>
+            <!--Optional:-->
+            <int:ACTUALDATE  changed="true">2015-09-01T23:30:00-07:00</int:ACTUALDATE>
+            <!--Optional:-->
+            <int:QUANTITY  changed="true">-1</int:QUANTITY>
+            <!--Optional:-->
+            <int:ENTERBY  changed="true">MAXADMIN</int:ENTERBY>
+            <!--Optional:-->
+            <int:MEMO  changed="true">Test SDI GH</int:MEMO>
+            <!--Optional:-->
+            <int:ISSUETYPE  changed="true">ISSUE</int:ISSUETYPE>
+
+            <int:ORGID  changed="true">02</int:ORGID>
+            <!--Optional:-->
+            <int:SITEID  changed="true">PC</int:SITEID>
+            <!--Optional:-->
+            <int:REFWO  changed="true">10198942</int:REFWO>
+
+            <int:LINETYPE  changed="true">ITEM</int:LINETYPE>
+            <!--Optional:-->
+            <int:ITEMSETID changed="true" >SET02</int:ITEMSETID>
+            <int:WONUM changed="true" >10198942</int:WONUM>
+
+            <int:TOSITEID  changed="true">PC</int:TOSITEID>
+
+            <int:TRANS_LANGCODE  changed="true">EN</int:TRANS_LANGCODE>
+          </int:MATUSETRANS>
+        </int:MXINVISSUE>
+      </int:Content>
+    </int:MXINVISSUEInterface>
+  </soapenv:Body>
+</soapenv:Envelope>
+
+
+
