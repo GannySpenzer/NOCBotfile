@@ -22,132 +22,171 @@ Module Module1
     Dim logpath As String = "C:\Program Files\sdi\AmazonClient\AmazonLOGS\AmazonClientOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
     Dim filePath As String = "C:\Program Files\sdi\AmazonClient\AmazonXMLFiles\AmazonClientXMLOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".xml"
     Dim filePathResponse As String = "C:\Program Files\sdi\AmazonClient\AmazonXMLFiles\AmznClntXMLRspns" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".xml"
-    Dim connectOR As New OleDbConnection("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=STAR")
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=STAR")
 
     Sub Main()
 
-        Console.WriteLine("Started to check Amazon ready to Dispatch orders ")
-        Console.WriteLine("")
-
-        If Dir(rootDir, FileAttribute.Directory) = "" Then
-            MkDir(rootDir)
-        End If
-        If Dir(rootDir & "\AmazonLOGS", FileAttribute.Directory) = "" Then
-            MkDir(rootDir & "\AmazonLOGS")
-        End If
-
-        objStrmWrtrXMLRspns = File.CreateText(filePathResponse)
-        objStreamWriterXML = File.CreateText(filePath)
-        objStreamWriter = File.CreateText(logpath)
-        objStreamWriter.WriteLine("Started to check Amazon ready to Dispatch orders " & Now())
         Dim strInput As String = ""  '  <?xml version=""1.0"" encoding=""UTF-8""?><!DOCTYPE cXML SYSTEM ""http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd""[]><cXML payloadID=""3/30/2015 11:56:16 AM 019768490@sdi.com"" xml:lang=""en-US"" timestamp=""3/30/2015 11:56:16 AM""><Header><From><Credential domain=""NetworkId""><Identity>SDIINC</Identity></Credential></From><To><Credential domain=""NetworkId""><Identity>Amazon</Identity></Credential></To><Sender><Credential domain=""DUNS""><Identity>SDIINC</Identity><SharedSecret>Y2XN7SefSxpPAoD5i6OtYix4w5TK402d</SharedSecret></Credential><UserAgent>Ariba Network 1.2</UserAgent></Sender></Header><Request><PunchOutSetupRequest operation=""create""><BuyerCookie>3xx1vu5dn5sttwrc2zqspprl</BuyerCookie><Extrinsic name=""UniqueName"">ROVENSKY,VITALY</Extrinsic><Extrinsic name=""UserEmail"">vitaly.rovensky@sdi.com</Extrinsic><Extrinsic name=""CostCenter"">I0256</Extrinsic><BrowserFormPost><URL>http://localhost/InsiteOnline/shopredirect.aspx?PUNOUT=YES</URL></BrowserFormPost><ShipTo><Address addressID=""L0256-01""><Name xml:lang=""en-US"">UNCC Facility Maint. Shop</Name><PostalAddress><DeliverTo>SDI c/o UNCC Facility Maint Shop</DeliverTo><Street>9201 University City Blvd.</Street><City>Charlotte</City><State>NC</State><PostalCode>28223</PostalCode><Country isoCountryCode=""US"">United States</Country></PostalAddress></Address></ShipTo></PunchOutSetupRequest></Request></cXML>"
         Dim strOutput As String = ""
-
-        m_xmlConfig = New XmlDocument
-        m_xmlConfig.Load(filename:=m_configFile)
-
-        Dim cnString As String = ""
-        Try
-            ' retrieve the source DB connection string to use
-            If Not (m_xmlConfig("configuration")("sourceDB").Attributes("cnString").InnerText Is Nothing) Then
-                cnString = m_xmlConfig("configuration")("sourceDB").Attributes("cnString").InnerText.Trim
-            End If
-        Catch ex As Exception
-            cnString = ""
-        End Try
-
-        If Trim(cnString) <> "" Then
-            connectOR.ConnectionString = cnString
-        End If
-
-        Dim strPunSite As String = "AMAZON"
-        ' list of orders - will be used later to change status flag
-        Dim OrderListDataSet As System.Data.DataSet = New System.Data.DataSet()
-
-        ' get info from The view (which is currently only available in DEVL) - SYSADM.PS_ISA_PO_DISP_XML.      
-       
-        'Dim strURL As String
-
-        'Dim XMLhttp As Object
-        'Dim xmlDoc2 As Object
-        'Dim XMLPath As String
-        'Dim VendorURL As String
+        Dim strWhatToTest As String = "CYTECMXM"  '  "AMAZON"  '  "CYTECMXM"  ' 
         Dim Response_Doc As String
         Dim msgEx As String = ""
         Dim strMsgVendConfig As String = ""
-        Dim doc As New XmlDocument
 
-        strMsgVendConfig = " 'm_vendorConfig.ConfigFile' is not defined"
-        Try
-            objStreamWriter.WriteLine("Started building XML out " & Now())
-            Dim userBU As String = "I0256"
+        Select Case strWhatToTest
+            Case "AMAZON"
+                Console.WriteLine("Started to check Amazon ready to Dispatch orders ")
+                Console.WriteLine("")
 
-            ''DO NOT DELELTE COMMENTED OUT CODE BELOW!
-            '' this function is a copy of the PuncoutWin.aspx call to vendor to establish Punchout session
-            '' returning XML file which is ready to be send
-            'strInput = getPOSR(strPunSite, userBU)
+                'If Dir(rootDir, FileAttribute.Directory) = "" Then
+                '    MkDir(rootDir)
+                'End If
+                'If Dir(rootDir & "\AmazonLOGS", FileAttribute.Directory) = "" Then
+                '    MkDir(rootDir & "\AmazonLOGS")
+                'End If
 
-            'If Trim(strInput) <> "" Then
-            '    objStreamWriter.WriteLine("Saving XML file to send " & Now())
-            '    objStreamWriterXML.WriteLine(strInput)
+                objStrmWrtrXMLRspns = File.CreateText(filePathResponse)
+                objStreamWriterXML = File.CreateText(filePath)
+                objStreamWriter = File.CreateText(logpath)
+                objStreamWriter.WriteLine("Started to check Amazon ready to Dispatch orders " & Now())
 
-            '    Call Send1(strInput, strOutput)
 
-            '    objStreamWriter.WriteLine("Saving Response XML file " & Now())
-            '    objStrmWrtrXMLRspns.WriteLine(strOutput)
-            'Else
+                m_xmlConfig = New XmlDocument
+                m_xmlConfig.Load(filename:=m_configFile)
 
-            '    objStreamWriter.WriteLine("Input string is empty. Possible cause: " & strMsgVendConfig)
-            '    objStreamWriter.Flush()
-            '    objStreamWriter.Close()
-
-            '    objStreamWriterXML.Flush()
-            '    objStreamWriterXML.Close()
-
-            '    objStrmWrtrXMLRspns.Flush()
-            '    objStrmWrtrXMLRspns.Close()
-            '    Exit Sub
-            'End If
-
-            'objStreamWriter.Flush()
-            'objStreamWriter.Close()
-
-            'objStreamWriterXML.Flush()
-            'objStreamWriterXML.Close()
-
-            'objStrmWrtrXMLRspns.Flush()
-            'objStrmWrtrXMLRspns.Close()
-            'Exit Sub
-            ''end special test
-
-            ' function to send order request - using strPunSite only
-            strInput = getOrderRequest(strPunSite, OrderListDataSet)
-
-            objStreamWriter.WriteLine("Finished building XML out " & Now())
-            If Trim(strInput) = "" Then
-                If Not m_vendorConfig Is Nothing Then
-                    If Not m_vendorConfig.ConfigFile Is Nothing Then
-                        Try
-                            strMsgVendConfig = m_vendorConfig.ConfigFile
-
-                        Catch ex2 As Exception
-                            strMsgVendConfig = " 'm_vendorConfig.ConfigFile' is not defined. SubError: " & vbCrLf & ex2.Message & vbCrLf
-                        End Try
+                Dim cnString As String = ""
+                Try
+                    ' retrieve the source DB connection string to use
+                    If Not (m_xmlConfig("configuration")("sourceDB").Attributes("cnString").InnerText Is Nothing) Then
+                        cnString = m_xmlConfig("configuration")("sourceDB").Attributes("cnString").InnerText.Trim
                     End If
+                Catch ex As Exception
+                    cnString = ""
+                End Try
+
+                If Trim(cnString) <> "" Then
+                    connectOR.ConnectionString = cnString
                 End If
-            Else
-                doc.InnerXml = strInput
-            End If
-        Catch ex As Exception
-            msgEx = "Not a valid identity or vendor URL for this catalog.<BR>Please report error" & _
-                                  vbCrLf & "config =" & strMsgVendConfig & _
-                                  vbCrLf & "ERROR:: " & vbCrLf & ex.ToString & _
-                                  ""
 
-            objStreamWriter.WriteLine(msgEx)
+                Dim strPunSite As String = "AMAZON"
+                ' list of orders - will be used later to change status flag
+                Dim OrderListDataSet As System.Data.DataSet = New System.Data.DataSet()
 
-            Exit Sub
-        End Try
+                ' get info from The view (which is currently only available in DEVL) - SYSADM.PS_ISA_PO_DISP_XML.      
+
+                'Dim strURL As String
+
+                'Dim XMLhttp As Object
+                'Dim xmlDoc2 As Object
+                'Dim XMLPath As String
+                'Dim VendorURL As String
+                Dim doc As New XmlDocument
+
+                strMsgVendConfig = " 'm_vendorConfig.ConfigFile' is not defined"
+                Try
+                    objStreamWriter.WriteLine("Started building XML out " & Now())
+                    Dim userBU As String = "I0256"
+
+                    ''DO NOT DELELTE COMMENTED OUT CODE BELOW!
+                    '' this function is a copy of the PuncoutWin.aspx call to vendor to establish Punchout session
+                    '' returning XML file which is ready to be send
+                    'strInput = getPOSR(strPunSite, userBU)
+
+                    'If Trim(strInput) <> "" Then
+                    '    objStreamWriter.WriteLine("Saving XML file to send " & Now())
+                    '    objStreamWriterXML.WriteLine(strInput)
+
+                    '    Call Send1(strInput, strOutput)
+
+                    '    objStreamWriter.WriteLine("Saving Response XML file " & Now())
+                    '    objStrmWrtrXMLRspns.WriteLine(strOutput)
+                    'Else
+
+                    '    objStreamWriter.WriteLine("Input string is empty. Possible cause: " & strMsgVendConfig)
+                    '    objStreamWriter.Flush()
+                    '    objStreamWriter.Close()
+
+                    '    objStreamWriterXML.Flush()
+                    '    objStreamWriterXML.Close()
+
+                    '    objStrmWrtrXMLRspns.Flush()
+                    '    objStrmWrtrXMLRspns.Close()
+                    '    Exit Sub
+                    'End If
+
+                    'objStreamWriter.Flush()
+                    'objStreamWriter.Close()
+
+                    'objStreamWriterXML.Flush()
+                    'objStreamWriterXML.Close()
+
+                    'objStrmWrtrXMLRspns.Flush()
+                    'objStrmWrtrXMLRspns.Close()
+                    'Exit Sub
+                    ''end special test
+
+                    ' function to send order request - using strPunSite only
+                    strInput = getOrderRequest(strPunSite, OrderListDataSet)
+
+                    objStreamWriter.WriteLine("Finished building XML out " & Now())
+                    If Trim(strInput) = "" Then
+                        If Not m_vendorConfig Is Nothing Then
+                            If Not m_vendorConfig.ConfigFile Is Nothing Then
+                                Try
+                                    strMsgVendConfig = m_vendorConfig.ConfigFile
+
+                                Catch ex2 As Exception
+                                    strMsgVendConfig = " 'm_vendorConfig.ConfigFile' is not defined. SubError: " & vbCrLf & ex2.Message & vbCrLf
+                                End Try
+                            End If
+                        End If
+                    Else
+                        doc.InnerXml = strInput
+                    End If
+                Catch ex As Exception
+                    msgEx = "Not a valid identity or vendor URL for this catalog.<BR>Please report error" & _
+                                          vbCrLf & "config =" & strMsgVendConfig & _
+                                          vbCrLf & "ERROR:: " & vbCrLf & ex.ToString & _
+                                          ""
+
+                    objStreamWriter.WriteLine(msgEx)
+
+                    Exit Sub
+                End Try
+            Case "CYTECMXM"
+                Console.WriteLine("Started to test CYTEC MXM ")
+                Console.WriteLine("")
+
+                objStrmWrtrXMLRspns = File.CreateText(filePathResponse)
+                objStreamWriterXML = File.CreateText(filePath)
+                objStreamWriter = File.CreateText(logpath)
+                objStreamWriter.WriteLine("Started CYTEC MXM Test " & Now())
+
+                'just define sInput for Send1 procedure
+                'strInput = "<?xml version=""1.0"" encoding=""UTF-8""?><!DOCTYPE cXML SYSTEM ""http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd""[]><cXML payloadID=""2016-02-18T09:06:44.8376289-05:00.043793890.OrderRequest@sdi.com"" xml:lang=""en-US"" timestamp=""2016-02-18T09:06:44.8486311-05:00""><Header><From><Credential domain=""NetworkId""><Identity>CYTECMXM</Identity></Credential></From><To><Credential domain=""NetworkId""><Identity>SDIINC</Identity></Credential></To><Sender><Credential domain=""CYTECNETWORK""><Identity>CYTECMXM</Identity><SharedSecret>JsymuZ/YkUJ3RYPa7dZurQ==</SharedSecret></Credential><UserAgent>Ariba Network 1.2</UserAgent></Sender></Header><Request><OrderRequest><OrderRequestHeader orderDate=""2015-01-09T00:00:00.0000000-05:00"" orderID=""0003118726"" orderType=""REGULAR"" orderVersion=""1"" type=""NEW""><Total><Money currency=""USD"">2292.15</Money></Total><ShipTo><Address addressID=""L0275-02"" isoCountryCode=""US""><Name xml:lang=""en-US"">Cytec HdG Maintenance</Name><PostalAddress name=""default""><DeliverTo>Cytc HdG</DeliverTo><Street>c/o SDI  Maintenance</Street><Street>1300 Revolution Street</Street><City>Havre de Grace</City><State>MD</State><PostalCode>21078</PostalCode><Country isoCountryCode=""US"">United States</Country></PostalAddress><Email name=""default"">Sheldon.Abramowitz@sdi.com</Email><Phone name=""default""><TelephoneNumber><CountryCode isoCountryCode=""US"">1</CountryCode><AreaOrCityCode>215</AreaOrCityCode><Number>633-1900</Number></TelephoneNumber></Phone></Address></ShipTo><BillTo><Address addressID="""" isoCountryCode=""US""><Name xml:lang=""en-US"">SDI</Name><PostalAddress name=""default""><DeliverTo>SDI</DeliverTo><DeliverTo>ATTN: ACCOUNTS PAYABLE</DeliverTo><Street>1414 RADCLIFFE ST</Street><Street></Street><City>BRISTOL</City><State>PA</State><PostalCode>19007</PostalCode><Country isoCountryCode=""US"">United States</Country></PostalAddress><Email name=""default"">Sheldon.Abramowitz@sdi.com</Email><Phone name=""default""><TelephoneNumber><CountryCode isoCountryCode=""US"">1</CountryCode><AreaOrCityCode>215</AreaOrCityCode><Number>633-1900</Number></TelephoneNumber></Phone></Address></BillTo><Shipping><Money currency=""USD"">0.00</Money><Description xml:lang=""en-US"">Cost of shipping, not including shipping tax</Description></Shipping><PaymentTerm payInNumberOfDays=""30"" /><Comments xml:lang=""en-US"">Vendor name: Amazon</Comments></OrderRequestHeader><ItemOut quantity=""5.0"" lineNumber=""1""><ItemID><SupplierPartID>J71C-AVN1-C</SupplierPartID><SupplierPartAuxiliaryID></SupplierPartAuxiliaryID></ItemID><ItemDetail><UnitPrice><Money currency=""USD"">458.43</Money></UnitPrice><Description xml:lang=""en-US"">NO NOUN,NO MODIFIE:COUPLER, J71, 1"":EMCO COULPLER--J71C-AVN1-C</Description><UnitOfMeasure>EA</UnitOfMeasure><Classification domain=""SPSC""></Classification><Extrinsic name=""ExtDescription""></Extrinsic></ItemDetail></ItemOut></OrderRequest></Request></cXML>"
+                'strInput = "<?xml version=""1.0"" encoding=""UTF-8""?><!DOCTYPE cXML SYSTEM ""http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd""[]><cXML payloadID=""2016-02-18T09:06:44.8376289-05:00.043793890.OrderRequest@sdi.com"" xml:lang=""en-US"" timestamp=""2016-02-18T09:06:44.8486311-05:00""><Header><From><Credential domain=""NetworkId""><Identity>CYTECMXM</Identity></Credential></From><To><Credential domain=""NetworkId""><Identity>SDIINC</Identity></Credential></To><Sender><Credential domain=""CYTECNETWORK""><Identity>CYTECMXM</Identity><SharedSecret>JsymuZ/YkUJ3RYPa7dZurQ==</SharedSecret></Credential><UserAgent>Ariba Network 1.2</UserAgent></Sender></Header><Request><MMITEMIN><ITEM><SITEID>Cytec 2nd Plant</SITEID><ITEMNUM>5600012</ITEMNUM><COMMODITYGROUP>0012</COMMODITYGROUP><DESCRIPTION>sOMETHING SPECIAL - 254 </DESCRIPTION><ISSUEUNIT>EA</ISSUEUNIT><ORDERUNIT>EA</ORDERUNIT></ITEM><INVENTORY><CATEGORY>MRO</CATEGORY><MANUFACTURER>3M</MANUFACTURER><MODELNUM>K726-34</MODELNUM><BINNUM>V4-6-21-8</BINNUM><MINLEVEL>2</MINLEVEL><MAXLEVEL>6</MAXLEVEL><ORDERQTY>2</ORDERQTY></INVENTORY><INVCOST><STDCOST>12.5</STDCOST></INVCOST></MMITEMIN></Request></cXML>"
+                strInput = "<?xml version=""1.0""?>" & _
+"<!--Created on 12/17/2014 11:00:22 AM-->" & _
+"<DATA>" & _
+   "<ISAORDSTATUSLOG>" & _
+      "<ORDER_NO>2015023525</ORDER_NO>" & _
+      "<LINE_NBR>23</LINE_NBR>" & _
+      "<DTTM_STAMP>12/17/2014 10:23:19 AM</DTTM_STAMP>" & _
+     " <ISA_ORDER_STATUS>2</ISA_ORDER_STATUS>" & _
+   "</ISAORDSTATUSLOG>" & _
+   "<ISAORDSTATUSLOG>" & _
+      "<ORDER_NO>2015023525</ORDER_NO>" & _
+      "<LINE_NBR>22</LINE_NBR>" & _
+      "<DTTM_STAMP>12/17/2014 10:23:19 AM</DTTM_STAMP>" & _
+      "<ISA_ORDER_STATUS>2</ISA_ORDER_STATUS>" & _
+   "</ISAORDSTATUSLOG>" & _
+"</DATA>"
+            Case Else
+                Exit Sub
+        End Select
+
+        
+
         If Trim(strInput) <> "" Then
             objStreamWriter.WriteLine("Saving XML file to send " & Now())
             objStreamWriterXML.WriteLine(strInput)
@@ -228,65 +267,65 @@ Module Module1
                     End Try
 
                     If bIsOK Then
-                        objStreamWriter.WriteLine("Response XML file checked OK. Changing Order statuses " & Now())
-                        Dim strValueToWrite As String = Now.Year.ToString() & Now.Month.ToString() & Now.Day.ToString() & Now.GetHashCode.ToString()
-                        Dim intNumberToWrite As Long = 0
-                        If IsNumeric(strValueToWrite) Then
-                            intNumberToWrite = CType(strValueToWrite, Long)
-                        Else
-                            intNumberToWrite = Now.GetHashCode
-                        End If
-                        Dim bNoErrors As Boolean = True
-                        Dim strOrderNo As String = ""
-                        connectOR.Open()
-                        Try
-                            Dim iOrdCount As Integer = OrderListDataSet.Tables(0).Rows.Count
-                            ' run this query for every order sent:
-                            ' "update SYSADM.PS_PO_DISPATCHED set ECQUEUEINSTANCE=" & intNumberToWrite & " where po_id='" & "M010373791" & "'"
-                            If connectOR.State = ConnectionState.Open Then
-                            Else
-                                connectOR.Open()
-                            End If
-                            Dim rowsAffected As Integer = 0
-                            Dim iCnt As Integer = 0
-                            For iCnt = 0 To iOrdCount - 1
-                                If iCnt = 1 Then Exit For ' for testing ONLY!
-                                rowsAffected = 0
-                                strOrderNo = OrderListDataSet.Tables(0).Rows(iCnt).Item("po_id").ToString()
-                                'run query
-                                Dim strUpdateQuery As String = "update SYSADM.PS_PO_DISPATCHED set ECQUEUEINSTANCE=" & intNumberToWrite & " where po_id='" & strOrderNo & "'"
-                                'commented out for testing
-                                Dim UpdCommand As OleDbCommand = New OleDbCommand(strUpdateQuery, connectOR)
-                                UpdCommand.CommandTimeout = 120
-                                rowsAffected = UpdCommand.ExecuteNonQuery()
-                                Try
-                                    UpdCommand.Dispose()
-                                Catch ex As Exception
+                        'objStreamWriter.WriteLine("Response XML file checked OK. Changing Order statuses " & Now())
+                        'Dim strValueToWrite As String = Now.Year.ToString() & Now.Month.ToString() & Now.Day.ToString() & Now.GetHashCode.ToString()
+                        'Dim intNumberToWrite As Long = 0
+                        'If IsNumeric(strValueToWrite) Then
+                        '    intNumberToWrite = CType(strValueToWrite, Long)
+                        'Else
+                        '    intNumberToWrite = Now.GetHashCode
+                        'End If
+                        'Dim bNoErrors As Boolean = True
+                        'Dim strOrderNo As String = ""
+                        'connectOR.Open()
+                        'Try
+                        '    Dim iOrdCount As Integer = OrderListDataSet.Tables(0).Rows.Count
+                        '    ' run this query for every order sent:
+                        '    ' "update SYSADM.PS_PO_DISPATCHED set ECQUEUEINSTANCE=" & intNumberToWrite & " where po_id='" & "M010373791" & "'"
+                        '    If connectOR.State = ConnectionState.Open Then
+                        '    Else
+                        '        connectOR.Open()
+                        '    End If
+                        '    Dim rowsAffected As Integer = 0
+                        '    Dim iCnt As Integer = 0
+                        '    For iCnt = 0 To iOrdCount - 1
+                        '        If iCnt = 1 Then Exit For ' for testing ONLY!
+                        '        rowsAffected = 0
+                        '        strOrderNo = OrderListDataSet.Tables(0).Rows(iCnt).Item("po_id").ToString()
+                        '        'run query
+                        '        Dim strUpdateQuery As String = "update SYSADM.PS_PO_DISPATCHED set ECQUEUEINSTANCE=" & intNumberToWrite & " where po_id='" & strOrderNo & "'"
+                        '        'commented out for testing
+                        '        Dim UpdCommand As OleDbCommand = New OleDbCommand(strUpdateQuery, connectOR)
+                        '        UpdCommand.CommandTimeout = 120
+                        '        rowsAffected = UpdCommand.ExecuteNonQuery()
+                        '        Try
+                        '            UpdCommand.Dispose()
+                        '        Catch ex As Exception
 
-                                End Try
-                                If rowsAffected = 0 Then
-                                    bNoErrors = False
-                                    objStreamWriter.WriteLine("Order status change returned: 'rowsAffected = 0' for Order: " & strOrderNo)
-                                End If
-                            Next
-                        Catch ex As Exception
-                            bNoErrors = False
-                            objStreamWriter.WriteLine("Error trying to update Order: " & strOrderNo & " Error Message: " & ex.Message)
-                            Try
-                                connectOR.Close()
-                            Catch ex1 As Exception
+                        '        End Try
+                        '        If rowsAffected = 0 Then
+                        '            bNoErrors = False
+                        '            objStreamWriter.WriteLine("Order status change returned: 'rowsAffected = 0' for Order: " & strOrderNo)
+                        '        End If
+                        '    Next
+                        'Catch ex As Exception
+                        '    bNoErrors = False
+                        '    objStreamWriter.WriteLine("Error trying to update Order: " & strOrderNo & " Error Message: " & ex.Message)
+                        '    Try
+                        '        connectOR.Close()
+                        '    Catch ex1 As Exception
 
-                            End Try
-                        End Try
-                        Try
-                            connectOR.Close()
-                        Catch ex As Exception
+                        '    End Try
+                        'End Try
+                        'Try
+                        '    connectOR.Close()
+                        'Catch ex As Exception
 
-                        End Try
-                        If bNoErrors Then
-                            objStreamWriter.WriteLine("Order statuses changed without errors " & Now())
-                        Else
-                        End If
+                        'End Try
+                        'If bNoErrors Then
+                        '    objStreamWriter.WriteLine("Order statuses changed without errors " & Now())
+                        'Else
+                        'End If
                     Else
                         objStreamWriter.WriteLine("Response XML file is NOT checked OK " & Now())
                         Dim msg As String = "" '  & _
@@ -669,13 +708,13 @@ Module Module1
 
     Private Sub Send1(ByRef strBox1 As String, ByRef strBox2 As String)
 
-        strBox2 = ""   '  my test URL: "http://websrv.sdi.com/sdiwebin/xmlinsdi.aspx"   '  
+        strBox2 = ""   '  my test URL: "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"   ' not seen outside: "http://websrv.sdi.com/sdiwebin/xmlinsdi.aspx"   '  
         ' "https://https.amazonsedi.com/073dbe31-c230-403f-990c-6f74eeed1510"  '  
 
         Dim sHttpResponse As String = ""
         Dim httpSession As New easyHttp
 
-        httpSession.URL = "http://websrv.sdi.com/sdiwebin/xmlinsdi.aspx"  '"http://localhost/SDIWebProcessors/XmlInSDI.aspx"   '  "http://websrv.sdi.com/sdiwebin/xmlinsdi.aspx"  '   "https://https.amazonsedi.com/073dbe31-c230-403f-990c-6f74eeed1510"  '    "https://www.amazon.com/eprocurement/punchout"  '    "https://supplydev.hajoca.com/hajomid/eclipse.ecl"
+        httpSession.URL = "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"  '    "http://localhost/SDIWebProcessors/XmlInSDI.aspx"   '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"  '   "https://https.amazonsedi.com/073dbe31-c230-403f-990c-6f74eeed1510"  '    "https://www.amazon.com/eprocurement/punchout"  '    "https://supplydev.hajoca.com/hajomid/eclipse.ecl"
         httpSession.DataToPost = strBox1
         httpSession.ContentType = "text/xml; charset=utf-8"
         httpSession.Method = easyHttp.HTTPMethod.HTTP_POST
