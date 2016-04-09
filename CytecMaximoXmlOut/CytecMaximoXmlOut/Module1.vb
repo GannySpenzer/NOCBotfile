@@ -193,7 +193,7 @@ Module Module1
         m_logger = New appLogger(logpath1, logLevel)
         m_logger.WriteInformationLog("" & _
                                      System.Reflection.Assembly.GetExecutingAssembly.GetModules()(0).FullyQualifiedName & _
-                                     " v" & System.Reflection.Assembly.GetExecutingAssembly.GetName.Version.ToString & _
+                                     " Version: " & System.Reflection.Assembly.GetExecutingAssembly.GetName.Version.ToString & _
                                      "")
         Console.WriteLine("Start Cytec Maximo XML out")
         Console.WriteLine("")
@@ -214,8 +214,6 @@ Module Module1
             m_logger = Nothing
         End Try
 
-        'objStreamWriter.Flush()
-        'objStreamWriter.Close()
         Return      '// Returning from Main would terminate console application.
 
         ' // At this point console application is no more.
@@ -224,7 +222,7 @@ Module Module1
     End Sub
 
     Private Function getXMLOut() As Boolean
-        Dim rtn As String = "ProcessOutXML.getXMLOut"
+        Dim rtn As String = "Cytec Maximo Process XML Out.getXMLOut"
         Console.WriteLine("Start send of Cytec Maximo XML out")
         Console.WriteLine("")
 
@@ -271,37 +269,17 @@ Module Module1
                     Console.WriteLine("")
                     Console.WriteLine("***error - " & ex.ToString)
                     Console.WriteLine("")
-                    'objStreamWriter.WriteLine("     load out file Error " & ex.Message.ToString & " in file " & aFiles(I).Name)
                     strXMLError = ex.ToString
                     m_logger.WriteErrorLog(rtn & " :: load out Error " & strXMLError & " in file " & aFiles(I).Name)
 
                 End Try
 
-
-                'Dim XMLhttp As Object
-                'Dim xmlDoc2 As Object
                 Dim Response_Doc As String
                 If Trim(strXMLError) = "" Then
 
                     Response_Doc = SendOut(xmlRequest.InnerXml)
                     'Response_Doc = Send1(xmlRequest.InnerXml)
 
-                    'XMLhttp = CreateObject("MSXML2.ServerXMLHTTP")
-                    'XMLhttp.Open("POST", m_Url_Cytec_Maximo, False)
-                    'XMLhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
-                    'XMLhttp.setTimeouts(10000, 120000, 60000, 60000)
-                    ''XMLhttp.Send("requestMessage=" & Microsoft.JScript.GlobalObject.encodeURIComponent(xmlRequest.InnerXml))
-                    'XMLhttp.Send(xmlRequest.InnerXml)
-
-                    ''-----------------------------------------------------------------------
-                    '' Get XML response from Extranet
-                    ''-----------------------------------------------------------------------
-                    'xmlDoc2 = CreateObject("MSXML2.DOMDocument")
-                    'xmlDoc2.setProperty("ServerHTTPRequest", True)
-                    'xmlDoc2.async = False
-                    'xmlDoc2.LoadXML(XMLhttp.ResponseXML.xml)
-
-                    'Response_Doc = XMLhttp.responseXML.xml
 
                     '-----------------------------------------------------------------------
                     ' Parse the XML response from Intercall Extranet
@@ -314,12 +292,17 @@ Module Module1
                         Else
                             m_logger.WriteVerboseLog(Response_Doc)
                             xmlResponse.LoadXml(Response_Doc)
+                            ' error trapping code
+                            If Response_Doc.Contains("<soapenv:Fault>") Or Response_Doc.Contains("</faultcode>") Or _
+                                        Response_Doc.Contains("</faultstring>") Then
+                                bolError = True
+                                strXMLError = "<soapenv:Fault>"
+                            End If
                         End If
                     Catch ex As Exception
                         Console.WriteLine("")
                         Console.WriteLine("***error - " & ex.ToString)
                         Console.WriteLine("")
-                        'objStreamWriter.WriteLine("     Error " & ex.Message.ToString & " in file " & aFiles(I).Name)
                         strXMLError = ex.ToString
                         m_logger.WriteErrorLog(rtn & " ::Error: " & strXMLError & " in file " & aFiles(I).Name)
 
@@ -332,21 +315,25 @@ Module Module1
                     If Trim(strXMLError) = "" Then
                         Try
                             File.Copy(aFiles(I).FullName, "C:\CytecMxmIn\XMLOUTProcessed\" & aFiles(I).Name, True)
-                            'objStreamWriter.WriteLine(" End - File " & aFiles(I).Name & " has been moved")
                             m_logger.WriteVerboseLog(" End - FILE " & aFiles(I).FullName & " has been moved")
+                            File.Delete(aFiles(I).FullName)
                         Catch ex As Exception
-                            'objStreamWriter.WriteLine("   copy file Error " & ex.Message.ToString & " in file " & aFiles(I).Name)
+
                             m_logger.WriteErrorLog(rtn & "  copy file Error " & strXMLError & " in file " & aFiles(I).Name)
                             m_logger.WriteErrorLog(rtn & " :: " & ex.ToString)
 
                         End Try
-                        File.Delete(aFiles(I).FullName)
                     Else
-                        'objStreamWriter.WriteLine("**")
-                        'objStreamWriter.WriteLine("     Error " & strXMLError & " in file " & aFiles(I).Name)
-                        'objStreamWriter.WriteLine("**")
-                        m_logger.WriteErrorLog(rtn & " :: Error " & strXMLError & " in file " & aFiles(I).Name)
+                        Try
+                            File.Copy(aFiles(I).FullName, "C:\CytecMxmIn\BadXML\" & aFiles(I).Name, True)
+                            m_logger.WriteVerboseLog(" Error - FILE: " & aFiles(I).FullName & " - has been moved to BadXML directory")
+                            File.Delete(aFiles(I).FullName)
+                        Catch ex As Exception
 
+                            m_logger.WriteErrorLog(rtn & " ::  moved to BadXML directory file Error: " & strXMLError & " in file " & aFiles(I).Name)
+                            m_logger.WriteErrorLog(rtn & " :: " & ex.ToString)
+
+                        End Try
                         bolError = True
                     End If
 
@@ -359,9 +346,7 @@ Module Module1
             m_logger.WriteErrorLog(rtn & " :: " & ex.ToString)
 
             strXMLError = ex.ToString
-            'objStreamWriter.WriteLine("**")
-            'objStreamWriter.WriteLine("     Error " & strXMLError & " in file " & aFiles(I).Name)
-            'objStreamWriter.WriteLine("**")
+            
             bolError = True
         End Try
 
@@ -376,11 +361,12 @@ Module Module1
 
         XMLhttp = CreateObject("MSXML2.ServerXMLHTTP")
         XMLhttp.Open("POST", m_Url_Cytec_Maximo, False)
-        XMLhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+        'XMLhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+        XMLhttp.setRequestHeader("Content-Type", "text/xml; charset=UTF-8")
+        XMLhttp.setRequestHeader("SOAPAction", "http://websrv.sdi.com/sdiwebin/xmlinsdi.aspx")
         XMLhttp.setTimeouts(10000, 120000, 60000, 60000)
         'XMLhttp.Send("requestMessage=" & Microsoft.JScript.GlobalObject.encodeURIComponent(xmlRequest.InnerXml))
-        'XMLhttp.Send(strInnerXml)
-        XMLhttp.Send(Microsoft.JScript.GlobalObject.encodeURIComponent(strInnerXml))
+        XMLhttp.Send(strInnerXml)
 
         '-----------------------------------------------------------------------
         ' Get XML response from Extranet
@@ -588,15 +574,12 @@ Module Module1
         Dim email As New MailMessage
 
         ''The email address of the sender
-        'email.From = "TechSupport@sdi.com"
         email.From = m_onError_emailFrom
 
         ''The email address of the recipient. 
-        'email.To = "bob.dougherty@sdi.com"
         email.To = m_onError_emailTo
 
         ''The subject of the email
-        'email.Subject = "UNCC XML OUT Error"
         email.Subject = m_onError_emailSubject
 
         'The Priority attached and displayed for the email
@@ -612,7 +595,7 @@ Module Module1
             UpdEmailOut.UpdEmailOut.UpdEmailOut(email.Subject, email.From, email.To, "", "webdev@sdi.com", "Y", email.Body, connectOR)
         Catch ex As Exception
             'objStreamWriter.WriteLine("     Error - the email was not sent")
-            m_logger.WriteErrorLog(rtn & " ::the email was not sent Error " & ex.Message.ToString)
+            m_logger.WriteErrorLog(rtn & " :: the email was not sent. Error: " & ex.Message.ToString)
 
         End Try
 
