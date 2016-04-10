@@ -1106,6 +1106,8 @@ Module Module1
 
         If (CStr(My.Settings(propertyName:="onErrorEmail_CC")) <> "") Then
             email.Cc = CStr(My.Settings(propertyName:="onErrorEmail_CC")).Trim
+        Else
+            email.Cc = ""
         End If
 
         If (CStr(My.Settings(propertyName:="onErrorEmail_BCC")) <> "") Then
@@ -1125,10 +1127,10 @@ Module Module1
         email.Body &= "<table><tr><td>CytecMxmMatMast has completed with "
         If bolWarning = True Then
             email.Body &= "warnings,"
-            email.Subject = "CytecMxmMatMast Warning"
+            email.Subject = " (TEST) CytecMxmMatMast Warning"
         Else
             email.Body &= "errors;"
-            email.Subject = "CytecMxmMatMast Error"
+            email.Subject = " (TEST) CytecMxmMatMast Error"
         End If
 
         'VR 12/18/2014 Adding file names and error descriptions in message body
