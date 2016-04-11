@@ -11,6 +11,7 @@ Imports System.IO
 Module Module1
 
     Private m_logger As appLogger = Nothing
+    Private m_timeStamp As String = Now.ToString
 
     Dim rootDir As String = "C:\CytecMxmIn"
     Dim logpath As String = "C:\CytecMxmIn\LOGS\CytecMaxIssueOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
@@ -125,13 +126,8 @@ Module Module1
         Dim strSqlString As String = "SELECT * FROM SYSADM8.PS_ISA_MXM_MOV_OUT WHERE PROCESS_FLAG != 'Y'"
 
         Try
-            'Dim command As OleDbCommand
-            'command = New OleDbCommand(strSqlString, connectOR)
-            connectOR.Open()
 
             ds = ORDBAccess.GetAdapter(strSqlString, connectOR)
-
-            connectOR.Close()
 
         Catch OleDBExp As OleDbException
             m_logger.WriteErrorLog(rtn & " :: Error reading source table SYSADM8.PS_ISA_MXM_MOV_OUT")
@@ -165,58 +161,337 @@ Module Module1
         Dim rowsaffected As Integer
         If ds.Tables(0).Rows.Count > 0 Then
 
-            Dim strXMLPath As String = rootDir & "\XMLOUT\CytecMaxIssuesOut" & Now.Hour.ToString("D2") & Now.Minute.ToString("D2") & Now.Second.ToString("D2") & ".xml"
-            Dim objXMLWriter As XmlTextWriter
+            Dim strTemplateXml As String = System.AppDomain.CurrentDomain.BaseDirectory.ToString & "CytecMaxIssuesTemplate.xml"
+
             Try
-                objXMLWriter = New XmlTextWriter(strXMLPath, Nothing)
-                'objStreamWriter.WriteLine("  Writing to file: " & strXMLPath)
-                m_logger.WriteInformationLog(rtn & " :: Writing to file: " & strXMLPath)
-            Catch objError As Exception
-                'objStreamWriter.WriteLine("  Error while accessing document " & strXMLPath & vbCrLf & objError.Message)
-                m_logger.WriteErrorLog(rtn & " :: Error while accessing document " & strXMLPath & vbCrLf & objError.Message)
-                Return True
+
+                Dim docXML As New XmlDocument
+                Dim stringer As theStringer = Nothing
+                Dim node As XmlNode = Nothing
+                Dim attrib As XmlAttribute = Nothing
+
+                ' load template for XML and replace header variables
+                stringer = New theStringer(Common.LoadPathFile(strTemplateXml))
+
+                'Dim dateOffset As New DateTimeOffset(Now, TimeZoneInfo.Local.GetUtcOffset(Now))
+                Dim dateOffset As New DateTimeOffset(Now, TimeZone.CurrentTimeZone.GetUtcOffset(Now))
+                m_timeStamp = dateOffset.ToString("s")
+                stringer.Parameters.Add("{__TIMESTAMP}", m_timeStamp)
+
+                ' load the template
+                docXML.LoadXml(xml:=stringer.ToString)
+
+                m_logger.WriteVerboseLog(rtn & " :: Template loaded")
+
+                ' get existing node Request
+                Dim nodeOrderReq As XmlNode = docXML.SelectSingleNode(xpath:="//Envelope//Body//MXINVISSUEInterface//Content")
+
+                Dim strItemNum As String = ""
+                Dim strStorLoc As String = ""
+                Dim strDtTimestamp As String = ""
+                Dim strShipDate As String = ""
+                Dim strQtyShipped As String = ""
+                Dim strEmplId As String = ""
+                Dim strTransType As String = ""
+                'Dim strOrgId As String = ""
+                Dim strSiteId As String = ""
+                Dim strWorkOrdNo As String = ""
+                'Dim strWoNum As String = ""
+
+                For I = 0 To ds.Tables(0).Rows.Count - 1
+                    'for testing:
+                    If I = 6 Then Exit For
+
+                    ' Item Number 
+                    strItemNum = ""
+                    Try
+                        strItemNum = CStr(ds.Tables(0).Rows(I).Item("ISA_ITEM"))
+                    Catch ex As Exception
+                        strItemNum = ""
+                    End Try
+                    ' int:STORELOC (ISA_BIN_ID) 
+                    strStorLoc = ""
+                    Try
+                        strStorLoc = CStr(ds.Tables(0).Rows(I).Item("ISA_BIN_ID"))
+                    Catch ex As Exception
+                        strStorLoc = ""
+                    End Try
+                    If Trim(strItemNum) <> "" And Trim(strStorLoc) <> "" Then ' Required!
+
+                        'create XML element/lines 
+                        ' build <int:MXINVISSUE
+                        Dim nodeOrder As XmlNode = nodeOrderReq.AppendChild(docXML.CreateElement(name:="int:MXINVISSUE"))
+                        ' build      <int:MATUSETRANS action="Add"
+                        Dim nodeItem As XmlNode = nodeOrder.AppendChild(docXML.CreateElement(name:="int:MATUSETRANS"))
+                        ' add attribute: action="Add"
+                        attrib = nodeItem.Attributes.Append(docXML.CreateAttribute(name:="action"))
+                        attrib.Value = "Add"
+
+                        'build actual elements based on ds rows
+
+                        If Trim(strItemNum) <> "" Then
+                            node = nodeItem.AppendChild(docXML.CreateElement(name:="int:ITEMNUM"))
+                            attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                            attrib.Value = "true"
+                            node.InnerText = Trim(strItemNum) ' get from dataset
+                        End If
+
+                        If Trim(strStorLoc) <> "" Then
+                            node = nodeItem.AppendChild(docXML.CreateElement(name:="int:STORELOC"))
+                            attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                            attrib.Value = "true"
+                            node.InnerText = Trim(strStorLoc) ' get from dataset
+                        End If
+
+                        ' int:TRANSDATE 
+                        strDtTimestamp = ""
+                        Try
+                            strDtTimestamp = CStr(ds.Tables(0).Rows(I).Item("DT_TIMESTAMP"))
+                            If IsDate(strDtTimestamp) Then
+                                strDtTimestamp = CType(strDtTimestamp, DateTime).ToString("s")
+                            End If
+                        Catch ex As Exception
+                            strDtTimestamp = ""
+                        End Try
+                        If Trim(strDtTimestamp) <> "" Then
+                            node = nodeItem.AppendChild(docXML.CreateElement(name:="int:TRANSDATE"))
+                            attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                            attrib.Value = "true"
+                            node.InnerText = Trim(strDtTimestamp) ' get from dataset
+                        End If
+
+                        ' int:ACTUALDATE 
+                        strShipDate = ""
+                        Try
+                            strShipDate = CStr(ds.Tables(0).Rows(I).Item("SHIP_DATE"))
+                            If IsDate(strShipDate) Then
+                                strShipDate = CType(strShipDate, DateTime).ToString("s")
+                            End If
+                        Catch ex As Exception
+                            strShipDate = ""
+                        End Try
+                        If Trim(strShipDate) <> "" Then
+                            node = nodeItem.AppendChild(docXML.CreateElement(name:="int:ACTUALDATE"))
+                            attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                            attrib.Value = "true"
+                            node.InnerText = Trim(strShipDate) ' get from dataset
+                        End If
+
+                        ' int:QUANTITY 
+                        strQtyShipped = ""
+                        Try
+                            strQtyShipped = CStr(ds.Tables(0).Rows(I).Item("QTY_SHIPPED"))
+                        Catch ex As Exception
+                            strQtyShipped = ""
+                        End Try
+                        If Trim(strQtyShipped) <> "" Then
+                            node = nodeItem.AppendChild(docXML.CreateElement(name:="int:QUANTITY"))
+                            attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                            attrib.Value = "true"
+                            node.InnerText = Trim(strQtyShipped) ' get from dataset
+                        End If
+
+                        ' int:ENTERBY 
+                        strEmplId = ""
+                        Try
+                            strEmplId = CStr(ds.Tables(0).Rows(I).Item("EMPLID"))
+                        Catch ex As Exception
+                            strEmplId = ""
+                        End Try
+                        If Trim(strEmplId) <> "" Then
+                            node = nodeItem.AppendChild(docXML.CreateElement(name:="int:ENTERBY"))
+                            attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                            attrib.Value = "true"
+                            node.InnerText = Trim(strEmplId) ' get from dataset
+                        End If
+
+                        '' int:MEMO  - NOT MAPPED
+                        node = nodeItem.AppendChild(docXML.CreateElement(name:="int:MEMO"))
+                        attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                        attrib.Value = "true"
+                        node.InnerText = "From SDI auto build. Line number (0 based): " & I.ToString() & ". Item Number: " & Trim(strItemNum) '  Trim(strMemo) ' get from dataset
+
+                        ' int:ISSUETYPE 
+                        strTransType = ""
+                        Try
+                            strTransType = CStr(ds.Tables(0).Rows(I).Item("TRANS_TYPE"))
+                        Catch ex As Exception
+                            strTransType = ""
+                        End Try
+                        If Trim(strTransType) <> "" Then
+                            strTransType = Trim(strTransType)
+                            If UCase(strTransType) = "ISS" Then
+                                strTransType = "ISSUE"
+                            End If
+                            node = nodeItem.AppendChild(docXML.CreateElement(name:="int:ISSUETYPE"))
+                            attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                            attrib.Value = "true"
+                            node.InnerText = Trim(strTransType) ' get from dataset
+                        End If
+
+                        'strOrgId = "" 
+                        'Try 
+                        '    strOrgId = CStr(ds.Tables(0).Rows(I).Item("??????")) 
+                        'Catch ex As Exception 
+                        'strOrgId = "" 
+                        'End Try 
+                        'If Trim(strOrgId) <> "" Then 
+
+                        ' int:ORGID - NOT MAPPED 
+                        node = nodeItem.AppendChild(docXML.CreateElement(name:="int:ORGID"))
+                        attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                        attrib.Value = "true"
+                        node.InnerText = "02"   '  Trim(strOrgId)  
+                        'End If 
+
+                        ' int:SITEID 
+                        strSiteId = ""
+                        Try
+                            strSiteId = CStr(ds.Tables(0).Rows(I).Item("PLANT"))
+                        Catch ex As Exception
+                            strSiteId = ""
+                        End Try
+                        If Trim(strSiteId) <> "" Then
+                            node = nodeItem.AppendChild(docXML.CreateElement(name:="int:SITEID"))
+                            attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                            attrib.Value = "true"
+                            node.InnerText = Trim(strSiteId) ' get from dataset
+                        End If
+
+                        ' int:REFWO 
+                        strWorkOrdNo = ""
+                        Try
+                            strWorkOrdNo = CStr(ds.Tables(0).Rows(I).Item("ISA_WORK_ORDER_NO"))
+                        Catch ex As Exception
+                            strWorkOrdNo = ""
+                        End Try
+                        If Trim(strWorkOrdNo) <> "" Then
+                            node = nodeItem.AppendChild(docXML.CreateElement(name:="int:REFWO"))
+                            attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                            attrib.Value = "true"
+                            node.InnerText = Trim(strWorkOrdNo) ' get from dataset
+                        End If
+
+                        ' int:LINETYPE
+                        node = nodeItem.AppendChild(docXML.CreateElement(name:="int:LINETYPE"))
+                        attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                        attrib.Value = "true"
+                        node.InnerText = "ITEM"
+
+                        ' int:ITEMSETID 
+                        node = nodeItem.AppendChild(docXML.CreateElement(name:="int:ITEMSETID"))
+                        attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                        attrib.Value = "true"
+                        node.InnerText = "SET02"
+
+                        ''strWoNum = ""
+                        ''Try
+                        ''    strWoNum = CStr(ds.Tables(0).Rows(I).Item("?????"))
+                        ''Catch ex As Exception
+                        ''strWoNum = ""
+                        ''End Try
+                        ''If Trim(strWoNum) <> "" Then
+
+                        '' int:WONUM - NOT MAPPED
+                        'node = nodeItem.AppendChild(docXML.CreateElement(name:="int:WONUM"))
+                        'attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                        'attrib.Value = "true"
+                        'node.InnerText = "10198942"  '  Trim(strWoNum) ' get from dataset
+
+                        ''End If
+
+                        ' int:TOSITEID
+                        node = nodeItem.AppendChild(docXML.CreateElement(name:="int:TOSITEID"))
+                        attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                        attrib.Value = "true"
+                        node.InnerText = Trim(strSiteId) ' get from dataset
+
+                        ' int:TRANS_LANGCODE
+                        node = nodeItem.AppendChild(docXML.CreateElement(name:="int:TRANS_LANGCODE"))
+                        attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                        attrib.Value = "true"
+                        node.InnerText = "EN"
+                    Else
+                        m_logger.WriteVerboseLog(rtn & " :: Trim(strItemNum) = '' (" & strItemNum & ") Or Trim(strStorLoc) = '' (" & strStorLoc & ") for line number (0 based): " & I.ToString())
+                    End If  '  Trim(strItemNum) <> "" And Trim(strStorLoc) <> ""
+
+                    'update field to 'Y'
+                    Dim strUpdateSql As String = "UPDATE SYSADM8.PS_ISA_MXM_MOV_OUT SET PROCESS_FLAG = 'Y' WHERE ISA_IDENTIFIER = " & ds.Tables(0).Rows(I).Item("ISA_IDENTIFIER") & ""
+
+                    rowsaffected = 0
+                    rowsaffected = ORDBAccess.ExecNonQuery(strUpdateSql, connectOR)
+
+                    If rowsaffected = 0 Then
+                        m_logger.WriteVerboseLog(rtn & " :: Update field PROCESS_FLAG to 'Y' returned 'rowsaffected = 0'. strUpdateSql : " & strUpdateSql)
+                        bolError = True
+                    End If
+                Next  '  I = 0 To ds.Tables(0).Rows.Count - 1
+
+                Dim strOuterXml As String = docXML.OuterXml
+                strOuterXml = Replace(strOuterXml, "<Envelope", "<soapenv:Envelope")
+                strOuterXml = Replace(strOuterXml, "<Header />", "<soapenv:Header/>")
+                strOuterXml = Replace(strOuterXml, "<Body>", "<soapenv:Body>")
+                strOuterXml = Replace(strOuterXml, "<MXINVISSUEInterface", "<int:MXINVISSUEInterface")
+                strOuterXml = Replace(strOuterXml, "<Content>", "<int:Content>")
+                strOuterXml = Replace(strOuterXml, "<MXINVISSUE>", "<int:MXINVISSUE>")
+                strOuterXml = Replace(strOuterXml, "<MATUSETRANS", "<int:MATUSETRANS")
+                strOuterXml = Replace(strOuterXml, "<ITEMNUM", "<int:ITEMNUM")
+                strOuterXml = Replace(strOuterXml, "</ITEMNUM>", "</int:ITEMNUM>")
+                strOuterXml = Replace(strOuterXml, "<STORELOC", "<int:STORELOC")
+                strOuterXml = Replace(strOuterXml, "</STORELOC>", "</int:STORELOC>")
+                strOuterXml = Replace(strOuterXml, "<TRANSDATE", "<int:TRANSDATE")
+                strOuterXml = Replace(strOuterXml, "</TRANSDATE>", "</int:TRANSDATE>")
+
+                strOuterXml = Replace(strOuterXml, "<ACTUALDATE", "<int:ACTUALDATE")
+                strOuterXml = Replace(strOuterXml, "</ACTUALDATE>", "</int:ACTUALDATE>")
+                strOuterXml = Replace(strOuterXml, "<QUANTITY", "<int:QUANTITY")
+                strOuterXml = Replace(strOuterXml, "</QUANTITY>", "</int:QUANTITY>")
+                strOuterXml = Replace(strOuterXml, "<ENTERBY", "<int:ENTERBY")
+                strOuterXml = Replace(strOuterXml, "</ENTERBY>", "</int:ENTERBY>")
+                strOuterXml = Replace(strOuterXml, "<ISSUETYPE", "<int:ISSUETYPE")
+                strOuterXml = Replace(strOuterXml, "</ISSUETYPE>", "</int:ISSUETYPE>")
+                strOuterXml = Replace(strOuterXml, "<ORGID", "<int:ORGID")
+                strOuterXml = Replace(strOuterXml, "</ORGID>", "</int:ORGID>")
+                strOuterXml = Replace(strOuterXml, "<SITEID", "<int:SITEID")
+                strOuterXml = Replace(strOuterXml, "</SITEID>", "</int:SITEID>")
+                strOuterXml = Replace(strOuterXml, "<REFWO", "<int:REFWO")
+                strOuterXml = Replace(strOuterXml, "</REFWO>", "</int:REFWO>")
+                strOuterXml = Replace(strOuterXml, "<LINETYPE", "<int:LINETYPE")
+                strOuterXml = Replace(strOuterXml, "</LINETYPE>", "</int:LINETYPE>")
+                strOuterXml = Replace(strOuterXml, "<ITEMSETID", "<int:ITEMSETID")
+                strOuterXml = Replace(strOuterXml, "</ITEMSETID>", "</int:ITEMSETID>")
+                'strOuterXml = Replace(strOuterXml, "<WONUM", "<int:WONUM")
+                'strOuterXml = Replace(strOuterXml, "</WONUM>", "</int:WONUM>")
+                strOuterXml = Replace(strOuterXml, "<TOSITEID", "<int:TOSITEID")
+                strOuterXml = Replace(strOuterXml, "</TOSITEID>", "</int:TOSITEID>")
+                strOuterXml = Replace(strOuterXml, "<TRANS_LANGCODE", "<int:TRANS_LANGCODE")
+                strOuterXml = Replace(strOuterXml, "</TRANS_LANGCODE>", "</int:TRANS_LANGCODE>")
+                strOuterXml = Replace(strOuterXml, "<MEMO", "<int:MEMO")
+                strOuterXml = Replace(strOuterXml, "</MEMO>", "</int:MEMO>")
+                strOuterXml = Replace(strOuterXml, "</MATUSETRANS>", "</int:MATUSETRANS>")
+                strOuterXml = Replace(strOuterXml, "</MXINVISSUE>", "</int:MXINVISSUE>")
+                strOuterXml = Replace(strOuterXml, "</Content>", "</int:Content>")
+                strOuterXml = Replace(strOuterXml, "</MXINVISSUEInterface>", "</int:MXINVISSUEInterface>")
+                strOuterXml = Replace(strOuterXml, "</Body>", "</soapenv:Body>")
+                strOuterXml = Replace(strOuterXml, "</Envelope>", "</soapenv:Envelope>")
+                'strOuterXml = Replace(strOuterXml, "Envelope", "soapenvnvelope")
+                'strOuterXml = Replace(strOuterXml, "Envelope", "soapenvnvelope")
+
+                m_logger.WriteVerboseLog(rtn & " :: Finished creating XML Out string")
+                Dim objStreamWriterXML As System.IO.StreamWriter
+                objStreamWriterXML = New System.IO.StreamWriter(rootDir & "\XMLOUT\CytecMaxWriteIssuesOut" & Now.Hour.ToString("D2") & Now.Minute.ToString("D2") & Now.Second.ToString("D2") & Now.GetHashCode & ".xml")
+                objStreamWriterXML.WriteLine(strOuterXml)
+                objStreamWriterXML.Flush()
+                objStreamWriterXML.Close()
+                m_logger.WriteVerboseLog(rtn & " :: Saved XML Out file")
+                bolError = False
+            Catch ex As Exception
+                bolError = True
+                m_logger.WriteErrorLog(rtn & " :: Error while building Issues Out XML")
+                m_logger.WriteErrorLog(ex.Message)
             End Try
-            objXMLWriter.Formatting = Formatting.Indented
-            objXMLWriter.Indentation = 3
-            objXMLWriter.WriteStartDocument()
-            objXMLWriter.WriteComment("Created on " & Now())
-            objXMLWriter.WriteStartElement("int:MXINVISSUEInterface")
 
-            'build header - <int:Header 
-            'NOT DONE YET
 
-            'build <int:Content
-
-            Dim sdiOrderNo As String = ""
-            Dim unccOrderNo As String = ""
-            Dim strOrdStatusToCheck As String = ""
-
-            For I = 0 To ds.Tables(0).Rows.Count - 1
-                'create XML element/lines 
-                ' build <int:MXINVISSUE
-                ' build      <int:MATUSETRANS action="Add"
-
-                ' close <int:MXINVISSUE
-                ' close      <int:MATUSETRANS action="Add"
-
-                'update current record PROCESS_FLAG to 'Y'
-
-            Next
-
-            objXMLWriter.WriteEndElement()
-            objXMLWriter.Flush()
-            objXMLWriter.Close()
-            Dim strXMLResult As String
-            Dim objSR As StreamReader = File.OpenText(strXMLPath)
-            strXMLResult = objSR.ReadToEnd()
-            objSR.Close()
-            objSR = Nothing
-
-            If bolError = True Then
-                Return True
-            Else
-                Return False
-            End If
         End If
 
         Return bolError

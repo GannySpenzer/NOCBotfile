@@ -14,7 +14,12 @@ Public Class ORDBAccess
             connection.close()
             Return UserdataSet
         Catch objException As Exception
-            'MsgBox(objException.ToString, MsgBoxStyle.Critical)
+            Try
+                connection.Close()
+            Catch ex As Exception
+
+            End Try
+            Return Nothing
         End Try
 
     End Function
@@ -27,7 +32,12 @@ Public Class ORDBAccess
             datareader = Command.ExecuteReader(CommandBehavior.CloseConnection)
             Return datareader
         Catch objException As Exception
-            'MsgBox(objException.ToString, MsgBoxStyle.Critical)
+            Try
+                connection.Close()
+            Catch ex As Exception
+
+            End Try
+
         End Try
 
     End Function
@@ -37,12 +47,17 @@ Public Class ORDBAccess
 
             Dim Command = New OleDbCommand(p_strQuery, connection)
             connection.Open()
-            Dim strReturn As String
+            Dim strReturn As String = ""
             strReturn = Command.ExecuteScalar()
             connection.Close()
             Return strReturn
         Catch objException As Exception
-            'MsgBox(objException.ToString, MsgBoxStyle.Critical)
+            Try
+                connection.Close()
+            Catch ex As Exception
+
+            End Try
+            Return ""
         End Try
     End Function
 
@@ -52,12 +67,17 @@ Public Class ORDBAccess
 
         Try
             Dim Command = New OleDbCommand(p_strQuery, connection)
-            'connection.open()
+            connection.Open()
             rowsAffected = Command.ExecuteNonQuery()
-            'connection.close()
+            connection.Close()
             Return rowsAffected
         Catch objException As Exception
-            'MsgBox(objException.ToString, MsgBoxStyle.Critical)
+            Try
+                connection.Close()
+            Catch ex As Exception
+
+            End Try
+            Return 0
         End Try
     End Function
 

@@ -116,6 +116,7 @@
     <Import Include="System.Diagnostics" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common.vb" />
     <Compile Include="Module1.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
@@ -133,6 +134,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="ORDBAccess.vb" />
+    <Compile Include="theStringer.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
@@ -155,7 +157,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="CytecMaxIssuesTemplate.xml" />
+    <Content Include="CytecMaxIssuesTemplate.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="references\SDI.ApplicationLogger.dll" />
     <Content Include="references\SDI.UNCC.WorkOrderAdapter.dll" />
     <Content Include="references\UpdEmailOut.dll" />
