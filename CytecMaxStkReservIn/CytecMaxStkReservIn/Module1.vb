@@ -197,6 +197,546 @@ Module Module1
 
     End Sub
 
+    Private Function ProcessInvResInterface(ByVal nodeStkReservReq As XmlNode, ByVal strFileName As String, ByVal dtCreationDateTime As DateTime, ByRef bolError As String) As String
+        Dim strXMLError As String = ""
+        Dim rtn As String = "CytecMxmStkReserv.ProcessInvResInterface"
+
+        m_logger.WriteInformationLog(rtn & " :: Start ProcessInvResInterface")
+
+        ' get existing node CONTENT
+        Dim strCustId As String = "CYTEC"
+        Dim strProcessedFlag As String = "N"
+        Dim strIsaItem As String = ""
+        Dim strIntfcType As String = "INVRESERVE"
+        Dim decProcInstnce As Decimal = 0  '  PROCESS_INSTANCE
+        Dim strOrderNo As String = " "
+        Dim intOrderLineNo As Integer = 0
+
+        If nodeStkReservReq.ChildNodes.Count > 0 Then
+
+            Dim strWorkOrderStatus As String = ""
+            Dim strSiteId As String = ""
+            Dim strWorkOrderNum As String = ""
+            Dim strReqstOrderRef As String = ""
+            Dim strWoPrior As String = ""
+            Dim intWoPrior As Integer = 0
+            Dim strWoType As String = ""
+            Dim strActivityId As String = ""
+            Dim strDueDate As String = ""
+            Dim dtDueDate As DateTime
+            Dim strShiptoName As String = ""
+            Dim strInvItemId As String = ""
+            Dim strQtyReqst As String = ""
+            Dim decQtyReqst As Decimal = 0
+            Dim strEmplId As String = ""
+            Dim strMachineNum As String = ""
+            Dim strUnloadingPoint As String = ""
+            Dim strEnteredDate As String = ""
+            Dim dtEnteredDate As DateTime
+
+            Dim iCnt As Integer = 0
+            For iCnt = 0 To nodeStkReservReq.ChildNodes.Count - 1
+                If UCase(nodeStkReservReq.ChildNodes(iCnt).Name) = "MXINVRES" Then
+                    Dim nodeMxItem As XmlNode = nodeStkReservReq.ChildNodes(iCnt)
+                    If nodeMxItem.ChildNodes.Count > 0 Then
+                        Dim iMxItem As Integer = 0
+                        For iMxItem = 0 To nodeMxItem.ChildNodes.Count - 1
+                            If UCase(nodeMxItem.ChildNodes(iMxItem).Name) = "INVRESERVE" Then
+                                Dim nodeItemMM As XmlNode = nodeMxItem.ChildNodes(iMxItem)
+                                If nodeItemMM.ChildNodes.Count > 0 Then
+                                    strSiteId = ""
+                                    strWorkOrderNum = ""
+                                    strReqstOrderRef = ""
+                                    strWorkOrderStatus = ""
+                                    strWoPrior = ""
+                                    intWoPrior = 0
+                                    strWoType = ""
+                                    strActivityId = ""
+                                    strDueDate = ""
+                                    dtDueDate = Nothing
+                                    strShiptoName = ""
+                                    strInvItemId = ""
+                                    strQtyReqst = ""
+                                    decQtyReqst = 0
+                                    strEmplId = ""
+                                    strMachineNum = ""
+                                    strUnloadingPoint = ""
+                                    strEnteredDate = ""
+                                    dtEnteredDate = Nothing
+
+                                    Dim iItemMM As Integer = 0
+                                    Dim strNodeName As String = ""
+                                    For iItemMM = 0 To nodeItemMM.ChildNodes.Count - 1
+
+                                        strNodeName = UCase(nodeItemMM.ChildNodes(iItemMM).Name)
+                                        Select Case strNodeName
+                                            Case "SITEID"
+                                                Try
+                                                    strSiteId = nodeItemMM.ChildNodes(iItemMM).InnerText
+                                                    If Trim(strSiteId) = "" Then
+                                                        strSiteId = " "
+                                                    Else
+                                                        strSiteId = Trim(strSiteId)
+                                                    End If
+                                                    If Len(Trim(strSiteId)) > 30 Then
+                                                        strSiteId = Microsoft.VisualBasic.Left(strSiteId, 30)
+                                                    End If
+                                                Catch ex As Exception
+                                                    strSiteId = " "
+                                                End Try
+
+                                            Case "WONUM" '  ISA_WORK_ORDER_NO  ' 20
+                                                Try  '  strWorkOrderNum
+                                                    strWorkOrderNum = nodeItemMM.ChildNodes(iItemMM).InnerText
+                                                    If Trim(strWorkOrderNum) = "" Then
+                                                        strWorkOrderNum = " "
+                                                    Else
+                                                        strWorkOrderNum = Trim(strWorkOrderNum)
+                                                    End If
+                                                    If Len(Trim(strWorkOrderNum)) > 20 Then
+                                                        strWorkOrderNum = Microsoft.VisualBasic.Left(strWorkOrderNum, 20)
+                                                    End If
+                                                Catch ex As Exception
+                                                    strWorkOrderNum = " "
+                                                End Try
+
+                                            Case "REQUESTNUM"  '  ORDER_REF ' 20
+                                                Try  '  strReqstOrderRef
+                                                    strReqstOrderRef = nodeItemMM.ChildNodes(iItemMM).InnerText
+                                                    If Trim(strReqstOrderRef) = "" Then
+                                                        strReqstOrderRef = " "
+                                                    Else
+                                                        strReqstOrderRef = Trim(strReqstOrderRef)
+                                                    End If
+                                                    If Len(Trim(strWorkOrderNum)) > 20 Then
+                                                        strReqstOrderRef = Microsoft.VisualBasic.Left(strReqstOrderRef, 20)
+                                                    End If
+                                                Catch ex As Exception
+                                                    strReqstOrderRef = " "
+                                                End Try
+
+                                            Case "REQUIREDDATE"  '  DUE_DT '  DATE
+                                                Try  ' strDueDate
+                                                    strDueDate = nodeItemMM.ChildNodes(iItemMM).InnerText
+                                                    If Trim(strDueDate) = "" Then
+                                                        dtDueDate = Nothing
+                                                    Else
+                                                        strDueDate = Trim(strDueDate)
+                                                    End If
+                                                    If IsDate(strDueDate) Then
+                                                        dtDueDate = CType(strDueDate, DateTime)
+                                                    End If
+                                                Catch ex As Exception
+                                                    dtDueDate = Nothing
+                                                End Try
+
+                                            Case "ISSUETO"  ' SHIPTO_ATTN_TO  '  30
+                                                Try  '  strShiptoName
+                                                    strShiptoName = nodeItemMM.ChildNodes(iItemMM).InnerText
+                                                    If Trim(strShiptoName) = "" Then
+                                                        strShiptoName = " "
+                                                    Else
+                                                        strShiptoName = Trim(strShiptoName)
+                                                    End If
+                                                    If Len(Trim(strShiptoName)) > 30 Then
+                                                        strShiptoName = Microsoft.VisualBasic.Left(strShiptoName, 30)
+                                                    End If
+                                                Catch ex As Exception
+                                                    strShiptoName = " "
+                                                End Try
+
+                                            Case "ITEMNUM"  ' INV_ITEM_ID  '  18
+                                                Try  '  strInvItemId
+                                                    strInvItemId = nodeItemMM.ChildNodes(iItemMM).InnerText
+                                                    If Trim(strInvItemId) = "" Then
+                                                        strInvItemId = " "
+                                                    Else
+                                                        strInvItemId = Trim(strInvItemId)
+                                                    End If
+                                                    If Len(Trim(strInvItemId)) > 18 Then
+                                                        strInvItemId = Microsoft.VisualBasic.Left(strInvItemId, 18)
+                                                    End If
+                                                Catch ex As Exception
+                                                    strInvItemId = " "
+                                                End Try
+
+                                            Case "RESERVEDQTY"  ' QTY_REQUESTED '  0 Decimal
+                                                Try  '  strQtyReqst
+                                                    strQtyReqst = nodeItemMM.ChildNodes(iItemMM).InnerText
+                                                    If Trim(strQtyReqst) = "" Then
+                                                        decQtyReqst = 0
+                                                    Else
+                                                        strQtyReqst = Trim(strQtyReqst)
+                                                    End If
+                                                    If IsNumeric(strQtyReqst) Then
+                                                        decQtyReqst = CType(strQtyReqst, Decimal)
+                                                    Else
+                                                        decQtyReqst = 0
+                                                    End If
+                                                Catch ex As Exception
+                                                    decQtyReqst = 0
+                                                End Try
+
+                                            Case "REQUESTEDBY"  ' EMPLID  '  11
+                                                Try  '  strEmplId
+                                                    strEmplId = nodeItemMM.ChildNodes(iItemMM).InnerText
+                                                    If Trim(strEmplId) = "" Then
+                                                        strEmplId = " "
+                                                    Else
+                                                        strEmplId = Trim(strEmplId)
+                                                    End If
+                                                    If Len(Trim(strEmplId)) > 11 Then
+                                                        strEmplId = Microsoft.VisualBasic.Left(strEmplId, 11)
+                                                    End If
+                                                Catch ex As Exception
+                                                    strEmplId = " "
+                                                End Try
+
+                                            Case "ASSETNUM"  ' ISA_MACHINE_NO  '  20
+                                                Try  '  strMachineNum
+                                                    strMachineNum = nodeItemMM.ChildNodes(iItemMM).InnerText
+                                                    If Trim(strMachineNum) = "" Then
+                                                        strMachineNum = " "
+                                                    Else
+                                                        strMachineNum = Trim(strMachineNum)
+                                                    End If
+                                                    If Len(Trim(strMachineNum)) > 20 Then
+                                                        strMachineNum = Microsoft.VisualBasic.Left(strMachineNum, 20)
+                                                    End If
+                                                Catch ex As Exception
+                                                    strMachineNum = " "
+                                                End Try
+
+                                            Case "DELLOCATION"  ' ISA_UNLOADING_PT ' 60 
+                                                Try '  strUnloadingPoint
+                                                    strUnloadingPoint = nodeItemMM.ChildNodes(iItemMM).InnerText
+                                                    If Trim(strUnloadingPoint) = "" Then
+                                                        strUnloadingPoint = " "
+                                                    Else
+                                                        strUnloadingPoint = Trim(strUnloadingPoint)
+                                                    End If
+                                                    If Len(Trim(strUnloadingPoint)) > 60 Then
+                                                        strUnloadingPoint = Microsoft.VisualBasic.Left(strUnloadingPoint, 60)
+                                                    End If
+                                                Catch ex As Exception
+                                                    strUnloadingPoint = " "
+                                                End Try
+
+                                            Case "REQUESTEDDATE"  '  ENTERED_DT  '  DATE
+                                                Try  '  strEnteredDate
+                                                    strEnteredDate = nodeItemMM.ChildNodes(iItemMM).InnerText
+                                                    If Trim(strEnteredDate) = "" Then
+                                                        dtEnteredDate = Nothing
+                                                    Else
+                                                        strEnteredDate = Trim(strEnteredDate)
+                                                    End If
+                                                    If IsDate(strEnteredDate) Then
+                                                        dtEnteredDate = CType(strEnteredDate, DateTime)
+                                                    End If
+                                                Catch ex As Exception
+                                                    dtEnteredDate = Nothing
+                                                End Try
+
+                                            Case Else
+                                                'do nothing
+                                        End Select
+                                    Next
+
+                                    ' defaults - values not in INVRESERV interface
+                                    strWorkOrderStatus = " "
+                                    intWoPrior = 0
+                                    strWoType = " "
+                                    strActivityId = " "
+                                    strIsaItem = " "
+
+                                    'collected all info - starting insert
+                                    Dim rowsaffected As Integer = 0
+                                    Dim strSQLstring As String = ""
+                                    strSQLstring = "insert into SYSADM8.PS_ISA_MXM_RSV_IN (CUST_ID,PLANT,ISA_ITEM,INV_ITEM_ID,PROCESS_INSTANCE,PROCESS_FLAG,PROCESS_DTTM,DTTM_CREATED,"
+                                    strSQLstring = strSQLstring & "ORDER_NO,ORDER_INT_LINE_NO,ISA_WORK_ORDER_NO,ORDER_REF,WORK_ORDER_STATUS,"
+                                    strSQLstring = strSQLstring & "PRIORITY,WORK_ORDER_TYPE,ACTIVITY_ID,DUE_DT,SHIPTO_ATTN_TO,QTY_REQUESTED,"
+                                    strSQLstring = strSQLstring & "EMPLID,ISA_MACHINE_NO,ISA_UNLOADING_PT,ENTERED_DT,INTFC_REC_TYPE) VALUES ("
+                                    strSQLstring = strSQLstring & "'" & strCustId & "','" & strSiteId & "','" & strInvItemId & "','" & strIsaItem & "'," & decProcInstnce & ",'" & strProcessedFlag & "',NULL,TO_DATE('" & dtCreationDateTime & "', 'MM/DD/YYYY HH:MI:SS AM'),"
+                                    strSQLstring = strSQLstring & "'" & strOrderNo & "'," & intOrderLineNo & ",'" & strWorkOrderNum & "','" & strReqstOrderRef & "','" & strWorkOrderStatus & "',"
+                                    strSQLstring = strSQLstring & "" & intWoPrior & ",'" & strWoType & "','" & strActivityId & "',"
+                                    If dtDueDate = Nothing Then
+                                        strSQLstring = strSQLstring & "NULL,"
+                                    Else
+                                        strSQLstring = strSQLstring & "TO_DATE('" & dtDueDate & "', 'MM/DD/YYYY HH:MI:SS AM'),"
+                                    End If
+                                    strSQLstring = strSQLstring & "'" & strShiptoName & "'," & decQtyReqst & ","
+                                    strSQLstring = strSQLstring & "'" & strEmplId & "','" & strMachineNum & "','" & strUnloadingPoint & "',"
+                                    If dtEnteredDate = Nothing Then
+                                        strSQLstring = strSQLstring & "NULL,"
+                                    Else
+                                        strSQLstring = strSQLstring & "TO_DATE('" & dtEnteredDate & "', 'MM/DD/YYYY HH:MI:SS AM'),"
+                                    End If
+                                    strSQLstring = strSQLstring & "'INVRESERVE')"
+
+                                    If Trim(strInvItemId) <> "" And Trim(strSiteId) <> "" And decQtyReqst > 0 Then
+                                        Try
+                                            rowsaffected = ORDBAccess.ExecNonQuery(strSQLstring, connectOR)
+                                            If rowsaffected = 0 Then
+                                                myLoggr1.WriteErrorLog(rtn & " :: Error while inserting: 'rowsaffected = 0' for the file: " & strFileName & " and item number (0 based): " & iCnt.ToString())
+                                                myLoggr1.WriteInformationLog(rtn & " :: SQL String: " & strSQLstring)
+                                                bolError = True
+                                            End If
+                                        Catch ex As Exception
+                                            myLoggr1.WriteErrorLog(rtn & " :: Error inserting: " & ex.Message & " for the file: " & strFileName & " and item number (0 based): " & iCnt.ToString())
+                                            myLoggr1.WriteInformationLog(rtn & " :: SQL String: " & strSQLstring)
+                                            bolError = True
+                                        End Try
+                                    Else
+                                        'empty line
+                                        myLoggr1.WriteErrorLog(rtn & " :: Error: one of the fields PLANT,ISA_WORK_ORDER_NO,INV_ITEM_ID is empty or no Qty > 0 for the file: " & strFileName & " and item number (0 based): " & iCnt.ToString())
+                                    End If
+
+                                End If ' If nodeItemMM.ChildNodes.Count > 0 Then
+
+                            End If ' If UCase(nodeMxItem.ChildNodes(iMxItem).Name) = "INVRESERVE" Then
+                        Next
+
+                    End If  '  If nodeMxItem.ChildNodes.Count > 0 Then
+                End If
+            Next
+        End If ' If nodeStkReservReq.ChildNodes.Count > 0 Then
+
+        Return strXMLError
+    End Function
+
+    Private Function ProcessWoInterface(ByVal nodeStkReservReq As XmlNode, ByVal strFileName As String, ByVal dtCreationDateTime As DateTime, ByRef bolError As String) As String
+        Dim strXMLError As String = ""
+        Dim rtn As String = "CytecMxmStkReserv.ProcessWoInterface"
+
+        m_logger.WriteInformationLog(rtn & " :: Start ProcessWoInterface")
+
+        ' get existing node CONTENT
+        Dim strCustId As String = "CYTEC"
+        Dim strProcessedFlag As String = "N"
+        Dim strIsaItem As String = ""
+        Dim strIntfcType As String = "WORKORDER"
+        Dim decProcInstnce As Decimal = 0  '  PROCESS_INSTANCE
+        Dim strOrderNo As String = " "
+        Dim intOrderLineNo As Integer = 0
+
+        If nodeStkReservReq.ChildNodes.Count > 0 Then
+            Dim strWorkOrderNum As String = ""
+            Dim strSiteId As String = ""
+            Dim strReqstOrderRef As String = ""
+            Dim strWorkOrderStatus As String = ""
+            Dim strWoPrior As String = ""
+            Dim intWoPrior As Integer = 0
+            Dim strWoType As String = ""
+            Dim strActivityId As String = ""
+            Dim strDueDate As String = ""
+            Dim dtDueDate As DateTime
+            Dim strShiptoName As String = ""
+            Dim strInvItemId As String = ""
+            Dim decQtyReqst As Decimal = 0
+            Dim strEmplId As String = ""
+            Dim strMachineNum As String = ""
+            Dim strUnloadingPoint As String = ""
+            Dim dtEnteredDate As DateTime
+
+            Dim iCnt As Integer = 0
+            For iCnt = 0 To nodeStkReservReq.ChildNodes.Count - 1
+                If UCase(nodeStkReservReq.ChildNodes(iCnt).Name) = "MXWO" Then
+                    Dim nodeMxItem As XmlNode = nodeStkReservReq.ChildNodes(iCnt)
+                    If nodeMxItem.ChildNodes.Count > 0 Then
+                        Dim iMxItem As Integer = 0
+                        For iMxItem = 0 To nodeMxItem.ChildNodes.Count - 1
+                            If UCase(nodeMxItem.ChildNodes(iMxItem).Name) = "WORKORDER" Then
+                                Dim nodeItemMM As XmlNode = nodeMxItem.ChildNodes(iMxItem)
+                                If nodeItemMM.ChildNodes.Count > 0 Then
+                                    strSiteId = ""
+                                    strWorkOrderNum = ""
+                                    strReqstOrderRef = ""
+                                    strWorkOrderStatus = ""
+                                    strWoPrior = ""
+                                    intWoPrior = 0
+                                    strWoType = ""
+                                    strActivityId = ""
+                                    strDueDate = ""
+                                    'dtDueDate ???
+                                    strShiptoName = ""
+                                    strInvItemId = ""
+                                    decQtyReqst = 0
+                                    strEmplId = ""
+                                    strMachineNum = ""
+                                    strUnloadingPoint = ""
+
+                                    Dim iItemMM As Integer = 0
+                                    Dim strNodeName As String = ""
+                                    For iItemMM = 0 To nodeItemMM.ChildNodes.Count - 1
+
+                                        strNodeName = UCase(nodeItemMM.ChildNodes(iItemMM).Name)
+                                        Select Case strNodeName
+                                            Case "SITEID"  '  PLANT
+                                                Try  '  strWorkOrderNum
+                                                    strSiteId = nodeItemMM.ChildNodes(iItemMM).InnerText
+                                                    If Trim(strSiteId) = "" Then
+                                                        strSiteId = " "
+                                                    Else
+                                                        strSiteId = Trim(strSiteId)
+                                                    End If
+                                                    If Len(Trim(strSiteId)) > 30 Then
+                                                        strSiteId = Microsoft.VisualBasic.Left(strSiteId, 30)
+                                                    End If
+                                                Catch ex As Exception
+                                                    strSiteId = " "
+                                                End Try
+
+                                            Case "WONUM"  '  ISA_WORK_ORDER_NO  ' 20
+                                                Try  '  strWorkOrderNum
+                                                    strWorkOrderNum = nodeItemMM.ChildNodes(iItemMM).InnerText
+                                                    If Trim(strWorkOrderNum) = "" Then
+                                                        strWorkOrderNum = " "
+                                                    Else
+                                                        strWorkOrderNum = Trim(strWorkOrderNum)
+                                                    End If
+                                                    If Len(Trim(strWorkOrderNum)) > 20 Then
+                                                        strWorkOrderNum = Microsoft.VisualBasic.Left(strWorkOrderNum, 20)
+                                                    End If
+                                                Catch ex As Exception
+                                                    strWorkOrderNum = " "
+                                                End Try
+
+                                            Case "STATUS"  '  WORK_ORDER_STATUS  '  1
+                                                Try  '  strWorkOrderStatus
+                                                    strWorkOrderStatus = nodeItemMM.ChildNodes(iItemMM).InnerText
+                                                    If Trim(strWorkOrderStatus) = "" Then
+                                                        strWorkOrderStatus = " "
+                                                    Else
+                                                        strWorkOrderStatus = Trim(strWorkOrderStatus)
+                                                    End If
+                                                    If Len(Trim(strWorkOrderStatus)) > 1 Then
+                                                        strWorkOrderStatus = Microsoft.VisualBasic.Left(strWorkOrderStatus, 1)
+                                                    End If
+                                                Catch ex As Exception
+                                                    strWorkOrderStatus = " "
+                                                End Try
+
+                                            Case "WOPRIORITY"  '  PRIORITY  '  0  '  Integer
+                                                Try
+                                                    strWoPrior = nodeItemMM.ChildNodes(iItemMM).InnerText
+                                                    If Trim(strWoPrior) = "" Then
+                                                        intWoPrior = 0
+                                                    Else
+                                                        If IsNumeric(strWoPrior) Then
+                                                            intWoPrior = CType(strWoPrior, Integer)
+                                                        Else
+                                                            intWoPrior = 0
+                                                        End If
+                                                    End If
+                                                Catch ex As Exception
+                                                    intWoPrior = 0
+                                                End Try
+
+                                            Case "WORKTYPE"  ' WORK_ORDER_TYPE  ' 5
+                                                Try  '  strWoType
+                                                    strWoType = nodeItemMM.ChildNodes(iItemMM).InnerText
+                                                    If Trim(strWoType) = "" Then
+                                                        strWoType = " "
+                                                    Else
+                                                        strWoType = Trim(strWoType)
+                                                    End If
+                                                    If Len(Trim(strWoType)) > 5 Then
+                                                        strWoType = Microsoft.VisualBasic.Left(strWoType, 5)
+                                                    End If
+                                                Catch ex As Exception
+                                                    strWoType = " "
+                                                End Try
+
+                                            Case "TASKID"  '  ACTIVITY_ID  ' 15
+                                                Try  '  strActivityId
+                                                    strActivityId = nodeItemMM.ChildNodes(iItemMM).InnerText
+                                                    If Trim(strActivityId) = "" Then
+                                                        strActivityId = " "
+                                                    Else
+                                                        strActivityId = Trim(strActivityId)
+                                                    End If
+                                                    If Len(Trim(strActivityId)) > 15 Then
+                                                        strActivityId = Microsoft.VisualBasic.Left(strActivityId, 15)
+                                                    End If
+                                                Catch ex As Exception
+                                                    strActivityId = " "
+                                                End Try
+
+                                            Case ""
+
+                                            Case ""
+
+                                            Case Else
+                                                'do nothing
+                                        End Select
+                                    Next
+
+                                    ' defaults - values not in WO interface
+                                    strReqstOrderRef = " "
+                                    dtDueDate = Nothing
+                                    strShiptoName = " "
+                                    strInvItemId = " "
+                                    decQtyReqst = 0
+                                    strEmplId = " "
+                                    strMachineNum = " "
+                                    strUnloadingPoint = " "
+                                    dtEnteredDate = Nothing
+                                    strIsaItem = " "
+
+                                    'collected all info - starting insert
+                                    Dim rowsaffected As Integer = 0
+                                    Dim strSQLstring As String = ""
+                                    strSQLstring = "insert into SYSADM8.PS_ISA_MXM_RSV_IN (CUST_ID,PLANT,ISA_ITEM,INV_ITEM_ID,PROCESS_INSTANCE,PROCESS_FLAG,PROCESS_DTTM,DTTM_CREATED,"
+                                    strSQLstring = strSQLstring & "ORDER_NO,ORDER_INT_LINE_NO,ISA_WORK_ORDER_NO,ORDER_REF,WORK_ORDER_STATUS,"
+                                    strSQLstring = strSQLstring & "PRIORITY,WORK_ORDER_TYPE,ACTIVITY_ID,DUE_DT,SHIPTO_ATTN_TO,QTY_REQUESTED,"
+                                    strSQLstring = strSQLstring & "EMPLID,ISA_MACHINE_NO,ISA_UNLOADING_PT,ENTERED_DT,INTFC_REC_TYPE) VALUES ("
+                                    strSQLstring = strSQLstring & "'" & strCustId & "','" & strSiteId & "','" & strInvItemId & "','" & strIsaItem & "'," & decProcInstnce & ",'" & strProcessedFlag & "',NULL,TO_DATE('" & dtCreationDateTime & "', 'MM/DD/YYYY HH:MI:SS AM'),"
+                                    strSQLstring = strSQLstring & "'" & strOrderNo & "'," & intOrderLineNo & ",'" & strWorkOrderNum & "','" & strReqstOrderRef & "','" & strWorkOrderStatus & "',"
+                                    strSQLstring = strSQLstring & "" & intWoPrior & ",'" & strWoType & "','" & strActivityId & "',"
+                                    If dtDueDate = Nothing Then
+                                        strSQLstring = strSQLstring & "NULL,"
+                                    Else
+                                        strSQLstring = strSQLstring & "TO_DATE('" & dtDueDate & "', 'MM/DD/YYYY HH:MI:SS AM'),"
+                                    End If
+                                    strSQLstring = strSQLstring & "'" & strShiptoName & "'," & decQtyReqst & ","
+                                    strSQLstring = strSQLstring & "'" & strEmplId & "','" & strMachineNum & "','" & strUnloadingPoint & "',"
+                                    If dtEnteredDate = Nothing Then
+                                        strSQLstring = strSQLstring & "NULL,"
+                                    Else
+                                        strSQLstring = strSQLstring & "TO_DATE('" & dtEnteredDate & "', 'MM/DD/YYYY HH:MI:SS AM'),"
+                                    End If
+                                    strSQLstring = strSQLstring & "'WORKORDER')"
+
+                                    If Trim(strWorkOrderNum) <> "" And Trim(strSiteId) <> "" Then
+                                        Try
+                                            rowsaffected = ORDBAccess.ExecNonQuery(strSQLstring, connectOR)
+                                            If rowsaffected = 0 Then
+                                                myLoggr1.WriteErrorLog(rtn & " :: Error while inserting: 'rowsaffected = 0' for the file: " & strFileName & " and item number (0 based): " & iCnt.ToString())
+                                                myLoggr1.WriteInformationLog(rtn & " :: SQL String: " & strSQLstring)
+                                                bolError = True
+                                            End If
+                                        Catch ex As Exception
+                                            myLoggr1.WriteErrorLog(rtn & " :: Error inserting: " & ex.Message & " for the file: " & strFileName & " and item number (0 based): " & iCnt.ToString())
+                                            myLoggr1.WriteInformationLog(rtn & " :: SQL String: " & strSQLstring)
+                                            bolError = True
+                                        End Try
+                                    Else
+                                        'empty line
+                                        myLoggr1.WriteErrorLog(rtn & " :: Error: one of the fields PLANT,ISA_WORK_ORDER_NO is empty for the file: " & strFileName & " and item number (0 based): " & iCnt.ToString())
+                                    End If
+
+                                End If ' If nodeItemMM.ChildNodes.Count > 0 Then
+                            End If ' If UCase(nodeMxItem.ChildNodes(iMxItem).Name) = "WORKORDER" Then
+                        Next
+
+                    End If  '  If nodeMxItem.ChildNodes.Count > 0 Then
+                End If
+            Next
+        End If ' If nodeStkReservReq.ChildNodes.Count > 0 Then
+
+        Return strXMLError
+    End Function
+
     Private Function GetCytecStkReservIn() As Boolean
         Dim bolError As Boolean = False
         Dim rtn As String = "CytecMxmStkReserv.GetCytecStkReservIn"
@@ -250,20 +790,18 @@ Module Module1
                         bolError = True
                         bLineError = True
                         Try
-                            File.Move(aFiles(I).FullName, "C:\INTFCXML\BadXML\" & aFiles(I).Name)
+                            File.Move(aFiles(I).FullName, "C:\INTFCXML\BadXML\StockReserv\" & aFiles(I).Name)
                             File.Delete(aFiles(I).FullName)
                         Catch ex24 As Exception
                             myLoggr1.WriteErrorLog(rtn & " :: ** ")
-                            myLoggr1.WriteErrorLog(rtn & " :: Error (moving file to BadXML folder): " & ex24.Message & " in file " & aFiles(I).Name)
+                            myLoggr1.WriteErrorLog(rtn & " :: Error (moving file to BadXML\StockReserv\ folder): " & ex24.Message & " in file " & aFiles(I).Name)
                             myLoggr1.WriteErrorLog(rtn & " :: ** ")
                         End Try
                     End Try
-
-                    '<setting name="inputDirectory" serializeAs="String">
-                    '    <value>\\ims\SDIWebProcessorsXMLFiles</value>
-                    '</setting>
-
-                    '    <value>C:\inetpub\wwwroot\SDIWebIn\SDIWebProcessorsXMLFiles</value>
+                    
+                    Dim strCreationDateTime As String = ""
+                    Dim strHeaderChildNodeName As String = ""
+                    Dim dtCreationDateTime As DateTime = Now()
 
                     If Trim(strXMLError) = "" Then
                         root = xmlRequest.DocumentElement
@@ -277,20 +815,50 @@ Module Module1
                         End If
 
                         If Trim(strXMLError) = "" Then
-                            Dim strInterfaceType As String = UCase(xmlRequest.ChildNodes(1).Name())
-                            ''  MXINVENTORYInterface MXINVENTORYINTERFACE
-                            ''  MXITEMInterface MXITEMINTERFACE
+                            'get CreationDateTime
+                            Dim nodeHeader As XmlNode = root.FirstChild()
+                            Dim intHeader As Integer = 0
+                            If nodeHeader.ChildNodes.Count > 0 Then
+                                For intHeader = 0 To nodeHeader.ChildNodes.Count - 1
+                                    strHeaderChildNodeName = UCase(nodeHeader.ChildNodes(intHeader).Name)
+                                    Select Case strHeaderChildNodeName
+                                        Case "CREATIONDATETIME"
+                                            strCreationDateTime = nodeHeader.ChildNodes(intHeader).InnerText
+                                        Case Else
+                                            'do nothing
+                                    End Select
+                                    If Trim(strCreationDateTime) <> "" Then
+                                        strCreationDateTime = Trim(strCreationDateTime)
+                                        Exit For
+                                    End If
+                                Next
 
-                            ''Dim nodeMatMastReq As XmlNode = xmlRequest.SelectSingleNode(xpath:="//Content")
-                            'Dim nodeMatMastReq As XmlNode = root.LastChild()
-                            'Select Case strInterfaceType
-                            '    Case "MXITEMINTERFACE"
-                            '        strXMLError = ProcessItemInterface(nodeMatMastReq, aFiles(I).Name, bolError)
-                            '    Case "MXINVENTORYINTERFACE"
-                            '        strXMLError = ProcessInventoryInterface(nodeMatMastReq, aFiles(I).Name, bolError)
-                            '    Case Else
-                            '        strXMLError = "Unknown Interface type: " & strInterfaceType
-                            'End Select
+                                If Trim(strCreationDateTime) <> "" Then
+                                    'convert to DateTime
+                                    If IsDate(strCreationDateTime) Then
+                                        dtCreationDateTime = CType(strCreationDateTime, DateTime)
+                                        'Dim strDate As String = ""
+                                        'Dim strTime As String = ""
+                                        'strDate = dtCreationDateTime.ToLongDateString()
+                                        'strTime = dtCreationDateTime.ToLongTimeString()
+                                    End If
+                                End If
+
+                            End If ' If nodeHeader.ChildNodes.Count > 0 Then
+
+                            Dim strInterfaceType As String = UCase(xmlRequest.ChildNodes(1).Name())
+                            ''  MXINVRESINTERFACE
+                            ''  MXWOINTERFACE
+
+                            Dim nodeStkReservReq As XmlNode = root.LastChild()
+                            Select Case strInterfaceType
+                                Case "MXINVRESINTERFACE"
+                                    strXMLError = ProcessInvResInterface(nodeStkReservReq, aFiles(I).Name, dtCreationDateTime, bolError)
+                                Case "MXWOINTERFACE"
+                                    strXMLError = ProcessWoInterface(nodeStkReservReq, aFiles(I).Name, dtCreationDateTime, bolError)
+                                Case Else
+                                    strXMLError = "Unknown Interface type: " & strInterfaceType
+                            End Select
 
                         End If ' Trim(strXMLError) = "" ' inner if
                     End If ' Trim(strXMLError) = ""
@@ -319,15 +887,15 @@ Module Module1
                             End If
                         End If
                         'move file to BadXML folder
-                        File.Copy(aFiles(I).FullName, "C:\CytecMxmIn\BadXML\" & aFiles(I).Name, True)
+                        File.Copy(aFiles(I).FullName, "C:\CytecMxmIn\BadXML\StockReserv\" & aFiles(I).Name, True)
                         File.Delete(aFiles(I).FullName)
-                        m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & "C:\CytecMxmIn\BadXML\" & aFiles(I).Name)
+                        m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & "C:\CytecMxmIn\BadXML\StockReserv\" & aFiles(I).Name)
                     Else
 
                         'move file to XMLInProcessed folder
-                        File.Copy(aFiles(I).FullName, "C:\CytecMxmIn\XMLINProcessed\" & aFiles(I).Name, True)
+                        File.Copy(aFiles(I).FullName, "C:\CytecMxmIn\XMLINProcessed\StockReserv\" & aFiles(I).Name, True)
                         File.Delete(aFiles(I).FullName)
-                        m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & "C:\CytecMxmIn\XMLINProcessed\" & aFiles(I).Name)
+                        m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & "C:\CytecMxmIn\XMLINProcessed\StockReserv\" & aFiles(I).Name)
 
                     End If
                 Next ' aFiles(I)
@@ -357,9 +925,9 @@ Module Module1
                 End If
             End If
             'move file to BadXML folder
-            File.Copy(aFiles(I).FullName, "C:\CytecMxmIn\BadXML\" & aFiles(I).Name, True)
+            File.Copy(aFiles(I).FullName, "C:\CytecMxmIn\BadXML\StockReserv\" & aFiles(I).Name, True)
             File.Delete(aFiles(I).FullName)
-            m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & "C:\CytecMxmIn\BadXML\" & aFiles(I).Name)
+            m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & "C:\CytecMxmIn\BadXML\StockReserv\" & aFiles(I).Name)
 
             Return True
         End Try

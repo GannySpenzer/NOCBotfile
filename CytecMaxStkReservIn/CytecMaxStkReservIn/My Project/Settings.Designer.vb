@@ -119,15 +119,6 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx")>  _
-        Public ReadOnly Property CytexMxmMatMastIn_SDiEmailUtilityService_EmailServices() As String
-            Get
-                Return CType(Me("CytexMxmMatMastIn_SDiEmailUtilityService_EmailServices"),String)
-            End Get
-        End Property
-        
-        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
-         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.DefaultSettingValueAttribute("C:\inetpub\wwwroot\SDIWebIn\SDIWebProcessorsXMLFiles\StockReserv")>  _
         Public ReadOnly Property inputDirectory() As String
             Get
