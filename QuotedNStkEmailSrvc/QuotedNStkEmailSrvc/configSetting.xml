@@ -8,8 +8,11 @@
 	<sourceDB cnstring="Provider=MSDAORA.1;Data Source=PLGR;User ID=ewindows;Password=ewindows;"
 		type="oracle8" />
 	//-->
-	<sourceDB cnString="Provider=MSDAORA.1;Data Source=PROD;User ID=einternet;Password=einternet;"
-		type="oracle8" />
+  <appSettings>
+    <add key="OLEDBconString" value="Provider=MSDAORA.1;Password=sd1exchange;User Id=sdiexchange;Data Source=RPTG" />
+    <add key="SQLDBconString" value="server=DAZZLE;uid=sa;pwd=sdiadmin;initial catalog='pubs'" />
+  </appSettings>
+	<sourceDB cnString="Provider=MSDAORA.1;Data Source=RPTG;User ID=einternet;Password=einternet;" type="oracle8" />
 	<!-- TIMER
 		 timer object properties for checking newly added quoted non-stock items on the database.  this
 		 parameter (as for the moment) doesn't recognize other units other than "secs" so don't change
@@ -41,10 +44,11 @@
 		<additionalTo desc="individuals that will be added in the TO field of emails sent through this service">
 		</additionalTo>
     <noRecepientDefaultTo desc="individuals that will be the default recepient(s) WHEN NO VALID recepient was found">
-      <toItem name="Michael Randall" addy="Michael.Randall@sdi.com" />
+      <!-- <toItem name="Michael Randall" addy="Michael.Randall@sdi.com" />
       <toItem name="Vitaly Rovensky" addy="Vitaly.Rovensky@sdi.com" />
       <toItem name="Erwin Bautista" addy="erwin.bautista@sdi.com" />
-      <toItem name="Eva Bard" addy="eva.bard@sdi.com" />
+      <toItem name="Eva Bard" addy="eva.bard@sdi.com" />-->
+      <toItem name="Sriram S" addy="sriram.s@avasoft.biz" />
     </noRecepientDefaultTo>
     <!-- for testing
 			<ccItem name="Erwin Bautista" addy="erwin.bautista@sdi.com" />
@@ -58,7 +62,8 @@
 			<bccItem name="Ronald Fijalkowski" addy="ronald.fijalkowski@isacs.com" />
 		//-->
 		<additionalBcc desc="individuals that will be added in the BCC field of emails sent through this service">
-			<bccItem name="Erwin Bautista" addy="erwin.bautista@sdi.com" />
+			<!--<bccItem name="Erwin Bautista" addy="erwin.bautista@sdi.com" />-->
+      <bccItem name="Sriram S" addy="sriram.s@avasoft.biz" />
 		</additionalBcc>
 		<defaultSubject text="Quote Process (TESTING PHASE)" />
 		<!-- for TESTING or PRODUCTION web page

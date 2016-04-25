@@ -1,13 +1,27 @@
 Imports System.Data.OleDb
 Imports SDI.UNCC.WorkOrderAdapter
+Imports System.Configuration
+Imports System.Net.Mail
+Imports System.Collections.Generic
+Imports System.Web.UI.WebControls
+Imports System.IO
+Imports System.Web.UI
+Imports System.Text
+Imports System.Drawing.Color
+Imports System.Data.SqlClient
+Imports System.Xml
 
 
 Public Class QuoteNonStockProcessor
 
-    Private Const LETTER_HEAD_SdiExch As String = "<div align=""center""><SPAN style=""FONT-SIZE: x-large; WIDTH: 256px; FONT-FAMILY: Arial"">SDI Marketplace</SPAN></div>" & _
-                                          "<div align=""center""><SPAN>SDiExchange - Request for Quote</SPAN></div><br><br>"
-    Private Const LETTER_HEAD As String = "<div align=""center""><SPAN style=""FONT-SIZE: x-large; WIDTH: 256px; FONT-FAMILY: Arial"">SDI Marketplace</SPAN></div>" & _
-                                          "<div align=""center""><SPAN>In-Site® Online - Request for Quote</SPAN></div><br><br>"
+    Private Const LETTER_HEAD_SdiExch As String = "<table><tbody><tr><td style='width:71%;'><img src='http://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></td>" & _
+                                                    "<td><br/><br/><br/><div align='center'><SPAN style='FONT-SIZE: x-large; WIDTH: 256px; FONT-FAMILY: Arial'>SDI Marketplace</SPAN></div>" & _
+                                                    "<div align='center'><SPAN>SDiExchange - Request for Quote</SPAN></div></td></tr></tbody></table>" & _
+                                                    "<HR width='100%' SIZE='1'>"
+    Private Const LETTER_HEAD As String = "<div><img src='http://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></div>" & _
+                                            "<div align=""center""><SPAN style=""FONT-SIZE: x-large; WIDTH: 256px; FONT-FAMILY: Arial"">SDI Marketplace</SPAN></div>" & _
+                                            "<div align=""center""><SPAN>In-Site® Online - Request for Quote</SPAN></div><br><br>" & _
+                                            "<HR width='100%' SIZE='1'>"
     Private Const LETTER_CONTENT As String = "<p style=""TEXT-INDENT: 25pt"">" & _
                                              "The above referenced order contains items that required a price " & _
                                              "quote before processing.&nbsp;&nbsp;To view the quoted price either " & _
@@ -49,9 +63,14 @@ Public Class QuoteNonStockProcessor
     Private m_cURL_SDiExch As String
     Private m_cList_BU_SDiExch As String
     Private m_eventLogger As System.Diagnostics.EventLog
-    Private m_colMsgs As SDI.WinServices.QuotedNStkItemCollection
+    Private m_colMsgs As QuotedNStkItemCollection = New QuotedNStkItemCollection
     Private m_config As System.Xml.XmlDocument
     Private m_arrPunchInBUList As New ArrayList
+    Dim m_quoteProp As QuotedNStkItem = New QuotedNStkItem
+    Dim boItem As QuotedNStkItem = New QuotedNStkItem
+
+    Private m_xmlConfig As XmlDocument
+    Private m_configFile As String = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly.GetModules()(0).FullyQualifiedName) & "\configSetting.xml"
 
 
     Public ReadOnly Property DBConnection() As OleDbConnection
@@ -240,20 +259,254 @@ Public Class QuoteNonStockProcessor
         End Try
     End Function
 
+    Private Function buildCartforemail(ByVal m_colMsgs As SDI.WinServices.QuotedNStkItemCollection, ByVal ordNumber As String) As DataTable
+
+        Dim dr As DataRow
+        Dim I As Integer
+        Dim strPrice As String
+        Dim strQty As String
+        Dim dstcart As DataTable
+        dstcart = New DataTable
+
+        dstcart.Columns.Add("Item Number")
+        dstcart.Columns.Add("Description")
+        dstcart.Columns.Add("Manuf.")
+        dstcart.Columns.Add("Manuf. Partnum")
+        dstcart.Columns.Add("QTY")
+        dstcart.Columns.Add("UOM")
+        dstcart.Columns.Add("Price")
+        dstcart.Columns.Add("Ext. Price")
+        dstcart.Columns.Add("Item ID")
+        dstcart.Columns.Add("Bin Location")
+        dstcart.Columns.Add("Item Chg Code")
+        dstcart.Columns.Add("Requestor Name")
+        dstcart.Columns.Add("RFQ")
+        dstcart.Columns.Add("Machine Num")
+        dstcart.Columns.Add("Tax Exempt")
+        dstcart.Columns.Add("LPP")
+        dstcart.Columns.Add("PO")
+        dstcart.Columns.Add("LN")
+        dstcart.Columns.Add("SerialID")
+
+        Dim strOraSelectQuery As String = String.Empty
+        Dim ordIdentifier As String = String.Empty
+        Dim ordBU As String = String.Empty
+        Dim OrcRdr As OleDb.OleDbDataReader = Nothing
+        Dim dsOrdLnItems As DataSet = New DataSet
+        Dim strSqlSelectQuery As String = String.Empty
+        Dim SqlRdr As SqlDataReader = Nothing
+        Dim strProdVwId As String = String.Empty
+
+        Try
+            'strOraSelectQuery = "select * from PS_ISA_ORD_INTFC_H where ORDER_NO = '" & ordNumber & "'"
+            'strOraSelectQuery = "select * from PS_ISA_ORD_INTFC_H where ORDER_NO = 'M220016429'" 
+            strOraSelectQuery = "select * from PS_ISA_ORD_INTFC_H where ORDER_NO = 'M220016427'"
+            OrcRdr = GetReader(strOraSelectQuery)
+            If OrcRdr.HasRows Then
+                OrcRdr.Read()
+                ordIdentifier = CType(OrcRdr("ISA_IDENTIFIER"), String).Trim()
+                ordBU = CType(OrcRdr("BUSINESS_UNIT_OM"), String).Trim()
+            End If
+
+            strOraSelectQuery = "select * from PS_ISA_ORD_INTFC_L where ISA_PARENT_IDENT = '" & ordIdentifier & "'"
+            dsOrdLnItems = GetAdapter(strOraSelectQuery)
+
+            If dsOrdLnItems.Tables(0).Rows.Count > 0 Then
+                For Each dataRowMain As DataRow In dsOrdLnItems.Tables(0).Rows
+                    dr = dstcart.NewRow()
+                    dr("Item Number") = CType(dataRowMain("VNDR_CATALOG_ID"), String).Trim()
+                    dr("Description") = CType(dataRowMain("DESCR254"), String).Trim()
+
+                    If CType(dataRowMain("VNDR_CATALOG_ID"), String).Trim().Contains("NONCAT") Then
+
+                        Try
+                            dr("Manuf.") = CType(dataRowMain("ISA_MFG_FREEFORM"), String).Trim()
+                        Catch ex As Exception
+                            dr("Manuf.") = " "
+                        End Try
+                        Try
+                            dr("Manuf. Partnum") = CType(dataRowMain("MFG_ITM_ID"), String).Trim()
+                        Catch ex As Exception
+                            dr("Manuf. Partnum") = " "
+                        End Try
+                        Try
+                            dr("Item ID") = CType(dataRowMain("VNDR_CATALOG_ID"), String).Trim()
+                        Catch ex As Exception
+                            dr("Item ID") = " "
+                        End Try
+                        If CType(dataRowMain("VNDR_CATALOG_ID"), String).Trim() <> "" Then
+                            Try
+                                If CType(dataRowMain("VNDR_CATALOG_ID"), String).Trim() > "0" Then
+                                    'If Session("ITEMMODE") = "4" Or Session("ITEMMODE") = "6" Then
+                                    '    dr("Bin Location") = getBinLoc(CType(SqlRdr("customerItemID"), String).Trim())
+                                    'Else
+                                    '    dr("Bin Location") = getBinLoc(Session("SITEPREFIX") & CType(SqlRdr("customerItemID"), String).Trim())
+                                    'End If
+                                    dr("Bin Location") = getBinLoc(CType(dataRowMain("VNDR_CATALOG_ID"), String).Trim())
+                                Else
+                                    dr("Bin Location") = " "
+                                End If
+                            Catch ex As Exception
+                                dr("Bin Location") = " "
+                            End Try
+                        Else
+                            dr("Bin Location") = " "
+                        End If
+                        Try
+                            dr("UOM") = CType(dataRowMain("UNIT_OF_MEASURE"), String).Trim()
+                        Catch ex As Exception
+                            dr("UOM") = "EA"
+                        End Try
+                    Else
+                        Dim invItemId As String = String.Empty
+                        invItemId = CType(dataRowMain("INV_ITEM_ID"), String).Trim()
+                        If invItemId.Length > 0 Then
+                            invItemId = invItemId.Substring(3)
+                        End If
+
+                        strSqlSelectQuery = "SELECT productviewid FROM [dbo].[ProductViews]" & _
+                                            "WHERE productviewname LIKE '" & ordBU & "%'"
+                        SqlRdr = GetSQLReaderDazzle(strSqlSelectQuery)
+                        If SqlRdr.HasRows Then
+                            SqlRdr.Read()
+                            strProdVwId = CType(SqlRdr("productviewid"), String).Trim()
+                        End If
+
+
+                        strSqlSelectQuery = "Select CAP.customerItemID, CAP.ItemID, CAP.productViewID, SDIT.manufacturername, SDIT.manufacturerpartnumber, SDIT.shippableunitofmeasure " & _
+                                                "FROM ClassAvailableProducts CAP " & _
+                                                "inner join ScottsdaleItemTable SDIT " & _
+                                                "on (CAP.itemID = SDIT.itemID  AND SDIT.classID = CAP.classID) " & _
+                                                "where CAP.customerItemID = '" & invItemId & "' and CAP.productViewID = '" & strProdVwId & "'"
+
+                        SqlRdr = GetSQLReaderDazzle(strSqlSelectQuery)
+                        If SqlRdr.HasRows Then
+                            SqlRdr.Read()
+                            Try
+                                dr("Manuf.") = CType(SqlRdr("manufacturername"), String).Trim()
+                            Catch ex As Exception
+                                dr("Manuf.") = " "
+                            End Try
+                            Try
+                                dr("Manuf. Partnum") = CType(SqlRdr("manufacturerpartnumber"), String).Trim()
+                            Catch ex As Exception
+                                dr("Manuf. Partnum") = " "
+                            End Try
+                            Try
+                                dr("Item ID") = CType(SqlRdr("ItemID"), String).Trim()
+                            Catch ex As Exception
+                                dr("Item ID") = " "
+                            End Try
+
+                            If CType(SqlRdr("customerItemID"), String).Trim() <> "" Then
+                                Try
+                                    If CType(SqlRdr("customerItemID"), String).Trim() > "0" Then
+                                        dr("Bin Location") = getBinLoc(CType(SqlRdr("customerItemID"), String).Trim())
+                                    Else
+                                        dr("Bin Location") = " "
+                                    End If
+                                Catch ex As Exception
+                                    dr("Bin Location") = " "
+                                End Try
+                            Else
+                                dr("Bin Location") = " "
+                            End If
+                            Try
+                                dr("UOM") = CType(SqlRdr("shippableunitofmeasure"), String).Trim()
+                            Catch ex As Exception
+                                dr("UOM") = "EA"
+                            End Try
+                        End If
+
+                    End If
+
+
+                    Try
+                        dr("QTY") = CType(dataRowMain("QTY_REQ"), String).Trim()
+                        If IsDBNull(CType(dataRowMain("QTY_REQ"), String).Trim()) Or CType(dataRowMain("QTY_REQ"), String).Trim() = " " Then
+                            strQty = "0"
+                        Else
+                            strQty = CType(dataRowMain("QTY_REQ"), String).Trim()
+                        End If
+                    Catch ex As Exception
+                        strQty = "0"
+                    End Try
+                    strPrice = "0.00"
+                    Try
+                        strPrice = CDec(CType(dataRowMain("NET_UNIT_PRICE"), String).Trim()).ToString
+                        If strPrice Is Nothing Then
+                            strPrice = "0.00"
+                        End If
+                    Catch ex As Exception
+                        strPrice = "0.00"
+                    End Try
+                    If CDec(strPrice) = 0 Then
+                        dr("Price") = "Call for Price"
+                    Else
+                        dr("Price") = CDec(strPrice).ToString("f")
+                    End If
+                    dr("Ext. Price") = CType(Convert.ToDecimal(strQty) * Convert.ToDecimal(strPrice), String)
+
+                    dr("Item Chg Code") = CType(dataRowMain("ISA_CUST_CHARGE_CD"), String).Trim()
+                    dr("LN") = CType(dataRowMain("LINE_NBR"), String).Trim()
+
+                    dr("RFQ") = String.Empty
+                    dr("Requestor Name") = String.Empty
+                    dr("Machine Num") = String.Empty
+                    dr("Tax Exempt") = String.Empty
+                    dr("LPP") = String.Empty
+                    dr("PO") = String.Empty
+                    Try
+                        dr("SerialID") = String.Empty
+                    Catch ex As Exception
+                        dr("SerialID") = " "
+                    End Try
+
+                    dstcart.Rows.Add(dr)
+                Next
+            End If
+        Catch ex As Exception
+
+        End Try
+        Return dstcart
+
+    End Function
+
     '
     ' executes process
     '
     Public Sub Execute()
         Dim cHdr As String = "QuoteNonStockProcessor.Execute: "
         Try
-            m_eventLogger.WriteEntry("executing business rule(s) ...", EventLogEntryType.Information)
+            'm_eventLogger.WriteEntry("executing business rule(s) ...", EventLogEntryType.Information)
+            'SetConfigXML()
+
+            Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
+            Dim MailAttachmentName As String()
+            Dim MailAttachmentbytes As New List(Of Byte())()
+            SDIEmailService.EmailUtilityServices("Mail", "SDIExchADMIN@sdi.com", "sriram.s@avasoft.biz", "QuotedNstkEmail Console Utility", String.Empty, String.Empty, "Entering the Execute method", "QUOTEAPPROVAL", MailAttachmentName, MailAttachmentbytes.ToArray())
 
             m_colMsgs = New SDI.WinServices.QuotedNStkItemCollection
 
             m_CN.Open()
+            Dim SBstk As New StringBuilder
+            Dim SWstk As New StringWriter(SBstk)
+            Dim htmlTWstk As New HtmlTextWriter(SWstk)
+            Dim dataGridHTML As String
 
             If GetQuotedItems() > 0 Then
-                SendMessages()
+
+                If m_colMsgs.Count > 0 Then
+
+                    For Each itmQuoted As QuotedNStkItem In m_colMsgs
+                        If itmQuoted.PriceBlockFlag = "N" Then
+                            SendMessages()
+                        Else
+                            PriceUpdate(itmQuoted.OrderID)
+                        End If
+
+                    Next
+                End If
             End If
 
             m_CN.Close()
@@ -272,6 +525,150 @@ Public Class QuoteNonStockProcessor
         End Try
     End Sub
 
+    Public Sub SetConfigXML()
+        Try
+            Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
+            Dim MailAttachmentName As String()
+            Dim MailAttachmentbytes As New List(Of Byte())()
+            SDIEmailService.EmailUtilityServices("mail", "SDIExchADMIN@sdi.com", "sriram.s@avasoft.biz", "QuotedNstkEmail Console Utility", String.Empty, String.Empty, "Entering the SetConfigXML method", "QUOTEAPPROVAL", MailAttachmentName, MailAttachmentbytes.ToArray())
+
+            m_xmlConfig = New XmlDocument
+            m_xmlConfig.Load(filename:=m_configFile)
+
+            Dim cnString As String = ""
+            If Not (m_xmlConfig("configuration")("sourceDB").Attributes("cnString").InnerText Is Nothing) Then
+                cnString = m_xmlConfig("configuration")("sourceDB").Attributes("cnString").InnerText.Trim
+            End If
+          
+
+                If Not (m_xmlConfig Is Nothing) Then
+                m_config = m_xmlConfig
+                Else
+                m_config = New System.Xml.XmlDocument
+                End If
+
+            If Evaluate() Then
+                Dim xmlEmailElement As XmlElement = Nothing
+
+                ' get encryption key for email use
+                If Not (m_xmlConfig("configuration")("s").Attributes("id").InnerText Is Nothing) Then
+                    If m_xmlConfig("configuration")("s").Attributes("id").InnerText.Trim.Length > 0 Then
+                        EncryptionKey = m_xmlConfig("configuration")("s").Attributes("id").InnerText.Trim
+                    End If
+                End If
+
+                ' get "email" node of the configuration file
+                If Not (m_xmlConfig("configuration")("email") Is Nothing) Then
+                    xmlEmailElement = m_xmlConfig("configuration")("email")
+                End If
+
+                If Not (xmlEmailElement Is Nothing) Then
+                    ' get the default sender properties
+                    If Not (xmlEmailElement("defaultFrom").Attributes("addy").InnerText Is Nothing) Then
+                        defaultMsgFROM = xmlEmailElement("defaultFrom").Attributes("addy").InnerText.Trim
+                    End If
+
+                    ' get additional recipient (as TO) email addresses
+                    If Not (xmlEmailElement("additionalTo").ChildNodes Is Nothing) Then
+                        If xmlEmailElement("additionalTo").ChildNodes.Count > 0 Then
+                            For Each toItem As XmlNode In xmlEmailElement("additionalTo").ChildNodes
+                                If toItem.Name = "toItem" And Not (toItem.Attributes("addy").InnerText Is Nothing) Then
+                                    If toItem.Attributes("addy").InnerText.Trim.Length > 0 Then
+                                        xTO.Add(toItem.Attributes("addy").InnerText.Trim)
+                                    End If
+                                End If
+                            Next
+                        End If
+                    End If
+
+                    ' get default recipient addresses just in-case there's no valid
+                    If Not (xmlEmailElement("noRecepientDefaultTo").ChildNodes Is Nothing) Then
+                        If xmlEmailElement("noRecepientDefaultTo").ChildNodes.Count > 0 Then
+                            For Each toItem As XmlNode In xmlEmailElement("noRecepientDefaultTo").ChildNodes
+                                If toItem.Name = "toItem" And Not (toItem.Attributes("addy").InnerText Is Nothing) Then
+                                    If toItem.Attributes("addy").InnerText.Trim.Length > 0 Then
+                                        defaultToRecepient.Add(toItem.Attributes("addy").InnerText.Trim)
+                                    End If
+                                End If
+                            Next
+                        End If
+                    End If
+
+                    ' get additional recipient (as CC) email addresses
+                    If Not (xmlEmailElement("additionalCc").ChildNodes Is Nothing) Then
+                        If xmlEmailElement("additionalCc").ChildNodes.Count > 0 Then
+                            For Each ccItem As XmlNode In xmlEmailElement("additionalCc").ChildNodes
+                                If ccItem.Name = "ccItem" And Not (ccItem.Attributes("addy").InnerText Is Nothing) Then
+                                    If ccItem.Attributes("addy").InnerText.Trim.Length > 0 Then
+                                        xCC.Add(ccItem.Attributes("addy").InnerText.Trim)
+                                    End If
+                                End If
+                            Next
+                        End If
+                    End If
+
+                    ' get additional recipient (as BCC) email addresses
+                    If Not (xmlEmailElement("additionalBcc").ChildNodes Is Nothing) Then
+                        If xmlEmailElement("additionalBcc").ChildNodes.Count > 0 Then
+                            For Each bccItem As XmlNode In xmlEmailElement("additionalBcc").ChildNodes
+                                If bccItem.Name = "bccItem" And Not (bccItem.Attributes("addy").InnerText Is Nothing) Then
+                                    If bccItem.Attributes("addy").InnerText.Trim.Length > 0 Then
+                                        xBCC.Add(bccItem.Attributes("addy").InnerText.Trim)
+                                    End If
+                                End If
+                            Next
+                        End If
+                    End If
+
+                    ' get the default subject for this email(s)
+                    If Not (xmlEmailElement("defaultSubject").Attributes("text").InnerText Is Nothing) Then
+                        SubjectLine = xmlEmailElement("defaultSubject").Attributes("text").InnerText.Trim
+                    End If
+
+                    ' get the URL to use for approving this quoted item
+                    If Not (xmlEmailElement("body").Attributes("linkURL").InnerText Is Nothing) Then
+                        URL = xmlEmailElement("body").Attributes("linkURL").InnerText.Trim
+                    End If
+
+                    ' get the URL for SDiExchange to use for approving this quoted item
+                    If Not (xmlEmailElement("bodyExch").Attributes("linkUrlSdiExch").InnerText Is Nothing) Then
+                        UrlSDiExch = xmlEmailElement("bodyExch").Attributes("linkUrlSdiExch").InnerText.Trim
+                    End If
+
+                    ' get Bus Units list for SDiExchange to use for creating SDiExchange e-mail and link
+                    If Not (xmlEmailElement("busUnits").Attributes("listForSdiExch").InnerText Is Nothing) Then
+                        ListBUsSDiExch = xmlEmailElement("busUnits").Attributes("listForSdiExch").InnerText.Trim
+                    End If
+                End If
+
+                ' list of punch-In business units
+                xmlEmailElement = Nothing
+                If Not (m_xmlConfig("configuration")("punchInBUs") Is Nothing) Then
+                    xmlEmailElement = m_xmlConfig("configuration")("punchInBUs")
+                End If
+
+                If Not (xmlEmailElement Is Nothing) Then
+                    If Not (xmlEmailElement.ChildNodes Is Nothing) Then
+                        For Each bu As XmlNode In xmlEmailElement.ChildNodes
+                            If bu.Name = "punchInBU" And Not (bu.Attributes("id").InnerText Is Nothing) Then
+                                If bu.Attributes("id").InnerText.Trim.Length > 0 Then
+                                    If PunchInBusinessUnitList.IndexOf(bu.Attributes("id").InnerText.Trim.ToUpper) = -1 Then
+                                        PunchInBusinessUnitList.Add(bu.Attributes("id").InnerText.Trim.ToUpper)
+                                    End If
+                                End If
+                            End If
+                        Next
+                    End If
+                End If
+
+                ' start processing
+                'Execute()
+            End If
+
+        Catch ex As Exception
+            'MyBase.EventLog.WriteEntry(cHdr & vbCrLf & ex.ToString, EventLogEntryType.Error)
+        End Try
+    End Sub
     Public Sub New(ByVal cnString As String)
         InitMembers()
 
@@ -302,7 +699,7 @@ Public Class QuoteNonStockProcessor
         m_config = Nothing
     End Sub
 
-    Private Function GetQuotedItems() As Integer
+    Public Function GetQuotedItems() As Integer
         Dim cHdr As String = "QuoteNonStockProcessor.GetQuotedItems: "
         Try
             'Dim cSQL As String = _
@@ -322,7 +719,7 @@ Public Class QuoteNonStockProcessor
             '      "AND A4.BUSINESS_UNIT_OM = A2.BUSINESS_UNIT(+) " & _
             '      "AND A4.OPRID_ENTERED_BY = A2.ISA_EMPLOYEE_ID(+) " & _
             '      "AND A.REQ_STATUS = 'Q' " & _
-            '      "ORDER BY A1.BUSINESS_UNIT, A1.REQ_ID, A1.LINE_NBR "
+            '      "ORDER BY A1.BUSINESS_UNIT, A1.REQ_ID, A1.LINE_NBR " ISA_PRICE_BLOCK
             Dim cSQL As String = "" & _
                                  "SELECT " & vbCrLf & _
                                  " A.BUSINESS_UNIT AS BUSINESS_UNIT" & vbCrLf & _
@@ -331,6 +728,7 @@ Public Class QuoteNonStockProcessor
                                  ",A1.SOLD_TO_CUST_ID AS SOLD_TO_CUST_ID" & vbCrLf & _
                                  ",A2.ISA_EMPLOYEE_EMAIL AS ISA_EMPLOYEE_EMAIL" & vbCrLf & _
                                  ",A2.ISA_EMPLOYEE_NAME AS ISA_EMPLOYEE_NAME" & vbCrLf & _
+                                 ",A2.ISA_PRICE_BLOCK AS ISA_PRICE_BLOCK" & vbCrLf & _
                                  ",A3.ISA_NONSKREQ_EMAIL AS ISA_NONSKREQ_EMAIL" & vbCrLf & _
                                  ",A4.OPRID_ENTERED_BY AS ISA_EMPLOYEE_ID" & vbCrLf & _
                                  ",A4.BUSINESS_UNIT_OM AS BUSINESS_UNIT_OM" & vbCrLf & _
@@ -355,13 +753,7 @@ Public Class QuoteNonStockProcessor
                                  "  AND A4.OPRID_ENTERED_BY = A2.ISA_EMPLOYEE_ID (+) " & vbCrLf & _
                                  "  AND 'MAIN1' = A3.SETID (+)" & vbCrLf & _
                                  "  AND A1.SOLD_TO_CUST_ID = A3.CUST_ID (+)" & vbCrLf & _
-                                 "  AND A.REQ_STATUS = 'Q' " & vbCrLf & _
-                                 "  AND NOT EXISTS (" & vbCrLf & _
-                                 "                  SELECT 'X'" & vbCrLf & _
-                                 "                  FROM PS_ISA_REQ_EML_LOG B" & vbCrLf & _
-                                 "                  WHERE B.BUSINESS_UNIT = A.BUSINESS_UNIT" & vbCrLf & _
-                                 "                    AND B.REQ_ID = A.REQ_ID" & vbCrLf & _
-                                 "                 )" & vbCrLf & _
+                                 "  AND A.REQ_ID = 'A660000880'" & vbCrLf & _
                                  "  AND NOT EXISTS ( " & vbCrLf & _
                                  "                  SELECT 'X' " & vbCrLf & _
                                  "                  FROM SYSADM.PS_NLINK_CUST_PLNT C " & vbCrLf & _
@@ -372,24 +764,30 @@ Public Class QuoteNonStockProcessor
                                  ""
 
             Dim rdr As OleDbDataReader
-            Dim cmd As OleDbCommand = m_CN.CreateCommand
+            Dim connection As OleDbConnection = New OleDbConnection("Provider=MSDAORA.1;Data Source=RPTG;User ID=einternet;Password=einternet;")
+            'Dim cmd As OleDbCommand = m_CN.CreateCommand
+            connection.Open()
 
-            With cmd
-                .CommandText = cSQL
-                .CommandType = CommandType.Text
-            End With
+            'With cmd
+            '    .CommandText = cSQL
+            '    .CommandType = CommandType.Text
+            'End With
 
-            'm_eventLogger.WriteEntry(cHdr & "executing -> " & cSQL, EventLogEntryType.Information)
-            rdr = cmd.ExecuteReader
+            Dim Command As OleDbCommand = New OleDbCommand(cSQL, connection)
+            Command.CommandTimeout = 120
+
+            rdr = Command.ExecuteReader(CommandBehavior.CloseConnection)
 
             If rdr.HasRows Then
                 Dim cKey As String
                 Dim bNew As Boolean
-                Dim boItem As QuotedNStkItem
+
                 Dim sModifiedByID As String = ""
 
                 Dim workOrderNo As String = ""
                 Dim rfqEmailRecipient As String = ""
+
+                Dim priceBlock As String = String.Empty
 
                 Dim strBuyerDescr As String = ""
                 Dim strBuyerEmail As String = ""
@@ -454,6 +852,15 @@ Public Class QuoteNonStockProcessor
                         m_colMsgs.Add(boItem)
                     End If
 
+                    'get price block flag value
+                    If rdr("ISA_PRICE_BLOCK") Is DBNull.Value Then
+                        priceBlock = "N"
+                    Else
+                        priceBlock = Convert.ToString(rdr("ISA_PRICE_BLOCK"))
+                    End If
+                    boItem.PriceBlockFlag = priceBlock
+                    'Session("PriceBlockFlag") = boItem.PriceBlockFlag
+
                     ' get business unit ID (if not defined yet)
                     If Not (boItem.BusinessUnitID.Length > 0) Then
                         boItem.BusinessUnitID = CType(rdr("BUSINESS_UNIT"), String).Trim
@@ -477,7 +884,7 @@ Public Class QuoteNonStockProcessor
                        boItem.BusinessUnitOM.Length > 0 Then
                         If boItem.BusinessUnitOM.ToUpper = orderNoMapper.UNCC_BUSINESS_UNIT_OM Then
                             boItem.FormattedOrderID = orderNoMapper.FormatOrderNoToShow(sdiOrderNo:=boItem.OrderID, _
-                                                                                        unccOrderNo:=orderNoMapper.changeToUNCCOrderNo(orderno:=boItem.OrderID))
+                                                                                        unccOrderNo:=orderNoMapper.changeToUNCCOrderNo(orderNo:=boItem.OrderID))
                         End If
                     End If
 
@@ -689,7 +1096,7 @@ Public Class QuoteNonStockProcessor
             rdr.Close()
 
             rdr = Nothing
-            cmd = Nothing
+            'cmd = Nothing
 
             ' double check and/or search for primary recipient if not defined
             CheckSearchPrimaryRecipient()
@@ -840,19 +1247,27 @@ Public Class QuoteNonStockProcessor
         Return sList
     End Function
 
-    Private Sub SendMessages()
+    Public Sub SendMessages()
         Dim cHdr As String = "QuoteNonStockProcessor.SendMessages: "
         Try
             If m_colMsgs.Count > 0 Then
+                Dim dtgcart As DataGrid
+                Dim SBstk As New StringBuilder
+                Dim SWstk As New StringWriter(SBstk)
+                Dim htmlTWstk As New HtmlTextWriter(SWstk)
+                Dim dataGridHTML As String = String.Empty
                 Dim eml As System.Web.Mail.MailMessage
                 Dim cmd As OleDbCommand
                 Dim cSQL As String = ""
+                Dim MailAttachmentName As String()
+                Dim MailAttachmentbytes As New List(Of Byte())()
+                Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
 
                 For Each itmQuoted As QuotedNStkItem In m_colMsgs
                     eml = New System.Web.Mail.MailMessage
 
                     ' init properties of the mail message
-                    eml.From = ""
+                    eml.From = "SDIExchange@SDI.com"
                     eml.To = ""
                     eml.Cc = ""
                     eml.Bcc = ""
@@ -915,28 +1330,6 @@ Public Class QuoteNonStockProcessor
                         End If
                     End If
 
-                    '' build body of this email message
-                    ''vbCrLf & _
-                    ''"FROM=" & itmQuoted.FROM & "<br>" & vbCrLf & _
-                    ''"default FROM=" & m_defaultFROM & "<br>" & vbCrLf & _
-                    ''"TO=" & itmQuoted.TO & "<br>" & vbCrLf & _
-                    ''"BCC=" & itmQuoted.BCC & "<br>" & vbCrLf & _
-                    ''"key=" & m_cEncryptionKey & "<br>" & vbCrLf & _
-                    ''"URL=" & m_cURL & "<br>" & vbCrLf & _
-                    '' check if this quote is for a punch-In site BU (if exists in our array/list)
-                    ''   they get a different format of the letter and no link
-                    'eml.Body = "<HTML>" & _
-                    '                "<HEAD></HEAD>" & _
-                    '                "<BODY>" & _
-                    '                    AddNoRecepientExistNote(eml.To) & _
-                    '                    LETTER_HEAD & _
-                    '                    FormHTMLQouteInfo(itmQuoted.Addressee, itmQuoted.OrderID) & _
-                    '                    LETTER_CONTENT & _
-                    '                    FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM) & _
-                    '                    AddVersionNumber() & _
-                    '                "</BODY>" & _
-                    '           "</HTML>"
-
                     Dim sWorkOrder As String = ""
                     Try
                         sWorkOrder = itmQuoted.WorkOrderNumber.Trim
@@ -963,20 +1356,27 @@ Public Class QuoteNonStockProcessor
                     cHdr = cHdr & "VR Start my code.  "
 
                     Dim bIsBusUnitSDiExch As Boolean = False
-                    'Try
-                    '    Dim arrBUsForSdiExch() As String = Split(Me.ListBUsSDiExch, ",")
-                    '    If arrBUsForSdiExch.Length > 0 Then
-                    '        If Array.IndexOf(arrBUsForSdiExch, itmQuoted.BusinessUnitOM) > -1 Then
-                    '            bIsBusUnitSDiExch = True
-                    '        End If
-                    '    End If
-                    'Catch ex As Exception
-                    '    bIsBusUnitSDiExch = False
-                    'End Try
 
                     ' VR 11/20/2014 Eliminating the IF - everybody on SDiExchange now
                     bIsBusUnitSDiExch = True
                     cHdr = cHdr & "VR Middle my code.  "
+
+                    'BuildLineitem Grid for mail
+                    Dim dstcartSTK As New DataTable
+                    dstcartSTK = buildCartforemail(m_colMsgs, itmQuoted.OrderID)
+                    If dstcartSTK.Rows.Count > 0 Then
+                        dtgcart = New DataGrid
+                        dtgcart.DataSource = dstcartSTK
+                        dtgcart.DataBind()
+                        dtgcart.CellPadding = 3
+                        dtgcart.BorderColor = Gray
+                        dtgcart.HeaderStyle.BackColor = System.Drawing.Color.LightGray
+                        dtgcart.HeaderStyle.Font.Bold = True
+                        dtgcart.HeaderStyle.ForeColor = Black
+                        dtgcart.Width.Percentage(90)
+                        dtgcart.RenderControl(htmlTWstk)
+                        dataGridHTML = SBstk.ToString()
+                    End If
 
                     Dim bIsPunchInBU As Boolean = (Me.PunchInBusinessUnitList.IndexOf(itmQuoted.BusinessUnitOM) > -1)
                     If bIsPunchInBU Then
@@ -988,9 +1388,12 @@ Public Class QuoteNonStockProcessor
                                             AddNoRecepientExistNote(eml.To) & _
                                             LETTER_HEAD_SdiExch & _
                                             FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder) & _
+                                            PositionGrid(dataGridHTML) & _
                                             LETTER_CONTENT_PI_SDiExchange & _
                                             AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
                                             AddVersionNumber() & _
+                                            "<HR width='100%' SIZE='1'>" & _
+                                            "<img src='http://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
                                         "</BODY>" & _
                                    "</HTML>"
                         Else
@@ -1001,35 +1404,33 @@ Public Class QuoteNonStockProcessor
                                                 AddNoRecepientExistNote(eml.To) & _
                                                 LETTER_HEAD & _
                                                 FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder) & _
+                                                PositionGrid(dataGridHTML) & _
                                                 LETTER_CONTENT_PI & _
                                                 AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
                                                 AddVersionNumber() & _
+                                                "<HR width='100%' SIZE='1'>" & _
+                                                "<img src='http://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
                                             "</BODY>" & _
                                        "</HTML>"
                         End If
-                        'eml.Body = "<HTML>" & _
-                        '                "<HEAD></HEAD>" & _
-                        '                "<BODY>" & _
-                        '                    AddNoRecepientExistNote(eml.To) & _
-                        '                    LETTER_HEAD & _
-                        '                    FormHTMLQouteInfo(itmQuoted.Addressee, bShowOrderId) & _
-                        '                    LETTER_CONTENT_PI & _
-                        '                    AddVersionNumber() & _
-                        '                "</BODY>" & _
-                        '           "</HTML>"
+
                     Else
                         If bIsBusUnitSDiExch Then
+                            bShowApproveViaEmailLink = True
                             'SdiExchange
                             eml.Body = "<HTML>" & _
                                         "<HEAD></HEAD>" & _
                                         "<BODY>" & _
                                             AddNoRecepientExistNote(eml.To) & _
                                             LETTER_HEAD_SdiExch & _
-                                            FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder) & _
+                                            FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder) &
+                                            PositionGrid(dataGridHTML) & _
                                             LETTER_CONTENT_SDiExchange & _
                                             FormHTMLLinkSDiExchange(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, bShowApproveViaEmailLink) & _
                                             AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
                                             AddVersionNumber() & _
+                                            "<HR width='100%' SIZE='1'>" & _
+                                                "<img src='http://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
                                         "</BODY>" & _
                                    "</HTML>"
                         Else
@@ -1040,24 +1441,17 @@ Public Class QuoteNonStockProcessor
                                                 AddNoRecepientExistNote(eml.To) & _
                                                 LETTER_HEAD & _
                                                 FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder) & _
+                                                PositionGrid(dataGridHTML) & _
                                                 LETTER_CONTENT & _
                                                 FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, bShowApproveViaEmailLink) & _
                                                 AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
                                                 AddVersionNumber() & _
+                                                "<HR width='100%' SIZE='1'>" & _
+                                                "<img src='http://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
                                             "</BODY>" & _
                                        "</HTML>"
                         End If
-                        'eml.Body = "<HTML>" & _
-                        '                "<HEAD></HEAD>" & _
-                        '                "<BODY>" & _
-                        '                    AddNoRecepientExistNote(eml.To) & _
-                        '                    LETTER_HEAD & _
-                        '                    FormHTMLQouteInfo(itmQuoted.Addressee, bShowOrderId) & _
-                        '                    LETTER_CONTENT & _
-                        '                    FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM) & _
-                        '                    AddVersionNumber() & _
-                        '                "</BODY>" & _
-                        '           "</HTML>"
+
                     End If
 
                     cHdr = cHdr & "VR End my code.  'eml.Body' is: " & eml.Body.ToString()
@@ -1090,21 +1484,14 @@ Public Class QuoteNonStockProcessor
                         eml.Cc = ""
                     End If
 
-                    ''debug
-                    'eml.Body &= vbCrLf & vbCrLf
-                    'eml.Body &= "[TO] " & eml.To.ToString & vbCrLf
-                    'eml.Body &= "[FROM] " & eml.From.ToString & vbCrLf
-                    'eml.Body &= "[CC] " & eml.Cc.ToString & vbCrLf
-                    'eml.Body &= "[BCC] " & eml.Bcc.ToString & vbCrLf
-
-                    'eml.To = "erwin.bautista@sdi.com;vitaly.rovensky@sdi.com;"
-                    'eml.[From] = "erwin.bautista@sdi.com"
-                    'eml.Cc = ""
-                    'eml.Bcc = ""
-                    ''debug - END
-
                     ' send this email
-                    System.Web.Mail.SmtpMail.Send(message:=eml)
+                    ''System.Web.Mail.SmtpMail.Send(message:=eml)
+                    Try
+                        'SDIEmailService.EmailUtilityServices("MailandStore", eml.From.ToString(), eml.To.ToString(), eml.Subject, String.Empty, String.Empty, eml.Body, "SDIERR", MailAttachmentName, MailAttachmentbytes.ToArray())
+                        SDIEmailService.EmailUtilityServices("MailandStore", "SDIExchADMIN@sdi.com", "WebDev@sdi.com;sriram.s@avasoft.biz;madhuvanthy.u@avasoft.biz;Karguvelrajan.P@avasoft.biz", eml.Subject, String.Empty, String.Empty, eml.Body, "QUOTEAPPROVAL", MailAttachmentName, MailAttachmentbytes.ToArray())
+                    Catch ex As Exception
+
+                    End Try
 
                     ' build insert SQL command
                     cSQL = _
@@ -1141,7 +1528,8 @@ Public Class QuoteNonStockProcessor
                             eml.To = eml.From
                             eml.Cc = ""
                             eml.Subject &= " (copy)"
-                            System.Web.Mail.SmtpMail.Send(message:=eml)
+                            ''System.Web.Mail.SmtpMail.Send(message:=eml)
+                            SDIEmailService.EmailUtilityServices("MailandStore", "madhuvanthy.u@avasoft.biz", "madhuvanthy.u@avasoft.biz", eml.Subject, String.Empty, String.Empty, eml.Body, "SDIERR", MailAttachmentName, MailAttachmentbytes.ToArray())
                         End If
                     Catch ex As Exception
                         ' just ignore
@@ -1166,20 +1554,20 @@ Public Class QuoteNonStockProcessor
 
             cInfoHTML &= "<TABLE id=""Table1"" cellSpacing=""1"" cellPadding=""1"" width=""100%"" border=""0"">"
             cInfoHTML &= "       <TR>" & _
-                                    "<TD style=""WIDTH: 110px"">TO:</TD>" & _
+                                    "<TD style=""WIDTH: 110px;Font-Weight:Bold"">TO:</TD>" & _
                                     "<TD><B>" & cAddressee & "</B></TD>" & _
                                 "</TR>" & _
                                 "<TR>" & _
-                                    "<TD style=""WIDTH: 110px"">Date:</TD>" & _
+                                    "<TD style=""WIDTH: 110px;Font-Weight:Bold"">Date:</TD>" & _
                                     "<TD>" & DateTime.Now.ToString(format:="MM/dd/yyyy HH:mm:ss") & "</TD>" & _
                                 "</TR>" & _
                                 "<TR>" & _
-                                    "<TD style=""WIDTH: 110px"">Order:</TD>" & _
+                                    "<TD style=""WIDTH: 110px;Font-Weight:Bold"">Order:</TD>" & _
                                     "<TD style=""COLOR: purple"">" & cOrderID & "</TD>" & _
                                 "</TR>"
             If bIsShowWorkOrderNo Then
                 cInfoHTML &= "  <TR>" & _
-                               "<TD style=""WIDTH: 110px"">Work Order:</TD>" & _
+                               "<TD style=""WIDTH: 110px;Font-Weight:Bold"">Work Order:</TD>" & _
                                "<TD style=""COLOR: purple"">" & cWorkOrderNo & "</TD>" & _
                                "</TR>"
             End If
@@ -1209,7 +1597,7 @@ Public Class QuoteNonStockProcessor
 
                 cLink &= "<p>" & _
                             "Click this " & _
-                            "<a href=""" & m_cURL & cParam & """ target=""_blank"">link</a> " & _
+                            "<a href=""" & "http://ims.sdi.com:8073/ApproveQuote.aspx" & cParam & """ target=""_blank"">link</a> " & _
                             " to APPROVE or DECLINE order." & _
                          "</p>"
 
@@ -1241,7 +1629,7 @@ Public Class QuoteNonStockProcessor
 
                 cLink &= "<p>" & _
                             "Click this " & _
-                            "<a href=""" & m_cURL_SDiExch & cParam & """ target=""_blank"">link</a> " & _
+                            "<a href=""" & "http://ims.sdi.com:8073/ApproveQuote.aspx" & cParam & """ target=""_blank"">link</a> " & _
                             " to APPROVE or DECLINE order." & _
                          "</p>"
 
@@ -1383,5 +1771,174 @@ Public Class QuoteNonStockProcessor
             m_eventLogger.WriteEntry(cHdr & ".  " & msg & ".  " & ex.ToString, EventLogEntryType.Error)
         End Try
     End Sub
+
+
+    Public Sub PriceUpdate(ByVal orderid As String)
+        Try
+            Dim strUpdateQuery As String = String.Empty
+            Dim strSelectQuery As String = String.Empty
+            Dim ordSts As String = "W"
+            Dim ord As String = String.Empty
+            Dim rowsaffected As Integer = 0
+            Dim OrcRdr As OleDb.OleDbDataReader = Nothing
+
+            strSelectQuery = "select OPRID_ENTERED_BY from ps_isa_ord_intfc_h where ORDER_NO = '" & orderid & "'"
+            'strSelectQuery = "select OPRID_ENTERED_BY from ps_isa_ord_intfc_h where ORDER_NO = 'A660000880'"
+            OrcRdr = GetReader(strSelectQuery)
+            If OrcRdr.HasRows Then
+                OrcRdr.Read()
+                ord = CType(OrcRdr("OPRID_ENTERED_BY"), String).Trim()
+            End If
+
+            strUpdateQuery = "UPDATE PS_ISA_ORD_INTFC_H" & vbCrLf & _
+                        " SET OPRID_APPROVED_BY = '" & ord & "'," & vbCrLf & _
+                        " ORDER_STATUS = '" & ordSts & "'" & vbCrLf & _
+                        " WHERE ORDER_NO = '" & orderid & "'"
+
+            rowsaffected = ExecNonQuery(strUpdateQuery)
+
+            strSelectQuery = "select ISA_IDENTIFIER from ps_isa_ord_intfc_h where ORDER_NO = '" & orderid & "'"
+            OrcRdr = GetReader(strSelectQuery)
+            If OrcRdr.HasRows Then
+                OrcRdr.Read()
+                ord = CType(OrcRdr("ISA_IDENTIFIER"), String).Trim()
+            End If
+
+            strUpdateQuery = "UPDATE PS_ISA_ORD_INTFC_I" & vbCrLf & _
+                        " ISA_ORDER_STATUS = '" & ordSts & "'," & vbCrLf & _
+                        " WHERE ISA_PARENT_IDENT = '" & ord & "'"
+            rowsaffected = ExecNonQuery(strUpdateQuery)
+        Catch ex As Exception
+
+        End Try
+    End Sub
+
+    Public Function ExecNonQuery(ByVal p_strQuery As String, Optional ByVal bGoToErrPage As Boolean = True) As Integer
+        Try
+            Dim rowsAffected As Integer
+            Dim cmd As OleDbCommand = m_CN.CreateCommand
+            cmd = New OleDbCommand(cmdText:=p_strQuery, connection:=m_CN)
+            cmd.CommandType = CommandType.Text
+            rowsAffected = cmd.ExecuteNonQuery()
+            Try
+                cmd.Dispose()
+            Catch ex As Exception
+            End Try
+
+            Return rowsAffected
+        Catch objException As Exception
+
+        End Try
+    End Function
+
+    Public Function GetReader(ByVal p_strQuery As String) As OleDbDataReader
+        Try
+
+            Dim cmd As OleDbCommand = m_CN.CreateCommand
+            cmd = New OleDbCommand(cmdText:=p_strQuery, connection:=m_CN)
+            cmd.CommandType = CommandType.Text
+            Dim datareader As OleDbDataReader
+            datareader = cmd.ExecuteReader(CommandBehavior.CloseConnection)
+            Try
+                cmd.Dispose()
+            Catch ex As Exception
+
+            End Try
+            Return datareader
+        Catch objException As Exception
+        End Try
+    End Function
+
+    Public Function GetAdapter(ByVal p_strQuery As String, Optional ByVal bGoToErrPage As Boolean = True) As DataSet
+        Try
+            Dim cmd As OleDbCommand = m_CN.CreateCommand
+            cmd = New OleDbCommand(cmdText:=p_strQuery, connection:=m_CN)
+            cmd.CommandType = CommandType.Text
+            Dim dataAdapter As OleDbDataAdapter = New OleDbDataAdapter(cmd)
+            Dim UserdataSet As System.Data.DataSet = New System.Data.DataSet()
+            dataAdapter.Fill(UserdataSet)
+            Try
+                cmd.Dispose()
+            Catch ex As Exception
+
+            End Try
+            Return UserdataSet
+        Catch objException As Exception
+        End Try
+    End Function
+
+    Public Function PositionGrid(ByVal htmlGrid As String) As String
+        Try
+            Dim content As String = "<TABLE cellSpacing='1' cellPadding='1' width='100%' border='0'>" & _
+                                    "<TR><TD Class='DetailRow' width='100%'>" & htmlGrid & "</TD></TR>" & _
+                                    "</TABLE>"
+            Return content
+        Catch ex As Exception
+
+        End Try
+    End Function
+
+    Public Function GetSQLReaderDazzle(ByVal p_strQuery As String) As SqlDataReader
+
+        Dim connString As String
+        connString = "server=DAZZLE;uid=sa;pwd=sdiadmin;initial catalog=755784;"
+        Dim connection As SqlConnection = New SqlConnection(connString)
+
+        Try
+            Dim Command As SqlCommand = New SqlCommand(p_strQuery, connection)
+            connection.Open()
+            Dim datareader As SqlDataReader
+            datareader = Command.ExecuteReader(CommandBehavior.CloseConnection)
+            Return datareader
+        Catch objException As SqlException
+            Try
+                connection.Dispose()
+                connection.Close()
+            Catch ex As Exception
+
+            End Try
+        End Try
+    End Function
+
+    Private Function getBinLoc(ByVal stritemid As String) As String
+        'changed to qty >0 rather than hitting the first bin in the array
+        Dim strSQLString As String = "" & _
+                    "SELECT " & vbCrLf & _
+                    " (C.STORAGE_AREA ||" & vbCrLf & _
+                    "  C.STOR_LEVEL_1 ||" & vbCrLf & _
+                    "  C.STOR_LEVEL_2 ||" & vbCrLf & _
+                    "  C.STOR_LEVEL_3 ||" & vbCrLf & _
+                    "  C.STOR_LEVEL_4) as binloc " & vbCrLf & _
+                    "FROM " & vbCrLf & _
+                    " PS_INV_ITEMS B " & vbCrLf & _
+                    ",PS_PHYSICAL_INV C " & vbCrLf & _
+                    "WHERE B.INV_ITEM_ID = '" & stritemid & "' " & vbCrLf & _
+                    "  AND B.EFFDT = (" & vbCrLf & _
+                    "                 SELECT MAX(B_ED.EFFDT) FROM PS_INV_ITEMS B_ED " & vbCrLf & _
+                    "  	 	          WHERE B.SETID = B_ED.SETID " & vbCrLf & _
+                    "  		            AND B.INV_ITEM_ID = B_ED.INV_ITEM_ID " & vbCrLf & _
+                    "		            AND B_ED.EFFDT <= SYSDATE" & vbCrLf & _
+                    "                ) " & vbCrLf & _
+                    "  AND B.INV_ITEM_ID = C.INV_ITEM_ID(+) " & vbCrLf & _
+                    " AND C.QTY > 0 " & vbCrLf & _
+                    "ORDER BY C.DT_TIMESTAMP DESC " & vbCrLf & _
+                    ""
+
+        Try
+            Dim dsbin As DataSet = GetAdapter(strSQLString)
+            If Not (dsbin Is Nothing) Then
+                If dsbin.Tables(0).Rows.Count > 0 Then
+                    For Each row As DataRow In dsbin.Tables(0).Rows
+                        getBinLoc = getBinLoc + "<BR>" + CStr(row.Item("BINLOC"))
+                    Next
+                Else
+                    getBinLoc = " "
+                End If
+            Else
+                getBinLoc = " "
+            End If
+        Catch objException As Exception
+        End Try
+    End Function
 
 End Class

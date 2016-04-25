@@ -1,5 +1,11 @@
 Imports System.ServiceProcess
 Imports System.Xml
+Imports System.Data
+Imports System.Data.OleDb
+Imports System.Web
+Imports System.Configuration
+Imports System.Web.Mail
+Imports System.Collections.Generic
 
 Public Class QuotedNStkEmailNotification
 
@@ -40,7 +46,7 @@ Public Class QuotedNStkEmailNotification
     ' The main entry point for the process
     <MTAThread()> _
     Shared Sub Main()
-        Dim ServicesToRun() As System.ServiceProcess.ServiceBase
+        ''''Dim ServicesToRun() As System.ServiceProcess.ServiceBase
 
         ' More than one NT Service may run within the same process. To add
         ' another service to this process, change the following line to
@@ -48,9 +54,35 @@ Public Class QuotedNStkEmailNotification
         '
         '   ServicesToRun = New System.ServiceProcess.ServiceBase () {New Service1, New MySecondUserService}
         '
-        ServicesToRun = New System.ServiceProcess.ServiceBase() {New QuotedNStkEmailNotification}
+        ''''ServicesToRun = New System.ServiceProcess.ServiceBase() {New QuotedNStkEmailNotification}
 
-        System.ServiceProcess.ServiceBase.Run(ServicesToRun)
+        ''''System.ServiceProcess.ServiceBase.Run(ServicesToRun)
+
+#If (Not Debug) Then
+        ''Dim ServicesToRun As ServiceBase()
+        ''ServicesToRun = New ServiceBase() {New MyService()}
+        ''ServiceBase.Run(ServicesToRun)
+#Else
+        'Dim myServ As New MyService()
+        'myServ.Process()
+        ' here Process is my Service function
+        ' that will run when my service onstart is call
+        ' you need to call your own method or function name here instead of Process();
+
+        ''Dim ServicesToRun() As System.ServiceProcess.ServiceBase
+        ''ServicesToRun = New System.ServiceProcess.ServiceBase() {New QuotedNStkEmailNotification}
+        ''System.ServiceProcess.ServiceBase.Run(ServicesToRun)
+
+        ''Dim ss As QuoteNonStockProcessor = New QuoteNonStockProcessor(cnString:="Provider=MSDAORA.1;Data Source=RPTG;User ID=einternet;Password=einternet;")
+        ''ss.Execute()
+
+#End If
+        Dim kk As QuotedNStkEmailNotification = New QuotedNStkEmailNotification()
+        Dim args() As String
+        kk.OnStart(args)
+
+        ''Dim ss As QuoteNonStockProcessor = New QuoteNonStockProcessor(cnString:="Provider=MSDAORA.1;Data Source=RPTG;User ID=einternet;Password=einternet;")
+        ''ss.Execute()
     End Sub
 
     'Required by the Component Designer
@@ -387,5 +419,7 @@ Public Class QuotedNStkEmailNotification
             MyBase.EventLog.WriteEntry(cHdr & vbCrLf & ex.ToString, EventLogEntryType.Error)
         End Try
     End Sub
+
+    
 
 End Class

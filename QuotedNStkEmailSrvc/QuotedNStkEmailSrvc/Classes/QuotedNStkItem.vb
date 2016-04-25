@@ -23,6 +23,8 @@ Public Class QuotedNStkItem
     Private m_workOrderNo As String = ""
     Private m_orderOrigin As String = ""
 
+    Private m_priceblock As String = ""
+
     ' VR 11/20/2014 Adding new members to display in E-mail
     Private m_Buyer_Id As String = ""
     Private m_Buyer_Email As String = ""
@@ -200,6 +202,15 @@ Public Class QuotedNStkItem
         End Get
         Set(value As String)
             m_Buyer_Email = value
+        End Set
+    End Property
+
+    Public Property PriceBlockFlag() As String
+        Get
+            Return m_priceblock
+        End Get
+        Set(ByVal value As String)
+            m_priceblock = value
         End Set
     End Property
 
