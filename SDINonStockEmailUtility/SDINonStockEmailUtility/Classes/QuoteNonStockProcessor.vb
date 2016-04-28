@@ -2153,18 +2153,31 @@ Public Class QuoteNonStockProcessor
             Dim strInsertQuery As String = String.Empty
             Dim rowsaffected As Integer = 0
 
+            ' We need to check if the record doesn't already exist when trying to insert it.
+            ' If it already exists, we get a unique constraint error so we'll avoid the error
+            ' with this insert statement. The record could already exist if we processed the 
+            ' order with this utility previously but a buyer goes into PeopleSoft and changes
+            ' the status back to "Q".
             strInsertQuery = "INSERT INTO PS_ISA_APPR_PATH" & vbCrLf & _
                     " (BUSINESS_UNIT_OM, ORDER_NO," & vbCrLf & _
                     " SEQ_NBR," & vbCrLf & _
                     " OPRID_ENTERED_BY, OPRID_APPROVED_BY," & vbCrLf & _
                     " APPR_STATUS, ISA_APPR_TYPE," & vbCrLf & _
                     "  ADD_DTTM, LASTUPDDTTM)" & vbCrLf & _
-                    " VALUES" & vbCrLf & _
-                    " ('" & sBU & "', '" & sOrderNo & "', '1'," & vbCrLf & _
-                    " '" & sEnteredBy & "','NSTKpric'," & vbCrLf & _
-                    " 'P', 'Q'," & vbCrLf & _
-                    " TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')," & vbCrLf & _
-                    " TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM'))" & vbCrLf
+                    " SELECT " & vbCrLf & _
+                    "   '" & sBU & "', '" & sOrderNo & "', '1'," & vbCrLf & _
+                    "    '" & sEnteredBy & "','NSTKpric'," & vbCrLf & _
+                    "    'P', 'Q'," & vbCrLf & _
+                    "    TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')," & vbCrLf & _
+                    "    TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
+                    " FROM dual " & vbCrLf & _
+                    " WHERE NOT EXISTS " & vbCrLf & _
+                    "   (SELECT 'X' FROM PS_ISA_APPR_PATH " & vbCrLf & _
+                    "       WHERE business_unit_om = '" & sBU & "' " & vbCrLf & _
+                    "       AND order_no = '" & sOrderNo & "' " & vbCrLf & _
+                    "       AND seq_nbr = '1'" & vbCrLf & _
+                    "       AND appr_status = 'P' " & vbCrLf & _
+                    "       AND isa_appr_type = 'Q')"
 
             rowsaffected = ExecNonQuery(strInsertQuery)
 
