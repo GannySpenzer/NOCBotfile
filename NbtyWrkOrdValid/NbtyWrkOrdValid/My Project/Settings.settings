@@ -1,0 +1,33 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="My" GeneratedClassName="MySettings" UseMySettingsClassName="true">
+  <Profiles />
+  <Settings>
+    <Setting Name="oraCNString1" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=RPTG</Value>
+    </Setting>
+    <Setting Name="rooDir" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">C:\NbtyWorkOrder</Value>
+    </Setting>
+    <Setting Name="logPath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">C:\NbtyWorkOrder\LOGS</Value>
+    </Setting>
+    <Setting Name="onErrorEmail_From" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">TechSupport@sdi.com</Value>
+    </Setting>
+    <Setting Name="onErrorEmail_CC" Type="System.String" Scope="Application">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="onErrorEmail_BCC" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">webdev@sdi.com</Value>
+    </Setting>
+    <Setting Name="onErrorEmail_To" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">vitaly.rovensky@sdi.com</Value>
+    </Setting>
+    <Setting Name="NbtyWrkOrdValid_SDiEmailUtilityService_EmailServices" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx</Value>
+    </Setting>
+    <Setting Name="inputDirectory" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">C:\NbtyWorkOrder\XMLIN_SRC</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
