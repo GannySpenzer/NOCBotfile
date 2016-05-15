@@ -78,7 +78,24 @@ Module Module1
                                      " Version: " & System.Reflection.Assembly.GetExecutingAssembly.GetName.Version.ToString & _
                                      "")
         'process received info
-        Call ProceesNbtyWrkOrdXmlInInfo()
+        Dim sPlantList As String = "NE_10MFG,NE_90PKG,NE_105MFG,NE_815PKG,NE_4320WHS"
+        Try
+            sPlantList = My.Settings("Plant_List").ToString.Trim
+        Catch ex As Exception
+            sPlantList = "NE_10MFG,NE_90PKG,NE_105MFG,NE_815PKG,NE_4320WHS"
+        End Try
+        Dim arrPlantList() As String = Split(sPlantList, ",")
+
+        Dim iM1 As Integer = 0
+        Dim sPlantCode As String = ""
+        If arrPlantList.Length > 0 Then
+            For iM1 = 0 To arrPlantList.Length - 1
+                sPlantCode = arrPlantList(iM1)
+
+                Call ProceesNbtyWrkOrdXmlInInfo(sPlantCode)
+
+            Next
+        End If
 
         ' destroy logger object
         Try
@@ -90,14 +107,14 @@ Module Module1
 
     End Sub
 
-    Sub ProceesNbtyWrkOrdXmlInInfo()
+    Sub ProceesNbtyWrkOrdXmlInInfo(ByVal sPlantCode As String)
 
         Dim rtn As String = "NbtyWrkOrdXmlIn.ProceesNbtyWrkOrdXmlInInfo"
         Dim bError As Boolean = False
 
-        Console.WriteLine("Start NBTY Work Ord. XML in")
+        Console.WriteLine("Start NBTY Work Ord. XML in for: " & sPlantCode)
         Console.WriteLine("")
-        m_logger.WriteInformationLog(rtn & " :: Process of NBTY Work Ord. Inbound")
+        m_logger.WriteInformationLog(rtn & " :: Process of NBTY Work Ord. Inbound for: " & sPlantCode)
 
         m_logger.WriteVerboseLog(rtn & " :: (Oracle)connection string : [" & connectOR.ConnectionString & "]")
 
@@ -111,6 +128,8 @@ Module Module1
         Catch ex As Exception
             sInputDir = "C:\NbtyWorkOrder\XMLIN_SRC"
         End Try
+        sInputDir = sInputDir & "\" & sPlantCode
+
         Dim dirInfo As DirectoryInfo = New DirectoryInfo(sInputDir)
 
         Dim strFiles As String
@@ -119,21 +138,22 @@ Module Module1
 
         strFiles = "*.XML"
         Dim aSrcFiles As FileInfo() = dirInfo.GetFiles(strFiles)
-        Dim I As Integer
+        Dim I As Integer = 0
 
         Try
             If aSrcFiles.Length > 0 Then
                 For I = 0 To aSrcFiles.Length - 1
-                    File.Copy(aSrcFiles(I).FullName, "C:\NbtyWorkOrder\XMLIN\" & aSrcFiles(I).Name, True)
-                    File.Delete(aSrcFiles(I).FullName)
-                    m_logger.WriteInformationLog(rtn & " :: " & aSrcFiles(I).FullName & " moved to " & "C:\NbtyWorkOrder\XMLIN\" & aSrcFiles(I).Name)
+
+                    File.Copy(aSrcFiles(I).FullName, "C:\NbtyWorkOrder\XMLIN\" & sPlantCode & "\" & aSrcFiles(I).Name, True)
+                    'File.Delete(aSrcFiles(I).FullName)
+                    m_logger.WriteInformationLog(rtn & " :: " & aSrcFiles(I).FullName & " copied to " & "C:\NbtyWorkOrder\XMLIN\" & sPlantCode & "\" & aSrcFiles(I).Name)
 
                 Next
             Else
                 m_logger.WriteInformationLog(rtn & " :: No files to copy from " & dirInfo.FullName)
             End If
         Catch ex As Exception
-            myLoggr1.WriteErrorLog(rtn & " :: Error moving file(s) from " & dirInfo.FullName & " to C:\NbtyWorkOrder\XMLIN\ " & "...")
+            myLoggr1.WriteErrorLog(rtn & " :: Error moving file(s) from " & dirInfo.FullName & " to C:\NbtyWorkOrder\XMLIN\" & sPlantCode & "\" & " ...")
             myLoggr1.WriteErrorLog(rtn & " :: " & ex.ToString)
             bError = True
             Dim strXMLError As String = ex.Message
@@ -171,7 +191,7 @@ Module Module1
         Dim bolError As Boolean = False
 
         Try
-            bolError = GetNbtyWrkOrdXmlIn()
+            bolError = GetNbtyWrkOrdXmlIn(sPlantCode)
         Catch ex As Exception
             myLoggr1.WriteErrorLog(rtn & " :: " & ex.ToString)
             bolError = True
@@ -190,16 +210,16 @@ Module Module1
 
     End Sub
 
-    Private Function GetNbtyWrkOrdXmlIn() As Boolean
+    Private Function GetNbtyWrkOrdXmlIn(ByVal sPlantCode As String) As Boolean
         Dim bolError As Boolean = False
-        Dim rtn As String = "NbtyWrkOrdXmlIn.GetNbtyWrkOrdXmlIn"
+        Dim rtn As String = "NbtyWrkOrdXmlIn.GetNbtyWrkOrdXmlIn." & sPlantCode
 
-        Console.WriteLine("Start Insert of NBTY Work Ord. in SYSADM8.PS_ISA_NB_WOVAL")
+        Console.WriteLine("Start Insert of NBTY Work Ord. in SYSADM8.PS_ISA_NB_WOVAL for: " & sPlantCode)
         Console.WriteLine("")
 
-        m_logger.WriteInformationLog(rtn & " :: Start Insert of NBTY Work Ord. in SYSADM8.PS_ISA_NB_WOVAL")
+        m_logger.WriteInformationLog(rtn & " :: Start Insert of NBTY Work Ord. in SYSADM8.PS_ISA_NB_WOVAL for: " & sPlantCode)
 
-        Dim dirInfo As DirectoryInfo = New DirectoryInfo("C:\NbtyWorkOrder\XMLIN\")
+        Dim dirInfo As DirectoryInfo = New DirectoryInfo("C:\NbtyWorkOrder\XMLIN\" & sPlantCode & "\")
         Dim strFiles As String = ""
         Dim sr As System.IO.StreamReader
         Dim XMLContent As String = ""
@@ -248,7 +268,7 @@ Module Module1
                         bolError = True
                         bLineError = True
                         Try
-                            File.Move(aFiles(I).FullName, "C:\NbtyWorkOrder\BadXML\" & aFiles(I).Name)
+                            File.Move(aFiles(I).FullName, "C:\NbtyWorkOrder\BadXML\" & sPlantCode & "\" & aFiles(I).Name)
                             File.Delete(aFiles(I).FullName)
                         Catch ex24 As Exception
                             myLoggr1.WriteErrorLog(rtn & " :: ** ")
@@ -261,15 +281,33 @@ Module Module1
                         root = xmlRequest.DocumentElement
 
                         If root.FirstChild Is Nothing Then
-                            strXMLError = "empty XML file"
+                            strXMLError = "empty XML file for: " & sPlantCode
                         ElseIf root.LastChild.Name.ToLower() = "cmrpt_sdi_wo" Then
                             strXMLError = ""
                         Else
-                            strXMLError = "Missing last XML Element"
+                            strXMLError = "Missing last XML Element for: " & sPlantCode
                         End If
 
+                        Dim rowsaffected As Integer = 0
                         If Trim(strXMLError) = "" Then
                             If root.ChildNodes.Count > 0 Then
+                                'code to delete previous info based on Plant Code - sPlantCode
+                                sPlantCode = UCase(sPlantCode)
+                                Dim strDeleteString As String = "DELETE SYSADM8.PS_ISA_NB_WOVAL WHERE UPPER(PLANT) = '" & sPlantCode & "'"
+                                Try
+
+                                    Dim Command = New OleDbCommand(strDeleteString, connectOR)
+
+                                    If Not connectOR.State = ConnectionState.Open Then
+                                        connectOR.Open()
+                                    End If
+                                    rowsaffected = Command.ExecuteNonQuery()
+
+                                Catch ex As Exception
+
+                                    myLoggr1.WriteErrorLog(rtn & " :: Error deleting: " & ex.Message & " for the file: " & aFiles(I).Name)
+                                End Try
+                                'End code to delete
                                 Dim strPlant As String = ""
                                 Dim strWorkOrdNum As String = ""
                                 Dim strAssetId As String = ""
@@ -548,7 +586,7 @@ Module Module1
                                             Next  '  For iItemMM = 0 To nodeMxItem.ChildNodes.Count - 1
 
                                             'collected all info - starting insert
-                                            Dim rowsaffected As Integer = 0
+                                            rowsaffected = 0
                                             Dim strSQLstring As String = ""
                                             strSQLstring = "INSERT INTO SYSADM8.PS_ISA_NB_WOVAL (PLANT,ISA_WORK_ORDER_NO,ASSET_ID,ISA_UNLOADING_PT" & vbCrLf & _
                                                 ",ISA_WO_STATUS,ISA_CUST_CHARGE_CD,WAREHOUSE_ID,WO_DESCR" & vbCrLf & _
@@ -585,7 +623,7 @@ Module Module1
                                                     myLoggr1.WriteInformationLog(rtn & " :: SQL String: " & strSQLstring)
                                                     bLineError = True
                                                     If Trim(strXMLError) = "" Then
-                                                        strXMLError = "Check log file: error on line number(s): " & (iCnt + 1).ToString()
+                                                        strXMLError = sPlantCode & ": Check log file: error on line number(s): " & (iCnt + 1).ToString()
                                                     Else
                                                         strXMLError = strXMLError & ", " & (iCnt + 1).ToString()
                                                     End If
@@ -595,7 +633,7 @@ Module Module1
                                                 myLoggr1.WriteInformationLog(rtn & " :: SQL String: " & strSQLstring)
                                                 bLineError = True
                                                 If Trim(strXMLError) = "" Then
-                                                    strXMLError = "Check log file: error on line number(s): " & (iCnt + 1).ToString()
+                                                    strXMLError = sPlantCode & ": Check log file: error on line number(s): " & (iCnt + 1).ToString()
                                                 Else
                                                     strXMLError = strXMLError & ", " & (iCnt + 1).ToString()
                                                 End If
@@ -604,6 +642,7 @@ Module Module1
                                     End If  '  LCase(root.ChildNodes(iCnt).Name) = "cmrpt_sdi_wo"  
                                 Next  '  For iCnt = 0 To root.ChildNodes.Count - 1 
                                 myLoggr1.WriteInformationLog(rtn & " :: Number of lines in this file: " & root.ChildNodes.Count)
+                                m_logger.WriteInformationLog(rtn & " :: Number of lines in this file: " & root.ChildNodes.Count)
                             End If  '  root.ChildNodes.Count > 0 
                         End If ' Trim(strXMLError) = ""  '  inner if 
                     End If  ' Trim(strXMLError) = "" 
@@ -632,15 +671,15 @@ Module Module1
                             End If
                         End If
                         'move file to BadXML folder
-                        File.Copy(aFiles(I).FullName, "C:\NbtyWorkOrder\BadXML\" & aFiles(I).Name, True)
+                        File.Copy(aFiles(I).FullName, "C:\NbtyWorkOrder\BadXML\" & sPlantCode & "\" & aFiles(I).Name, True)
                         File.Delete(aFiles(I).FullName)
-                        m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & "C:\NbtyWorkOrder\BadXML\" & aFiles(I).Name)
+                        m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & "C:\NbtyWorkOrder\BadXML\" & sPlantCode & "\" & aFiles(I).Name)
                     Else
 
                         'move file to XMLInProcessed folder
-                        File.Copy(aFiles(I).FullName, "C:\NbtyWorkOrder\XMLINProcessed\" & aFiles(I).Name, True)
+                        File.Copy(aFiles(I).FullName, "C:\NbtyWorkOrder\XMLINProcessed\" & sPlantCode & "\" & aFiles(I).Name, True)
                         File.Delete(aFiles(I).FullName)
-                        m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & "C:\NbtyWorkOrder\XMLINProcessed\" & aFiles(I).Name)
+                        m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & "C:\NbtyWorkOrder\XMLINProcessed\" & sPlantCode & "\" & aFiles(I).Name)
 
                     End If
                 Next  '  For I = 0 To aFiles.Length - 1
@@ -670,9 +709,9 @@ Module Module1
                 End If
             End If
             'move file to BadXML folder
-            File.Copy(aFiles(I).FullName, "C:\NbtyWorkOrder\BadXML\" & aFiles(I).Name, True)
+            File.Copy(aFiles(I).FullName, "C:\NbtyWorkOrder\BadXML\" & sPlantCode & "\" & aFiles(I).Name, True)
             File.Delete(aFiles(I).FullName)
-            m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & "C:\NbtyWorkOrder\BadXML\" & aFiles(I).Name)
+            m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & "C:\NbtyWorkOrder\BadXML\" & sPlantCode & "\" & aFiles(I).Name)
 
             Return True
         End Try

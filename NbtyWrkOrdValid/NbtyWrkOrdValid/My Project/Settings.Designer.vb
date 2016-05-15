@@ -135,6 +135,15 @@ Namespace My
                 Return CType(Me("inputDirectory"),String)
             End Get
         End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("NE_10MFG,NE_90PKG,NE_105MFG,NE_815PKG,NE_4320WHS")>  _
+        Public ReadOnly Property Plant_List() As String
+            Get
+                Return CType(Me("Plant_List"),String)
+            End Get
+        End Property
     End Class
 End Namespace
 
