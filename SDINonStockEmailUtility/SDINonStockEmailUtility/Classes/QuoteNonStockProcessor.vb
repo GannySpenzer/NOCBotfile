@@ -269,7 +269,8 @@ Public Class QuoteNonStockProcessor
         End Try
     End Function
 
-    Private Shared Function buildCartforemail(ByVal m_colMsgs As QuotedNStkItemCollection, ByVal ordNumber As String) As DataTable
+    Private Shared Function buildCartforemail(ByVal m_colMsgs As QuotedNStkItemCollection, ByVal ordNumber As String, _
+                        ByRef strWrkOrder As String) As DataTable
 
         Dim dr As DataRow
         Dim I As Integer
@@ -322,7 +323,26 @@ Public Class QuoteNonStockProcessor
             dsOrdLnItems = GetAdapter(strOraSelectQuery)
 
             If dsOrdLnItems.Tables(0).Rows.Count > 0 Then
+                Dim intMy21 As Integer = 0
                 For Each dataRowMain As DataRow In dsOrdLnItems.Tables(0).Rows
+                    'code to get work order id
+                    If intMy21 = 0 Then
+                        strWrkOrder = " "
+                        Try
+                            strWrkOrder = CType(dataRowMain("ISA_WORK_ORDER_NO"), String)
+                            If strWrkOrder Is Nothing Then
+                                strWrkOrder = " "
+                            Else
+                                If Trim(strWrkOrder) = "" Then
+                                    strWrkOrder = " "
+                                End If
+                            End If
+                        Catch ex As Exception
+                            strWrkOrder = " "
+                        End Try
+                    End If
+                    intMy21 = intMy21 + 1  ' end code to get work order id
+
                     dr = dstcart.NewRow()
                     dr("Item ID") = CType(dataRowMain("VNDR_CATALOG_ID"), String).Trim()
                     dr("Description") = CType(dataRowMain("DESCR254"), String).Trim()
@@ -888,19 +908,16 @@ Public Class QuoteNonStockProcessor
                                  ",A4.OPRID_ENTERED_BY AS ISA_EMPLOYEE_ID" & vbCrLf & _
                                  ",A4.BUSINESS_UNIT_OM AS BUSINESS_UNIT_OM" & vbCrLf & _
                                  ",A4.PROJECT_ID,A4.ORIGIN" & vbCrLf & _
-                                 ",A4.OPRID_MODIFIED_BY AS OPRID_MODIFIED_BY,B1.WORK_ORDER_ID,B1.EMAIL_ADDRESS " & vbCrLf & _
+                                 ",A4.OPRID_MODIFIED_BY AS OPRID_MODIFIED_BY " & vbCrLf & _
                                  "FROM " & vbCrLf & _
                                  " PS_REQ_HDR A" & vbCrLf & _
                                  ",SYSADM.PS_ROLEXLATOPR B" & vbCrLf & _
                                  ",PS_REQ_LINE A1" & vbCrLf & _
                                  ",PS_ISA_USERS_TBL A2" & vbCrLf & _
                                  ",PS_ISA_ENTERPRISE A3" & vbCrLf & _
-                                 ",PS_ISA_ORD_INTFC_H A4" & vbCrLf & _
-                                 ",SYSADM.PS_ISA_INTFC_H_SUP B1" & vbCrLf & _
-                                 "WHERE A.BUSINESS_UNIT = A1.BUSINESS_UNIT" & vbCrLf & _
+                                 ",PS_ISA_ORD_INTFC_H A4 " & vbCrLf & _
+                                 " WHERE A.BUSINESS_UNIT = A1.BUSINESS_UNIT" & vbCrLf & _
                                  "  AND A.BUYER_ID = B.ROLEUSER (+)" & vbCrLf & _
-                                 " AND A4.BUSINESS_UNIT_OM = B1.BUSINESS_UNIT_OM (+)" & vbCrLf & _
-                                 " AND A4.ORDER_NO = B1.ORDER_NO (+)" & vbCrLf & _
                                  "  AND A.REQ_ID = A1.REQ_ID" & vbCrLf & _
                                  "  AND A.REQ_ID = A4.ORDER_NO (+)" & vbCrLf & _
                                  "  AND A4.ORIGIN IN ('IOL','MOB','RFQ')" & vbCrLf & _
@@ -1082,41 +1099,27 @@ Public Class QuoteNonStockProcessor
                         End If
                     End If
 
-                    ' grab the "project ID" from the INTFC_H since for RFQ's (origin) this field SHOULD have both the "work order#" and "primary recipient email address"
                     If (boItem.OrderOrigin = "RFQ") Then
-                        ' VR 11/20/2014 We are not using PROJECT_ID field anymore
-                        'If Not (rdr("PROJECT_ID") Is System.DBNull.Value) Then
-
-                        '    Dim sProjectId As String = ""
-                        '    Dim arrProjID() As String = New String() {}
-
-                        '    Try
-                        '        sProjectId = CStr(rdr("PROJECT_ID")).Trim
-                        '    Catch ex As Exception
-                        '    End Try
-                        '    If (sProjectId.Length > 0) Then
-                        '        arrProjID = Split(sProjectId, "|")
-                        '    End If
-
-                        '    If (arrProjID.Length > 0) Then
-                        '        If (arrProjID(0).Trim.Length > 0) Then
-                        '            workOrderNo = arrProjID(0).Trim
-                        '        End If
-                        '    End If
-                        '    If (arrProjID.Length > 1) Then
-                        '        If (arrProjID(1).Trim.Length > 0) Then
-                        '            rfqEmailRecipient = arrProjID(1).Trim
-                        '        End If
-                        '    End If
-
+                       
+                        '' VR 11/20/2014 New code based on using new header table SYSADM.PS_ISA_INTFC_H_SUP
+                        'If Not (rdr("WORK_ORDER_ID") Is System.DBNull.Value) Then
+                        '    workOrderNo = CStr(rdr("WORK_ORDER_ID")).Trim
                         'End If
-
-                        ' VR 11/20/2014 New code based on using new header table SYSADM.PS_ISA_INTFC_H_SUP
-                        If Not (rdr("WORK_ORDER_ID") Is System.DBNull.Value) Then
-                            workOrderNo = CStr(rdr("WORK_ORDER_ID")).Trim
-                        End If
-                        If Not (rdr("EMAIL_ADDRESS") Is System.DBNull.Value) Then
-                            rfqEmailRecipient = CStr(rdr("EMAIL_ADDRESS")).Trim
+                        'If Not (rdr("EMAIL_ADDRESS") Is System.DBNull.Value) Then
+                        '    rfqEmailRecipient = CStr(rdr("EMAIL_ADDRESS")).Trim
+                        'End If
+                        workOrderNo = " "
+                        rfqEmailRecipient = " "
+                        If Not (rdr("ISA_EMPLOYEE_EMAIL") Is System.DBNull.Value) Then
+                            
+                            Dim arr As ArrayList = Utility.ExtractValidEmails(CType(rdr("ISA_EMPLOYEE_EMAIL"), String).Trim)
+                            If arr.Count > 0 Then
+                                For Each sAdd As String In arr
+                                    rfqEmailRecipient &= sAdd & ";"
+                                Next
+                                rfqEmailRecipient = rfqEmailRecipient.Substring(0, rfqEmailRecipient.Length - 1)
+                            End If
+                            arr = Nothing
                         End If
                     End If
 
@@ -1528,21 +1531,6 @@ Public Class QuoteNonStockProcessor
                     eml.Subject &= " - " & itmQuoted.OrderID
                 End If
 
-                ' override for RFQ origin to include (if provided) the work order # on the subject line
-                '   - erwin 3/26/2014
-                If (itmQuoted.OrderOrigin = "RFQ") Then
-                    If (itmQuoted.WorkOrderNumber.Length > 0) Then
-                        eml.Subject &= " (Work Order #" & itmQuoted.WorkOrderNumber & ")"
-                    End If
-                End If
-
-                Dim sWorkOrder As String = ""
-                Try
-                    sWorkOrder = itmQuoted.WorkOrderNumber.Trim
-                Catch ex As Exception
-                    sWorkOrder = ""
-                End Try
-
                 ' for now, showing the work order # is synonymous to origin "RFQ"
                 Dim bShowWorkOrderNo As Boolean = (itmQuoted.OrderOrigin = "RFQ")
 
@@ -1574,7 +1562,13 @@ Public Class QuoteNonStockProcessor
                 Dim htmlTWstk As New HtmlTextWriter(SWstk)
                 Dim dataGridHTML As String = String.Empty
                 Dim dstcartSTK As New DataTable
-                dstcartSTK = buildCartforemail(m_colMsgs, itmQuoted.OrderID)
+                Dim StrWO1 As String = " "
+                dstcartSTK = buildCartforemail(m_colMsgs, itmQuoted.OrderID, StrWO1)
+                If Trim(StrWO1) = "" Then
+                    StrWO1 = " "
+                End If
+                itmQuoted.WorkOrderNumber = StrWO1
+
                 If dstcartSTK.Rows.Count > 0 Then
                     dtgcart = New DataGrid
                     dtgcart.DataSource = dstcartSTK
@@ -1589,6 +1583,21 @@ Public Class QuoteNonStockProcessor
                     dataGridHTML = SBstk.ToString()
                 End If
 
+                ' override for RFQ origin to include (if provided) the work order # on the subject line
+                '   - erwin 3/26/2014
+                If (itmQuoted.OrderOrigin = "RFQ") Then
+                    If (itmQuoted.WorkOrderNumber.Length > 0) Then
+                        eml.Subject &= " (Work Order # " & itmQuoted.WorkOrderNumber & ")"
+                    End If
+                End If
+
+                Dim sWorkOrder As String = ""
+                Try
+                    sWorkOrder = itmQuoted.WorkOrderNumber.Trim
+                Catch ex As Exception
+                    sWorkOrder = ""
+                End Try
+
                 Dim bIsPunchInBU As Boolean = (Me.PunchInBusinessUnitList.IndexOf(itmQuoted.BusinessUnitOM) > -1)
                 Dim PI_SDI As String = String.Empty
                 Dim PI As String = String.Empty
@@ -1598,11 +1607,11 @@ Public Class QuoteNonStockProcessor
                     If bIsBusUnitSDiExch Then
                         'SdiExchange
                         If IsAscend(itmQuoted.BusinessUnitOM) Then
-                            PI_SDI = LETTER_CONTENT_PI_SDiExchange.Replace("Requestor Approval", "Approve Quotes (Ascend)")
+                            'PI_SDI = LETTER_CONTENT_PI_SDiExchange.Replace("Requestor Approval", "Approve Quotes (Ascend)")
                             bShowWorkOrderNo = True
                         Else
-                            PI_SDI = LETTER_CONTENT_PI_SDiExchange
                         End If
+                        PI_SDI = LETTER_CONTENT_PI_SDiExchange
                         eml.Body = "<HTML>" & _
                                     "<HEAD></HEAD>" & _
                                     "<BODY>" & _
@@ -1646,11 +1655,11 @@ Public Class QuoteNonStockProcessor
                         bShowApproveViaEmailLink = True
                         'SdiExchange
                         If IsAscend(itmQuoted.BusinessUnitOM) Then
-                            ContentSDI = LETTER_CONTENT_SDiExchange.Replace("Requestor Approval", "Approve Quotes (Ascend)")
+                            'ContentSDI = LETTER_CONTENT_SDiExchange.Replace("Requestor Approval", "Approve Quotes (Ascend)")
                             bShowWorkOrderNo = True
                         Else
-                            ContentSDI = LETTER_CONTENT_SDiExchange
                         End If
+                        ContentSDI = LETTER_CONTENT_SDiExchange
                         eml.Body = "<HTML>" & _
                                     "<HEAD></HEAD>" & _
                                     "<BODY>" & _
@@ -2483,7 +2492,13 @@ Public Class QuoteNonStockProcessor
         Dim htmlTWstk As New HtmlTextWriter(SWstk)
         Dim dataGridHTML As String = String.Empty
         Dim dstcartSTK As New DataTable
-        dstcartSTK = buildCartforemail(m_colMsgs, itmQuoted.OrderID)
+        Dim StrWO1 As String = " "
+        dstcartSTK = buildCartforemail(m_colMsgs, itmQuoted.OrderID, StrWO1)
+        If Trim(StrWO1) = "" Then
+            StrWO1 = " "
+        End If
+        itmQuoted.WorkOrderNumber = StrWO1
+
         If dstcartSTK.Rows.Count > 0 Then
             dtgcart = New DataGrid
             dtgcart.DataSource = dstcartSTK
