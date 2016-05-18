@@ -77,6 +77,9 @@ Module Module1
                                      System.Reflection.Assembly.GetExecutingAssembly.GetModules()(0).FullyQualifiedName & _
                                      " Version: " & System.Reflection.Assembly.GetExecutingAssembly.GetName.Version.ToString & _
                                      "")
+
+        m_logger.WriteVerboseLog(rtn & " :: (Oracle)connection string : [" & connectOR.ConnectionString & "]")
+
         'process received info
         Dim sPlantList As String = "NE_10MFG,NE_90PKG,NE_105MFG,NE_815PKG,NE_4320WHS"
         Try
@@ -116,8 +119,6 @@ Module Module1
         Console.WriteLine("")
         m_logger.WriteInformationLog(rtn & " :: Process of NBTY Work Ord. Inbound for: " & sPlantCode)
 
-        m_logger.WriteVerboseLog(rtn & " :: (Oracle)connection string : [" & connectOR.ConnectionString & "]")
-
         '// ***
         '// This is the moving of files to the XMLIN folder ...
         '// ***
@@ -142,13 +143,21 @@ Module Module1
 
         Try
             If aSrcFiles.Length > 0 Then
+                Dim bFound As Boolean = False
                 For I = 0 To aSrcFiles.Length - 1
+                    If aSrcFiles(I).Name.Length > Len("cmrpt_sdi_wo") - 1 Then
+                        If aSrcFiles(I).Name.StartsWith("cmrpt_sdi_wo") Then
+                            bFound = True
+                            File.Copy(aSrcFiles(I).FullName, "C:\NbtyWorkOrder\XMLIN\" & sPlantCode & "\" & aSrcFiles(I).Name, True)
+                            'File.Delete(aSrcFiles(I).FullName)
+                            m_logger.WriteInformationLog(rtn & " :: " & aSrcFiles(I).FullName & " copied to " & "C:\NbtyWorkOrder\XMLIN\" & sPlantCode & "\" & aSrcFiles(I).Name)
 
-                    File.Copy(aSrcFiles(I).FullName, "C:\NbtyWorkOrder\XMLIN\" & sPlantCode & "\" & aSrcFiles(I).Name, True)
-                    'File.Delete(aSrcFiles(I).FullName)
-                    m_logger.WriteInformationLog(rtn & " :: " & aSrcFiles(I).FullName & " copied to " & "C:\NbtyWorkOrder\XMLIN\" & sPlantCode & "\" & aSrcFiles(I).Name)
-
+                        End If
+                    End If
                 Next
+                If Not bFound Then
+                    m_logger.WriteInformationLog(rtn & " :: No files to copy from " & dirInfo.FullName)
+                End If
             Else
                 m_logger.WriteInformationLog(rtn & " :: No files to copy from " & dirInfo.FullName)
             End If
@@ -337,6 +346,7 @@ Module Module1
                                             strAssetId = " "
                                             strIsaUnloadPt = " "
                                             strIsaWoStatus = " "
+                                            strIsaCustChrcd = " "
                                             strWhouseId = " "
                                             strWoDescr = " "
                                             strWoTypeId = " "
@@ -768,10 +778,10 @@ Module Module1
         email.Body &= "<table><tr><td>NbtyWrkOrdXmlIn has completed with "
         If bolWarning = True Then
             email.Body &= "warnings,"
-            email.Subject = " (TEST) NbtyWrkOrdXmlIn Warning"
+            email.Subject = "NbtyWrkOrdXmlIn Warning"
         Else
             email.Body &= "errors;"
-            email.Subject = " (TEST) NbtyWrkOrdXmlIn Error"
+            email.Subject = "NbtyWrkOrdXmlIn Error"
         End If
 
         'VR 12/18/2014 Adding file names and error descriptions in message body
