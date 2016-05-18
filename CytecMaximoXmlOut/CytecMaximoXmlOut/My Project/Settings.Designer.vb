@@ -92,7 +92,7 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("Cytec Maximo XMLOut Error")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("(TEST) Cytec Maximo XMLOut Error")>  _
         Public ReadOnly Property onError_emailSubject() As String
             Get
                 Return CType(Me("onError_emailSubject"),String)
@@ -123,6 +123,25 @@ Namespace My
         Public ReadOnly Property Url_Cytec_Maximo() As String
             Get
                 Return CType(Me("Url_Cytec_Maximo"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx")>  _
+        Public ReadOnly Property CytexMxmMatMastIn_SDiEmailUtilityService_EmailServices() As String
+            Get
+                Return CType(Me("CytexMxmMatMastIn_SDiEmailUtilityService_EmailServices"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.SpecialSettingAttribute(Global.System.Configuration.SpecialSetting.WebServiceUrl),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx")>  _
+        Public ReadOnly Property CytecMaximoXmlOut_SDiEmailUtilityService_EmailServices() As String
+            Get
+                Return CType(Me("CytecMaximoXmlOut_SDiEmailUtilityService_EmailServices"),String)
             End Get
         End Property
     End Class

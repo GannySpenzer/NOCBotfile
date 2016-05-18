@@ -257,73 +257,95 @@ Module Module1
 
         Try
             For I = 0 To aFiles.Length - 1
-                'objStreamWriter.WriteLine(" Start sending File " & aFiles(I).Name)
-                m_logger.WriteVerboseLog(" Start SENDING FILE " & aFiles(I).FullName)
-                sr = New System.IO.StreamReader(aFiles(I).FullName)
-                XMLContent = sr.ReadToEnd()
-                sr.Close()
+                Dim bProceed As Boolean = False
+                If Len(aFiles(I).Name) > Len("CytecMaxWriteIssuesOut") - 1 Then
+                    If aFiles(I).Name.StartsWith("CytecMaxWriteIssuesOut") Then
+                        bProceed = True
+                    End If
+                End If
+                If bProceed Then
 
-                Try
-                    xmlRequest.LoadXml(XMLContent)
-                Catch ex As Exception
-                    Console.WriteLine("")
-                    Console.WriteLine("***error - " & ex.ToString)
-                    Console.WriteLine("")
-                    strXMLError = ex.ToString
-                    m_logger.WriteErrorLog(rtn & " :: load out Error " & strXMLError & " in file " & aFiles(I).Name)
+                    m_logger.WriteVerboseLog(" Start SENDING FILE " & aFiles(I).FullName)
+                    sr = New System.IO.StreamReader(aFiles(I).FullName)
+                    XMLContent = sr.ReadToEnd()
+                    sr.Close()
 
-                End Try
-
-                Dim Response_Doc As String
-                If Trim(strXMLError) = "" Then
-
-                    Response_Doc = SendOut(xmlRequest.InnerXml)
-                    'Response_Doc = Send1(xmlRequest.InnerXml)
-
-
-                    '-----------------------------------------------------------------------
-                    ' Parse the XML response from Intercall Extranet
-                    '-----------------------------------------------------------------------
-
-                    Dim xmlResponse As New XmlDocument
                     Try
-                        If Trim(Response_Doc) = "" Then
-                            m_logger.WriteVerboseLog("     empty response from file " & aFiles(I).Name)
-                        Else
-                            m_logger.WriteVerboseLog(Response_Doc)
-                            xmlResponse.LoadXml(Response_Doc)
-                            ' error trapping code
-                            If Response_Doc.Contains("<soapenv:Fault>") Or Response_Doc.Contains("</faultcode>") Or _
-                                        Response_Doc.Contains("</faultstring>") Then
-                                bolError = True
-                                strXMLError = "<soapenv:Fault>"
-                            End If
-                        End If
+                        xmlRequest.LoadXml(XMLContent)
                     Catch ex As Exception
                         Console.WriteLine("")
                         Console.WriteLine("***error - " & ex.ToString)
                         Console.WriteLine("")
                         strXMLError = ex.ToString
-                        m_logger.WriteErrorLog(rtn & " ::Error: " & strXMLError & " in file " & aFiles(I).Name)
+                        m_logger.WriteErrorLog(rtn & " :: load out Error " & strXMLError & " in file " & aFiles(I).Name)
 
                     End Try
 
-                    '-----------------------------------------------------------------------
-                    ' Get server status
-                    '-----------------------------------------------------------------------
-
+                    Dim Response_Doc As String
                     If Trim(strXMLError) = "" Then
-                        Try
-                            File.Copy(aFiles(I).FullName, "C:\CytecMxmIn\XMLOUTProcessed\" & aFiles(I).Name, True)
-                            m_logger.WriteVerboseLog(" End - FILE " & aFiles(I).FullName & " has been moved")
-                            File.Delete(aFiles(I).FullName)
-                        Catch ex As Exception
 
-                            m_logger.WriteErrorLog(rtn & "  copy file Error " & strXMLError & " in file " & aFiles(I).Name)
-                            m_logger.WriteErrorLog(rtn & " :: " & ex.ToString)
+                        Response_Doc = SendOut(xmlRequest.InnerXml)
+                        'Response_Doc = Send1(xmlRequest.InnerXml)
+
+
+                        '-----------------------------------------------------------------------
+                        ' Parse the XML response from Intercall Extranet
+                        '-----------------------------------------------------------------------
+
+                        Dim xmlResponse As New XmlDocument
+                        Try
+                            If Trim(Response_Doc) = "" Then
+                                m_logger.WriteVerboseLog("     empty response from file " & aFiles(I).Name)
+                            Else
+                                m_logger.WriteVerboseLog(Response_Doc)
+                                xmlResponse.LoadXml(Response_Doc)
+                                ' error trapping code
+                                If Response_Doc.Contains("<soapenv:Fault>") Or Response_Doc.Contains("</faultcode>") Or _
+                                            Response_Doc.Contains("</faultstring>") Then
+                                    bolError = True
+                                    strXMLError = "<soapenv:Fault> - check response for: " & aFiles(I).Name
+                                End If
+                            End If
+                        Catch ex As Exception
+                            Console.WriteLine("")
+                            Console.WriteLine("***error - " & ex.ToString)
+                            Console.WriteLine("")
+                            strXMLError = ex.ToString
+                            m_logger.WriteErrorLog(rtn & " ::Error: " & strXMLError & " in file " & aFiles(I).Name)
 
                         End Try
-                    Else
+
+                        '-----------------------------------------------------------------------
+                        ' Get server status
+                        '-----------------------------------------------------------------------
+
+                        If Trim(strXMLError) = "" Then
+                            Try
+                                File.Copy(aFiles(I).FullName, "C:\CytecMxmIn\XMLOUTProcessed\" & aFiles(I).Name, True)
+                                m_logger.WriteVerboseLog(" End - FILE " & aFiles(I).FullName & " has been moved")
+                                File.Delete(aFiles(I).FullName)
+                            Catch ex As Exception
+
+                                m_logger.WriteErrorLog(rtn & "  copy file Error " & strXMLError & " in file " & aFiles(I).Name)
+                                m_logger.WriteErrorLog(rtn & " :: " & ex.ToString)
+
+                            End Try
+                        Else '  Trim(strXMLError) <> ""
+                            Try
+                                File.Copy(aFiles(I).FullName, "C:\CytecMxmIn\BadXML\" & aFiles(I).Name, True)
+                                m_logger.WriteVerboseLog("Error description: " & strXMLError)
+                                m_logger.WriteVerboseLog(" Error - FILE: " & aFiles(I).FullName & " - has been moved to BadXML directory")
+                                File.Delete(aFiles(I).FullName)
+                            Catch ex As Exception
+
+                                m_logger.WriteErrorLog(rtn & " ::  moved to BadXML directory file Error: " & strXMLError & " in file " & aFiles(I).Name)
+                                m_logger.WriteErrorLog(rtn & " :: " & ex.ToString)
+
+                            End Try
+                            bolError = True
+                        End If '  If Trim(strXMLError) = ""
+
+                    Else  '  Trim(strXMLError) <> ""
                         Try
                             File.Copy(aFiles(I).FullName, "C:\CytecMxmIn\BadXML\" & aFiles(I).Name, True)
                             m_logger.WriteVerboseLog(" Error - FILE: " & aFiles(I).FullName & " - has been moved to BadXML directory")
@@ -335,11 +357,11 @@ Module Module1
 
                         End Try
                         bolError = True
-                    End If
+                    End If  '  If Trim(strXMLError) = ""
 
-                End If
+                    strXMLError = ""
+                End If  '  If bProceed
 
-                strXMLError = ""
             Next
         Catch ex As Exception
             m_logger.WriteErrorLog(rtn & " ::Error " & strXMLError & " in file " & aFiles(I).Name)
@@ -589,16 +611,40 @@ Module Module1
 
         email.Body = "<html><body><table><tr><td>Cytec Maximo XML OUT has completed with errors, review log.</td></tr>"
 
+        email.Cc = ""
+
         'Send the email and handle any error that occurs
         Dim rtn As String = "SendEmail"
         Try
-            UpdEmailOut.UpdEmailOut.UpdEmailOut(email.Subject, email.From, email.To, "", "webdev@sdi.com", "Y", email.Body, connectOR)
+
+            'UpdEmailOut.UpdEmailOut.UpdEmailOut(email.Subject, email.From, email.To, "", "webdev@sdi.com", "Y", email.Body, connectOR)
+
+            SendLogger(email.Subject, email.Body, "CYTECISSUESXMLOUT", "Mail", email.To, email.Cc, "webdev@sdi.com")
+
         Catch ex As Exception
             'objStreamWriter.WriteLine("     Error - the email was not sent")
             m_logger.WriteErrorLog(rtn & " :: the email was not sent. Error: " & ex.Message.ToString)
 
         End Try
 
+    End Sub
+
+    Public Sub SendLogger(ByVal subject As String, ByVal body As String, ByVal messageType As String, ByVal MailType As String, ByVal EmailTo As String, ByVal EmailCc As String, ByVal EmailBcc As String)
+        Try
+            Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
+            Dim MailAttachmentName As String()
+            Dim MailAttachmentbytes As New List(Of Byte())()
+            'Dim objException As String
+            'Dim objExceptionTrace As String
+
+            'EmailTo = "vitaly.rovensky@sdi.com"
+            SDIEmailService.EmailUtilityServices(MailType, "SDIExchADMIN@sdi.com", EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
+
+            'UpdEmailOut.UpdEmailOut.UpdEmailOut(subject, "SDIExchADMIN@sdi.com", EmailTo, "", EmailBcc, "N", body, m_CN)
+
+        Catch ex As Exception
+
+        End Try
     End Sub
 
 End Module
