@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:int="http://www.mro.com/mx/integration"  xmlns:ns1="http://xml.apache.org/axis/">
+  <Header/>
+  <Body>
+    <MXINVBALInterface language="EN">
+      <int:Header operation="Notify">
+        <int:SenderID type="MAXIMO" majorversion="6" minorversion="2" build="198" dbbuild="V600-609">CY_HTTP</int:SenderID>
+        <int:CreationDateTime>{__TIMESTAMP}</int:CreationDateTime>
+        <int:RecipientID>string</int:RecipientID>
+        <int:MessageID>string</int:MessageID>
+      </int:Header>
+      <Content>
+      </Content>
+    </MXINVBALInterface>
+  </Body>
+</Envelope>
+
+
+
