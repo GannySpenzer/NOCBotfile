@@ -213,7 +213,8 @@ Module Module1
 
     End Sub
 
-    Private Function ProcessItemInterface(ByVal nodeMatMastReq As XmlNode, ByVal strFileName As String, ByRef bolError As Boolean) As String
+    Private Function ProcessItemInterface(ByVal nodeMatMastReq As XmlNode, ByVal strFileName As String, _
+                    ByVal dtCreationDateTime As DateTime, ByRef bolError As Boolean) As String
         Dim strXMLError As String = ""
         'Dim bolError As Boolean = False
         Dim rtn As String = "CytecMxmMatMast.ProcessItemInterface"
@@ -258,9 +259,11 @@ Module Module1
             Dim strSiteId As String = ""
             Dim strItemNum As String = ""
             Dim strCommodGrp As String = ""
+            Dim strFullCommodGrp As String = ""
             Dim strDescr1 As String = ""
             Dim strInvStockType As String = ""
             Dim strUOM As String = ""
+            Dim strFullUOM As String = ""
             Dim strUom_Po As String = ""
             Dim strIsaCustMfg As String = ""
             Dim strMfgItmId As String = ""
@@ -310,9 +313,11 @@ Module Module1
                                     strSiteId = ""
                                     strItemNum = ""
                                     strCommodGrp = ""
+                                    strFullCommodGrp = ""
                                     strDescr1 = ""
                                     strInvStockType = ""
                                     strUOM = ""
+                                    strFullUOM = ""
                                     strUom_Po = ""
                                     strIsaCustMfg = ""
                                     strMfgItmId = ""
@@ -398,7 +403,7 @@ Module Module1
                                                     strUom_Po = " "
                                                 End Try
 
-                                            Case "ISSUEUNIT"  '  DESCRIPTION
+                                            Case "ISSUEUNIT"
                                                 Try
                                                     strUOM = nodeItemMM.ChildNodes(iItemMM).InnerText
                                                     If Trim(strUOM) = "" Then
@@ -411,6 +416,20 @@ Module Module1
                                                     End If
                                                 Catch ex As Exception
                                                     strUOM = " "
+                                                End Try
+
+                                                Try
+                                                    strFullUOM = nodeItemMM.ChildNodes(iItemMM).InnerText
+                                                    If Trim(strFullUOM) = "" Then
+                                                        strFullUOM = " "
+                                                    Else
+                                                        strFullUOM = Trim(strFullUOM)
+                                                    End If
+                                                    If Len(Trim(strFullUOM)) > 10 Then
+                                                        strFullUOM = Microsoft.VisualBasic.Left(strFullUOM, 10)
+                                                    End If
+                                                Catch ex As Exception
+                                                    strFullUOM = " "
                                                 End Try
 
                                             Case "DESCRIPTION"
@@ -443,10 +462,24 @@ Module Module1
                                                     strCommodGrp = " "
                                                 End Try
 
+                                                Try
+                                                    strFullCommodGrp = nodeItemMM.ChildNodes(iItemMM).InnerText
+                                                    If Trim(strFullCommodGrp) = "" Then
+                                                        strFullCommodGrp = " "
+                                                    Else
+                                                        strFullCommodGrp = Trim(strFullCommodGrp)
+                                                    End If
+                                                    If Len(Trim(strFullCommodGrp)) > 40 Then
+                                                        strFullCommodGrp = Microsoft.VisualBasic.Left(strFullCommodGrp, 40)
+                                                    End If
+                                                Catch ex As Exception
+                                                    strFullCommodGrp = " "
+                                                End Try
+
                                             Case Else
                                                 'do nothing
                                         End Select
-                                       
+
 
                                     Next  ' every node in <ITEM>  ' For iItemMM = 0 To nodeItemMM.ChildNodes.Count - 1
 
@@ -467,12 +500,12 @@ Module Module1
                                     Dim rowsaffected As Integer = 0
                                     Dim strSQLstring As String = ""
                                     If Trim(strItemNum) <> "" And Trim(strSiteId) <> "" Then
-                                        strSQLstring = "INSERT INTO SYSADM8.PS_ISA_MXM_ITEM_IN (CUST_ID,PLANT,ISA_ITEM,INV_ITEM_ID,DT_TIMESTAMP,CATEGORY_ID,IM_CFFT,EFF_STATUS" & vbCrLf & _
-                                            ",INV_STOCK_TYPE,ISA_CUSTOMER_MFG,MFG_ITM_ID,UNIT_OF_MEASURE,UOM_PO,PREFERRED_MFG,ISA_BIN_ID,REORDER_POINT" & vbCrLf & _
+                                        strSQLstring = "INSERT INTO SYSADM8.PS_ISA_MXM_ITEM_IN (CUST_ID,PLANT,ISA_ITEM,INV_ITEM_ID,DT_TIMESTAMP,CATEGORY_ID,ISA_CUSTOMER_CAT,IM_CFFT,EFF_STATUS" & vbCrLf & _
+                                            ",INV_STOCK_TYPE,ISA_CUSTOMER_MFG,MFG_ITM_ID,UNIT_OF_MEASURE,ISA_CUSTOMER_UOM,UOM_PO,PREFERRED_MFG,ISA_BIN_ID,REORDER_POINT" & vbCrLf & _
                                             ",QTY_MAXIMUM,REORDER_QTY,STANDARD_COST,STD_LEAD,UTILIZ_CD,CLIENT_CRIT_SPARE,ISA_ITEM_NOTES,INV_ITEM_TYPE" & vbCrLf & _
                                             ",TAX_FLAG,STORAGE_AREA,PROCESS_FLAG,PROCESS_INSTANCE,DATE_PROCESSED,COMMENTS_2000,INTFC_REC_TYPE) " & vbCrLf & _
-                                            "VALUES('" & strCustId & "','" & strSiteId & "','" & strItemNum & "','" & strInvItemId & "',CURRENT_TIMESTAMP,'" & strCommodGrp & "','" & strDescr1 & "','A'" & vbCrLf & _
-                                            ",'" & strInvStockType & "','" & strIsaCustMfg & "','" & strMfgItmId & "','" & strUOM & "','" & strUom_Po & "','Y','" & strIsaBinId & "'," & decReorderPoint & "" & vbCrLf & _
+                                            "VALUES('" & strCustId & "','" & strSiteId & "','" & strItemNum & "','" & strInvItemId & "',TO_TIMESTAMP('" & dtCreationDateTime.ToString("MM/dd/yyyy hh:mm:ss:ff5 tt") & "', 'MM/DD/YYYY HH:MI:SS:ff5 AM'),'" & strCommodGrp & "','" & strFullCommodGrp & "','" & strDescr1 & "','A'" & vbCrLf & _
+                                            ",'" & strInvStockType & "','" & strIsaCustMfg & "','" & strMfgItmId & "','" & strUOM & "','" & strFullUOM & "','" & strUom_Po & "','Y','" & strIsaBinId & "'," & decReorderPoint & "" & vbCrLf & _
                                             "," & decQtyMax & "," & decReorderQty & "," & decStdCost & "," & intStdLead & ",' ',' ',' ','" & strInvItemType & "'" & vbCrLf & _
                                             ",' ','" & strStorArea & "','N',0,NULL,'" & strComments2000 & "','ITEM')"
 
@@ -506,7 +539,8 @@ Module Module1
 
     End Function
 
-    Private Function ProcessInventoryInterface(ByVal nodeMatMastReq As XmlNode, ByVal strFileName As String, ByRef bolError As Boolean) As String
+    Private Function ProcessInventoryInterface(ByVal nodeMatMastReq As XmlNode, ByVal strFileName As String, _
+                    ByVal dtCreationDateTime As DateTime, ByRef bolError As Boolean) As String
         Dim strXMLError As String = ""
         'Dim bolError As Boolean = False
         Dim rtn As String = "CytecMxmMatMast.ProcessInventoryInterface"
@@ -551,9 +585,11 @@ Module Module1
             Dim strSiteId As String = ""
             Dim strItemNum As String = ""
             Dim strCommodGrp As String = ""
+            Dim strFullCommodGrp As String = ""
             Dim strDescr1 As String = ""
             Dim strInvStockType As String = ""
             Dim strUOM As String = ""
+            Dim strFullUOM As String = ""
             Dim strUom_Po As String = ""
             Dim strIsaCustMfg As String = ""
             Dim strMfgItmId As String = ""
@@ -603,9 +639,11 @@ Module Module1
                                     strSiteId = ""
                                     strItemNum = ""
                                     strCommodGrp = ""
+                                    strFullCommodGrp = ""
                                     strDescr1 = ""
                                     strInvStockType = ""
                                     strUOM = ""
+                                    strFullUOM = ""
                                     strUom_Po = ""
                                     strIsaCustMfg = ""
                                     strMfgItmId = ""
@@ -844,7 +882,21 @@ Module Module1
                                                     strUOM = " "
                                                 End Try
 
-                                            Case "SITEID" ' 
+                                                Try
+                                                    strFullUOM = nodeItemMM.ChildNodes(iItemMM).InnerText
+                                                    If Trim(strFullUOM) = "" Then
+                                                        strFullUOM = " "
+                                                    Else
+                                                        strFullUOM = Trim(strFullUOM)
+                                                    End If
+                                                    If Len(Trim(strFullUOM)) > 10 Then
+                                                        strFullUOM = Microsoft.VisualBasic.Left(strFullUOM, 10)
+                                                    End If
+                                                Catch ex As Exception
+                                                    strFullUOM = " "
+                                                End Try
+
+                                            Case "SITEID"
                                                 Try
                                                     strSiteId = nodeItemMM.ChildNodes(iItemMM).InnerText
                                                     If Trim(strSiteId) = "" Then
@@ -862,7 +914,7 @@ Module Module1
                                             Case Else
                                                 'do nothing
                                         End Select
-                                        
+
                                     Next  ' every node in <INVENTORY>  ' For iItemMM = 0 To nodeItemMM.ChildNodes.Count - 1
 
                                     ' defaults - values not in INVENTORY interface
@@ -870,17 +922,18 @@ Module Module1
                                     strInvItemType = " "
                                     strDescr1 = " "
                                     strCommodGrp = " "
+                                    strFullCommodGrp = " "
 
                                     'collected all info - starting insert
                                     Dim rowsaffected As Integer = 0
                                     Dim strSQLstring As String = ""
                                     If Trim(strItemNum) <> "" And Trim(strSiteId) <> "" Then
-                                        strSQLstring = "INSERT INTO SYSADM8.PS_ISA_MXM_ITEM_IN (CUST_ID,PLANT,ISA_ITEM,INV_ITEM_ID,DT_TIMESTAMP,CATEGORY_ID,IM_CFFT,EFF_STATUS" & vbCrLf & _
-                                            ",INV_STOCK_TYPE,ISA_CUSTOMER_MFG,MFG_ITM_ID,UNIT_OF_MEASURE,UOM_PO,PREFERRED_MFG,ISA_BIN_ID,REORDER_POINT" & vbCrLf & _
+                                        strSQLstring = "INSERT INTO SYSADM8.PS_ISA_MXM_ITEM_IN (CUST_ID,PLANT,ISA_ITEM,INV_ITEM_ID,DT_TIMESTAMP,CATEGORY_ID,ISA_CUSTOMER_CAT,IM_CFFT,EFF_STATUS" & vbCrLf & _
+                                            ",INV_STOCK_TYPE,ISA_CUSTOMER_MFG,MFG_ITM_ID,UNIT_OF_MEASURE,ISA_CUSTOMER_UOM,UOM_PO,PREFERRED_MFG,ISA_BIN_ID,REORDER_POINT" & vbCrLf & _
                                             ",QTY_MAXIMUM,REORDER_QTY,STANDARD_COST,STD_LEAD,UTILIZ_CD,CLIENT_CRIT_SPARE,ISA_ITEM_NOTES,INV_ITEM_TYPE" & vbCrLf & _
                                             ",TAX_FLAG,STORAGE_AREA,PROCESS_FLAG,PROCESS_INSTANCE,DATE_PROCESSED,COMMENTS_2000,INTFC_REC_TYPE) " & vbCrLf & _
-                                            "VALUES('" & strCustId & "','" & strSiteId & "','" & strItemNum & "','" & strInvItemId & "',CURRENT_TIMESTAMP,'" & strCommodGrp & "','" & strDescr1 & "','A'" & vbCrLf & _
-                                            ",'" & strInvStockType & "','" & strIsaCustMfg & "','" & strMfgItmId & "','" & strUOM & "','" & strUom_Po & "','Y','" & strIsaBinId & "'," & decReorderPoint & "" & vbCrLf & _
+                                            "VALUES('" & strCustId & "','" & strSiteId & "','" & strItemNum & "','" & strInvItemId & "',TO_TIMESTAMP('" & dtCreationDateTime.ToString("MM/dd/yyyy hh:mm:ss:ff5 tt") & "', 'MM/DD/YYYY HH:MI:SS:ff5 AM'),'" & strCommodGrp & "','" & strFullCommodGrp & "','" & strDescr1 & "','A'" & vbCrLf & _
+                                            ",'" & strInvStockType & "','" & strIsaCustMfg & "','" & strMfgItmId & "','" & strUOM & "','" & strFullUOM & "','" & strUom_Po & "','Y','" & strIsaBinId & "'," & decReorderPoint & "" & vbCrLf & _
                                             "," & decQtyMax & "," & decReorderQty & "," & decStdCost & "," & intStdLead & ",' ',' ',' ','" & strInvItemType & "'" & vbCrLf & _
                                             ",' ','" & strStorArea & "','N',0,NULL,'" & strComments2000 & "','INVENTORY')"
 
@@ -899,7 +952,7 @@ Module Module1
 
                                     Else
                                         'empty line
-                                        myLoggr1.WriteErrorLog(rtn & " :: Error: fields PLANT,ISA_ITEM are empty for the file: " & strFileName & " and item number (0 based): " & iCnt.ToString())
+                                        myLoggr1.WriteErrorLog(rtn & " :: Error: one of the fields PLANT,ISA_ITEM is empty for the file: " & strFileName & " and item number (0 based): " & iCnt.ToString())
                                     End If
                                 End If
                             End If
@@ -947,6 +1000,7 @@ Module Module1
                 For I = 0 To aFiles.Length - 1
                     sXMLFilename = aFiles(I).Name
                     bLineError = False
+                    bolError = False
                     strXMLError = ""
                     m_logger.WriteInformationLog(rtn & " :: Start File " & aFiles(I).Name)
                     'here where we load the xml into memory
@@ -967,7 +1021,7 @@ Module Module1
                         bolError = True
                         bLineError = True
                         Try
-                            File.Move(aFiles(I).FullName, "C:\INTFCXML\BadXML\" & aFiles(I).Name)
+                            File.Move(aFiles(I).FullName, "C:\CytecMxmIn\BadXML\" & aFiles(I).Name)
                             File.Delete(aFiles(I).FullName)
                         Catch ex24 As Exception
                             myLoggr1.WriteErrorLog(rtn & " :: ** ")
@@ -982,6 +1036,10 @@ Module Module1
 
                     '    <value>C:\inetpub\wwwroot\SDIWebIn\SDIWebProcessorsXMLFiles</value>
 
+                    Dim strCreationDateTime As String = ""
+                    Dim strHeaderChildNodeName As String = ""
+                    Dim dtCreationDateTime As DateTime = Now()
+
                     If Trim(strXMLError) = "" Then
                         root = xmlRequest.DocumentElement
 
@@ -994,6 +1052,37 @@ Module Module1
                         End If
 
                         If Trim(strXMLError) = "" Then
+                            'get CreationDateTime
+                            Dim nodeHeader As XmlNode = root.FirstChild()
+                            Dim intHeader As Integer = 0
+                            If nodeHeader.ChildNodes.Count > 0 Then
+                                For intHeader = 0 To nodeHeader.ChildNodes.Count - 1
+                                    strHeaderChildNodeName = UCase(nodeHeader.ChildNodes(intHeader).Name)
+                                    Select Case strHeaderChildNodeName
+                                        Case "CREATIONDATETIME"
+                                            strCreationDateTime = nodeHeader.ChildNodes(intHeader).InnerText
+                                        Case Else
+                                            'do nothing
+                                    End Select
+                                    If Trim(strCreationDateTime) <> "" Then
+                                        strCreationDateTime = Trim(strCreationDateTime)
+                                        Exit For
+                                    End If
+                                Next
+
+                                If Trim(strCreationDateTime) <> "" Then
+                                    'convert to DateTime
+                                    If IsDate(strCreationDateTime) Then
+                                        dtCreationDateTime = CType(strCreationDateTime, DateTime)
+                                        'Dim strDate As String = ""
+                                        'Dim strTime As String = ""
+                                        'strDate = dtCreationDateTime.ToLongDateString()
+                                        'strTime = dtCreationDateTime.ToLongTimeString()
+                                    End If
+                                End If
+
+                            End If ' If nodeHeader.ChildNodes.Count > 0 Then
+
                             Dim strInterfaceType As String = UCase(xmlRequest.ChildNodes(1).Name())
                             '  MXINVENTORYInterface MXINVENTORYINTERFACE
                             '  MXITEMInterface MXITEMINTERFACE
@@ -1002,9 +1091,9 @@ Module Module1
                             Dim nodeMatMastReq As XmlNode = root.LastChild()
                             Select Case strInterfaceType
                                 Case "MXITEMINTERFACE"
-                                    strXMLError = ProcessItemInterface(nodeMatMastReq, aFiles(I).Name, bolError)
+                                    strXMLError = ProcessItemInterface(nodeMatMastReq, aFiles(I).Name, dtCreationDateTime, bolError)
                                 Case "MXINVENTORYINTERFACE"
-                                    strXMLError = ProcessInventoryInterface(nodeMatMastReq, aFiles(I).Name, bolError)
+                                    strXMLError = ProcessInventoryInterface(nodeMatMastReq, aFiles(I).Name, dtCreationDateTime, bolError)
                                 Case Else
                                     strXMLError = "Unknown Interface type: " & strInterfaceType
                             End Select
@@ -1052,6 +1141,7 @@ Module Module1
             End If  '  aFiles.Length > 0
 
         Catch ex As Exception
+            strXMLError = ex.ToString()
             If Trim(m_arrXMLErrFiles) = "" Then
                 m_arrXMLErrFiles = aFiles(I).Name
             Else
