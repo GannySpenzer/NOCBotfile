@@ -220,7 +220,7 @@ Module Module1
                         Dim nodeItem As XmlNode = nodeOrder.AppendChild(docXML.CreateElement(name:="int:INVBALANCES"))
                         ' add attribute: action="Add"
                         attrib = nodeItem.Attributes.Append(docXML.CreateAttribute(name:="action"))
-                        attrib.Value = "AddChange"
+                        attrib.Value = ""  '   "AddChange"
 
                         'build actual elements based on ds rows
 
@@ -310,7 +310,7 @@ Module Module1
 
                 Dim strOuterXml As String = docXML.OuterXml
                 strOuterXml = Replace(strOuterXml, "<Envelope", "<soapenv:Envelope")
-                strOuterXml = Replace(strOuterXml, "<Header />", "<soapenv:Header/>")
+                'strOuterXml = Replace(strOuterXml, "<Header />", "<soapenv:Header />")
                 strOuterXml = Replace(strOuterXml, "<Body>", "<soapenv:Body>")
                 strOuterXml = Replace(strOuterXml, "<MXINVBALInterface", "<int:MXINVBALInterface")
                 strOuterXml = Replace(strOuterXml, "<Content>", "<int:Content>")
@@ -318,8 +318,8 @@ Module Module1
                 strOuterXml = Replace(strOuterXml, "<INVBALANCES", "<int:INVBALANCES")
                 strOuterXml = Replace(strOuterXml, "<ITEMNUM", "<int:ITEMNUM")
                 strOuterXml = Replace(strOuterXml, "</ITEMNUM>", "</int:ITEMNUM>")
-                strOuterXml = Replace(strOuterXml, "<STORELOC", "<int:STORELOC")
-                strOuterXml = Replace(strOuterXml, "</STORELOC>", "</int:STORELOC>")
+                strOuterXml = Replace(strOuterXml, "<LOCATION", "<int:LOCATION")
+                strOuterXml = Replace(strOuterXml, "</LOCATION>", "</int:LOCATION>")
                 strOuterXml = Replace(strOuterXml, "<BINNUM", "<int:BINNUM")
                 strOuterXml = Replace(strOuterXml, "</BINNUM>", "</int:BINNUM>")
                 strOuterXml = Replace(strOuterXml, "<CURBAL", "<int:CURBAL")
