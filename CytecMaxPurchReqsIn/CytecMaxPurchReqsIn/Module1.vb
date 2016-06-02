@@ -463,6 +463,10 @@ Module Module1
             arrEnteredBy(0) = ""
             Dim arrEnteredDate(0) As DateTime
             arrEnteredDate(0) = Nothing
+            Dim arrMrNum(0) As String
+            arrMrNum(0) = ""
+            Dim arrMrLineNum(0) As Integer
+            arrMrLineNum(0) = 0
 
             Dim iCnt As Integer = 0
             For iCnt = 0 To nodeStkReservReq.ChildNodes.Count - 1
@@ -523,6 +527,10 @@ Module Module1
                                     arrEnteredBy(0) = ""
                                     ReDim arrEnteredDate(0)
                                     arrEnteredDate(0) = Nothing
+                                    ReDim arrMrNum(0)
+                                    arrMrNum(0) = ""
+                                    ReDim arrMrLineNum(0)
+                                    arrMrLineNum(0) = 0
 
                                     Dim iItemMM As Integer = 0
                                     Dim strNodeName As String = ""
@@ -1006,7 +1014,45 @@ Module Module1
                                                                 End Try
                                                                 arrEnteredDate(iNumOfPrlineNodes - 1) = dtNodeInnerText
 
-                                                                'Case ""
+                                                            Case "MRNUM"  '  strMrNum  '  ISA_REQUEST_ID ' 10
+                                                                If iNumOfPrlineNodes > 1 Then
+                                                                    ReDim Preserve arrMrNum(iNumOfPrlineNodes - 1)
+                                                                End If
+                                                                Try
+                                                                    strNodeInnerText = nodePrline.ChildNodes(iPrline).InnerText
+                                                                    If Trim(strNodeInnerText) = "" Then
+                                                                        strNodeInnerText = " "
+                                                                    Else
+                                                                        strNodeInnerText = Trim(strNodeInnerText)
+                                                                    End If
+                                                                    If Len(Trim(strNodeInnerText)) > 10 Then
+                                                                        strNodeInnerText = Microsoft.VisualBasic.Left(strNodeInnerText, 10)
+                                                                    End If
+                                                                Catch ex As Exception
+                                                                    strNodeInnerText = " "
+                                                                End Try
+                                                                arrMrNum(iNumOfPrlineNodes - 1) = strNodeInnerText
+
+                                                            Case "MRLINENUM"    '  ISA_REQUEST_LN_NBR  '  Int 0
+                                                                If iNumOfPrlineNodes > 1 Then
+                                                                    ReDim Preserve arrMrLineNum(iNumOfPrlineNodes - 1)
+                                                                End If
+                                                                Try
+                                                                    strNodeInnerText = nodePrline.ChildNodes(iPrline).InnerText
+                                                                    If Trim(strNodeInnerText) = "" Then
+                                                                        intNodeInnerText = 0
+                                                                    Else
+                                                                        strNodeInnerText = Trim(strNodeInnerText)
+                                                                        If IsNumeric(strNodeInnerText) Then
+                                                                            intNodeInnerText = CType(strNodeInnerText, Integer)
+                                                                        Else
+                                                                            intNodeInnerText = 0
+                                                                        End If
+                                                                    End If
+                                                                Catch ex As Exception
+                                                                    intNodeInnerText = 0
+                                                                End Try
+                                                                arrMrLineNum(iNumOfPrlineNodes - 1) = intNodeInnerText
 
                                                             Case Else
                                                                 'do nothing
@@ -1029,17 +1075,17 @@ Module Module1
                                             strSQLstring = "INSERT INTO SYSADM8.PS_ISA_MXM_REQ_IN (CUST_ID,PLANT,ISA_ITEM,INV_ITEM_ID," & vbCrLf & _
                                                 "PROCESS_INSTANCE,PROCESS_FLAG,PROCESS_DTTM,DTTM_CREATED,REQ_ID,REQ_LINE_NBR," & vbCrLf & _
                                                 "ISA_CUST_REQ,ISA_REQ_LINE_NBR,ISA_WORK_ORDER_NO,REQ_STATUS,WORK_ORDER_TYPE," & vbCrLf & _
-                                                "ISA_CUST_PRIORITY,ACTIVITY_ID,UNIT_OF_MEASURE,DUE_DATE," & vbCrLf & _
+                                                "ISA_CUST_PRIORITY,ACTIVITY_ID,UNIT_OF_MEASURE,ISA_CUSTOMER_UOM,DUE_DATE," & vbCrLf & _
                                                 "ISA_UNLOADING_PT,QTY_REQUESTED,EMPLID,ISA_MACHINE_NO,DESCR254_MIXED," & vbCrLf & _
                                                 "ISA_CUST_CHARGE_CD,BUYER_ID,ORD_HDR_NOTE,SHIPTO_ATTN_TO,REQUESTOR_ID," & vbCrLf & _
                                                 "STATUS_DT," & vbCrLf & _
                                                 "ISA_MFG_FREEFORM,MFG_ITM_ID,PRICE_REQ,ENTERED_BY," & vbCrLf & _
                                                 "ENTERED_DT,INTFC_REC_TYPE" & vbCrLf & _
-                                                ") " & vbCrLf & _
+                                                ",ISA_REQUEST_ID,ISA_REQUEST_LN_NBR) " & vbCrLf & _
                                                 "VALUES ('" & strCustId & "','" & strSiteId & "','" & arrIsaItem(iCnt1) & "','" & strInvItemId & "'," & vbCrLf & _
                                                 "0,'N',NULL,TO_DATE('" & dtCreationDateTime & "', 'MM/DD/YYYY HH:MI:SS AM'),' ',0," & vbCrLf & _
                                                 "'" & strIsaCustReq & "','" & arrIsaReqLineNum(iCnt1) & "','" & arrIsaWorkOrdNum(iCnt1) & "','" & strReqStatus & "',' '," & vbCrLf & _
-                                                "'" & strIsaCustPriority & "',' ','" & arrUOM(iCnt1) & "'," & vbCrLf
+                                                "'" & strIsaCustPriority & "',' ',' ','" & arrUOM(iCnt1) & "'," & vbCrLf
                                             If arrDueDate(iCnt1) = Nothing Then
                                                 strSQLstring = strSQLstring & "NULL,"
                                             Else
@@ -1062,17 +1108,19 @@ Module Module1
                                             End If
                                             strSQLstring = strSQLstring & "" & vbCrLf & _
                                             "'" & arrIntfcType(iCnt1) & "'" & vbCrLf & _
-                                            ")"
+                                            ",'" & arrMrNum(iCnt1) & "'," & arrMrLineNum(iCnt1) & ")"
 
                                             Try
                                                 rowsaffected = ORDBAccess.ExecNonQuery(strSQLstring, connectOR)
                                                 If rowsaffected = 0 Then
                                                     myLoggr1.WriteErrorLog(rtn & " :: Error while inserting: 'rowsaffected = 0' for the file: " & strFileName & " and item number (0 based): " & iCnt.ToString())
+                                                    strXMLError = rtn & " :: Error while inserting: 'rowsaffected = 0' for the file: " & strFileName & " and item number (0 based): " & iCnt.ToString()
                                                     myLoggr1.WriteInformationLog(rtn & " :: SQL String: " & strSQLstring)
                                                     bolError = True
                                                 End If
                                             Catch ex As Exception
                                                 myLoggr1.WriteErrorLog(rtn & " :: Error inserting: " & ex.Message & " for the file: " & strFileName & " and item number (0 based): " & iCnt.ToString())
+                                                strXMLError = rtn & " :: Error inserting: " & ex.Message & " for the file: " & strFileName & " and item number (0 based): " & iCnt.ToString()
                                                 myLoggr1.WriteInformationLog(rtn & " :: SQL String: " & strSQLstring)
                                                 bolError = True
                                             End Try
@@ -1131,7 +1179,7 @@ Module Module1
 
         email.Body = ""
         email.Body &= "<html><body><img src='https://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' />"
-        email.Body &= "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI, Inc</span></center><center><span >CytecMxmMatMast Error</span></center>&nbsp;&nbsp;"
+        email.Body &= "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI, Inc</span></center><center><span >CytecMxmPurchReqsIn Error</span></center>&nbsp;&nbsp;"
 
         email.Body &= "<table><tr><td>CytecMxmPurchOrders has completed with "
         If bolWarning = True Then
