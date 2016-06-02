@@ -233,6 +233,9 @@ Module Module1
             Dim strUnloadingPoint As String = ""
             Dim strEnteredDate As String = ""
             Dim dtEnteredDate As DateTime
+            Dim strMrNum As String = ""
+            Dim strMrReqLineNum As String = ""
+            Dim intMrReqLineNum As Integer = 0
 
             Dim iCnt As Integer = 0
             For iCnt = 0 To nodeStkReservReq.ChildNodes.Count - 1
@@ -263,6 +266,8 @@ Module Module1
                                     strUnloadingPoint = ""
                                     strEnteredDate = ""
                                     dtEnteredDate = Nothing
+                                    strMrNum = ""
+                                    intMrReqLineNum = 0
 
                                     Dim iItemMM As Integer = 0
                                     Dim strNodeName As String = ""
@@ -437,6 +442,37 @@ Module Module1
                                                     dtEnteredDate = Nothing
                                                 End Try
 
+                                            Case "MRNUM"  '  strMrNum  '  ISA_REQUEST_ID ' 10
+                                                Try
+                                                    strMrNum = nodeItemMM.ChildNodes(iItemMM).InnerText
+                                                    If Trim(strMrNum) = "" Then
+                                                        strMrNum = " "
+                                                    Else
+                                                        strMrNum = Trim(strMrNum)
+                                                    End If
+                                                    If Len(Trim(strMrNum)) > 10 Then
+                                                        strMrNum = Microsoft.VisualBasic.Left(strMrNum, 10)
+                                                    End If
+                                                Catch ex As Exception
+                                                    strMrNum = " "
+                                                End Try
+
+                                            Case "MRLINENUM"    '  ISA_REQUEST_LN_NBR  '  Int 0
+                                                Try  '  strMrReqLineNum
+                                                    strMrReqLineNum = nodeItemMM.ChildNodes(iItemMM).InnerText
+                                                    If Trim(strMrReqLineNum) = "" Then
+                                                        intMrReqLineNum = 0
+                                                    Else
+                                                        strMrReqLineNum = Trim(strMrReqLineNum)
+                                                        If IsNumeric(strMrReqLineNum) Then
+                                                            intMrReqLineNum = CType(strMrReqLineNum, Integer)
+                                                        Else
+                                                            intMrReqLineNum = 0
+                                                        End If
+                                                    End If
+                                                Catch ex As Exception
+                                                    intMrReqLineNum = 0
+                                                End Try
                                             Case Else
                                                 'do nothing
                                         End Select
@@ -455,7 +491,7 @@ Module Module1
                                     strSQLstring = "insert into SYSADM8.PS_ISA_MXM_RSV_IN (CUST_ID,PLANT,ISA_ITEM,INV_ITEM_ID,PROCESS_INSTANCE,PROCESS_FLAG,PROCESS_DTTM,DTTM_CREATED,"
                                     strSQLstring = strSQLstring & "ORDER_NO,ORDER_INT_LINE_NO,ISA_WORK_ORDER_NO,ORDER_REF,WORK_ORDER_STATUS,"
                                     strSQLstring = strSQLstring & "PRIORITY,WORK_ORDER_TYPE,ACTIVITY_ID,DUE_DT,SHIPTO_ATTN_TO,QTY_REQUESTED,"
-                                    strSQLstring = strSQLstring & "EMPLID,ISA_MACHINE_NO,ISA_UNLOADING_PT,ENTERED_DT,INTFC_REC_TYPE) VALUES ("
+                                    strSQLstring = strSQLstring & "EMPLID,ISA_MACHINE_NO,ISA_UNLOADING_PT,ENTERED_DT,INTFC_REC_TYPE,ISA_REQUEST_ID,ISA_REQUEST_LN_NBR) VALUES ("
                                     strSQLstring = strSQLstring & "'" & strCustId & "','" & strSiteId & "','" & strInvItemId & "','" & strIsaItem & "'," & decProcInstnce & ",'" & strProcessedFlag & "',NULL,TO_DATE('" & dtCreationDateTime & "', 'MM/DD/YYYY HH:MI:SS AM'),"
                                     strSQLstring = strSQLstring & "'" & strOrderNo & "'," & intOrderLineNo & ",'" & strWorkOrderNum & "','" & strReqstOrderRef & "','" & strWorkOrderStatus & "',"
                                     strSQLstring = strSQLstring & "" & intWoPrior & ",'" & strWoType & "','" & strActivityId & "',"
@@ -471,7 +507,7 @@ Module Module1
                                     Else
                                         strSQLstring = strSQLstring & "TO_DATE('" & dtEnteredDate & "', 'MM/DD/YYYY HH:MI:SS AM'),"
                                     End If
-                                    strSQLstring = strSQLstring & "'INVRESERVE')"
+                                    strSQLstring = strSQLstring & "'INVRESERVE','" & strMrNum & "'," & intMrReqLineNum & ")"
 
                                     If Trim(strInvItemId) <> "" And Trim(strSiteId) <> "" And decQtyReqst > 0 Then
                                         Try
@@ -518,6 +554,8 @@ Module Module1
         Dim decProcInstnce As Decimal = 0  '  PROCESS_INSTANCE
         Dim strOrderNo As String = " "
         Dim intOrderLineNo As Integer = 0
+        Dim strMrNum As String = ""
+        Dim intMrReqLineNum As Integer = 0
 
         If nodeStkReservReq.ChildNodes.Count > 0 Then
             Dim strWorkOrderNum As String = ""
@@ -648,7 +686,7 @@ Module Module1
                                                 End Try
 
                                             Case "TASKID"  '  ACTIVITY_ID  ' 15
-                                                Try  '  strActivityId
+                                                Try
                                                     strActivityId = nodeItemMM.ChildNodes(iItemMM).InnerText
                                                     If Trim(strActivityId) = "" Then
                                                         strActivityId = " "
@@ -661,8 +699,6 @@ Module Module1
                                                 Catch ex As Exception
                                                     strActivityId = " "
                                                 End Try
-
-                                            Case ""
 
                                             Case ""
 
@@ -682,6 +718,8 @@ Module Module1
                                     strUnloadingPoint = " "
                                     dtEnteredDate = Nothing
                                     strIsaItem = " "
+                                    strMrNum = " "  '  ISA_REQUEST_ID ' 10
+                                    intMrReqLineNum = 0  '  ISA_REQUEST_LN_NBR  '  Int 0
 
                                     'collected all info - starting insert
                                     Dim rowsaffected As Integer = 0
@@ -689,7 +727,7 @@ Module Module1
                                     strSQLstring = "insert into SYSADM8.PS_ISA_MXM_RSV_IN (CUST_ID,PLANT,ISA_ITEM,INV_ITEM_ID,PROCESS_INSTANCE,PROCESS_FLAG,PROCESS_DTTM,DTTM_CREATED,"
                                     strSQLstring = strSQLstring & "ORDER_NO,ORDER_INT_LINE_NO,ISA_WORK_ORDER_NO,ORDER_REF,WORK_ORDER_STATUS,"
                                     strSQLstring = strSQLstring & "PRIORITY,WORK_ORDER_TYPE,ACTIVITY_ID,DUE_DT,SHIPTO_ATTN_TO,QTY_REQUESTED,"
-                                    strSQLstring = strSQLstring & "EMPLID,ISA_MACHINE_NO,ISA_UNLOADING_PT,ENTERED_DT,INTFC_REC_TYPE) VALUES ("
+                                    strSQLstring = strSQLstring & "EMPLID,ISA_MACHINE_NO,ISA_UNLOADING_PT,ENTERED_DT,INTFC_REC_TYPE,ISA_REQUEST_ID,ISA_REQUEST_LN_NBR) VALUES ("
                                     strSQLstring = strSQLstring & "'" & strCustId & "','" & strSiteId & "','" & strInvItemId & "','" & strIsaItem & "'," & decProcInstnce & ",'" & strProcessedFlag & "',NULL,TO_DATE('" & dtCreationDateTime & "', 'MM/DD/YYYY HH:MI:SS AM'),"
                                     strSQLstring = strSQLstring & "'" & strOrderNo & "'," & intOrderLineNo & ",'" & strWorkOrderNum & "','" & strReqstOrderRef & "','" & strWorkOrderStatus & "',"
                                     strSQLstring = strSQLstring & "" & intWoPrior & ",'" & strWoType & "','" & strActivityId & "',"
@@ -705,7 +743,7 @@ Module Module1
                                     Else
                                         strSQLstring = strSQLstring & "TO_DATE('" & dtEnteredDate & "', 'MM/DD/YYYY HH:MI:SS AM'),"
                                     End If
-                                    strSQLstring = strSQLstring & "'WORKORDER')"
+                                    strSQLstring = strSQLstring & "'WORKORDER','" & strMrNum & "'," & intMrReqLineNum & ")"
 
                                     If Trim(strWorkOrderNum) <> "" And Trim(strSiteId) <> "" Then
                                         Try
