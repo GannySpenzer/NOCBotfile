@@ -236,6 +236,7 @@ Module Module1
             Dim strMrNum As String = ""
             Dim strMrReqLineNum As String = ""
             Dim intMrReqLineNum As Integer = 0
+            Dim strNodeValue As String = ""
 
             Dim iCnt As Integer = 0
             For iCnt = 0 To nodeStkReservReq.ChildNodes.Count - 1
@@ -268,6 +269,7 @@ Module Module1
                                     dtEnteredDate = Nothing
                                     strMrNum = ""
                                     intMrReqLineNum = 0
+                                    strNodeValue = ""
 
                                     Dim iItemMM As Integer = 0
                                     Dim strNodeName As String = ""
@@ -473,10 +475,42 @@ Module Module1
                                                 Catch ex As Exception
                                                     intMrReqLineNum = 0
                                                 End Try
+
+                                            Case "GLACCOUNT"  '  GLACCOUNT 
+                                                Dim nodeGlAcct As XmlNode = nodeItemMM.ChildNodes(iItemMM)
+                                                If nodeGlAcct.ChildNodes.Count > 0 Then
+                                                    Dim iItemGL As Integer = 0
+                                                    Dim strGLNodeName As String = ""
+                                                    For iItemGL = 0 To nodeGlAcct.ChildNodes.Count - 1
+                                                        strGLNodeName = UCase(nodeGlAcct.ChildNodes(iItemGL).Name)
+                                                        Select Case strGLNodeName
+                                                            Case "VALUE"  '   VALUE  '  ISA_CUST_CHARGE_CD ' 40 ' strNodeValue 
+                                                                Try
+                                                                    strNodeValue = nodeGlAcct.ChildNodes(iItemGL).InnerText
+                                                                    If Trim(strNodeValue) = "" Then
+                                                                        strNodeValue = " "
+                                                                    Else
+                                                                        strNodeValue = Trim(strNodeValue)
+                                                                    End If
+                                                                    If Len(Trim(strNodeValue)) > 40 Then
+                                                                        strNodeValue = Microsoft.VisualBasic.Left(strNodeValue, 40)
+                                                                    End If
+                                                                Catch ex As Exception
+                                                                    strNodeValue = " "
+                                                                End Try
+
+                                                            Case Else
+                                                                'do nothing
+                                                        End Select  '  strGLNodeName = UCase(nodeGlAcct.ChildNodes(iItemGL).Name)
+
+                                                    Next  '   iItemGL = 0 To nodeGlAcct.ChildNodes.Count - 1
+
+                                                End If  '  If nodeGlAcct.ChildNodes.Count > 0 Then
+
                                             Case Else
                                                 'do nothing
-                                        End Select
-                                    Next
+                                        End Select  '  strNodeName = UCase(nodeItemMM.ChildNodes(iItemMM).Name)
+                                    Next  '  For iItemMM = 0 To nodeItemMM.ChildNodes.Count - 1
 
                                     ' defaults - values not in INVRESERV interface
                                     strWorkOrderStatus = " "
@@ -484,6 +518,9 @@ Module Module1
                                     strWoType = " "
                                     strActivityId = " "
                                     strIsaItem = " "
+                                    If Trim(strNodeName) = "" Then
+                                        strNodeValue = " "
+                                    End If
 
                                     'collected all info - starting insert
                                     Dim rowsaffected As Integer = 0
@@ -491,7 +528,7 @@ Module Module1
                                     strSQLstring = "insert into SYSADM8.PS_ISA_MXM_RSV_IN (CUST_ID,PLANT,ISA_ITEM,INV_ITEM_ID,PROCESS_INSTANCE,PROCESS_FLAG,PROCESS_DTTM,DTTM_CREATED,"
                                     strSQLstring = strSQLstring & "ORDER_NO,ORDER_INT_LINE_NO,ISA_WORK_ORDER_NO,ORDER_REF,WORK_ORDER_STATUS,"
                                     strSQLstring = strSQLstring & "PRIORITY,WORK_ORDER_TYPE,ACTIVITY_ID,DUE_DT,SHIPTO_ATTN_TO,QTY_REQUESTED,"
-                                    strSQLstring = strSQLstring & "EMPLID,ISA_MACHINE_NO,ISA_UNLOADING_PT,ENTERED_DT,INTFC_REC_TYPE,ISA_REQUEST_ID,ISA_REQUEST_LN_NBR) VALUES ("
+                                    strSQLstring = strSQLstring & "EMPLID,ISA_MACHINE_NO,ISA_UNLOADING_PT,ENTERED_DT,INTFC_REC_TYPE,ISA_REQUEST_ID,ISA_REQUEST_LN_NBR,ISA_CUST_CHARGE_CD) VALUES ("
                                     strSQLstring = strSQLstring & "'" & strCustId & "','" & strSiteId & "','" & strInvItemId & "','" & strIsaItem & "'," & decProcInstnce & ",'" & strProcessedFlag & "',NULL,TO_DATE('" & dtCreationDateTime & "', 'MM/DD/YYYY HH:MI:SS AM'),"
                                     strSQLstring = strSQLstring & "'" & strOrderNo & "'," & intOrderLineNo & ",'" & strWorkOrderNum & "','" & strReqstOrderRef & "','" & strWorkOrderStatus & "',"
                                     strSQLstring = strSQLstring & "" & intWoPrior & ",'" & strWoType & "','" & strActivityId & "',"
@@ -507,7 +544,7 @@ Module Module1
                                     Else
                                         strSQLstring = strSQLstring & "TO_DATE('" & dtEnteredDate & "', 'MM/DD/YYYY HH:MI:SS AM'),"
                                     End If
-                                    strSQLstring = strSQLstring & "'INVRESERVE','" & strMrNum & "'," & intMrReqLineNum & ")"
+                                    strSQLstring = strSQLstring & "'INVRESERVE','" & strMrNum & "'," & intMrReqLineNum & ",'" & strNodeValue & "')"
 
                                     If Trim(strInvItemId) <> "" And Trim(strSiteId) <> "" And decQtyReqst > 0 Then
                                         Try
@@ -575,6 +612,7 @@ Module Module1
             Dim strMachineNum As String = ""
             Dim strUnloadingPoint As String = ""
             Dim dtEnteredDate As DateTime
+            Dim strNodeValue As String = ""
 
             Dim iCnt As Integer = 0
             For iCnt = 0 To nodeStkReservReq.ChildNodes.Count - 1
@@ -602,6 +640,7 @@ Module Module1
                                     strEmplId = ""
                                     strMachineNum = ""
                                     strUnloadingPoint = ""
+                                    strNodeValue = ""
 
                                     Dim iItemMM As Integer = 0
                                     Dim strNodeName As String = ""
@@ -700,7 +739,36 @@ Module Module1
                                                     strActivityId = " "
                                                 End Try
 
-                                            Case ""
+                                            Case "GLACCOUNT"
+                                                Dim nodeGlAcct As XmlNode = nodeItemMM.ChildNodes(iItemMM)
+                                                If nodeGlAcct.ChildNodes.Count > 0 Then
+                                                    Dim iItemGL As Integer = 0
+                                                    Dim strGLNodeName As String = ""
+                                                    For iItemGL = 0 To nodeGlAcct.ChildNodes.Count - 1
+                                                        strGLNodeName = UCase(nodeGlAcct.ChildNodes(iItemGL).Name)
+                                                        Select Case strGLNodeName
+                                                            Case "VALUE"   '  ISA_CUST_CHARGE_CD ' 40 ' strNodeValue 
+                                                                Try
+                                                                    strNodeValue = nodeGlAcct.ChildNodes(iItemGL).InnerText
+                                                                    If Trim(strNodeValue) = "" Then
+                                                                        strNodeValue = " "
+                                                                    Else
+                                                                        strNodeValue = Trim(strNodeValue)
+                                                                    End If
+                                                                    If Len(Trim(strNodeValue)) > 40 Then
+                                                                        strNodeValue = Microsoft.VisualBasic.Left(strNodeValue, 40)
+                                                                    End If
+                                                                Catch ex As Exception
+                                                                    strNodeValue = " "
+                                                                End Try
+
+                                                            Case Else
+                                                                'do nothing
+                                                        End Select  '  strGLNodeName = UCase(nodeGlAcct.ChildNodes(iItemGL).Name)
+
+                                                    Next  '   iItemGL = 0 To nodeGlAcct.ChildNodes.Count - 1
+
+                                                End If  '  If nodeGlAcct.ChildNodes.Count > 0 Then
 
                                             Case Else
                                                 'do nothing
@@ -720,6 +788,9 @@ Module Module1
                                     strIsaItem = " "
                                     strMrNum = " "  '  ISA_REQUEST_ID ' 10
                                     intMrReqLineNum = 0  '  ISA_REQUEST_LN_NBR  '  Int 0
+                                    If Trim(strNodeName) = "" Then
+                                        strNodeValue = " "
+                                    End If
 
                                     'collected all info - starting insert
                                     Dim rowsaffected As Integer = 0
@@ -727,7 +798,7 @@ Module Module1
                                     strSQLstring = "insert into SYSADM8.PS_ISA_MXM_RSV_IN (CUST_ID,PLANT,ISA_ITEM,INV_ITEM_ID,PROCESS_INSTANCE,PROCESS_FLAG,PROCESS_DTTM,DTTM_CREATED,"
                                     strSQLstring = strSQLstring & "ORDER_NO,ORDER_INT_LINE_NO,ISA_WORK_ORDER_NO,ORDER_REF,WORK_ORDER_STATUS,"
                                     strSQLstring = strSQLstring & "PRIORITY,WORK_ORDER_TYPE,ACTIVITY_ID,DUE_DT,SHIPTO_ATTN_TO,QTY_REQUESTED,"
-                                    strSQLstring = strSQLstring & "EMPLID,ISA_MACHINE_NO,ISA_UNLOADING_PT,ENTERED_DT,INTFC_REC_TYPE,ISA_REQUEST_ID,ISA_REQUEST_LN_NBR) VALUES ("
+                                    strSQLstring = strSQLstring & "EMPLID,ISA_MACHINE_NO,ISA_UNLOADING_PT,ENTERED_DT,INTFC_REC_TYPE,ISA_REQUEST_ID,ISA_REQUEST_LN_NBR,ISA_CUST_CHARGE_CD) VALUES ("
                                     strSQLstring = strSQLstring & "'" & strCustId & "','" & strSiteId & "','" & strInvItemId & "','" & strIsaItem & "'," & decProcInstnce & ",'" & strProcessedFlag & "',NULL,TO_DATE('" & dtCreationDateTime & "', 'MM/DD/YYYY HH:MI:SS AM'),"
                                     strSQLstring = strSQLstring & "'" & strOrderNo & "'," & intOrderLineNo & ",'" & strWorkOrderNum & "','" & strReqstOrderRef & "','" & strWorkOrderStatus & "',"
                                     strSQLstring = strSQLstring & "" & intWoPrior & ",'" & strWoType & "','" & strActivityId & "',"
@@ -743,7 +814,7 @@ Module Module1
                                     Else
                                         strSQLstring = strSQLstring & "TO_DATE('" & dtEnteredDate & "', 'MM/DD/YYYY HH:MI:SS AM'),"
                                     End If
-                                    strSQLstring = strSQLstring & "'WORKORDER','" & strMrNum & "'," & intMrReqLineNum & ")"
+                                    strSQLstring = strSQLstring & "'WORKORDER','" & strMrNum & "'," & intMrReqLineNum & ",'" & strNodeValue & "')"
 
                                     If Trim(strWorkOrderNum) <> "" And Trim(strSiteId) <> "" Then
                                         Try
