@@ -1,0 +1,12 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="My" GeneratedClassName="MySettings" UseMySettingsClassName="true">
+  <Profiles />
+  <Settings>
+    <Setting Name="oraCNString1" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=RPTG</Value>
+    </Setting>
+    <Setting Name="ShipXMLOut260_SDiEmailUtilityService_EmailServices" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
