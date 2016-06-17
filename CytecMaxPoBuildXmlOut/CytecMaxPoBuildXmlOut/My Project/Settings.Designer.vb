@@ -90,6 +90,78 @@ Namespace My
                 Return CType(Me("logPath"),String)
             End Get
         End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("vitaly.rovensky@sdi.com")>  _
+        Public ReadOnly Property onErrorEmail_To() As String
+            Get
+                Return CType(Me("onErrorEmail_To"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("TechSupport@sdi.com")>  _
+        Public ReadOnly Property onErrorEmail_From() As String
+            Get
+                Return CType(Me("onErrorEmail_From"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("")>  _
+        Public ReadOnly Property onErrorEmail_CC() As String
+            Get
+                Return CType(Me("onErrorEmail_CC"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("webdev@sdi.com")>  _
+        Public ReadOnly Property onErrorEmail_BCC() As String
+            Get
+                Return CType(Me("onErrorEmail_BCC"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("VERBOSE")>  _
+        Public ReadOnly Property logLevel() As String
+            Get
+                Return CType(Me("logLevel"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("(TEST) Cytec Maximo Issues XMLOut Error")>  _
+        Public ReadOnly Property onError_emailSubject() As String
+            Get
+                Return CType(Me("onError_emailSubject"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("http://websrv.sdi.com/sdiwebin/xmlinsdi.aspx")>  _
+        Public ReadOnly Property Url_Cytec_Maximo() As String
+            Get
+                Return CType(Me("Url_Cytec_Maximo"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("CytecMaxWriteIssuesOut")>  _
+        Public ReadOnly Property FileNameStartWith() As String
+            Get
+                Return CType(Me("FileNameStartWith"),String)
+            End Get
+        End Property
     End Class
 End Namespace
 
