@@ -232,8 +232,8 @@ Module Module1
                         Dim strOrgId As String = "02"
                         Dim strSiteId As String = "PC"
                         Dim strTransLangCode As String = "EN"
-                        Dim strLineType As String = "ITEM"
-                        Dim strItemSetId As String = "SET02"
+                        Dim strLineType As String = "MATERIAL"
+                        Dim strItemSetId As String = ""
                         Dim strReqIdNum As String = ""
                         Dim strReqIdLineNum As String = ""
                         Dim strReqDelivDate As String = ""
@@ -409,9 +409,23 @@ Module Module1
 
                         '<int:ITEMSETID - predefined
                         node = nodePoLine.AppendChild(docXML.CreateElement(name:="int:ITEMSETID"))
+                        'attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                        'attrib.Value = "true"
+                        node.InnerText = Trim(strItemSetId) ' predefined
+
+                        '<int:ISSUE - predefined
+                        node = nodePoLine.AppendChild(docXML.CreateElement(name:="int:ISSUE"))
                         attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
                         attrib.Value = "true"
-                        node.InnerText = Trim(strItemSetId) ' predefined
+                        node.InnerText = "1" ' predefined
+
+                        '<int:TOSITEID - predefined
+                        If Trim(strSiteId) <> "" Then
+                            node = nodePoLine.AppendChild(docXML.CreateElement(name:="int:TOSITEID"))
+                            attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                            attrib.Value = "true"
+                            node.InnerText = Trim(strSiteId) ' predefined
+                        End If
 
                         '<int:LINECOST
                         strPricePo = ""
@@ -545,6 +559,10 @@ Module Module1
                         strOuterXml = Replace(strOuterXml, "</POLINE>", "</int:POLINE>")
                         strOuterXml = Replace(strOuterXml, "<PONUM", "<int:PONUM")
                         strOuterXml = Replace(strOuterXml, "</PONUM>", "</int:PONUM>")
+                        strOuterXml = Replace(strOuterXml, "<ISSUE", "<int:ISSUE")
+                        strOuterXml = Replace(strOuterXml, "</ISSUE>", "</int:ISSUE>")
+                        strOuterXml = Replace(strOuterXml, "<TOSITEID", "<int:TOSITEID")
+                        strOuterXml = Replace(strOuterXml, "</TOSITEID>", "</int:TOSITEID>")
                         strOuterXml = Replace(strOuterXml, "<TRANS_LANGCODE", "<int:TRANS_LANGCODE")
                         strOuterXml = Replace(strOuterXml, "</TRANS_LANGCODE>", "</int:TRANS_LANGCODE>")
                         strOuterXml = Replace(strOuterXml, "<ORGID", "<int:ORGID")
@@ -693,7 +711,7 @@ Module Module1
                             strXMLError = Microsoft.VisualBasic.Left(strXMLError, 80)
                         End If
 
-                        strUpdateSql = "UPDATE SYSADM8.PS_ISA_MXM_MOV_OUT SET PROCESS_FLAG = 'E', ISA_ERROR_MSG_80 = '" & strXMLError & "' WHERE ISA_IDENTIFIER = " & intIsaIdent.ToString() & ""
+                        strUpdateSql = "UPDATE SYSADM8.PS_ISA_MXM_PO_OUT SET PROCESS_FLAG = 'E', ISA_ERROR_MSG_80 = '" & strXMLError & "' WHERE ISA_IDENTIFIER = " & intIsaIdent.ToString() & ""
 
                         rowsaffected = 0
                         rowsaffected = ORDBAccess.ExecNonQuery(strUpdateSql, connectOR)
@@ -723,7 +741,7 @@ Module Module1
                             m_logger.WriteVerboseLog(rtn & " ::  'rowsaffected = 0'. strUpdateSql : " & strUpdateSql)
                         End If
 
-                        strUpdateSql = "UPDATE SYSADM8.PS_ISA_MXM_MOV_OUT SET PROCESS_FLAG = 'E', ISA_ERROR_MSG_80 = '" & strErrMsg1 & "' WHERE ISA_IDENTIFIER = " & ds.Tables(0).Rows(I).Item("ISA_IDENTIFIER") & ""
+                        strUpdateSql = "UPDATE SYSADM8.PS_ISA_MXM_PO_OUT SET PROCESS_FLAG = 'E', ISA_ERROR_MSG_80 = '" & strErrMsg1 & "' WHERE ISA_IDENTIFIER = " & ds.Tables(0).Rows(I).Item("ISA_IDENTIFIER") & ""
 
                         rowsaffected = 0
                         rowsaffected = ORDBAccess.ExecNonQuery(strUpdateSql, connectOR)
