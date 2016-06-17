@@ -11,5 +11,32 @@
     <Setting Name="logPath" Type="System.String" Scope="Application">
       <Value Profile="(Default)">C:\CytecMxmIn\LOGS</Value>
     </Setting>
+    <Setting Name="logLevel" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">VERBOSE</Value>
+    </Setting>
+    <Setting Name="onError_emailFrom" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">TechSupport@sdi.com</Value>
+    </Setting>
+    <Setting Name="onError_emailSubject" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">(TEST) Cytec Maximo Issues XMLOut Error</Value>
+    </Setting>
+    <Setting Name="onError_emailTo" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">vitaly.rovensky@sdi.com</Value>
+    </Setting>
+    <Setting Name="onErrorEmail_CC" Type="System.String" Scope="Application">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="onErrorEmail_BCC" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">webdev@sdi.com</Value>
+    </Setting>
+    <Setting Name="Url_Cytec_Maximo" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">http://websrv.sdi.com/sdiwebin/xmlinsdi.aspx</Value>
+    </Setting>
+    <Setting Name="FileNameStartWith" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">CytecMaxWriteIssuesOut</Value>
+    </Setting>
+    <Setting Name="CytecMaxIssueOut_SDiEmailUtilityService_EmailServices" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
