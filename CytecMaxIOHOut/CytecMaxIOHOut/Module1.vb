@@ -123,7 +123,7 @@ Module Module1
 
         Dim rtn As String = "Module1.BuildIohOutXML"
 
-        Dim strSqlString As String = "SELECT * FROM SYSADM8.PS_ISA_MXM_IOH_OUT WHERE PROCESS_FLAG != 'Y'"
+        Dim strSqlString As String = "SELECT * FROM SYSADM8.PS_ISA_MXM_IOH_OUT WHERE PROCESS_FLAG = 'N'"
 
         Try
 
