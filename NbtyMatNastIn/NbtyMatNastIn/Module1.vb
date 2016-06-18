@@ -890,10 +890,10 @@ Module Module1
         email.Body &= "<table><tr><td>NbtyMatMastXmlIn has completed with "
         If bolWarning = True Then
             email.Body &= "warnings,"
-            email.Subject = " (Test) NbtyMatMastXmlIn Warning"
+            email.Subject = " NbtyMatMastXmlIn Warning"
         Else
             email.Body &= "errors;"
-            email.Subject = " (Test) NbtyMatMastXmlIn Error"
+            email.Subject = " NbtyMatMastXmlIn Error"
         End If
 
         'VR 12/18/2014 Adding file names and error descriptions in message body
