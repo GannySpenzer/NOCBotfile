@@ -364,6 +364,7 @@ Module Module1
                                                         strComments2000 = " "
                                                     Else
                                                         strComments2000 = Trim(strComments2000)
+                                                        strComments2000 = Replace(Replace(strComments2000, "&", "&amp;"), "'", "&apos;")
                                                     End If
                                                     If Len(Trim(strComments2000)) > 2000 Then
                                                         strComments2000 = Microsoft.VisualBasic.Left(strComments2000, 2000)
@@ -439,6 +440,7 @@ Module Module1
                                                         strDescr1 = " "
                                                     Else
                                                         strDescr1 = Trim(strDescr1)
+                                                        strDescr1 = Replace(Replace(strDescr1, "&", "&amp;"), "'", "&apos;")
                                                     End If
                                                     If Len(Trim(strDescr1)) > 254 Then
                                                         strDescr1 = Microsoft.VisualBasic.Left(strDescr1, 254)
