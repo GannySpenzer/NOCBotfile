@@ -255,11 +255,18 @@ Module Module1
 
         m_logger.WriteVerboseLog(rtn & " :: started sending file (if any) ...")
 
+        Dim strFileNameStartWith As String = "CytecMaxWriteIssuesOut"
+        Try
+            strFileNameStartWith = My.Settings("FileNameStartWith").ToString.Trim
+        Catch ex As Exception
+            strFileNameStartWith = "CytecMaxWriteIssuesOut"
+        End Try
+        
         Try
             For I = 0 To aFiles.Length - 1
                 Dim bProceed As Boolean = False
-                If Len(aFiles(I).Name) > Len("CytecMaxWriteIssuesOut") - 1 Then
-                    If aFiles(I).Name.StartsWith("CytecMaxWriteIssuesOut") Then
+                If Len(aFiles(I).Name) > Len(strFileNameStartWith) - 1 Then
+                    If aFiles(I).Name.StartsWith(strFileNameStartWith) Then
                         bProceed = True
                     End If
                 End If

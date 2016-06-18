@@ -92,15 +92,6 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("(TEST) Cytec Maximo XMLOut Error")>  _
-        Public ReadOnly Property onError_emailSubject() As String
-            Get
-                Return CType(Me("onError_emailSubject"),String)
-            End Get
-        End Property
-        
-        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
-         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.DefaultSettingValueAttribute("vitaly.rovensky@sdi.com")>  _
         Public ReadOnly Property onError_emailTo() As String
             Get
@@ -142,6 +133,24 @@ Namespace My
         Public ReadOnly Property CytecMaximoXmlOut_SDiEmailUtilityService_EmailServices() As String
             Get
                 Return CType(Me("CytecMaximoXmlOut_SDiEmailUtilityService_EmailServices"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("CytecMaxWriteIssuesOut")>  _
+        Public ReadOnly Property FileNameStartWith() As String
+            Get
+                Return CType(Me("FileNameStartWith"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("(TEST) Cytec Maximo Issues XMLOut Error")>  _
+        Public ReadOnly Property onError_emailSubject() As String
+            Get
+                Return CType(Me("onError_emailSubject"),String)
             End Get
         End Property
     End Class
