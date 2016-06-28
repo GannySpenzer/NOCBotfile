@@ -14,9 +14,9 @@ Module Module1
     Private myLoggr1 As appLogger = Nothing
     Private m_timeStamp As String = Now.ToString
 
-    Dim rootDir As String = "C:\CytecMxmIn"
+    Dim rootDir As String = "C:\Program Files (x86)\SDI\WarningNotActive90Days"
     Dim logpath As String = "C:\Program Files (x86)\SDI\WarningNotActive90Days\Logs\WarningNotActive90Days" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    'Dim sErrLogPath As String = "C:\Program Files (x86)\SDI\WarningNotActive90Days\Logs\MyErredSQLs" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+
     Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=DEVL")
 
     Sub Main()
@@ -92,7 +92,7 @@ Module Module1
             ds = ORDBAccess.GetAdapter(strSqlString, connectOR)
 
         Catch ex21 As Exception
-            m_logger.WriteErrorLog(rtn & " :: Error reading source table PS_ISA_USERS_TBL")
+            m_logger.WriteErrorLog(rtn & " :: Error reading source table PS_ISA_USERS_TBL - e-mails were not sent")
             m_logger.WriteErrorLog("ERROR MSG: " & ex21.Message)
             Try
                 connectOR.Close()
@@ -157,7 +157,7 @@ Module Module1
                                         Exit For
                                     End If
                                 Else
-                                    m_logger.WriteVerboseLog(rtn & " :: Email WAS NOT sent to: " & strEmailAddress & " ; Account ID: " & strAccount)
+                                    ' m_logger.WriteVerboseLog(rtn & " :: Email WAS NOT sent to: " & strEmailAddress & " ; Account ID: " & strAccount)
                                 End If
                             End If
                         End If
@@ -167,6 +167,11 @@ Module Module1
             End If  ' If Not bError Then - inner
             
         End If ' If Not bError Then
+
+        If bError Then
+            'send Error e-mail
+            SendErrorEmail()
+        End If
 
         ' final log for this run
         m_logger.WriteInformationLog(rtn & " :: Ending 'WARNING - Not Active 90 Days' process.")
@@ -179,6 +184,44 @@ Module Module1
             m_logger = Nothing
         End Try
 
+    End Sub
+
+    Private Sub SendErrorEmail()
+
+        Dim rtn As String = "Module1.SendErrorEmail"
+
+        Dim email As New MailMessage
+
+        'The email address of the sender
+        email.From = "TechSupport@sdi.com"
+
+        'The email address of the recipient. 
+        email.To = "vitaly.rovensky@sdi.com"
+        email.Cc = " "
+        email.Bcc = "webdev@sdi.com"
+
+        'The subject of the email
+        email.Subject = "'WARNING - Not Active 90 Days' process Error(s)"
+
+        'The Priority attached and displayed for the email
+        email.Priority = MailPriority.High
+
+        email.BodyFormat = MailFormat.Html
+
+        email.Body = "<table><tr><td>'WARNING - Not Active 90 Days' process has completed with errors. Please, review Log file.</td></tr></table>"
+
+        'Send the email and handle any error that occurs
+        Dim bSend As Boolean = False
+        Try
+            SendEmail1(email)
+            bSend = True
+        Catch ex As Exception
+            bSend = False
+        End Try
+
+        If Not bSend Then
+            m_logger.WriteErrorLog(rtn & " :: Error - the email was not sent.")
+        End If
     End Sub
 
     Private Sub SendEmail(ByVal strEmailAddress As String, ByVal strAccount As String, ByRef bSend As Boolean)
@@ -231,13 +274,12 @@ Module Module1
 
         email.BodyFormat = MailFormat.Html
 
-        email.Body = "<table><tr><td>WARNING! Your SdiExchange Account: " & strAccount & ", - was not used for more than 90 days.</td></tr>" & _
-            "<tr><td>This Account will be deactivated in several days - 1st day of the next month.</td></tr>" & _
-            "<tr><td>You can avoid deactivating by logging in SdiExchange.</td></tr>" & _
-            "</table>"
-
-        ''for testing
-        'email.Body = "<table><tr><td>WARNING! Your SdiExchange Account: " & strAccount & " ; " & strEmailAddress & ", - was not used for more than 90 days</td></tr></table>"
+        email.Body = "<table><tr><td>WARNING! Your SdiExchange Account: " & strAccount & ", - has been inactive </td></tr>" & _
+            "<tr><td> for more than 90 days and will be deactivated 1 week from today.</td></tr>" & _
+            "<tr><td>You can avoid deactivation by logging into your account.</td></tr>" & _
+            "</table>" & vbCrLf
+        email.Body &= "<HR width='100%' SIZE='1'>" & vbCrLf
+        email.Body &= "<img src='http://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & vbCrLf
 
         'Send the email and handle any error that occurs
         Try
@@ -250,7 +292,7 @@ Module Module1
         End Try
 
         If Not bSend Then
-            m_logger.WriteErrorLog(rtn & " :: Error - the email was not sent.")
+            m_logger.WriteErrorLog(rtn & " :: Error - the email was not sent for the Account: " & strAccount & " ; " & strEmailAddress & "")
         End If
     End Sub
 
