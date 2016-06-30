@@ -72,10 +72,6 @@ Module Module1
                                      " Version: " & System.Reflection.Assembly.GetExecutingAssembly.GetName.Version.ToString & _
                                      "")
 
-        ' log verbose DB connection string
-        m_logger.WriteInformationLog(rtn & " :: Start of 'DEACTIVATE - Not Active 90 Days' process.")
-        m_logger.WriteVerboseLog(rtn & " :: connection string : [" & connectOR.ConnectionString & "]")
-
         Dim strEmailAddress As String = ""
         Dim strSqlString As String = ""
         Dim strAccount As String = ""
@@ -83,34 +79,6 @@ Module Module1
         Dim ds As New DataSet
         Dim bError As Boolean = False
         Dim rowsUpdated As Integer = 0
-
-        'deactivate - get rows afftected
-        strSqlString = "UPDATE PS_ISA_USERS_TBL SET ACTIVE_STATUS = 'I' " & vbCrLf & _
-            "WHERE (LAST_ACTIVITY IS NULL AND ACTIVE_STATUS = 'A') OR " & vbCrLf & _
-            "(LAST_ACTIVITY IS NOT NULL AND ACTIVE_STATUS = 'A' AND LAST_ACTIVITY < (SYSDATE - 90))" & vbCrLf & _
-            ""
-        Try
-            'rowsUpdated = ORDBAccess.ExecNonQuery(strSqlString, connectOR)
-            'If rowsUpdated = 0 Then
-            '    m_logger.WriteErrorLog(rtn & " :: Error updating table PS_ISA_USERS_TBL - ACTIVE_STATUS was not updated")
-            '    m_logger.WriteErrorLog("Function'ORDBAccess.ExecNonQuery' returned 'rowsUpdated = 0' ")
-            '    m_logger.WriteErrorLog("SQL String: " & strSqlString)
-
-            '    bError = True
-            'Else
-            '    m_logger.WriteVerboseLog(rtn & " :: Total number of rows updated: " & rowsUpdated.ToString())
-            'End If
-        Catch ex18 As Exception
-            m_logger.WriteErrorLog(rtn & " :: Error updating table PS_ISA_USERS_TBL - ACTIVE_STATUS was not updated")
-            m_logger.WriteErrorLog("ERROR MSG: " & ex18.Message)
-            m_logger.WriteErrorLog("SQL String: " & strSqlString)
-            Try
-                connectOR.Close()
-            Catch ex As Exception
-
-            End Try
-            bError = True
-        End Try
 
         If Not bError Then
 
@@ -168,44 +136,82 @@ Module Module1
 
                     Dim I As Integer = 0
                     If ds.Tables(0).Rows.Count > 0 Then
-                        Dim bSend As Boolean = True
-                        For I = 0 To ds.Tables(0).Rows.Count - 1
-                            strEmailAddress = ""
+                        'deactivate here
+
+                        ' log verbose DB connection string
+                        m_logger.WriteInformationLog(rtn & " :: Start of 'DEACTIVATE - Not Active 90 Days' process.")
+                        m_logger.WriteVerboseLog(rtn & " :: connection string : [" & connectOR.ConnectionString & "]")
+
+                        'deactivate - get rows afftected
+                        strSqlString = "UPDATE PS_ISA_USERS_TBL SET ACTIVE_STATUS = 'I' " & vbCrLf & _
+                            "WHERE (LAST_ACTIVITY IS NULL AND ACTIVE_STATUS = 'A') OR " & vbCrLf & _
+                            "(LAST_ACTIVITY IS NOT NULL AND ACTIVE_STATUS = 'A' AND LAST_ACTIVITY < (SYSDATE - 90))" & vbCrLf & _
+                            ""
+                        Try
+                            rowsUpdated = ORDBAccess.ExecNonQuery(strSqlString, connectOR)
+                            If rowsUpdated = 0 Then
+                                m_logger.WriteErrorLog(rtn & " :: Error updating table PS_ISA_USERS_TBL - ACTIVE_STATUS was not updated")
+                                m_logger.WriteErrorLog("Function'ORDBAccess.ExecNonQuery' returned 'rowsUpdated = 0' ")
+                                m_logger.WriteErrorLog("SQL String: " & strSqlString)
+
+                                bError = True
+                            Else
+                                m_logger.WriteVerboseLog(rtn & " :: Total number of rows updated: " & rowsUpdated.ToString())
+                            End If
+                        Catch ex18 As Exception
+                            m_logger.WriteErrorLog(rtn & " :: Error updating table PS_ISA_USERS_TBL - ACTIVE_STATUS was not updated")
+                            m_logger.WriteErrorLog("ERROR MSG: " & ex18.Message)
+                            m_logger.WriteErrorLog("SQL String: " & strSqlString)
                             Try
-                                strEmailAddress = CStr(ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
+                                connectOR.Close()
                             Catch ex As Exception
+
+                            End Try
+                            bError = True
+                        End Try
+
+                        If Not bError Then
+
+                            Dim bSend As Boolean = True
+                            For I = 0 To ds.Tables(0).Rows.Count - 1
                                 strEmailAddress = ""
-                            End Try
+                                Try
+                                    strEmailAddress = CStr(ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
+                                Catch ex As Exception
+                                    strEmailAddress = ""
+                                End Try
 
-                            strAccount = ""
-                            Try
-                                strAccount = CStr(ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_ID"))
-                            Catch ex As Exception
                                 strAccount = ""
-                            End Try
+                                Try
+                                    strAccount = CStr(ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_ID"))
+                                Catch ex As Exception
+                                    strAccount = ""
+                                End Try
 
-                            If Trim(strAccount) <> "" And Trim(strEmailAddress) <> "" Then
-                                strAccount = Trim(strAccount)
-                                strEmailAddress = Trim(strEmailAddress)
-                                If LCase(strEmailAddress) = "pete.doyle@sdi.com" Or LCase(strEmailAddress) = "customer.service@sdi.com" Or LCase(strEmailAddress) = "erwin.bautista@sdi.com" Or LCase(strEmailAddress) = "bob.dougherty@isacs.com" Then
-                                    'do nothing
-                                Else
-                                    bSend = True
-                                    SendEmail(strEmailAddress, strAccount, bSend)
-                                    If bSend Then
-                                        m_logger.WriteVerboseLog(rtn & " :: Email sent to: " & strEmailAddress & " ; Account ID: " & strAccount)
-                                        intX = intX + 1
-                                        If intX = 3 Then
-                                            Exit For
-                                        End If
+                                If Trim(strAccount) <> "" And Trim(strEmailAddress) <> "" Then
+                                    strAccount = Trim(strAccount)
+                                    strEmailAddress = Trim(strEmailAddress)
+                                    If LCase(strEmailAddress) = "pete.doyle@sdi.com" Or LCase(strEmailAddress) = "customer.service@sdi.com" Or LCase(strEmailAddress) = "erwin.bautista@sdi.com" Or LCase(strEmailAddress) = "bob.dougherty@isacs.com" Then
+                                        'do nothing
                                     Else
-                                        'm_logger.WriteVerboseLog(rtn & " :: Email WAS NOT sent to: " & strEmailAddress & " ; Account ID: " & strAccount)
+                                        bSend = True
+                                        SendEmail(strEmailAddress, strAccount, bSend)
+                                        If bSend Then
+                                            m_logger.WriteVerboseLog(rtn & " :: Email sent to: " & strEmailAddress & " ; Account ID: " & strAccount)
+                                            intX = intX + 1
+                                            If intX = 3 Then
+                                                Exit For
+                                            End If
+                                        Else
+                                            'm_logger.WriteVerboseLog(rtn & " :: Email WAS NOT sent to: " & strEmailAddress & " ; Account ID: " & strAccount)
+                                        End If
                                     End If
-                                End If
-                            End If  '  If Trim(strAccount) <> "" And Trim(strEmailAddress) <> "" Then
+                                End If  '  If Trim(strAccount) <> "" And Trim(strEmailAddress) <> "" Then
 
-                        Next  '  For I = 0 To ds.Tables(0).Rows.Count - 1
-                        m_logger.WriteVerboseLog(rtn & " :: Total number of emails sent: " & intX.ToString())
+                            Next  '  For I = 0 To ds.Tables(0).Rows.Count - 1
+                            m_logger.WriteVerboseLog(rtn & " :: Total number of emails sent: " & intX.ToString())
+
+                        End If  '   If Not bError Then - inner # 3
 
                     End If  '  If ds.Tables(0).Rows.Count > 0 Then
 
@@ -302,15 +308,15 @@ Module Module1
         End If
 
         'The subject of the email
-        email.Subject = "Your SdiExchange Account was deactivated due to 90 days inactivity"
+        email.Subject = "Your SDiExchange Account has been deactivated due to 90 days inactivity"
 
         Try
             strSource = My.Settings("onError_emailSubject").ToString.Trim
             If Trim(strSource) = "" Then
-                strSource = "Your SdiExchange Account was deactivated due to 90 days inactivity"
+                strSource = "Your SDiExchange Account has been deactivated due to 90 days inactivity"
             End If
         Catch ex As Exception
-            strSource = "Your SdiExchange Account was deactivated due to more than 90 days inactivity"
+            strSource = "Your SDiExchange Account has been deactivated due to more than 90 days inactivity"
         End Try
         If Trim(strSource) <> "" Then
             email.Subject = strSource
@@ -321,7 +327,7 @@ Module Module1
 
         email.BodyFormat = MailFormat.Html
 
-        email.Body = "<table><tr><td>Due to more than 90 days of inactivity your SdiExchange Account: " & strAccount & ", - has been deactivated. </td></tr>" & _
+        email.Body = "<table><tr><td>Due to more than 90 days of inactivity your SDiExchange Account: " & strAccount & ", - has been deactivated. </td></tr>" & _
             "<tr><td>You can have your account reactivated by contacting the HelpDesk @ 215-633-1900  Option 7.</td></tr>" & _
             "</table>" & vbCrLf
         email.Body &= "<HR width='100%' SIZE='1'>" & vbCrLf

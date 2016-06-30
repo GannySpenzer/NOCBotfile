@@ -138,8 +138,8 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("(TEST) Your SdiExchange Account was deactivated due to more than 90 days inactivi"& _ 
-            "ty")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("(TEST) Your SdiExchange Account has been deactivated due to more than 90 days ina"& _ 
+            "ctivity")>  _
         Public ReadOnly Property onError_emailSubject() As String
             Get
                 Return CType(Me("onError_emailSubject"),String)
