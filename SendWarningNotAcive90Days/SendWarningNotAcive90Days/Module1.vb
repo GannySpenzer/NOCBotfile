@@ -255,15 +255,15 @@ Module Module1
         End If
 
         'The subject of the email
-        email.Subject = "WARNING! Your SdiExchange Account about to Expire"
+        email.Subject = "WARNING! Your SDiExchange Account about to Expire"
 
         Try
             strSource = My.Settings("onError_emailSubject").ToString.Trim
             If Trim(strSource) = "" Then
-                strSource = "WARNING! Your SdiExchange Account about to Expire"
+                strSource = "WARNING! Your SDiExchange Account about to Expire"
             End If
         Catch ex As Exception
-            strSource = "WARNING! Your SdiExchange Account about to Expire"
+            strSource = "WARNING! Your SDiExchange Account about to Expire"
         End Try
         If Trim(strSource) <> "" Then
             email.Subject = strSource
@@ -274,7 +274,7 @@ Module Module1
 
         email.BodyFormat = MailFormat.Html
 
-        email.Body = "<table><tr><td>WARNING! Your SdiExchange Account: " & strAccount & ", - has been inactive </td></tr>" & _
+        email.Body = "<table><tr><td>WARNING! Your SDiExchange Account: " & strAccount & ", - has been inactive </td></tr>" & _
             "<tr><td> for more than 90 days and will be deactivated 1 week from today.</td></tr>" & _
             "<tr><td>You can avoid deactivation by logging into your account.</td></tr>" & _
             "</table>" & vbCrLf
@@ -285,8 +285,6 @@ Module Module1
         Try
             SendEmail1(email)
             bSend = True
-            'm_arrXMLErrFiles = ""
-            'm_arrErrorsList = ""
         Catch ex As Exception
             bSend = False
         End Try
