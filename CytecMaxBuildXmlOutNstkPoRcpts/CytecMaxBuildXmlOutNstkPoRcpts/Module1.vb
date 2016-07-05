@@ -242,7 +242,7 @@ Module Module1
                     m_logger.WriteVerboseLog(rtn & " :: Template loaded")
 
                     ' get existing node Content
-                    Dim nodeOrderReq As XmlNode = docXML.SelectSingleNode(xpath:="//Envelope//Body//MXRECEIPTInterface//Content")
+                    Dim nodeOrderReq As XmlNode = docXML.SelectSingleNode(xpath:="//Envelope//Body//MX_CY_RECEIPTS//Content")
 
                     Dim strPoId As String = ""
                     Dim strPoLine As String = ""
@@ -250,6 +250,20 @@ Module Module1
                     Dim strSiteId As String = ""
                     Dim strOrgId As String = "02"
                     Dim strQtyRecpt As String = ""
+                    Dim strRecvdDate As String = ""
+                    Dim strLineDescr2 As String = ""
+                    Dim strRecvdCost1 As String = ""
+                    Dim strRecptId As String = ""
+                    Dim strWoNumber As String = ""
+                    Dim strRecptLoc As String = ""
+                    Dim strReqId1 As String = ""
+                    Dim strReqLineNum2 As String = ""
+                    Dim strMemo2 As String = ""
+                    Dim strEmplId1 As String = ""
+                    Dim strOrdNum1 As String = ""
+                    Dim strDelivFlag As String = ""
+                    Dim strReqrdDate As String = ""
+                    Dim strRecptStatus As String = ""
                     Dim strLineType As String = "MATERIAL"
                     Dim strItemSetId As String = ""
                     Dim StrTransLangCode As String = "EN"
@@ -276,10 +290,10 @@ Module Module1
                         strPoLine = Trim(strPoLine)
 
                         'create XML element/lines 
-                        ' build <int:MXRECEIPT
-                        Dim nodeOrder As XmlNode = nodeOrderReq.AppendChild(docXML.CreateElement(name:="int:MXRECEIPT"))
+                        ' build <int:MXCY_RECEIPTS
+                        Dim nodeOrder As XmlNode = nodeOrderReq.AppendChild(docXML.CreateElement(name:="int:MXCY_RECEIPTS"))
                         ' build      <int:MXRECEIPT action="Add"
-                        Dim nodeItem As XmlNode = nodeOrder.AppendChild(docXML.CreateElement(name:="int:MXRECEIPT"))
+                        Dim nodeItem As XmlNode = nodeOrder.AppendChild(docXML.CreateElement(name:="int:CY_RECEIPTS"))
                         ' add attribute: action="Add"
                         attrib = nodeItem.Attributes.Append(docXML.CreateAttribute(name:="action"))
                         attrib.Value = "Add"
@@ -287,14 +301,14 @@ Module Module1
                         'build actual elements based on ds rows
 
                         If Trim(strPoId) <> "" Then
-                            node = nodeItem.AppendChild(docXML.CreateElement(name:="int:PONUM"))
+                            node = nodeItem.AppendChild(docXML.CreateElement(name:="int:SDIPONUM"))
                             attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
                             attrib.Value = "true"
                             node.InnerText = Trim(strPoId) ' get from dataset
                         End If
 
                         If Trim(strPoLine) <> "" Then
-                            node = nodeItem.AppendChild(docXML.CreateElement(name:="int:POLINENUM"))
+                            node = nodeItem.AppendChild(docXML.CreateElement(name:="int:SDIPOLINENUM"))
                             attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
                             attrib.Value = "true"
                             node.InnerText = Trim(strPoLine) ' get from dataset
@@ -307,14 +321,17 @@ Module Module1
                         Catch ex As Exception
                             strItemNum = ""
                         End Try
+                        If Trim(strItemNum) = "" Then
+                            strItemNum = " "
+                        End If
+                        node = nodeItem.AppendChild(docXML.CreateElement(name:="int:ITEMNUM"))
                         If Trim(strItemNum) <> "" Then
-                            node = nodeItem.AppendChild(docXML.CreateElement(name:="int:ITEMNUM"))
                             attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
                             attrib.Value = "true"
-                            node.InnerText = Trim(strItemNum) ' get from dataset
                         End If
+                        node.InnerText = Trim(strItemNum) ' get from dataset
 
-                        ' int:SITEID ' int:POSITEID
+                        ' int:SITEID 
                         strSiteId = ""
                         Try
                             strSiteId = CStr(ds.Tables(0).Rows(I).Item("PLANT"))
@@ -327,10 +344,10 @@ Module Module1
                             attrib.Value = "true"
                             node.InnerText = Trim(strSiteId) ' get from dataset
 
-                            node = nodeItem.AppendChild(docXML.CreateElement(name:="int:POSITEID"))
-                            attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
-                            attrib.Value = "true"
-                            node.InnerText = Trim(strSiteId) ' get from dataset
+                            'node = nodeItem.AppendChild(docXML.CreateElement(name:="int:POSITEID"))
+                            'attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                            'attrib.Value = "true"
+                            'node.InnerText = Trim(strSiteId) ' get from dataset
                         End If
 
                         ' int:RECEIPTQUANTITY 
@@ -341,17 +358,230 @@ Module Module1
                             strQtyRecpt = ""
                         End Try
                         If Trim(strQtyRecpt) <> "" Then
-                            node = nodeItem.AppendChild(docXML.CreateElement(name:="int:RECEIPTQUANTITY"))
+                            node = nodeItem.AppendChild(docXML.CreateElement(name:="int:RECEIVEDQTY"))
                             attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
                             attrib.Value = "true"
                             node.InnerText = Trim(strQtyRecpt) ' get from dataset
                         End If
 
-                        ' int:ORGID 
-                        node = nodeItem.AppendChild(docXML.CreateElement(name:="int:ORGID"))
-                        attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
-                        attrib.Value = "true"
-                        node.InnerText = Trim(strOrgId) ' predefined
+                        '<int:RECEIVEDDATE
+                        strRecvdDate = ""
+                        Try
+                            strRecvdDate = CStr(ds.Tables(0).Rows(I).Item("DTTM_CREATED"))
+                            If IsDate(strRecvdDate) Then
+                                strRecvdDate = CType(strRecvdDate, DateTime).ToString("s")
+                            End If
+                        Catch ex As Exception
+                            strRecvdDate = ""
+                        End Try
+                        If Trim(strRecvdDate) <> "" Then
+                            node = nodeItem.AppendChild(docXML.CreateElement(name:="int:RECEIVEDDATE"))
+                            attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                            attrib.Value = "true"
+                            node.InnerText = Trim(strRecvdDate) ' got from dataset
+                        End If
+
+                        ' int:LINEDESCRIPTION 
+                        strLineDescr2 = ""
+                        Try
+                            strLineDescr2 = CStr(ds.Tables(0).Rows(I).Item("DESCR254"))
+                        Catch ex As Exception
+                            strLineDescr2 = ""
+                        End Try
+                        If Trim(strLineDescr2) <> "" Then
+                            node = nodeItem.AppendChild(docXML.CreateElement(name:="int:LINEDESCRIPTION"))
+                            attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                            attrib.Value = "true"
+                            node.InnerText = Trim(strLineDescr2) ' get from dataset
+                        End If
+
+                        ' int:RECEIVEDCOST 
+                        strRecvdCost1 = ""
+                        Try
+                            strRecvdCost1 = CStr(ds.Tables(0).Rows(I).Item("UNIT_COST"))
+                        Catch ex As Exception
+                            strRecvdCost1 = ""
+                        End Try
+                        If Trim(strRecvdCost1) <> "" Then
+                            node = nodeItem.AppendChild(docXML.CreateElement(name:="int:RECEIVEDCOST"))
+                            attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                            attrib.Value = "true"
+                            node.InnerText = Trim(strRecvdCost1) ' get from dataset
+                        End If
+
+                        ' int:CY_RECEIPTSID 
+                        strRecptId = ""
+                        Try
+                            strRecptId = CStr(ds.Tables(0).Rows(I).Item("RECEIVER_ID"))
+                        Catch ex As Exception
+                            strRecptId = ""
+                        End Try
+                        If Trim(strRecptId) <> "" Then
+                            node = nodeItem.AppendChild(docXML.CreateElement(name:="int:CY_RECEIPTSID"))
+                            attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                            attrib.Value = "true"
+                            node.InnerText = Trim(strRecptId) ' get from dataset
+                        End If
+
+                        ' int:WONUM 
+                        strWoNumber = ""
+                        Try
+                            strWoNumber = CStr(ds.Tables(0).Rows(I).Item("ISA_WORK_ORDER_NO"))
+                        Catch ex As Exception
+                            strWoNumber = ""
+                        End Try
+                        If Trim(strWoNumber) <> "" Then
+                            node = nodeItem.AppendChild(docXML.CreateElement(name:="int:WONUM"))
+                            attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                            attrib.Value = "true"
+                            node.InnerText = Trim(strWoNumber) ' get from dataset
+                        End If
+
+                        ' int:RECEIPTLOCATION 
+                        strRecptLoc = ""
+                        Try
+                            strRecptLoc = CStr(ds.Tables(0).Rows(I).Item("ISA_BIN_ID"))
+                        Catch ex As Exception
+                            strRecptLoc = ""
+                        End Try
+                        If Trim(strRecptLoc) <> "" Then
+                            node = nodeItem.AppendChild(docXML.CreateElement(name:="int:RECEIPTLOCATION"))
+                            attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                            attrib.Value = "true"
+                            node.InnerText = Trim(strRecptLoc) ' get from dataset
+                        End If
+
+                        ' int:PRNUM 
+                        strReqId1 = ""
+                        Try
+                            strReqId1 = CStr(ds.Tables(0).Rows(I).Item("REQ_ID"))
+                        Catch ex As Exception
+                            strReqId1 = ""
+                        End Try
+                        If Trim(strReqId1) = "" Then
+                            strReqId1 = " "
+                        End If
+                        node = nodeItem.AppendChild(docXML.CreateElement(name:="int:PRNUM"))
+                        If Trim(strReqId1) <> "" Then
+                            attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                            attrib.Value = "true"
+                        End If
+                        node.InnerText = Trim(strReqId1) ' get from dataset
+
+                        ' int:PRLINENUM 
+                        strReqLineNum2 = ""
+                        Try
+                            strReqLineNum2 = CStr(ds.Tables(0).Rows(I).Item("REQ_LINE_NBR"))
+                        Catch ex As Exception
+                            strReqLineNum2 = ""
+                        End Try
+                        If Trim(strReqLineNum2) <> "" Then
+                            node = nodeItem.AppendChild(docXML.CreateElement(name:="int:PRLINENUM"))
+                            attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                            attrib.Value = "true"
+                            node.InnerText = Trim(strReqLineNum2) ' get from dataset
+                        End If
+
+                        ' int:MEMO 
+                        strMemo2 = ""  '  DESCR254_MIXED
+                        Try
+                            strMemo2 = CStr(ds.Tables(0).Rows(I).Item("DESCR254_MIXED"))
+                        Catch ex As Exception
+                            strMemo2 = ""
+                        End Try
+                        If Trim(strMemo2) = "" Then
+                            strMemo2 = " "
+                        End If
+                        node = nodeItem.AppendChild(docXML.CreateElement(name:="int:MEMO"))
+                        If Trim(strMemo2) <> "" Then
+                            attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                            attrib.Value = "true"
+                        End If
+                        node.InnerText = Trim(strMemo2) ' get from dataset
+
+                        ' int:REQUESTEDBY 
+                        strEmplId1 = ""
+                        Try
+                            strEmplId1 = CStr(ds.Tables(0).Rows(I).Item("ISA_EMPLID"))
+                        Catch ex As Exception
+                            strEmplId1 = ""
+                        End Try
+                        If Trim(strEmplId1) <> "" Then
+                            node = nodeItem.AppendChild(docXML.CreateElement(name:="int:REQUESTEDBY"))
+                            attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                            attrib.Value = "true"
+                            node.InnerText = Trim(strEmplId1) ' get from dataset
+                        End If
+
+                        ' int:SDIKITID 
+                        strOrdNum1 = ""
+                        Try
+                            strOrdNum1 = CStr(ds.Tables(0).Rows(I).Item("ORDER_NO"))
+                        Catch ex As Exception
+                            strOrdNum1 = ""
+                        End Try
+                        If Trim(strOrdNum1) <> "" Then
+                            node = nodeItem.AppendChild(docXML.CreateElement(name:="int:SDIKITID"))
+                            attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                            attrib.Value = "true"
+                            node.InnerText = Trim(strOrdNum1) ' get from dataset
+                        End If
+
+                        ' int:FINALRECEIPT 
+                        strDelivFlag = ""
+                        Try
+                            strDelivFlag = CStr(ds.Tables(0).Rows(I).Item("DELIVERED_FLG"))
+                        Catch ex As Exception
+                            strDelivFlag = ""
+                        End Try
+                        If Trim(strDelivFlag) <> "" Then
+                            node = nodeItem.AppendChild(docXML.CreateElement(name:="int:FINALRECEIPT"))
+                            If Trim(strDelivFlag) <> "" Then
+                                attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                                attrib.Value = "true"
+                            End If
+                            node.InnerText = Trim(strDelivFlag) ' get from dataset
+                        End If
+
+                        ' int:REQUIREDDATE 
+                        strReqrdDate = ""
+                        Try
+                            strReqrdDate = CStr(ds.Tables(0).Rows(I).Item("ISA_REQUIRED_BY_DT"))
+                            If IsDate(strReqrdDate) Then
+                                strReqrdDate = CType(strReqrdDate, DateTime).ToString("s")
+                            End If
+                        Catch ex As Exception
+                            strReqrdDate = ""
+                        End Try
+                        If Trim(strReqrdDate) <> "" Then
+                            node = nodeItem.AppendChild(docXML.CreateElement(name:="int:REQUIREDDATE"))
+                            attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                            attrib.Value = "true"
+                            node.InnerText = Trim(strReqrdDate) ' get from dataset
+                        End If
+
+                        ' int:RECEIPTSTATUS 
+                        strRecptStatus = ""
+                        Try
+                            strRecptStatus = CStr(ds.Tables(0).Rows(I).Item("RECEIPT_STATUS"))
+                        Catch ex As Exception
+                            strRecptStatus = ""
+                        End Try
+                        If Trim(strRecptStatus) = "" Then
+                            strRecptStatus = " "
+                        End If
+                        node = nodeItem.AppendChild(docXML.CreateElement(name:="int:RECEIPTSTATUS"))
+                        If Trim(strRecptStatus) <> "" Then
+                            attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                            attrib.Value = "true"
+                        End If
+                        node.InnerText = Trim(strRecptStatus) ' get from dataset
+
+                        '' int:ORGID 
+                        'node = nodeItem.AppendChild(docXML.CreateElement(name:="int:ORGID"))
+                        'attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                        'attrib.Value = "true"
+                        'node.InnerText = Trim(strOrgId) ' predefined
 
                         ' int:LINETYPE 
                         node = nodeItem.AppendChild(docXML.CreateElement(name:="int:LINETYPE"))
@@ -359,59 +589,80 @@ Module Module1
                         attrib.Value = "true"
                         node.InnerText = Trim(strLineType) ' predefined
 
-                        ' int:ITEMSETID 
-                        node = nodeItem.AppendChild(docXML.CreateElement(name:="int:ITEMSETID"))
+                        '' int:ITEMSETID 
+                        'node = nodeItem.AppendChild(docXML.CreateElement(name:="int:ITEMSETID"))
+                        ''attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                        ''attrib.Value = "true"
+                        'node.InnerText = Trim(strItemSetId) ' predefined
+
+                        '' int:TRANS_LANGCODE 
+                        'node = nodeItem.AppendChild(docXML.CreateElement(name:="int:TRANS_LANGCODE"))
                         'attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
                         'attrib.Value = "true"
-                        node.InnerText = Trim(strItemSetId) ' predefined
+                        'node.InnerText = Trim(StrTransLangCode) ' predefined
 
-                        ' int:TRANS_LANGCODE 
-                        node = nodeItem.AppendChild(docXML.CreateElement(name:="int:TRANS_LANGCODE"))
-                        attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
-                        attrib.Value = "true"
-                        node.InnerText = Trim(StrTransLangCode) ' predefined
+                        '' int:ISSUE 
+                        'node = nodeItem.AppendChild(docXML.CreateElement(name:="int:ISSUE"))
+                        'attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
+                        'attrib.Value = "true"
+                        'node.InnerText = Trim(strIssue) ' predefined
 
-                        ' int:ISSUE 
-                        node = nodeItem.AppendChild(docXML.CreateElement(name:="int:ISSUE"))
-                        attrib = node.Attributes.Append(docXML.CreateAttribute(name:="changed"))
-                        attrib.Value = "true"
-                        node.InnerText = Trim(strIssue) ' predefined
                         ' FINISHED Building all XML nodes
 
                         Dim strOuterXml As String = docXML.OuterXml
                         strOuterXml = Replace(strOuterXml, "<Envelope", "<soapenv:Envelope")
                         strOuterXml = Replace(strOuterXml, "<Header />", "<soapenv:Header/>")
                         strOuterXml = Replace(strOuterXml, "<Body>", "<soapenv:Body>")
-                        strOuterXml = Replace(strOuterXml, "<MXRECEIPTInterface", "<int:MXRECEIPTInterface")
+                        strOuterXml = Replace(strOuterXml, "<MX_CY_RECEIPTS", "<int:MX_CY_RECEIPTS xmlns=""http://www.mro.com/mx/integration"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" ")
                         strOuterXml = Replace(strOuterXml, "<Content>", "<int:Content>")
-                        strOuterXml = Replace(strOuterXml, "<MXRECEIPT", "<int:MXRECEIPT")
+                        strOuterXml = Replace(strOuterXml, "<MXCY_RECEIPTS", "<int:MXCY_RECEIPTS")
+                        strOuterXml = Replace(strOuterXml, "<CY_RECEIPTS", "<int:CY_RECEIPTS")
                         strOuterXml = Replace(strOuterXml, "<ITEMNUM", "<int:ITEMNUM")
                         strOuterXml = Replace(strOuterXml, "</ITEMNUM>", "</int:ITEMNUM>")
                         
-                        strOuterXml = Replace(strOuterXml, "<PONUM", "<int:PONUM")
-                        strOuterXml = Replace(strOuterXml, "</PONUM>", "</int:PONUM>")
-                        strOuterXml = Replace(strOuterXml, "<POLINENUM", "<int:POLINENUM")
-                        strOuterXml = Replace(strOuterXml, "</POLINENUM>", "</int:POLINENUM>")
+                        strOuterXml = Replace(strOuterXml, "<SDIPONUM", "<int:SDIPONUM")
+                        strOuterXml = Replace(strOuterXml, "</SDIPONUM>", "</int:SDIPONUM>")
+                        strOuterXml = Replace(strOuterXml, "<SDIPOLINENUM", "<int:SDIPOLINENUM")
+                        strOuterXml = Replace(strOuterXml, "</SDIPOLINENUM>", "</int:SDIPOLINENUM>")
                         strOuterXml = Replace(strOuterXml, "<SITEID", "<int:SITEID")
                         strOuterXml = Replace(strOuterXml, "</SITEID>", "</int:SITEID>")
-                        strOuterXml = Replace(strOuterXml, "<POSITEID", "<int:POSITEID")
-                        strOuterXml = Replace(strOuterXml, "</POSITEID>", "</int:POSITEID>")
-                        strOuterXml = Replace(strOuterXml, "<RECEIPTQUANTITY", "<int:RECEIPTQUANTITY")
-                        strOuterXml = Replace(strOuterXml, "</RECEIPTQUANTITY>", "</int:RECEIPTQUANTITY>")
-                        strOuterXml = Replace(strOuterXml, "<ORGID", "<int:ORGID")
-                        strOuterXml = Replace(strOuterXml, "</ORGID>", "</int:ORGID>")
+                        strOuterXml = Replace(strOuterXml, "<CY_RECEIPTSID", "<int:CY_RECEIPTSID")
+                        strOuterXml = Replace(strOuterXml, "</CY_RECEIPTSID>", "</int:CY_RECEIPTSID>")
+                        strOuterXml = Replace(strOuterXml, "<RECEIVEDQTY", "<int:RECEIVEDQTY")
+                        strOuterXml = Replace(strOuterXml, "</RECEIVEDQTY>", "</int:RECEIVEDQTY>")
+                        strOuterXml = Replace(strOuterXml, "<RECEIVEDDATE", "<int:RECEIVEDDATE")
+                        strOuterXml = Replace(strOuterXml, "</RECEIVEDDATE>", "</int:RECEIVEDDATE>")
+                        strOuterXml = Replace(strOuterXml, "<LINEDESCRIPTION", "<int:LINEDESCRIPTION")
+                        strOuterXml = Replace(strOuterXml, "</LINEDESCRIPTION>", "</int:LINEDESCRIPTION>")
+                        strOuterXml = Replace(strOuterXml, "<RECEIVEDCOST", "<int:RECEIVEDCOST")
+                        strOuterXml = Replace(strOuterXml, "</RECEIVEDCOST>", "</int:RECEIVEDCOST>")
+                        strOuterXml = Replace(strOuterXml, "<WONUM", "<int:WONUM")
+                        strOuterXml = Replace(strOuterXml, "</WONUM>", "</int:WONUM>")
+                        strOuterXml = Replace(strOuterXml, "<RECEIPTLOCATION", "<int:RECEIPTLOCATION")
+                        strOuterXml = Replace(strOuterXml, "</RECEIPTLOCATION>", "</int:RECEIPTLOCATION>")
                         strOuterXml = Replace(strOuterXml, "<LINETYPE", "<int:LINETYPE")
                         strOuterXml = Replace(strOuterXml, "</LINETYPE>", "</int:LINETYPE>")
-                        strOuterXml = Replace(strOuterXml, "<ITEMSETID", "<int:ITEMSETID")
-                        strOuterXml = Replace(strOuterXml, "</ITEMSETID>", "</int:ITEMSETID>")
-                        strOuterXml = Replace(strOuterXml, "<TRANS_LANGCODE", "<int:TRANS_LANGCODE")
-                        strOuterXml = Replace(strOuterXml, "</TRANS_LANGCODE>", "</int:TRANS_LANGCODE>")
-                        strOuterXml = Replace(strOuterXml, "<ISSUE", "<int:ISSUE")
-                        strOuterXml = Replace(strOuterXml, "</ISSUE>", "</int:ISSUE>")
+                        strOuterXml = Replace(strOuterXml, "<PRNUM", "<int:PRNUM")
+                        strOuterXml = Replace(strOuterXml, "</PRNUM>", "</int:PRNUM>")
+                        strOuterXml = Replace(strOuterXml, "<PRLINENUM", "<int:PRLINENUM")
+                        strOuterXml = Replace(strOuterXml, "</PRLINENUM>", "</int:PRLINENUM>")
+                        strOuterXml = Replace(strOuterXml, "<MEMO", "<int:MEMO")
+                        strOuterXml = Replace(strOuterXml, "</MEMO>", "</int:MEMO>")
+                        strOuterXml = Replace(strOuterXml, "<REQUESTEDBY", "<int:REQUESTEDBY")
+                        strOuterXml = Replace(strOuterXml, "</REQUESTEDBY>", "</int:REQUESTEDBY>")
+                        strOuterXml = Replace(strOuterXml, "<SDIKITID", "<int:SDIKITID")
+                        strOuterXml = Replace(strOuterXml, "</SDIKITID>", "</int:SDIKITID>")
+                        strOuterXml = Replace(strOuterXml, "<FINALRECEIPT", "<int:FINALRECEIPT")
+                        strOuterXml = Replace(strOuterXml, "</FINALRECEIPT>", "</int:FINALRECEIPT>")
+                        strOuterXml = Replace(strOuterXml, "<REQUIREDDATE", "<int:REQUIREDDATE")
+                        strOuterXml = Replace(strOuterXml, "</REQUIREDDATE>", "</int:REQUIREDDATE>")
+                        strOuterXml = Replace(strOuterXml, "<RECEIPTSTATUS", "<int:RECEIPTSTATUS")
+                        strOuterXml = Replace(strOuterXml, "</RECEIPTSTATUS>", "</int:RECEIPTSTATUS>")
 
-                        strOuterXml = Replace(strOuterXml, "</MXRECEIPT>", "</int:MXRECEIPT>")
+                        strOuterXml = Replace(strOuterXml, "</MXCY_RECEIPTS>", "</int:MXCY_RECEIPTS>")
+                        strOuterXml = Replace(strOuterXml, "</CY_RECEIPTS>", "</int:CY_RECEIPTS>")
                         strOuterXml = Replace(strOuterXml, "</Content>", "</int:Content>")
-                        strOuterXml = Replace(strOuterXml, "</MXRECEIPTInterface>", "</int:MXRECEIPTInterface>")
+                        strOuterXml = Replace(strOuterXml, "</MX_CY_RECEIPTS>", "</int:MX_CY_RECEIPTS>")
                         strOuterXml = Replace(strOuterXml, "</Body>", "</soapenv:Body>")
                         strOuterXml = Replace(strOuterXml, "</Envelope>", "</soapenv:Envelope>")
 

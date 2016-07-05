@@ -2,17 +2,17 @@
 <Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:int="http://www.mro.com/mx/integration">
   <soapenv:Header/>
    <Body>
-     <MXRECEIPTInterface language="EN">
+     <MX_CY_RECEIPTS language="EN">
          <int:Header operation="Notify">
-            	<int:SenderID type="MAXIMO" majorversion="6" minorversion="2" build="198" dbbuild="V600-609">CY_HTTP</int:SenderID>
+            	<int:SenderID type="MAXIMO" majorversion="6" minorversion="2" build="198" dbbuild="V600-609">CY_MXHTTP_PR</int:SenderID>
               <int:CreationDateTime>{__TIMESTAMP}</int:CreationDateTime>
         	    <int:RecipientID>string</int:RecipientID>
         	    <int:MessageID>string</int:MessageID>
          </int:Header>
       <Content>
       </Content>
-    </MXRECEIPTInterface>
-  </Body>
+    </MX_CY_RECEIPTS>
+ </Body>
 </Envelope>
 
 
