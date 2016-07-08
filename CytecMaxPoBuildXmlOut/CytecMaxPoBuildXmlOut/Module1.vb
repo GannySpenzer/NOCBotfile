@@ -64,7 +64,7 @@ Module Module1
         Catch ex As Exception
         End Try
         If (sLogPath.Length > 0) Then
-            logpath = sLogPath & "\CytecMaxIOH_XmlBuildOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+            logpath = sLogPath & "\CytecMaxPO_XmlBuildOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
         End If
 
         Dim sUrl As String = ""
