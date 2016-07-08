@@ -17,6 +17,8 @@ Module Module1
     Dim logpath As String = "C:\CytecMxmIn\LOGS\CytecMaxIOH_XmlBuildOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
     Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=DEVL")
 
+    Private m_Url_Cytec_Maximo As String = "http://websrv.sdi.com/sdiwebin/xmlinsdi.aspx"
+
     Sub Main()
 
         Dim rtn As String = "Module1.Main"
@@ -60,6 +62,15 @@ Module Module1
             logpath = sLogPath & "\CytecMaxIOH_XmlBuildOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
         End If
 
+        Dim sUrl As String = ""
+        Try
+            sUrl = My.Settings("Url_Cytec_Maximo").ToString.Trim
+        Catch ex As Exception
+        End Try
+        If (sUrl.Length > 0) Then
+            m_Url_Cytec_Maximo = sUrl
+        End If
+
         ' default log level
         Dim logLevel As System.Diagnostics.TraceLevel = TraceLevel.Verbose
 
@@ -101,7 +112,7 @@ Module Module1
         Dim bolError As Boolean = BuildIohOutXML()
 
         If bolError = True Then
-            SendEmail()
+            'SendEmail()
         End If
 
         ' final log for this run
@@ -119,6 +130,7 @@ Module Module1
 
     Private Function BuildIohOutXML() As Boolean
         Dim bolError As Boolean = False
+        Dim bolLineError As Boolean = False
         Dim ds As New DataSet
 
         Dim rtn As String = "Module1.BuildIohOutXML"
@@ -163,7 +175,11 @@ Module Module1
 
             Dim strTemplateXml As String = System.AppDomain.CurrentDomain.BaseDirectory.ToString & "CytecMaxIOHTemplate.xml"
 
-            Try
+            For I = 0 To ds.Tables(0).Rows.Count - 1
+                Dim intIsaIdent As Long = 0
+                Dim sErrMsgFromSendXmlOut As String = ""
+                Dim strUpdateSql As String = ""
+                'build SEPARATE XML file for each line in data set
 
                 Dim docXML As New XmlDocument
                 Dim stringer As theStringer = Nothing
@@ -173,7 +189,6 @@ Module Module1
                 ' load template for XML and replace header variables
                 stringer = New theStringer(Common.LoadPathFile(strTemplateXml))
 
-                'Dim dateOffset As New DateTimeOffset(Now, TimeZoneInfo.Local.GetUtcOffset(Now))
                 Dim dateOffset As New DateTimeOffset(Now, TimeZone.CurrentTimeZone.GetUtcOffset(Now))
                 m_timeStamp = dateOffset.ToString("s")
                 stringer.Parameters.Add("{__TIMESTAMP}", m_timeStamp)
@@ -183,7 +198,7 @@ Module Module1
 
                 m_logger.WriteVerboseLog(rtn & " :: Template loaded")
 
-                ' get existing node Request
+                ' get existing node Content
                 Dim nodeOrderReq As XmlNode = docXML.SelectSingleNode(xpath:="//Envelope//Body//MXINVBALInterface//Content")
 
                 Dim strItemNum As String = ""
@@ -194,24 +209,28 @@ Module Module1
                 Dim strSiteId As String = "PC"
                 Dim strTransLangCode As String = "EN"
 
-                For I = 0 To ds.Tables(0).Rows.Count - 1
-
-                    ' Item Number: int:ITEMNUM
+                ' Item Number: int:ITEMNUM
+                strItemNum = ""
+                Try
+                    strItemNum = CStr(ds.Tables(0).Rows(I).Item("ISA_ITEM"))
+                Catch ex As Exception
                     strItemNum = ""
-                    Try
-                        strItemNum = CStr(ds.Tables(0).Rows(I).Item("ISA_ITEM"))
-                    Catch ex As Exception
-                        strItemNum = ""
-                    End Try
-                    ' int:LOCATION 
+                End Try
+                ' int:LOCATION 
+                strStorLoc = ""
+                Try
+                    strStorLoc = CStr(ds.Tables(0).Rows(I).Item("STORAGE_AREA"))
+                Catch ex As Exception
                     strStorLoc = ""
-                    Try
-                        strStorLoc = CStr(ds.Tables(0).Rows(I).Item("STORAGE_AREA"))
-                    Catch ex As Exception
-                        strStorLoc = ""
-                    End Try
-                    If Trim(strItemNum) <> "" And Trim(strStorLoc) <> "" Then ' Required!
+                End Try
+                Dim strXmlFileNameToSave21 As String = "CytecMaxIOHOut_LineNo_" & I.ToString()
+                Dim strXMLError As String = ""
+                If Trim(strItemNum) <> "" And Trim(strStorLoc) <> "" Then ' Required!
 
+                    intIsaIdent = CType(ds.Tables(0).Rows(I).Item("ISA_IDENTIFIER"), Long)
+                    bolLineError = False
+
+                    Try
                         'create XML element/lines 
 
                         ' build <int:MXINVBAL
@@ -290,77 +309,419 @@ Module Module1
                             node.InnerText = Trim(strTransLangCode) ' predefined
                         End If
 
-                        ' ???
+                        ''update field to 'Y' and set date time
+                        'Dim strUpdateSql As String = "UPDATE SYSADM8.PS_ISA_MXM_IOH_OUT SET PROCESS_FLAG = 'Y' WHERE ISA_IDENTIFIER = " & ds.Tables(0).Rows(I).Item("ISA_IDENTIFIER") & ""
 
-                    Else
-                        m_logger.WriteVerboseLog(rtn & " :: Trim(strItemNum) = '' (" & strItemNum & ") Or Trim(strStorLoc) = '' (" & strStorLoc & ") for line number: " & (I + 1).ToString())
-                    End If  ' If Trim(strItemNum) <> "" And Trim(strStorLoc) <> "" Then ' Required!
+                        'rowsaffected = 0
+                        'rowsaffected = ORDBAccess.ExecNonQuery(strUpdateSql, connectOR)
 
-                    'update field to 'Y' and set date time
-                    Dim strUpdateSql As String = "UPDATE SYSADM8.PS_ISA_MXM_IOH_OUT SET PROCESS_FLAG = 'Y' WHERE ISA_IDENTIFIER = " & ds.Tables(0).Rows(I).Item("ISA_IDENTIFIER") & ""
+                        'If rowsaffected = 0 Then
+                        '    m_logger.WriteVerboseLog(rtn & " :: Update field PROCESS_FLAG to 'Y' returned 'rowsaffected = 0'. strUpdateSql : " & strUpdateSql)
+                        '    bolError = True
+                        'End If
 
-                    rowsaffected = 0
-                    rowsaffected = ORDBAccess.ExecNonQuery(strUpdateSql, connectOR)
+                        Dim strOuterXml As String = docXML.OuterXml
+                        strOuterXml = Replace(strOuterXml, "<Envelope", "<soapenv:Envelope")
+                        'strOuterXml = Replace(strOuterXml, "<Header />", "<soapenv:Header />")
+                        strOuterXml = Replace(strOuterXml, "<Body>", "<soapenv:Body>")
+                        strOuterXml = Replace(strOuterXml, "<MXINVBALInterface", "<int:MXINVBALInterface")
+                        strOuterXml = Replace(strOuterXml, "<Content>", "<int:Content>")
+                        strOuterXml = Replace(strOuterXml, "<MXINVBAL>", "<int:MXINVBAL>")
+                        strOuterXml = Replace(strOuterXml, "<INVBALANCES", "<int:INVBALANCES")
+                        strOuterXml = Replace(strOuterXml, "<ITEMNUM", "<int:ITEMNUM")
+                        strOuterXml = Replace(strOuterXml, "</ITEMNUM>", "</int:ITEMNUM>")
+                        strOuterXml = Replace(strOuterXml, "<LOCATION", "<int:LOCATION")
+                        strOuterXml = Replace(strOuterXml, "</LOCATION>", "</int:LOCATION>")
+                        strOuterXml = Replace(strOuterXml, "<BINNUM", "<int:BINNUM")
+                        strOuterXml = Replace(strOuterXml, "</BINNUM>", "</int:BINNUM>")
+                        strOuterXml = Replace(strOuterXml, "<CURBAL", "<int:CURBAL")
+                        strOuterXml = Replace(strOuterXml, "</CURBAL>", "</int:CURBAL>")
 
-                    If rowsaffected = 0 Then
-                        m_logger.WriteVerboseLog(rtn & " :: Update field PROCESS_FLAG to 'Y' returned 'rowsaffected = 0'. strUpdateSql : " & strUpdateSql)
-                        bolError = True
-                    End If
-                Next   '  For I = 0 To ds.Tables(0).Rows.Count - 1
+                        strOuterXml = Replace(strOuterXml, "<ORGID", "<int:ORGID")
+                        strOuterXml = Replace(strOuterXml, "</ORGID>", "</int:ORGID>")
+                        strOuterXml = Replace(strOuterXml, "<SITEID", "<int:SITEID")
+                        strOuterXml = Replace(strOuterXml, "</SITEID>", "</int:SITEID>")
+                        strOuterXml = Replace(strOuterXml, "<TRANS_LANGCODE", "<int:TRANS_LANGCODE")
+                        strOuterXml = Replace(strOuterXml, "</TRANS_LANGCODE>", "</int:TRANS_LANGCODE>")
 
-                Dim strOuterXml As String = docXML.OuterXml
-                strOuterXml = Replace(strOuterXml, "<Envelope", "<soapenv:Envelope")
-                'strOuterXml = Replace(strOuterXml, "<Header />", "<soapenv:Header />")
-                strOuterXml = Replace(strOuterXml, "<Body>", "<soapenv:Body>")
-                strOuterXml = Replace(strOuterXml, "<MXINVBALInterface", "<int:MXINVBALInterface")
-                strOuterXml = Replace(strOuterXml, "<Content>", "<int:Content>")
-                strOuterXml = Replace(strOuterXml, "<MXINVBAL>", "<int:MXINVBAL>")
-                strOuterXml = Replace(strOuterXml, "<INVBALANCES", "<int:INVBALANCES")
-                strOuterXml = Replace(strOuterXml, "<ITEMNUM", "<int:ITEMNUM")
-                strOuterXml = Replace(strOuterXml, "</ITEMNUM>", "</int:ITEMNUM>")
-                strOuterXml = Replace(strOuterXml, "<LOCATION", "<int:LOCATION")
-                strOuterXml = Replace(strOuterXml, "</LOCATION>", "</int:LOCATION>")
-                strOuterXml = Replace(strOuterXml, "<BINNUM", "<int:BINNUM")
-                strOuterXml = Replace(strOuterXml, "</BINNUM>", "</int:BINNUM>")
-                strOuterXml = Replace(strOuterXml, "<CURBAL", "<int:CURBAL")
-                strOuterXml = Replace(strOuterXml, "</CURBAL>", "</int:CURBAL>")
+                        strOuterXml = Replace(strOuterXml, "</MXINVBAL>", "</int:MXINVBAL>")
+                        strOuterXml = Replace(strOuterXml, "</INVBALANCES>", "</int:INVBALANCES>")
+                        strOuterXml = Replace(strOuterXml, "</Content>", "</int:Content>")
+                        strOuterXml = Replace(strOuterXml, "</MXINVBALInterface>", "</int:MXINVBALInterface>")
+                        strOuterXml = Replace(strOuterXml, "</Body>", "</soapenv:Body>")
+                        strOuterXml = Replace(strOuterXml, "</Envelope>", "</soapenv:Envelope>")
 
-                strOuterXml = Replace(strOuterXml, "<ORGID", "<int:ORGID")
-                strOuterXml = Replace(strOuterXml, "</ORGID>", "</int:ORGID>")
-                strOuterXml = Replace(strOuterXml, "<SITEID", "<int:SITEID")
-                strOuterXml = Replace(strOuterXml, "</SITEID>", "</int:SITEID>")
-                strOuterXml = Replace(strOuterXml, "<TRANS_LANGCODE", "<int:TRANS_LANGCODE")
-                strOuterXml = Replace(strOuterXml, "</TRANS_LANGCODE>", "</int:TRANS_LANGCODE>")
+                        m_logger.WriteVerboseLog(rtn & " :: Finished creating IOH XML Out string for LineIndent: " & intIsaIdent.ToString())
 
-                strOuterXml = Replace(strOuterXml, "</MXINVBAL>", "</int:MXINVBAL>")
-                strOuterXml = Replace(strOuterXml, "</INVBALANCES>", "</int:INVBALANCES>")
-                strOuterXml = Replace(strOuterXml, "</Content>", "</int:Content>")
-                strOuterXml = Replace(strOuterXml, "</MXINVBALInterface>", "</int:MXINVBALInterface>")
-                strOuterXml = Replace(strOuterXml, "</Body>", "</soapenv:Body>")
-                strOuterXml = Replace(strOuterXml, "</Envelope>", "</soapenv:Envelope>")
+                        Dim strXmlFileNameStartWith As String = "CytecMaxIOHOut_LineIndent_" & intIsaIdent.ToString() & "_"
 
-                m_logger.WriteVerboseLog(rtn & " :: Finished creating XML Out string")
-                Dim objStreamWriterXML As System.IO.StreamWriter
-                objStreamWriterXML = New System.IO.StreamWriter(rootDir & "\XMLOUT\CytecMaxIOHOut" & Now.Hour.ToString("D2") & Now.Minute.ToString("D2") & Now.Second.ToString("D2") & Now.GetHashCode & ".xml")
-                objStreamWriterXML.WriteLine(strOuterXml)
-                objStreamWriterXML.Flush()
-                objStreamWriterXML.Close()
-                m_logger.WriteVerboseLog(rtn & " :: Saved XML Out file")
-                bolError = False
+                        Dim objStreamWriterXML As System.IO.StreamWriter
+                        Dim sFileName As String = strXmlFileNameStartWith & Now.Hour.ToString("D2") & Now.Minute.ToString("D2") & Now.Second.ToString("D2") & Now.GetHashCode & ".xml"
 
-            Catch ex As Exception
+                        strXmlFileNameToSave21 = rootDir & "\XMLOUT\" & sFileName
+                        objStreamWriterXML = New System.IO.StreamWriter(strXmlFileNameToSave21)
+                        objStreamWriterXML.WriteLine(strOuterXml)
 
-                bolError = True
-                m_logger.WriteErrorLog(rtn & " :: Error while building Issues Out XML")
-                m_logger.WriteErrorLog(ex.Message)
-            End Try
+                        'objStreamWriterXML = New System.IO.StreamWriter(rootDir & "\XMLOUT\CytecMaxIOHOut" & Now.Hour.ToString("D2") & Now.Minute.ToString("D2") & Now.Second.ToString("D2") & Now.GetHashCode & ".xml")
+                        'objStreamWriterXML.WriteLine(strOuterXml)
+                        objStreamWriterXML.Flush()
+                        objStreamWriterXML.Close()
+                        'm_logger.WriteVerboseLog(rtn & " :: Saved XML Out file")
+                        'bolError = False
+
+                        m_logger.WriteVerboseLog(rtn & " :: Saved IOH XML Out file for Line Indent.: " & intIsaIdent.ToString())
+                        bolLineError = False
+
+                        'send XML file to Cytec
+                        bolLineError = SendXMLOut(strXmlFileNameToSave21, sFileName, sErrMsgFromSendXmlOut)
+                        Dim strErr254 As String = ""
+                        If Trim(sErrMsgFromSendXmlOut) <> "" Then
+                            sErrMsgFromSendXmlOut = Trim(sErrMsgFromSendXmlOut)
+                            If Len(sErrMsgFromSendXmlOut) > 254 Then
+                                strErr254 = Microsoft.VisualBasic.Left(sErrMsgFromSendXmlOut, 254)
+                            Else
+                                strErr254 = sErrMsgFromSendXmlOut
+                            End If
+                            If Len(sErrMsgFromSendXmlOut) > 80 Then
+                                sErrMsgFromSendXmlOut = Microsoft.VisualBasic.Left(sErrMsgFromSendXmlOut, 80)
+                            End If
+                        Else
+                            sErrMsgFromSendXmlOut = "Empty Error Message returned from 'SendXMLOut'"
+                            strErr254 = sErrMsgFromSendXmlOut
+                        End If
+
+                        If Trim(sErrMsgFromSendXmlOut) <> "" Then
+                            m_logger.WriteVerboseLog(sErrMsgFromSendXmlOut)
+                        Else
+                            m_logger.WriteVerboseLog("No Error Message returned from 'SendXMLOut'")
+                        End If
+
+                        If Not bolLineError Then
+                            'update field to 'Y'
+                            strUpdateSql = "UPDATE SYSADM8.PS_ISA_MXM_IOH_OUT SET PROCESS_FLAG = 'Y' WHERE ISA_IDENTIFIER = " & ds.Tables(0).Rows(I).Item("ISA_IDENTIFIER") & ""
+                        Else
+
+                            'set flag to E; write error message
+                            strUpdateSql = "UPDATE SYSADM8.PS_ISA_MXM_IOH_OUT SET PROCESS_FLAG = 'E', ISA_ERROR_MSG_80 = '" & sErrMsgFromSendXmlOut & "' WHERE ISA_IDENTIFIER = " & ds.Tables(0).Rows(I).Item("ISA_IDENTIFIER") & ""
+                        End If
+
+                        rowsaffected = 0
+                        rowsaffected = ORDBAccess.ExecNonQuery(strUpdateSql, connectOR)
+
+                        If rowsaffected = 0 Then
+                            Dim strRowsAffctZero As String = rtn & " :: Update field PROCESS_FLAG returned 'rowsaffected = 0'. strUpdateSql : " & strUpdateSql
+                            m_logger.WriteVerboseLog(strRowsAffctZero)
+                            bolLineError = True
+
+                        End If
+
+                        If bolLineError Then
+                            strUpdateSql = "INSERT INTO SYSADM.PS_NLNK2_ERR_MSG (CUST_ID,ISA_IDENTIFIER,ERROR_LEVEL," & vbCrLf & _
+                            "MESSAGE_ID,MESSAGE_NBR,MESSAGE_TEXT_254,DATETIME_ADDED) " & vbCrLf & _
+                            " VALUES('CYTEC'," & intIsaIdent & ",'E'," & vbCrLf & _
+                            "' ',0,'" & strErr254 & "',TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM'))" & vbCrLf & _
+                            ""
+
+                            rowsaffected = 0
+                            rowsaffected = ORDBAccess.ExecNonQuery(strUpdateSql, connectOR)
+                            If rowsaffected = 0 Then
+                                m_logger.WriteVerboseLog(rtn & " ::  'rowsaffected = 0'. strUpdateSql : " & strUpdateSql)
+                            End If
+                        End If
+
+                    Catch ex As Exception
+
+                        bolLineError = True
+
+                        strXMLError = ex.Message
+
+                        If Len(strXMLError) > 254 Then
+                            strXMLError = Microsoft.VisualBasic.Left(strXMLError, 254)
+                        End If
+                        m_logger.WriteErrorLog(rtn & " :: Error while building IOH Out XML for the dataset Line No: " & I.ToString())
+                        m_logger.WriteErrorLog(ex.Message)
+                        strUpdateSql = ""
+                        strUpdateSql = "INSERT INTO SYSADM.PS_NLNK2_ERR_MSG (CUST_ID,ISA_IDENTIFIER,ERROR_LEVEL," & vbCrLf & _
+                            "MESSAGE_ID,MESSAGE_NBR,MESSAGE_TEXT_254,DATETIME_ADDED) " & vbCrLf & _
+                            " VALUES('CYTEC'," & intIsaIdent & ",'E'," & vbCrLf & _
+                            "' ',0,'" & strXMLError & "',TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM'))" & vbCrLf & _
+                            ""
+
+                        rowsaffected = 0
+                        rowsaffected = ORDBAccess.ExecNonQuery(strUpdateSql, connectOR)
+                        If rowsaffected = 0 Then
+                            m_logger.WriteVerboseLog(rtn & " ::  'rowsaffected = 0'. strUpdateSql : " & strUpdateSql)
+                        End If
+
+                        If Len(strXMLError) > 80 Then
+                            strXMLError = Microsoft.VisualBasic.Left(strXMLError, 80)
+                        End If
+
+                        strUpdateSql = "UPDATE SYSADM8.PS_ISA_MXM_IOH_OUT SET PROCESS_FLAG = 'E', ISA_ERROR_MSG_80 = '" & strXMLError & "' WHERE ISA_IDENTIFIER = " & intIsaIdent.ToString() & ""
+
+                        rowsaffected = 0
+                        rowsaffected = ORDBAccess.ExecNonQuery(strUpdateSql, connectOR)
+                        If rowsaffected = 0 Then
+                            m_logger.WriteVerboseLog(rtn & " ::  'rowsaffected = 0'. strUpdateSql : " & strUpdateSql)
+                        End If
+                    End Try
+
+                Else
+
+                    bolLineError = True
+                    Dim strErrMsg1 As String = ""
+                    strErrMsg1 = rtn & " :: Trim(strItemNum) = '' (" & strItemNum & ") Or Trim(strStorLoc) = '' (" & strStorLoc & ") for line number: " & (I + 1).ToString()
+
+                    strXMLError = strErrMsg1
+
+                    m_logger.WriteVerboseLog(strErrMsg1)
+
+                    Try
+                        strUpdateSql = "INSERT INTO SYSADM.PS_NLNK2_ERR_MSG (CUST_ID,ISA_IDENTIFIER,ERROR_LEVEL," & vbCrLf & _
+                        "MESSAGE_ID,MESSAGE_NBR,MESSAGE_TEXT_254,DATETIME_ADDED) " & vbCrLf & _
+                        " VALUES('CYTEC'," & intIsaIdent & ",'E'," & vbCrLf & _
+                        "' ',0,'" & strErrMsg1 & "',TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM'))" & vbCrLf & _
+                        ""
+
+                        rowsaffected = 0
+                        rowsaffected = ORDBAccess.ExecNonQuery(strUpdateSql, connectOR)
+                        If rowsaffected = 0 Then
+                            m_logger.WriteVerboseLog(rtn & " ::  'rowsaffected = 0'. strUpdateSql : " & strUpdateSql)
+                        End If
+
+                        strUpdateSql = "UPDATE SYSADM8.PS_ISA_MXM_IOH_OUT SET PROCESS_FLAG = 'E', ISA_ERROR_MSG_80 = '" & strErrMsg1 & "' WHERE ISA_IDENTIFIER = " & ds.Tables(0).Rows(I).Item("ISA_IDENTIFIER") & ""
+
+                        rowsaffected = 0
+                        rowsaffected = ORDBAccess.ExecNonQuery(strUpdateSql, connectOR)
+                        If rowsaffected = 0 Then
+                            m_logger.WriteVerboseLog(rtn & " ::  'rowsaffected = 0'. strUpdateSql : " & strUpdateSql)
+                        End If
+                    Catch ex As Exception
+                        m_logger.WriteVerboseLog(rtn & " :: Error trying to save this message: " & strErrMsg1)
+                        m_logger.WriteVerboseLog(rtn & " :: Error: " & ex.Message)
+                    End Try
+
+                End If  ' If Trim(strItemNum) <> "" And Trim(strStorLoc) <> "" Then ' Required!
+
+                If bolLineError Then
+                    bolError = True
+                End If
+            Next  '  For I = 0 To ds.Tables(0).Rows.Count - 1
+
         End If  '  ds.Tables(0).Rows.Count > 0
 
         Return bolError
 
     End Function
 
+    Private Function SendXMLOut(ByVal strXmlFileNameToSave21 As String, ByVal sFileName As String, _
+                ByRef sErrMsgFromSendXmlOut As String) As Boolean
+        Dim rtn As String = "Cytec Maximo Process XML Out.getXMLOut"
+        Console.WriteLine("Start send of Cytec Maximo XML out")
+        Console.WriteLine("")
+
+        Dim sr As System.IO.StreamReader = Nothing
+        Dim XMLContent As String = ""
+        Dim strXMLError As String = ""
+        Dim bolError As Boolean = False
+
+        Dim xmlRequest As New XmlDocument
+
+        Dim I As Integer = 0
+        Dim strItems As String = ""
+        Dim intItems As Integer = 0
+
+        m_logger.WriteVerboseLog(rtn & " :: started sending file " & strXmlFileNameToSave21)
+
+        Try
+
+            sr = New System.IO.StreamReader(strXmlFileNameToSave21)
+            XMLContent = sr.ReadToEnd()
+            sr.Close()
+
+            Try
+                xmlRequest.LoadXml(XMLContent)
+            Catch ex As Exception
+                Console.WriteLine("")
+                Console.WriteLine("***error - " & ex.ToString)
+                Console.WriteLine("")
+                strXMLError = ex.ToString
+                m_logger.WriteErrorLog(rtn & " :: load out Error " & strXMLError & " in file " & sFileName)
+
+            End Try
+
+            Dim Response_Doc As String
+            If Trim(strXMLError) = "" Then
+
+                Response_Doc = SendOut(xmlRequest.InnerXml)
+
+                '-----------------------------------------------------------------------
+                ' Parse the XML response from Intercall Extranet
+                '-----------------------------------------------------------------------
+
+                Dim xmlResponse As New XmlDocument
+                Try
+                    If Trim(Response_Doc) = "" Then
+                        m_logger.WriteVerboseLog("     empty response from file " & sFileName)
+                    Else
+                        m_logger.WriteVerboseLog(Response_Doc)
+                        xmlResponse.LoadXml(Response_Doc)
+                        ' error trapping code
+                        If Response_Doc.Contains("<soapenv:Fault>") Or Response_Doc.Contains("</faultcode>") Or _
+                                    Response_Doc.Contains("</faultstring>") Then
+                            bolError = True
+                            'get Response_Doc error part
+                            Dim strErrorPart As String = ""
+                            Dim intStartPos1 As Integer = 0
+                            If Response_Doc.Contains("<faultstring>") Then
+                                intStartPos1 = Response_Doc.IndexOf("<faultstring>") + 14
+                                strErrorPart = Mid(Response_Doc, intStartPos1)
+                            End If
+                            strXMLError = strErrorPart
+                        End If
+                    End If
+                Catch ex As Exception
+                    Console.WriteLine("")
+                    Console.WriteLine("***error - " & ex.ToString)
+                    Console.WriteLine("")
+                    strXMLError = ex.ToString
+                    m_logger.WriteErrorLog(rtn & " ::Error: " & strXMLError & " in file " & strXmlFileNameToSave21)
+
+                End Try
+
+                '-----------------------------------------------------------------------
+                ' Get server status
+                '-----------------------------------------------------------------------
+
+                If Trim(strXMLError) = "" Then
+                    Try
+                        File.Copy(strXmlFileNameToSave21, "C:\CytecMxmIn\XMLOUTProcessed\" & sFileName, True)
+                        m_logger.WriteVerboseLog(" End - FILE " & strXmlFileNameToSave21 & " has been moved")
+                        File.Delete(strXmlFileNameToSave21)
+                    Catch ex As Exception
+
+                        m_logger.WriteErrorLog(rtn & "  copy file Error in file " & sFileName)
+                        m_logger.WriteErrorLog(rtn & " :: " & ex.ToString)
+
+                        strXMLError = ex.ToString
+                    End Try
+                Else '  Trim(strXMLError) <> ""
+                    sErrMsgFromSendXmlOut = strXMLError
+                    Try
+                        File.Copy(strXmlFileNameToSave21, "C:\CytecMxmIn\BadXML\" & sFileName, True)
+                        m_logger.WriteVerboseLog("Error description: " & strXMLError)
+                        m_logger.WriteVerboseLog(" Error - FILE: " & strXmlFileNameToSave21 & " - has been moved to BadXML directory")
+                        File.Delete(strXmlFileNameToSave21)
+                    Catch ex As Exception
+
+                        m_logger.WriteErrorLog(rtn & " ::  move file to BadXML directory Error in file " & sFileName)
+                        m_logger.WriteErrorLog(rtn & " :: " & ex.ToString)
+
+                        strXMLError = ex.ToString
+                    End Try
+                    bolError = True
+                End If '  If Trim(strXMLError) = ""
+
+            Else  '  Trim(strXMLError) <> ""
+                sErrMsgFromSendXmlOut = strXMLError
+                Try
+                    File.Copy(strXmlFileNameToSave21, "C:\CytecMxmIn\BadXML\" & sFileName, True)
+                    m_logger.WriteVerboseLog(" Error - FILE: " & strXmlFileNameToSave21 & " - has been moved to BadXML directory")
+                    File.Delete(strXmlFileNameToSave21)
+                Catch ex As Exception
+
+                    m_logger.WriteErrorLog(rtn & " ::  move file to BadXML directory Error in file " & sFileName)
+                    m_logger.WriteErrorLog(rtn & " :: " & ex.ToString)
+
+                    strXMLError = ex.ToString
+                End Try
+                bolError = True
+            End If  '  If Trim(strXMLError) = ""
+
+        Catch ex As Exception
+            m_logger.WriteErrorLog(rtn & " ::Error " & strXMLError & " in file " & sFileName)
+            m_logger.WriteErrorLog(rtn & " :: " & ex.ToString)
+
+            strXMLError = ex.ToString
+
+            bolError = True
+        End Try
+
+        sErrMsgFromSendXmlOut = strXMLError
+
+        If Not bolError Then
+            sErrMsgFromSendXmlOut = ""
+        End If
+
+        Return bolError
+
+    End Function
+
+    Private Function SendOut(ByVal strInnerXml As String) As String
+        Dim Response_Doc As String = ""
+        Dim XMLhttp As Object
+        Dim xmlDoc2 As Object
+
+        XMLhttp = CreateObject("MSXML2.ServerXMLHTTP")
+        XMLhttp.Open("POST", m_Url_Cytec_Maximo, False)
+        XMLhttp.setRequestHeader("Content-Type", "text/xml; charset=UTF-8")
+        XMLhttp.setRequestHeader("SOAPAction", "http://websrv.sdi.com/sdiwebin/xmlinsdi.aspx")
+        XMLhttp.setTimeouts(10000, 120000, 60000, 60000)
+        XMLhttp.Send(strInnerXml)
+
+        '-----------------------------------------------------------------------
+        ' Get XML response from Extranet
+        '-----------------------------------------------------------------------
+        xmlDoc2 = CreateObject("MSXML2.DOMDocument")
+        xmlDoc2.setProperty("ServerHTTPRequest", True)
+        xmlDoc2.async = False
+        xmlDoc2.LoadXML(XMLhttp.ResponseXML.xml)
+
+        Response_Doc = XMLhttp.responseXML.xml
+
+        Return Response_Doc
+
+    End Function
+
     Private Sub SendEmail()
+
+        Dim rtn As String = "Module1.SendEmail"
+
+        Dim email As New MailMessage
+
+        'The email address of the sender
+        email.From = "TechSupport@sdi.com"
+
+        'The email address of the recipient. 
+        email.To = "vitaly.rovensky@sdi.com"
+        email.Cc = " "
+        email.Bcc = "webdev@sdi.com"
+
+        'The subject of the email
+        email.Subject = "Cytec Maximo IOH XML Out Error(s)"
+
+        'The Priority attached and displayed for the email
+        email.Priority = MailPriority.High
+
+        email.BodyFormat = MailFormat.Html
+
+        email.Body = "<table><tr><td>'Cytec Maximo IOH XML Out' process has completed with errors, review tables SYSADM8.PS_ISA_MXM_IOH_OUT and SYSADM.PS_NLNK2_ERR_MSG for Errors description.</td></tr></table>"
+
+        'Send the email and handle any error that occurs
+        Dim bSend As Boolean = False
+        Try
+            SendEmail1(email)
+            bSend = True
+        Catch ex As Exception
+            bSend = False
+        End Try
+
+        If Not bSend Then
+            m_logger.WriteErrorLog(rtn & " :: Error - the email was not sent.")
+        End If
+    End Sub
+
+    Private Sub SendEmail_OLD()
 
         Dim rtn As String = "Module1.IOHBuildXmlOut.SendEmail"
 
@@ -391,6 +752,33 @@ Module Module1
             m_logger.WriteErrorLog(rtn & " :: Error - the email was not sent")
         End Try
 
+    End Sub
+
+    Private Sub SendEmail1(ByVal mailer As System.Web.Mail.MailMessage)
+
+        Try
+
+            SendLogger(mailer.Subject, mailer.Body, "CYTECMXMIOHBUILDXMLOUT", "Mail", mailer.To, mailer.Cc, mailer.Bcc)
+
+        Catch ex As Exception
+
+        End Try
+    End Sub
+
+    Public Sub SendLogger(ByVal subject As String, ByVal body As String, ByVal messageType As String, ByVal MailType As String, ByVal EmailTo As String, ByVal EmailCc As String, ByVal EmailBcc As String)
+        Try
+            Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
+            Dim MailAttachmentName As String()
+            Dim MailAttachmentbytes As New List(Of Byte())()
+            Dim objException As String
+            Dim objExceptionTrace As String
+
+            'EmailTo = "vitaly.rovensky@sdi.com"
+            SDIEmailService.EmailUtilityServices(MailType, "SDIExchADMIN@sdi.com", EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
+
+        Catch ex As Exception
+
+        End Try
     End Sub
 
 End Module
