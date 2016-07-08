@@ -1219,10 +1219,10 @@ Module Module1
         email.Body &= "<table><tr><td>CytecMxmMatMast has completed with "
         If bolWarning = True Then
             email.Body &= "warnings,"
-            email.Subject = " (TEST) CytecMxmMatMast Warning"
+            email.Subject = " CytecMxmMatMast Warning"
         Else
             email.Body &= "errors;"
-            email.Subject = " (TEST) CytecMxmMatMast Error"
+            email.Subject = " CytecMxmMatMast Error"
         End If
 
         'VR 12/18/2014 Adding file names and error descriptions in message body
