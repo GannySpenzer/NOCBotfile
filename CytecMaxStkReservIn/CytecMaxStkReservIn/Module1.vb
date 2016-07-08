@@ -1087,10 +1087,10 @@ Module Module1
         email.Body &= "<table><tr><td>CytecMxmStkReserv has completed with "
         If bolWarning = True Then
             email.Body &= "warnings,"
-            email.Subject = " (TEST) CytecMxmStkReserv Warning"
+            email.Subject = " CytecMxmStkReserv Warning"
         Else
             email.Body &= "errors;"
-            email.Subject = " (TEST) CytecMxmStkReserv Error"
+            email.Subject = " CytecMxmStkReserv Error"
         End If
 
         'VR 12/18/2014 Adding file names and error descriptions in message body
