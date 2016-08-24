@@ -920,7 +920,7 @@ Public Class QuoteNonStockProcessor
                                  "  AND A.BUYER_ID = B.ROLEUSER (+)" & vbCrLf & _
                                  "  AND A.REQ_ID = A1.REQ_ID" & vbCrLf & _
                                  "  AND A.REQ_ID = A4.ORDER_NO (+)" & vbCrLf & _
-                                 "  AND A4.ORIGIN IN ('IOL','MOB','RFQ')" & vbCrLf & _
+                                 "  AND A4.ORIGIN IN ('IOL','MOB','RFQ','IAP')" & vbCrLf & _
                                  "  AND A4.BUSINESS_UNIT_OM = A2.BUSINESS_UNIT (+)" & vbCrLf & _
                                  "  AND A4.OPRID_ENTERED_BY = A2.ISA_EMPLOYEE_ID (+) " & vbCrLf & _
                                  "  AND 'MAIN1' = A3.SETID (+)" & vbCrLf & _
