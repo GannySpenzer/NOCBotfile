@@ -133,141 +133,148 @@ Module Module1
         Dim strbodyhead As String
         Dim strbodydetl As String
         Dim strbodyfoot As String
-        Dim txtBody As String
-        Dim txtHdr As String
-        Dim txtMsg As String
-        Dim bolSelectItem As Boolean
-        Dim strSQLstring As String
-        Dim strFirstName As String
-        Dim strLastName As String
+        'Dim txtBody As String
+        'Dim txtHdr As String
+        'Dim txtMsg As String
+        'Dim bolSelectItem As Boolean
+        Dim strSQLstring As String = ""
+        Dim strFirstName As String = " "
+        Dim strLastName As String = " "
+        Dim strEmailList As String = dr.Item("ISA_EMAIL_TO")
+        Dim strEmailTo() As String = Split(strEmailList, ";")
+        Dim intTotal As Integer = strEmailTo.Length()
+        Dim intCnt As Integer = 0
 
-        strSQLstring = "SELECT A.FIRST_NAME_SRCH, A.LAST_NAME_SRCH" & vbCrLf & _
-                    " FROM PS_ISA_USERS_TBL A" & vbCrLf & _
-                    " WHERE UPPER(A.ISA_EMPLOYEE_EMAIL) = UPPER('" & dr.Item("ISA_EMAIL_TO") & "')" & vbCrLf & _
-                    " AND ROWNUM < 2"
+        For intCnt = 0 To intTotal - 1
 
-        Dim drName As OleDbDataReader
-        Dim command As OleDbCommand = New OleDbCommand(strSQLstring, connectOR)
-        drName = command.ExecuteReader()
-        If drName.Read Then
-            strFirstName = drName.Item("FIRST_NAME_SRCH")
-            strLastName = drName.Item("LAST_NAME_SRCH")
-        End If
-        drName.Close()
+            strSQLstring = "SELECT A.FIRST_NAME_SRCH, A.LAST_NAME_SRCH" & vbCrLf & _
+                        " FROM PS_ISA_USERS_TBL A" & vbCrLf & _
+                        " WHERE UPPER(A.ISA_EMPLOYEE_EMAIL) = UPPER('" & strEmailTo(intCnt) & "')" & vbCrLf & _
+                        " AND ROWNUM < 2"
 
-        Dim Mailer As MailMessage = New MailMessage
-        'Mailer.From = "Insiteonline@SDI.com"
-        Mailer.From = Trim(dr.Item("ISA_EMAIL_FROM"))
-        If Convert.ToString(dr.Item("ISA_EMAIL_CC")).Length = 1 Then
-            Mailer.Cc = ""
-        Else
-            Mailer.Cc = Trim(dr.Item("ISA_EMAIL_CC"))
-        End If
-        If Convert.ToString(dr.Item("ISA_EMAIL_BCC")).Length = 1 Then
-            Mailer.Bcc = ""
-        Else
-            Mailer.Bcc = Trim(dr.Item("ISA_EMAIL_BCC"))
-        End If
-        Dim strAddBCC As String = getAddBCC()
-        If Not Trim(strAddBCC) = "" Then
-            If Mailer.Bcc = "" Then
-                Mailer.Bcc = strAddBCC
+            Dim drName As OleDbDataReader
+            Dim command As OleDbCommand = New OleDbCommand(strSQLstring, connectOR)
+            drName = command.ExecuteReader()
+            If drName.Read Then
+                strFirstName = drName.Item("FIRST_NAME_SRCH")
+                strLastName = drName.Item("LAST_NAME_SRCH")
+            End If
+            drName.Close()
+
+            Dim strEmailEmpName As String = strFirstName & " " & strLastName
+            Dim strEmailEmpEmail As String = strEmailTo(intCnt)
+            Dim Mailer As MailMessage = New MailMessage
+            'Mailer.From = "Insiteonline@SDI.com"
+            Mailer.From = Trim(dr.Item("ISA_EMAIL_FROM"))
+            If Convert.ToString(dr.Item("ISA_EMAIL_CC")).Length = 1 Then
+                Mailer.Cc = ""
             Else
-                If Not InStr(Mailer.Bcc, strAddBCC) Then
-                    Mailer.Bcc = "; " & strAddBCC
+                Mailer.Cc = Trim(dr.Item("ISA_EMAIL_CC"))
+            End If
+            If Convert.ToString(dr.Item("ISA_EMAIL_BCC")).Length = 1 Then
+                Mailer.Bcc = ""
+            Else
+                Mailer.Bcc = Trim(dr.Item("ISA_EMAIL_BCC"))
+            End If
+            Dim strAddBCC As String = getAddBCC()
+            If Not Trim(strAddBCC) = "" Then
+                If Mailer.Bcc = "" Then
+                    Mailer.Bcc = strAddBCC
+                Else
+                    If Not InStr(Mailer.Bcc, strAddBCC) Then
+                        Mailer.Bcc = "; " & strAddBCC
+                    End If
                 End If
             End If
-        End If
 
-        If dr.Item("ISA_EMAIL_DFL_HEAD") = "Y" Then
-            strbodyhead = "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI, Inc</span></center>" & vbCrLf
-            strbodyhead = strbodyhead & "<center><span >" & dr.Item("EMAIL_SUBJECT_LONG") & "</span></center>"
-            strbodyhead = strbodyhead & "&nbsp;" & vbCrLf
-        End If
-
-        Dim strEmailEmpName As String = strFirstName & _
-            " " & strLastName
-        Dim strEmailEmpEmail As String = dr.Item("ISA_EMAIL_TO")
-        If Trim(dr.Item("EMAIL_TEXTLONG")) = "" And _
-            Trim(dr.Item("ISA_EMAIL_TXT_FILE")) = "" Then
-            objStreamWriter.WriteLine("  error no email message - " & strEmailEmpEmail & " for " & strEmailEmpName & " at " & Now())
-            Return True
-        End If
-        strbodydetl = "&nbsp;" & vbCrLf
-        strbodydetl = strbodydetl & "<div>"
-        If dr.Item("ISA_EMAIL_DFL_HEAD") = "Y" Then
-            If Not Trim(strEmailEmpName) = "" Then
-                strbodydetl = strbodydetl & "<p>Hello " & strEmailEmpName & ",<br></p>"
+            If dr.Item("ISA_EMAIL_DFL_HEAD") = "Y" Then
+                strbodyhead = "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI, Inc</span></center>" & vbCrLf
+                strbodyhead = strbodyhead & "<center><span >" & dr.Item("EMAIL_SUBJECT_LONG") & "</span></center>"
+                strbodyhead = strbodyhead & "&nbsp;" & vbCrLf
             End If
-        End If
 
-        strbodydetl = strbodydetl & "<TABLE cellSpacing='1' cellPadding='1' width='100%' border='0'>" & vbCrLf
-        If Not Trim(dr.Item("EMAIL_TEXTLONG")) = "" Then
-            strbodydetl = strbodydetl + "<TR><TD Class='DetailRow' width='100%'>" & dr.Item("EMAIL_TEXTLONG") & "</TD></TR>"
-        Else
-            ' get external file
-            Dim strExtMessage As String = getExternalMessageFile(dr.Item("ISA_EMAIL_TXT_FILE"))
-            If Trim(strExtMessage) = "" Then
+            If Trim(dr.Item("EMAIL_TEXTLONG")) = "" And _
+                Trim(dr.Item("ISA_EMAIL_TXT_FILE")) = "" Then
                 objStreamWriter.WriteLine("  error no email message - " & strEmailEmpEmail & " for " & strEmailEmpName & " at " & Now())
                 Return True
-            Else
-                strbodydetl = strbodydetl + "<TR><TD Class='DetailRow' width='100%'>" & strExtMessage & "</TD></TR>"
+            End If
+            strbodydetl = "&nbsp;" & vbCrLf
+            strbodydetl = strbodydetl & "<div>"
+            If dr.Item("ISA_EMAIL_DFL_HEAD") = "Y" Then
+                If Not Trim(strEmailEmpName) = "" Then
+                    strbodydetl = strbodydetl & "<p>Hello " & strEmailEmpName & ",<br></p>"
+                End If
             End If
 
-        End If
+            strbodydetl = strbodydetl & "<TABLE cellSpacing='1' cellPadding='1' width='100%' border='0'>" & vbCrLf
+            If Not Trim(dr.Item("EMAIL_TEXTLONG")) = "" Then
+                strbodydetl = strbodydetl + "<TR><TD Class='DetailRow' width='100%'>" & dr.Item("EMAIL_TEXTLONG") & "</TD></TR>"
+            Else
+                ' get external file
+                Dim strExtMessage As String = getExternalMessageFile(dr.Item("ISA_EMAIL_TXT_FILE"))
+                If Trim(strExtMessage) = "" Then
+                    objStreamWriter.WriteLine("  error no email message - " & strEmailEmpEmail & " for " & strEmailEmpName & " at " & Now())
+                    Return True
+                Else
+                    strbodydetl = strbodydetl + "<TR><TD Class='DetailRow' width='100%'>" & strExtMessage & "</TD></TR>"
+                End If
 
-        strbodydetl = strbodydetl + "<TR><TD Class='DetailRow'>&nbsp;</TD></TR>"
-        strbodydetl = strbodydetl & "</TABLE>" & vbCrLf
+            End If
 
-        strbodydetl = strbodydetl & "&nbsp;<br>"
-        If dr.Item("ISA_EMAIL_DFL_HEAD") = "Y" Then
-            strbodydetl = strbodydetl & "Sincerely,<br>"
+            strbodydetl = strbodydetl + "<TR><TD Class='DetailRow'>&nbsp;</TD></TR>"
+            strbodydetl = strbodydetl & "</TABLE>" & vbCrLf
+
             strbodydetl = strbodydetl & "&nbsp;<br>"
-            strbodydetl = strbodydetl & "SDI Customer Care<br>"
-            strbodydetl = strbodydetl & "&nbsp;<br>"
-        End If
+            If dr.Item("ISA_EMAIL_DFL_HEAD") = "Y" Then
+                strbodydetl = strbodydetl & "Sincerely,<br>"
+                strbodydetl = strbodydetl & "&nbsp;<br>"
+                strbodydetl = strbodydetl & "SDI Customer Care<br>"
+                strbodydetl = strbodydetl & "&nbsp;<br>"
+            End If
 
-        strbodydetl = strbodydetl & "</p>"
-        strbodydetl = strbodydetl & "</div>"
+            strbodydetl = strbodydetl & "</p>"
+            strbodydetl = strbodydetl & "</div>"
 
-        strbodyfoot = "<BR><P><CENTER><SPAN style='FONT-SIZE: 12pt'><SPAN style='FONT-SIZE: 12pt'>" & _
-                    "<FONT color=teal size=2>The information in this communication, including any attachments," & _
-                    " is the property of SDI," & _
-                    " Inc,&nbsp;</SPAN>is intended only for the addressee and may contain" & _
-                    " confidential, proprietary, and/or privileged material." & _
-                    " Any review, retransmission, dissemination or other use of," & _
-                    " or taking of any action in reliance upon, this information by" & _
-                    " persons or entities other than the intended recipient is prohibited." & _
-                    " If you received this in error, please immediately contact the" & _
-                    " sender by replying to this email and delete the material from" & _
-                    " all computers.</FONT></SPAN></CENTER></P>"
+            strbodyfoot = "<BR><P><CENTER><SPAN style='FONT-SIZE: 12pt'><SPAN style='FONT-SIZE: 12pt'>" & _
+                        "<FONT color=teal size=2>The information in this communication, including any attachments," & _
+                        " is the property of SDI," & _
+                        " Inc,&nbsp;</SPAN>is intended only for the addressee and may contain" & _
+                        " confidential, proprietary, and/or privileged material." & _
+                        " Any review, retransmission, dissemination or other use of," & _
+                        " or taking of any action in reliance upon, this information by" & _
+                        " persons or entities other than the intended recipient is prohibited." & _
+                        " If you received this in error, please immediately contact the" & _
+                        " sender by replying to this email and delete the material from" & _
+                        " all computers.</FONT></SPAN></CENTER></P>"
 
-        Mailer.Body = strbodyhead & strbodydetl & strbodyfoot
-        If dr.Item("ISA_STATUS") = "T" Then
-            Mailer.To = Trim(dr.Item("ISA_EMAIL_BCC"))
-        ElseIf connectOR.DataSource.ToUpper = "RPTG" Or _
-                connectOR.DataSource.ToUpper = "SNBX" Or _
-                connectOR.DataSource.ToUpper = "DEVL" Then
-            Mailer.To = "DoNotSendRPTG@sdi.com"
-        Else
-            Mailer.To = strEmailEmpEmail
-        End If
+            Mailer.Body = strbodyhead & strbodydetl & strbodyfoot
 
-        If Trim(dr.Item("EMAIL_SUBJECT_LONG")) = "" Then
-            Mailer.Subject = "Email from SDI, INC"
-        Else
-            Mailer.Subject = dr.Item("EMAIL_SUBJECT_LONG")
-        End If
-        If InStr(Mailer.Subject, "In-Site?") Then
-            Mailer.Subject = Replace(Mailer.Subject, "In-Site?", "In-Site®")
-        End If
+            If Trim(dr.Item("EMAIL_SUBJECT_LONG")) = "" Then
+                Mailer.Subject = "Email from SDI, INC"
+            Else
+                Mailer.Subject = dr.Item("EMAIL_SUBJECT_LONG")
+            End If
+            If InStr(Mailer.Subject, "In-Site?") Then
+                Mailer.Subject = Replace(Mailer.Subject, "In-Site?", "In-Site®")
+            End If
 
-        Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
-        'SmtpMail.Send(Mailer)
-        sendCustEmail = sendemail(Mailer)
-        If sendCustEmail = False Then
-            objStreamWriter.WriteLine("  email sent to email " & Mailer.To & " from " & Mailer.From & " at " & Now())
-        End If
+            Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
+
+            If dr.Item("ISA_STATUS") = "T" Then
+                Mailer.To = Trim(dr.Item("ISA_EMAIL_BCC"))
+            ElseIf connectOR.DataSource.ToUpper = "RPTG" Or _
+                    connectOR.DataSource.ToUpper = "SNBX" Or _
+                    connectOR.DataSource.ToUpper = "DEVL" Then
+                Mailer.To = "DoNotSendRPTG@sdi.com"
+            Else
+                Mailer.To = strEmailEmpEmail
+            End If
+            sendCustEmail = sendemail(Mailer)
+            If sendCustEmail = False Then
+                objStreamWriter.WriteLine("  email sent to email " & Mailer.To & " from " & Mailer.From & " at " & Now())
+            End If
+
+        Next  '  For intCnt = 0 To intTotal - 1
 
     End Function
 
