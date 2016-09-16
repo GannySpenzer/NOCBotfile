@@ -159,7 +159,7 @@ Module Module1
             Return True
         End Try
 
-        strSQLstring = "SELECT A.ORDER_NO, B.LINE_NBR, E.RECEIVER_ID," & vbCrLf & _
+        strSQLstring = "SELECT DISTINCT A.ORDER_NO, B.LINE_NBR, E.RECEIVER_ID," & vbCrLf & _
                 " E.RECV_LN_NBR, A.BUSINESS_UNIT_OM, B.EMPLID, E.DESCR254_MIXED" & vbCrLf & _
                 " FROM PS_ISA_ORD_INTFC_H A, PS_ISA_ORD_INTFC_L B," & vbCrLf & _
                 " PS_ISA_USERS_TBL C, PS_PO_LINE_DISTRIB D," & vbCrLf & _
@@ -1064,14 +1064,10 @@ Module Module1
         ' the tenth byte of isa_iol_op_name has the one character g.isa_order_status code
         ' example: substr(emlsubmit1,10) = '1'   order status code 1
 
-
         Try
             ds = ORDBAccess.GetAdapter(strSQLstring, connectOR)
 
         Catch OleDBExp As OleDbException
-            Console.WriteLine("")
-            Console.WriteLine("***OLEDB error - " & OleDBExp.ToString)
-            Console.WriteLine("")
             connectOR.Close()
             objStreamWriter.WriteLine("     Error - error reading transaction FROM PS_ISAORDSTATUSLOG A")
             Return True
@@ -1136,7 +1132,6 @@ Module Module1
                  ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
                 ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
                 ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
-                '  strEmail_test)
 
                 dsEmail.Clear()
                 If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
@@ -1146,7 +1141,7 @@ Module Module1
                           & ds.Tables(0).Rows(I + 1).Item("ORDER_NO") <> _
                           ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM") _
                           & ds.Tables(0).Rows(I).Item("ORDER_NO") Then
-                'strEmail_test = ";pete.doyle@sdi.com"
+
                 sendCustEmail1(dsEmail, _
                ds.Tables(0).Rows(I).Item("ORDER_NO"), _
                dteCompanyID, _
@@ -1158,8 +1153,7 @@ Module Module1
                 ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
                 ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
                ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
-                ' strEmail_test)
-                'ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
+                
                 dsEmail.Clear()
 
 
@@ -1262,9 +1256,6 @@ Module Module1
         strbodydet1 = strbodydet1 & "</p>"
         strbodydet1 = strbodydet1 & "</div>"
 
-
-
-
         Mailer1.Body = strbodyhead1 & strbodydet1
         If connectOR.DataSource.ToUpper = "RPTG" Or _
             connectOR.DataSource.ToUpper = "DEVL" Or _
@@ -1275,15 +1266,12 @@ Module Module1
         Else
             'Mailer1.To = strPurchaserEmail
             Mailer1.To = strEmail
-            'Mailer1.To = "eric.wilson@sdi.com"
         End If
 
         'Mailer1.Subject = "SDiExchange - Order Status records for" & Now.Month & "/" & Now.Day & "/" & Now.Year
         Mailer1.Subject = "SDiExchange - Order Status records for ORDER NUMBER: " & strOrderNo
         Mailer1.BodyFormat = System.Web.Mail.MailFormat.Html
-        'SmtpMail.Send(Mailer)
-        'SendEmail(Mailer)
-
+        
         UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer1.Subject, Mailer1.From, Mailer1.To, "", Mailer1.Bcc, "N", Mailer1.Body, connectOR)
 
         'objStreamWriter.WriteLine("The email was sent: SDiExchange - Order Status records for ORDER NUMBER: " & strOrderNo)
