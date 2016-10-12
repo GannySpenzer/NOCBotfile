@@ -122,12 +122,15 @@ Module Module1
             End If  '  ds Is Nothing - no Cytec Maximo POs to process
 
             Dim intX As Integer = 0
+            Dim intNotSent As Integer = 0
             If Not bError Then
                 Dim I As Integer = 0
                 Dim rowsaffected As Integer = 0
                 If ds.Tables(0).Rows.Count > 0 Then
                     Dim bSend As Boolean = True
                     For I = 0 To ds.Tables(0).Rows.Count - 1
+                        'If I > 5235 Then ' processing what is not processed
+                        bSend = True
                         strEmailAddress = ""
                         Try
                             strEmailAddress = CStr(ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
@@ -147,22 +150,28 @@ Module Module1
                             strEmailAddress = Trim(strEmailAddress)
                             If LCase(strEmailAddress) = "pete.doyle@sdi.com" Or LCase(strEmailAddress) = "customer.service@sdi.com" Or LCase(strEmailAddress) = "erwin.bautista@sdi.com" Or LCase(strEmailAddress) = "bob.dougherty@isacs.com" Then
                                 'do nothing
+                                intNotSent = intNotSent + 1
                             Else
                                 bSend = True
                                 SendEmail(strEmailAddress, strAccount, bSend)
                                 If bSend Then
                                     m_logger.WriteVerboseLog(rtn & " :: Email sent to: " & strEmailAddress & " ; Account ID: " & strAccount)
                                     intX = intX + 1
-                                    If intX = 3 Then
-                                        Exit For
-                                    End If
+                                    'If intX = 3 Then
+                                    '    Exit For
+                                    'End If
                                 Else
-                                    ' m_logger.WriteVerboseLog(rtn & " :: Email WAS NOT sent to: " & strEmailAddress & " ; Account ID: " & strAccount)
+                                    intNotSent = intNotSent + 1
+                                    m_logger.WriteVerboseLog(rtn & " :: Email WAS NOT sent to: " & strEmailAddress & " ; Account ID: " & strAccount)
                                 End If
                             End If
                         End If
+
+                        'End If  ' If I > 5635 Then
+                        
                     Next  '  For I = 0 To ds.Tables(0).Rows.Count - 1
                     m_logger.WriteVerboseLog(rtn & " :: Total number of emails sent: " & intX.ToString())
+                    m_logger.WriteVerboseLog(rtn & " :: Total number of emails NOT sent: " & intNotSent.ToString())
                 End If  '  If ds.Tables(0).Rows.Count > 0 Then
             End If  ' If Not bError Then - inner
             
@@ -235,9 +244,9 @@ Module Module1
         email.From = "TechSupport@sdi.com"
 
         'The email address of the recipient. 
-        email.To = strEmailAddress  '  "vitaly.rovensky@sdi.com"
-        ' for testing
-        email.To = "vitaly.rovensky@sdi.com"
+        email.To = strEmailAddress
+        '' for testing
+        'email.To = "vitaly.rovensky@sdi.com"
         email.Cc = " "
         email.Bcc = "webdev@sdi.com"
 
@@ -274,9 +283,9 @@ Module Module1
 
         email.BodyFormat = MailFormat.Html
 
-        email.Body = "<table><tr><td>WARNING! Your SDiExchange Account: " & strAccount & ", - has been inactive </td></tr>" & _
-            "<tr><td> for more than 90 days and will be deactivated 1 week from today.</td></tr>" & _
-            "<tr><td>You can avoid deactivation by logging into your account.</td></tr>" & _
+        email.Body = "<table><tr><td>WARNING! Your SDiExchange Account: <b>" & strAccount & "</b>, - has been inactive </td></tr>" & _
+            "<tr><td> for more than 90 days and <b>will be Deactivated on or about 1st day of the next month</b>, i.e. NOVEMBER 1st, 2016. </td></tr>" & _
+            "<tr><td>You can avoid Deactivation by logging into your SDiExchange Account.</td></tr>" & _
             "</table>" & vbCrLf
         email.Body &= "<HR width='100%' SIZE='1'>" & vbCrLf
         email.Body &= "<img src='http://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & vbCrLf
@@ -290,15 +299,17 @@ Module Module1
         End Try
 
         If Not bSend Then
-            m_logger.WriteErrorLog(rtn & " :: Error - the email was not sent for the Account: " & strAccount & " ; " & strEmailAddress & "")
+            m_logger.WriteErrorLog(rtn & " :: Error - the email was NOT sent for the Account: " & strAccount & " ; " & strEmailAddress & "")
         End If
     End Sub
 
     Private Sub SendEmail1(ByVal mailer As System.Web.Mail.MailMessage)
 
         Try
-
-            SendLogger(mailer.Subject, mailer.Body, "WARNINGNOTACTIVE90DAYS", "Mail", mailer.To, mailer.Cc, mailer.Bcc)
+            ' for the first bulk send
+            mailer.Cc = " "
+            mailer.Bcc = " "
+            SendLogger(mailer.Subject, mailer.Body, "WRNNGNOTACTVE90DAYS", "Mail", mailer.To, mailer.Cc, mailer.Bcc)
 
         Catch ex As Exception
 
