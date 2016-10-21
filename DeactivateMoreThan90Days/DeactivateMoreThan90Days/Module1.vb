@@ -82,7 +82,7 @@ Module Module1
 
         If Not bError Then
 
-            Console.WriteLine("Finished Update part of 'DEACTIVATE - Not Active 90 Days' process")
+            Console.WriteLine("Started Update part of 'DEACTIVATE - Not Active 90 Days' process")
             Console.WriteLine("")
 
             'get the list and send e-mails
@@ -131,6 +131,7 @@ Module Module1
                 End If  '  ds Is Nothing - no Cytec Maximo POs to process
 
                 Dim intX As Integer = 0
+                Dim intNotSent As Integer = 0
 
                 If Not bError Then
 
@@ -193,23 +194,25 @@ Module Module1
                                     strEmailAddress = Trim(strEmailAddress)
                                     If LCase(strEmailAddress) = "pete.doyle@sdi.com" Or LCase(strEmailAddress) = "customer.service@sdi.com" Or LCase(strEmailAddress) = "erwin.bautista@sdi.com" Or LCase(strEmailAddress) = "bob.dougherty@isacs.com" Then
                                         'do nothing
+                                        intNotSent = intNotSent + 1
                                     Else
                                         bSend = True
                                         SendEmail(strEmailAddress, strAccount, bSend)
                                         If bSend Then
                                             m_logger.WriteVerboseLog(rtn & " :: Email sent to: " & strEmailAddress & " ; Account ID: " & strAccount)
                                             intX = intX + 1
-                                            If intX = 3 Then
-                                                Exit For
-                                            End If
+                                            'If intX = 3 Then
+                                            '    Exit For
+                                            'End If
                                         Else
-                                            'm_logger.WriteVerboseLog(rtn & " :: Email WAS NOT sent to: " & strEmailAddress & " ; Account ID: " & strAccount)
+                                            intNotSent = intNotSent + 1
                                         End If
-                                    End If
+                                    End If ' old wrong e-mail address
                                 End If  '  If Trim(strAccount) <> "" And Trim(strEmailAddress) <> "" Then
 
                             Next  '  For I = 0 To ds.Tables(0).Rows.Count - 1
                             m_logger.WriteVerboseLog(rtn & " :: Total number of emails sent: " & intX.ToString())
+                            m_logger.WriteVerboseLog(rtn & " :: Total number of emails NOT sent: " & intNotSent.ToString())
 
                         End If  '   If Not bError Then - inner # 3
 
@@ -288,24 +291,24 @@ Module Module1
         email.From = "TechSupport@sdi.com"
 
         'The email address of the recipient. 
-        email.To = strEmailAddress  '  "vitaly.rovensky@sdi.com"
-        ' for testing
-        email.To = "vitaly.rovensky@sdi.com"
-        email.Cc = " "
-        email.Bcc = "webdev@sdi.com"
+        email.To = strEmailAddress
+        '' for testing
+        'email.To = "vitaly.rovensky@sdi.com"
+        email.Cc = "FieldOps.Helpdesk@sdi.com"
+        email.Bcc = "Michael.Randall@sdi.com"  '  "webdev@sdi.com"
 
         strSource = ""
-        Try
-            strSource = My.Settings("onErrorEmail_BCC").ToString.Trim
-            If Trim(strSource) = "" Then
-                strSource = "webdev@sdi.com"
-            End If
-        Catch ex As Exception
-            strSource = "webdev@sdi.com"
-        End Try
-        If Trim(strSource) <> "" Then
-            email.Bcc = strSource
-        End If
+        'Try
+        '    strSource = My.Settings("onErrorEmail_BCC").ToString.Trim
+        '    If Trim(strSource) = "" Then
+        '        strSource = "webdev@sdi.com"
+        '    End If
+        'Catch ex As Exception
+        '    strSource = "webdev@sdi.com"
+        'End Try
+        'If Trim(strSource) <> "" Then
+        '    email.Bcc = strSource
+        'End If
 
         'The subject of the email
         email.Subject = "Your SDiExchange Account has been deactivated due to 90 days inactivity"
@@ -327,7 +330,7 @@ Module Module1
 
         email.BodyFormat = MailFormat.Html
 
-        email.Body = "<table><tr><td>Due to more than 90 days of inactivity your SDiExchange Account: " & strAccount & ", - has been deactivated. </td></tr>" & _
+        email.Body = "<table><tr><td>Due to more than 90 days of inactivity your <b>SDiExchange</b> Account: <b>" & strAccount & "</b>, - has been deactivated. </td></tr>" & _
             "<tr><td>You can have your account reactivated by contacting the HelpDesk @ 215-633-1900  Option 7.</td></tr>" & _
             "</table>" & vbCrLf
         email.Body &= "<HR width='100%' SIZE='1'>" & vbCrLf
@@ -352,7 +355,7 @@ Module Module1
 
         Try
 
-            SendLogger(mailer.Subject, mailer.Body, "DEACTIVENOTACTIVE90DAYS", "Mail", mailer.To, mailer.Cc, mailer.Bcc)
+            SendLogger(mailer.Subject, mailer.Body, "DEACTVNOTACTV90DAYS", "Mail", mailer.To, mailer.Cc, mailer.Bcc)
 
         Catch ex As Exception
 
