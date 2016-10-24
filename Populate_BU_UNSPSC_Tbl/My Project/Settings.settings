@@ -1,0 +1,15 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="My" GeneratedClassName="MySettings" UseMySettingsClassName="true">
+  <Profiles />
+  <Settings>
+    <Setting Name="UnilogDbUrl" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Provider=OraOLEDB.Oracle.1;Password=Sd1UniProd;User Id=sdiprod;Data Source=unip1.sdi.com</Value>
+    </Setting>
+    <Setting Name="DbUrl" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User Id=sdiexchange;Data Source=PROD</Value>
+    </Setting>
+    <Setting Name="Populate_BU_UNSPSC_Tbl_SDiEmailUtilityService_EmailServices" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
