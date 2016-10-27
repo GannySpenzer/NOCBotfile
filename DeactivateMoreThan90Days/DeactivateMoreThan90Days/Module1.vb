@@ -21,7 +21,7 @@ Module Module1
 
     Sub Main()
 
-        Dim rtn As String = "Module1.Main"
+        Dim rtn As String = "DeactvNotActv90Days.Main"
 
         Console.WriteLine("Start of 'DEACTIVATE - Not Active 90 Days' process")
         Console.WriteLine("")
@@ -53,13 +53,17 @@ Module Module1
         End If
 
         '   (3) log path/file
+        Dim strLogFileName As String = "DeactivNotActive90Days" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
         Dim sLogPath As String = ""
         Try
             sLogPath = My.Settings("logPath").ToString.Trim
         Catch ex As Exception
         End Try
         If (sLogPath.Length > 0) Then
-            logpath = sLogPath & "\DeactivNotActive90Days" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+            'logpath = sLogPath & "\DeactivNotActive90Days" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+            logpath = sLogPath & "\" & strLogFileName
+        Else
+            logpath = "C:\Program Files (x86)\SDI\DeactivateNotActive90Days\Logs\" & strLogFileName
         End If
 
         ' default log level
@@ -75,6 +79,7 @@ Module Module1
         Dim strEmailAddress As String = ""
         Dim strSqlString As String = ""
         Dim strAccount As String = ""
+        Dim strUserName As String = ""
 
         Dim ds As New DataSet
         Dim bError As Boolean = False
@@ -86,7 +91,7 @@ Module Module1
             Console.WriteLine("")
 
             'get the list and send e-mails
-            strSqlString = "SELECT ISA_EMPLOYEE_ID,ACTIVE_STATUS,LAST_ACTIVITY,ISA_EMPLOYEE_EMAIL FROM PS_ISA_USERS_TBL " & vbCrLf & _
+            strSqlString = "SELECT ISA_EMPLOYEE_ID,ACTIVE_STATUS,LAST_ACTIVITY,ISA_EMPLOYEE_EMAIL, ISA_USER_NAME FROM PS_ISA_USERS_TBL " & vbCrLf & _
                 "WHERE (LAST_ACTIVITY IS NULL AND ACTIVE_STATUS = 'A') OR " & vbCrLf & _
                 "(LAST_ACTIVITY IS NOT NULL AND ACTIVE_STATUS = 'A' AND LAST_ACTIVITY < (SYSDATE - 90))" & vbCrLf & _
                 ""
@@ -115,20 +120,20 @@ Module Module1
 
                 If ds Is Nothing Then
                     m_logger.WriteWarningLog(rtn & " :: Warning - no Not Active Customers to process at this time")
-                    bError = True
+
                 Else
 
                     If ds.Tables.Count = 0 Then
                         m_logger.WriteWarningLog(rtn & " :: Warning - no Not Active Customers to process at this time")
-                        bError = True
+
                     Else
 
                         If ds.Tables(0).Rows.Count < 1 Then
                             m_logger.WriteWarningLog(rtn & " :: Warning - no Not Active Customers to process at this time")
-                            bError = True
+
                         End If
                     End If
-                End If  '  ds Is Nothing - no Cytec Maximo POs to process
+                End If  '  ds Is Nothing - nothing to process
 
                 Dim intX As Integer = 0
                 Dim intNotSent As Integer = 0
@@ -136,88 +141,114 @@ Module Module1
                 If Not bError Then
 
                     Dim I As Integer = 0
-                    If ds.Tables(0).Rows.Count > 0 Then
-                        'deactivate here
+                    If Not ds Is Nothing Then
+                        If ds.Tables.Count > 0 Then
+                            If ds.Tables(0).Rows.Count > 0 Then
 
-                        ' log verbose DB connection string
-                        m_logger.WriteInformationLog(rtn & " :: Start of 'DEACTIVATE - Not Active 90 Days' process.")
-                        m_logger.WriteVerboseLog(rtn & " :: connection string : [" & connectOR.ConnectionString & "]")
+                                m_logger.WriteVerboseLog(rtn & " :: Total number of rows: " & ds.Tables(0).Rows.Count.ToString())
+                                'deactivate here
 
-                        'deactivate - get rows afftected
-                        strSqlString = "UPDATE PS_ISA_USERS_TBL SET ACTIVE_STATUS = 'I' " & vbCrLf & _
-                            "WHERE (LAST_ACTIVITY IS NULL AND ACTIVE_STATUS = 'A') OR " & vbCrLf & _
-                            "(LAST_ACTIVITY IS NOT NULL AND ACTIVE_STATUS = 'A' AND LAST_ACTIVITY < (SYSDATE - 90))" & vbCrLf & _
-                            ""
-                        Try
-                            rowsUpdated = ORDBAccess.ExecNonQuery(strSqlString, connectOR)
-                            If rowsUpdated = 0 Then
-                                m_logger.WriteErrorLog(rtn & " :: Error updating table PS_ISA_USERS_TBL - ACTIVE_STATUS was not updated")
-                                m_logger.WriteErrorLog("Function'ORDBAccess.ExecNonQuery' returned 'rowsUpdated = 0' ")
-                                m_logger.WriteErrorLog("SQL String: " & strSqlString)
+                                ' log verbose DB connection string
+                                m_logger.WriteInformationLog(rtn & " :: Start of 'DEACTIVATE - Not Active 90 Days' process.")
+                                m_logger.WriteVerboseLog(rtn & " :: connection string : [" & connectOR.ConnectionString & "]")
 
-                                bError = True
-                            Else
-                                m_logger.WriteVerboseLog(rtn & " :: Total number of rows updated: " & rowsUpdated.ToString())
-                            End If
-                        Catch ex18 As Exception
-                            m_logger.WriteErrorLog(rtn & " :: Error updating table PS_ISA_USERS_TBL - ACTIVE_STATUS was not updated")
-                            m_logger.WriteErrorLog("ERROR MSG: " & ex18.Message)
-                            m_logger.WriteErrorLog("SQL String: " & strSqlString)
-                            Try
-                                connectOR.Close()
-                            Catch ex As Exception
-
-                            End Try
-                            bError = True
-                        End Try
-
-                        If Not bError Then
-
-                            Dim bSend As Boolean = True
-                            For I = 0 To ds.Tables(0).Rows.Count - 1
-                                strEmailAddress = ""
+                                'deactivate - get rows afftected
+                                strSqlString = "UPDATE PS_ISA_USERS_TBL SET ACTIVE_STATUS = 'I' " & vbCrLf & _
+                                    "WHERE (LAST_ACTIVITY IS NULL AND ACTIVE_STATUS = 'A') OR " & vbCrLf & _
+                                    "(LAST_ACTIVITY IS NOT NULL AND ACTIVE_STATUS = 'A' AND LAST_ACTIVITY < (SYSDATE - 90))" & vbCrLf & _
+                                    ""
                                 Try
-                                    strEmailAddress = CStr(ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
-                                Catch ex As Exception
-                                    strEmailAddress = ""
+                                    'rowsUpdated = ORDBAccess.ExecNonQuery(strSqlString, connectOR)
+                                    'If rowsUpdated = 0 Then
+                                    '    m_logger.WriteErrorLog(rtn & " :: Error updating table PS_ISA_USERS_TBL - ACTIVE_STATUS was not updated")
+                                    '    m_logger.WriteErrorLog("Function'ORDBAccess.ExecNonQuery' returned 'rowsUpdated = 0' ")
+                                    '    m_logger.WriteErrorLog("SQL String: " & strSqlString)
+
+                                    '    bError = True
+                                    'Else
+                                    '    m_logger.WriteVerboseLog(rtn & " :: Total number of rows updated: " & rowsUpdated.ToString())
+                                    'End If
+                                Catch ex18 As Exception
+                                    m_logger.WriteErrorLog(rtn & " :: Error updating table PS_ISA_USERS_TBL - ACTIVE_STATUS was not updated")
+                                    m_logger.WriteErrorLog("ERROR MSG: " & ex18.Message)
+                                    m_logger.WriteErrorLog("SQL String: " & strSqlString)
+                                    Try
+                                        connectOR.Close()
+                                    Catch ex As Exception
+
+                                    End Try
+                                    bError = True
                                 End Try
 
-                                strAccount = ""
-                                Try
-                                    strAccount = CStr(ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_ID"))
-                                Catch ex As Exception
-                                    strAccount = ""
-                                End Try
+                                If Not bError Then
 
-                                If Trim(strAccount) <> "" And Trim(strEmailAddress) <> "" Then
-                                    strAccount = Trim(strAccount)
-                                    strEmailAddress = Trim(strEmailAddress)
-                                    If LCase(strEmailAddress) = "pete.doyle@sdi.com" Or LCase(strEmailAddress) = "customer.service@sdi.com" Or LCase(strEmailAddress) = "erwin.bautista@sdi.com" Or LCase(strEmailAddress) = "bob.dougherty@isacs.com" Then
-                                        'do nothing
-                                        intNotSent = intNotSent + 1
-                                    Else
-                                        bSend = True
-                                        SendEmail(strEmailAddress, strAccount, bSend)
-                                        If bSend Then
-                                            m_logger.WriteVerboseLog(rtn & " :: Email sent to: " & strEmailAddress & " ; Account ID: " & strAccount)
-                                            intX = intX + 1
-                                            'If intX = 3 Then
-                                            '    Exit For
-                                            'End If
+                                    Console.WriteLine("Started Send E-mails part of 'DEACTIVATE - Not Active 90 Days' process")
+                                    Console.WriteLine("")
+
+                                    m_logger.WriteVerboseLog(rtn & " :: Starting Send Emails process ")
+                                    Dim bSend As Boolean = True
+                                    For I = 0 To ds.Tables(0).Rows.Count - 1
+
+                                        strEmailAddress = ""
+                                        Try
+                                            strEmailAddress = CStr(ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
+                                        Catch ex As Exception
+                                            strEmailAddress = ""
+                                        End Try
+
+                                        strAccount = ""
+                                        Try
+                                            strAccount = CStr(ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_ID"))
+                                        Catch ex As Exception
+                                            strAccount = ""
+                                        End Try
+
+                                        strUserName = ""
+                                        Try
+                                            strUserName = CStr(ds.Tables(0).Rows(I).Item("ISA_USER_NAME"))
+                                        Catch ex As Exception
+                                            strUserName = "<No Name>"
+                                        End Try
+
+                                        If Trim(strAccount) <> "" And Trim(strEmailAddress) <> "" Then
+                                            strAccount = Trim(strAccount)
+                                            strEmailAddress = Trim(strEmailAddress)
+                                            If LCase(strEmailAddress) = "pete.doyle@sdi.com" Or LCase(strEmailAddress) = "customer.service@sdi.com" _
+                                                Or LCase(strEmailAddress) = "erwin.bautista@sdi.com" Or LCase(strEmailAddress) = "bob.dougherty@isacs.com" _
+                                                Or LCase(strEmailAddress) = "bob.dougherty@sdi.com" Then
+                                                'send nothing
+                                                intNotSent = intNotSent + 1
+                                                m_logger.WriteVerboseLog(rtn & " :: Email WAS NOT sent to: " & strEmailAddress & " ; Account ID: " & strAccount & " ; User Name: " & strUserName)
+                                            Else
+                                                bSend = True
+                                                SendEmail(strEmailAddress, strAccount, bSend)
+                                                If bSend Then
+                                                    m_logger.WriteVerboseLog(rtn & " :: Email sent to: " & strEmailAddress & " ; Account ID: " & strAccount & " ; User Name: " & strUserName)
+                                                    intX = intX + 1
+                                                    If intX = 3 Then
+                                                        Exit For
+                                                    End If
+                                                Else
+                                                    intNotSent = intNotSent + 1
+                                                    m_logger.WriteVerboseLog(rtn & " :: Email WAS NOT sent to (tried to send): " & strEmailAddress & " ; Account ID: " & strAccount & " ; User Name: " & strUserName)
+                                                End If
+                                            End If ' old wrong e-mail address
                                         Else
                                             intNotSent = intNotSent + 1
-                                        End If
-                                    End If ' old wrong e-mail address
-                                End If  '  If Trim(strAccount) <> "" And Trim(strEmailAddress) <> "" Then
+                                            m_logger.WriteVerboseLog(rtn & " :: Email WAS NOT sent to: " & strEmailAddress & " ; Account ID: " & strAccount & " ; User Name: " & strUserName)
+                                        End If  '  If Trim(strAccount) <> "" And Trim(strEmailAddress) <> "" Then
 
-                            Next  '  For I = 0 To ds.Tables(0).Rows.Count - 1
-                            m_logger.WriteVerboseLog(rtn & " :: Total number of emails sent: " & intX.ToString())
-                            m_logger.WriteVerboseLog(rtn & " :: Total number of emails NOT sent: " & intNotSent.ToString())
+                                    Next  '  For I = 0 To ds.Tables(0).Rows.Count - 1
+                                    m_logger.WriteVerboseLog(rtn & " :: Total number of emails sent: " & intX.ToString())
+                                    m_logger.WriteVerboseLog(rtn & " :: Total number of emails NOT sent: " & intNotSent.ToString())
 
-                        End If  '   If Not bError Then - inner # 3
+                                End If  '   If Not bError Then - inner # 3
 
-                    End If  '  If ds.Tables(0).Rows.Count > 0 Then
+                            End If  '  If ds.Tables(0).Rows.Count > 0 Then
 
+                        End If
+                    End If
+                   
                 End If '  If Not bError Then - Inner # 2
 
             End If  '  If Not bError Then - Inner # 1
@@ -239,6 +270,8 @@ Module Module1
         Finally
             m_logger = Nothing
         End Try
+
+        SendEmailHelpDesk(strLogFileName, logpath)
 
     End Sub
 
@@ -292,23 +325,23 @@ Module Module1
 
         'The email address of the recipient. 
         email.To = strEmailAddress
-        '' for testing
-        'email.To = "vitaly.rovensky@sdi.com"
-        email.Cc = "FieldOps.Helpdesk@sdi.com"
-        email.Bcc = "Michael.Randall@sdi.com"  '  "webdev@sdi.com"
+        ' for testing
+        email.To = "vitaly.rovensky@sdi.com"
+        email.Cc = " "  '  "FieldOps.Helpdesk@sdi.com"
+        email.Bcc = " "  '  "vitaly.rovensky@sdi.com"
 
         strSource = ""
-        'Try
-        '    strSource = My.Settings("onErrorEmail_BCC").ToString.Trim
-        '    If Trim(strSource) = "" Then
-        '        strSource = "webdev@sdi.com"
-        '    End If
-        'Catch ex As Exception
-        '    strSource = "webdev@sdi.com"
-        'End Try
-        'If Trim(strSource) <> "" Then
-        '    email.Bcc = strSource
-        'End If
+        Try
+            strSource = My.Settings("onErrorEmail_BCC").ToString.Trim
+            If Trim(strSource) = "" Then
+                strSource = "webdev@sdi.com"
+            End If
+        Catch ex As Exception
+            strSource = "webdev@sdi.com"
+        End Try
+        If Trim(strSource) <> "" Then
+            email.Bcc = strSource
+        End If
 
         'The subject of the email
         email.Subject = "Your SDiExchange Account has been deactivated due to 90 days inactivity"
@@ -340,8 +373,7 @@ Module Module1
         Try
             SendEmail1(email)
             bSend = True
-            'm_arrXMLErrFiles = ""
-            'm_arrErrorsList = ""
+            
         Catch ex As Exception
             bSend = False
         End Try
@@ -354,7 +386,12 @@ Module Module1
     Private Sub SendEmail1(ByVal mailer As System.Web.Mail.MailMessage)
 
         Try
-
+            'If Trim(mailer.Cc) = "" Then
+            mailer.Cc = " "
+            'End If
+            'If Trim(mailer.Bcc) = "" Then
+            mailer.Bcc = " "
+            'End If
             SendLogger(mailer.Subject, mailer.Body, "DEACTVNOTACTV90DAYS", "Mail", mailer.To, mailer.Cc, mailer.Bcc)
 
         Catch ex As Exception
@@ -367,11 +404,68 @@ Module Module1
             Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
             Dim MailAttachmentName As String()
             Dim MailAttachmentbytes As New List(Of Byte())()
-            Dim objException As String
-            Dim objExceptionTrace As String
 
-            'EmailTo = "vitaly.rovensky@sdi.com"
             SDIEmailService.EmailUtilityServices(MailType, "TechSupport@sdi.com", EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
+
+        Catch ex As Exception
+
+        End Try
+    End Sub
+
+    Private Sub SendEmailHelpDesk(ByVal strAttachedFileName As String, ByVal strFileUrl As String)
+
+        Dim rtn As String = "Module1.SendEmailHelpDesk"
+
+        Dim email As New MailMessage
+
+        'The email address of the sender
+        email.From = "TechSupport@sdi.com"
+
+        'The email address of the recipient. 
+        email.To = "vitaly.rovensky@sdi.com"
+        email.Cc = " "
+        email.Bcc = " "  '  "webdev@sdi.com"
+
+        'The subject of the email
+        email.Subject = "'DEACTIVATE - Not Active 90 Days' process Summary"
+
+        'The Priority attached and displayed for the email
+        email.Priority = MailPriority.High
+
+        email.BodyFormat = MailFormat.Html
+
+        email.Body = "<table><tr><td>Please, see attached Summary for the 'DEACTIVATE - Not Active 90 Days' process.</td></tr></table>"
+
+        Dim MailAttachmentName As String()
+        Dim MailAttachmentbytes As New List(Of Byte())()
+        Dim Attachments As New List(Of String)
+        Attachments.Add(strAttachedFileName)
+        MailAttachmentName = Attachments.ToArray()
+        MailAttachmentbytes.Add(New System.Net.WebClient().DownloadData(strFileUrl))
+
+
+        'Send the email and handle any error that occurs
+        Dim bSend As Boolean = False
+        Try
+            SendLoggerAllParams(email.Subject, email.Body, "DEACTVNOTACTV90DAYS", "Mail", email.To, " ", email.Bcc, MailAttachmentName, MailAttachmentbytes.ToArray())
+            bSend = True
+        Catch ex As Exception
+            m_logger.WriteErrorLog(rtn & " :: Email to Help Desk was not sent. Error: " & ex.Message)
+            bSend = True
+        End Try
+
+        If Not bSend Then
+            m_logger.WriteErrorLog(rtn & " :: bSend is False - the email to Help Desk was not sent.")
+        End If
+    End Sub
+
+    Public Sub SendLoggerAllParams(ByVal subject As String, ByVal body As String, ByVal messageType As String, _
+                ByVal MailType As String, ByVal EmailTo As String, ByVal EmailCc As String, ByVal EmailBcc As String, _
+                ByVal AttachmentName() As String, ByVal Attachmentbytes()() As Byte)
+        Try
+            Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
+
+            SDIEmailService.EmailUtilityServices(MailType, "TechSupport@sdi.com", EmailTo, subject, EmailCc, EmailBcc, body, messageType, AttachmentName, Attachmentbytes)
 
         Catch ex As Exception
 
