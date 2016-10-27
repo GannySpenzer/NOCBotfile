@@ -8,6 +8,8 @@ Module Module1
         InitializeLogger()
 
         LogMessage("Main", "Started utility Populate_BU_UNSPSC_Tbl")
+        LogMessage("Main", "PeopleSoft connection string : " & ORDBData.DbUrl)
+        LogMessage("Main", "Unilog connection string : " & ORDBData.UnilogDbUrl)
 
         Dim dsUnilogBU_UNSPSC As New DataSet
         If GetUnilogUNSPSCCodes(dsUnilogBU_UNSPSC) Then
@@ -29,12 +31,23 @@ Module Module1
     Private Function GetUnilogUNSPSCCodes(ByRef dsUnilogBU_UNSPSC As DataSet) As Boolean
         Dim bSuccess As Boolean = False
         Dim strSQLstring As String
-        strSQLstring = "SELECT DISTINCT P.subset_id, V.unspsc FROM item_prices P, search_item_master_view_v2 V WHERE P.item_id = V.item_id"
+        strSQLstring = "SELECT DISTINCT P.subset_id, V.unspsc " & vbCrLf & _
+            " FROM item_prices P, search_item_master_view_v2 V " & vbCrLf & _
+            " WHERE P.item_id = V.item_id " & vbCrLf & _
+        " AND V.unspsc IS NOT NULL "
 
         dsUnilogBU_UNSPSC = New DataSet
 
         Try
             dsUnilogBU_UNSPSC = ORDBData.UnilogGetAdapter(strSQLstring)
+            Dim iCount As Integer = 0
+            Try
+                iCount = dsUnilogBU_UNSPSC.Tables(0).Rows.Count
+            Catch ex As Exception
+                iCount = 0
+            End Try
+            LogMessage("GetUnilogUNSPSCCodes", "Number of records read from Unilog tables item_prices and search_item_master_view_v2 : " & iCount.ToString)
+
             bSuccess = True
         Catch ex As Exception
             bSuccess = False
@@ -78,7 +91,6 @@ Module Module1
         Catch ex As Exception
             bSuccess = False
             LogMessage("PurgeBU_UNSPSC_Tbl", "Error trying to purge all records from table SDIX_BU_UNSPSC", ex)
-            LogMessage("PurgeBU_UNSPSC_Tbl", "DBUrl : " & ORDBData.DbUrl)
             LogMessage("PurgeBU_UNSPSC_Tbl", "strSQLstring : " & strSQLstring)
         End Try
 
@@ -87,7 +99,7 @@ Module Module1
 
     Private Function PopulateBU_UNSPSC_Tbl(trnsactSession As OleDbTransaction, connection As OleDbConnection, dsUnilogBU_UNSPSC As DataSet) As Boolean
         Dim bSuccess As Boolean = False
-        Dim strSQLstring As String
+        Dim strSQLstring As String = ""
         Dim iRowsAffected As Integer = 0
         Dim iInsertCount As Integer = 0
 
@@ -123,6 +135,7 @@ Module Module1
         Catch ex As Exception
             bSuccess = False
             LogMessage("PopulateBU_UNSPSC_Tbl", "Error trying to populate table SDIX_BU_UNSPSC.", ex)
+            LogMessage("PurgeBU_UNSPSC_Tbl", "strSQLstring : " & strSQLstring)
         End Try
 
         Return bSuccess
