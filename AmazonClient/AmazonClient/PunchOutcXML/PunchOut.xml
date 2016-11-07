@@ -402,9 +402,9 @@
   </Catalog>
   <Catalog id="AMAZON.default" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000039777" securityProtocol="192">
     <Identities>
-      <From domain="NetworkId" userId="SDIINC" />
+      <From domain="NetworkId" userId="SDIDirectOrdering2356630089" />
       <To domain="NetworkId" userId="Amazon" />
-      <Sender domain="DUNS" userId="SDIINC" userPw="Y2XN7SefSxpPAoD5i6OtYix4w5TK402d">
+      <Sender domain="NetworkId" userId="SDIDirectOrdering2356630089" userPw="6LhhKUA2D53IrSMYujgODVmJq6AgK5">
         <UserAgentOverride>Ariba Network 1.2</UserAgentOverride>
       </Sender>
     </Identities>

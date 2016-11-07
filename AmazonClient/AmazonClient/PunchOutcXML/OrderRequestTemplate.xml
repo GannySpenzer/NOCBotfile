@@ -6,6 +6,6 @@
 		<To />
 		<Sender />
 	</Header>
-	<Request>
+  <Request deploymentMode="production">
 	</Request>
 </cXML>

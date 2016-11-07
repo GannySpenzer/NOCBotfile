@@ -28,7 +28,7 @@ Module Module1
 
         Dim strInput As String = ""  '  <?xml version=""1.0"" encoding=""UTF-8""?><!DOCTYPE cXML SYSTEM ""http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd""[]><cXML payloadID=""3/30/2015 11:56:16 AM 019768490@sdi.com"" xml:lang=""en-US"" timestamp=""3/30/2015 11:56:16 AM""><Header><From><Credential domain=""NetworkId""><Identity>SDIINC</Identity></Credential></From><To><Credential domain=""NetworkId""><Identity>Amazon</Identity></Credential></To><Sender><Credential domain=""DUNS""><Identity>SDIINC</Identity><SharedSecret>Y2XN7SefSxpPAoD5i6OtYix4w5TK402d</SharedSecret></Credential><UserAgent>Ariba Network 1.2</UserAgent></Sender></Header><Request><PunchOutSetupRequest operation=""create""><BuyerCookie>3xx1vu5dn5sttwrc2zqspprl</BuyerCookie><Extrinsic name=""UniqueName"">ROVENSKY,VITALY</Extrinsic><Extrinsic name=""UserEmail"">vitaly.rovensky@sdi.com</Extrinsic><Extrinsic name=""CostCenter"">I0256</Extrinsic><BrowserFormPost><URL>http://localhost/InsiteOnline/shopredirect.aspx?PUNOUT=YES</URL></BrowserFormPost><ShipTo><Address addressID=""L0256-01""><Name xml:lang=""en-US"">UNCC Facility Maint. Shop</Name><PostalAddress><DeliverTo>SDI c/o UNCC Facility Maint Shop</DeliverTo><Street>9201 University City Blvd.</Street><City>Charlotte</City><State>NC</State><PostalCode>28223</PostalCode><Country isoCountryCode=""US"">United States</Country></PostalAddress></Address></ShipTo></PunchOutSetupRequest></Request></cXML>"
         Dim strOutput As String = ""
-        Dim strWhatToTest As String = "CYTECMXM"  '  "AMAZON"  '  "CYTECMXM"  ' 
+        Dim strWhatToTest As String = "AMAZON"  ' "NEW_AMAZON"  '    "CYTECMXM"  ' "AMAZON"  '
         Dim Response_Doc As String
         Dim msgEx As String = ""
         Dim strMsgVendConfig As String = ""
@@ -165,22 +165,79 @@ Module Module1
                 'just define sInput for Send1 procedure
                 'strInput = "<?xml version=""1.0"" encoding=""UTF-8""?><!DOCTYPE cXML SYSTEM ""http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd""[]><cXML payloadID=""2016-02-18T09:06:44.8376289-05:00.043793890.OrderRequest@sdi.com"" xml:lang=""en-US"" timestamp=""2016-02-18T09:06:44.8486311-05:00""><Header><From><Credential domain=""NetworkId""><Identity>CYTECMXM</Identity></Credential></From><To><Credential domain=""NetworkId""><Identity>SDIINC</Identity></Credential></To><Sender><Credential domain=""CYTECNETWORK""><Identity>CYTECMXM</Identity><SharedSecret>JsymuZ/YkUJ3RYPa7dZurQ==</SharedSecret></Credential><UserAgent>Ariba Network 1.2</UserAgent></Sender></Header><Request><OrderRequest><OrderRequestHeader orderDate=""2015-01-09T00:00:00.0000000-05:00"" orderID=""0003118726"" orderType=""REGULAR"" orderVersion=""1"" type=""NEW""><Total><Money currency=""USD"">2292.15</Money></Total><ShipTo><Address addressID=""L0275-02"" isoCountryCode=""US""><Name xml:lang=""en-US"">Cytec HdG Maintenance</Name><PostalAddress name=""default""><DeliverTo>Cytc HdG</DeliverTo><Street>c/o SDI  Maintenance</Street><Street>1300 Revolution Street</Street><City>Havre de Grace</City><State>MD</State><PostalCode>21078</PostalCode><Country isoCountryCode=""US"">United States</Country></PostalAddress><Email name=""default"">Sheldon.Abramowitz@sdi.com</Email><Phone name=""default""><TelephoneNumber><CountryCode isoCountryCode=""US"">1</CountryCode><AreaOrCityCode>215</AreaOrCityCode><Number>633-1900</Number></TelephoneNumber></Phone></Address></ShipTo><BillTo><Address addressID="""" isoCountryCode=""US""><Name xml:lang=""en-US"">SDI</Name><PostalAddress name=""default""><DeliverTo>SDI</DeliverTo><DeliverTo>ATTN: ACCOUNTS PAYABLE</DeliverTo><Street>1414 RADCLIFFE ST</Street><Street></Street><City>BRISTOL</City><State>PA</State><PostalCode>19007</PostalCode><Country isoCountryCode=""US"">United States</Country></PostalAddress><Email name=""default"">Sheldon.Abramowitz@sdi.com</Email><Phone name=""default""><TelephoneNumber><CountryCode isoCountryCode=""US"">1</CountryCode><AreaOrCityCode>215</AreaOrCityCode><Number>633-1900</Number></TelephoneNumber></Phone></Address></BillTo><Shipping><Money currency=""USD"">0.00</Money><Description xml:lang=""en-US"">Cost of shipping, not including shipping tax</Description></Shipping><PaymentTerm payInNumberOfDays=""30"" /><Comments xml:lang=""en-US"">Vendor name: Amazon</Comments></OrderRequestHeader><ItemOut quantity=""5.0"" lineNumber=""1""><ItemID><SupplierPartID>J71C-AVN1-C</SupplierPartID><SupplierPartAuxiliaryID></SupplierPartAuxiliaryID></ItemID><ItemDetail><UnitPrice><Money currency=""USD"">458.43</Money></UnitPrice><Description xml:lang=""en-US"">NO NOUN,NO MODIFIE:COUPLER, J71, 1"":EMCO COULPLER--J71C-AVN1-C</Description><UnitOfMeasure>EA</UnitOfMeasure><Classification domain=""SPSC""></Classification><Extrinsic name=""ExtDescription""></Extrinsic></ItemDetail></ItemOut></OrderRequest></Request></cXML>"
                 'strInput = "<?xml version=""1.0"" encoding=""UTF-8""?><!DOCTYPE cXML SYSTEM ""http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd""[]><cXML payloadID=""2016-02-18T09:06:44.8376289-05:00.043793890.OrderRequest@sdi.com"" xml:lang=""en-US"" timestamp=""2016-02-18T09:06:44.8486311-05:00""><Header><From><Credential domain=""NetworkId""><Identity>CYTECMXM</Identity></Credential></From><To><Credential domain=""NetworkId""><Identity>SDIINC</Identity></Credential></To><Sender><Credential domain=""CYTECNETWORK""><Identity>CYTECMXM</Identity><SharedSecret>JsymuZ/YkUJ3RYPa7dZurQ==</SharedSecret></Credential><UserAgent>Ariba Network 1.2</UserAgent></Sender></Header><Request><MMITEMIN><ITEM><SITEID>Cytec 2nd Plant</SITEID><ITEMNUM>5600012</ITEMNUM><COMMODITYGROUP>0012</COMMODITYGROUP><DESCRIPTION>sOMETHING SPECIAL - 254 </DESCRIPTION><ISSUEUNIT>EA</ISSUEUNIT><ORDERUNIT>EA</ORDERUNIT></ITEM><INVENTORY><CATEGORY>MRO</CATEGORY><MANUFACTURER>3M</MANUFACTURER><MODELNUM>K726-34</MODELNUM><BINNUM>V4-6-21-8</BINNUM><MINLEVEL>2</MINLEVEL><MAXLEVEL>6</MAXLEVEL><ORDERQTY>2</ORDERQTY></INVENTORY><INVCOST><STDCOST>12.5</STDCOST></INVCOST></MMITEMIN></Request></cXML>"
-                strInput = "<?xml version=""1.0""?>" & _
-"<!--Created on 12/17/2014 11:00:22 AM-->" & _
-"<DATA>" & _
-   "<ISAORDSTATUSLOG>" & _
-      "<ORDER_NO>2015023525</ORDER_NO>" & _
-      "<LINE_NBR>23</LINE_NBR>" & _
-      "<DTTM_STAMP>12/17/2014 10:23:19 AM</DTTM_STAMP>" & _
-     " <ISA_ORDER_STATUS>2</ISA_ORDER_STATUS>" & _
-   "</ISAORDSTATUSLOG>" & _
-   "<ISAORDSTATUSLOG>" & _
-      "<ORDER_NO>2015023525</ORDER_NO>" & _
-      "<LINE_NBR>22</LINE_NBR>" & _
-      "<DTTM_STAMP>12/17/2014 10:23:19 AM</DTTM_STAMP>" & _
-      "<ISA_ORDER_STATUS>2</ISA_ORDER_STATUS>" & _
-   "</ISAORDSTATUSLOG>" & _
-"</DATA>"
+                '                strInput = "<?xml version=""1.0""?>" & _
+                '"<!--Created on 12/17/2014 11:00:22 AM-->" & _
+                '"<DATA>" & _
+                '   "<ISAORDSTATUSLOG>" & _
+                '      "<ORDER_NO>2015023525</ORDER_NO>" & _
+                '      "<LINE_NBR>23</LINE_NBR>" & _
+                '      "<DTTM_STAMP>12/17/2014 10:23:19 AM</DTTM_STAMP>" & _
+                '     " <ISA_ORDER_STATUS>2</ISA_ORDER_STATUS>" & _
+                '   "</ISAORDSTATUSLOG>" & _
+                '   "<ISAORDSTATUSLOG>" & _
+                '      "<ORDER_NO>2015023525</ORDER_NO>" & _
+                '      "<LINE_NBR>22</LINE_NBR>" & _
+                '      "<DTTM_STAMP>12/17/2014 10:23:19 AM</DTTM_STAMP>" & _
+                '      "<ISA_ORDER_STATUS>2</ISA_ORDER_STATUS>" & _
+                '   "</ISAORDSTATUSLOG>" & _
+                '"</DATA>"
+
+                strInput = "<?xml version=""1.0"" encoding=""UTF-8""?><MXITEMInterface xmlns=""http://www.mro.com/mx/integration"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" language=""EN""><Header operation=""Notify"" event=""1""><SenderID type=""MAXIMO"" majorversion=""6"" minorversion=""2"" build=""20100824-1415"" dbbuild=""V600-768"">MX</SenderID><CreationDateTime>2016-03-31T14:44:34-05:00</CreationDateTime><RecipientID>CY_HTTP</RecipientID><MessageID>14594534745575197</MessageID></Header><Content><MXITEM><ITEM action=""Add""><ITEMNUM>15428</ITEMNUM><DESCRIPTION langenabled=""1"">Test Item 1</DESCRIPTION><ROTATING>0</ROTATING><LOTTYPE maxvalue=""NOLOT"">NOLOT</LOTTYPE><CAPITALIZED>0</CAPITALIZED><MSDSNUM /><OUTSIDE>0</OUTSIDE><IN19 /><IN20 /><IN21 /><IN22 xsi:nil=""true"" /><IN23 xsi:nil=""true"" /><SPAREPARTAUTOADD>0</SPAREPARTAUTOADD><INSPECTIONREQUIRED>0</INSPECTIONREQUIRED><SOURCESYSID /><OWNERSYSID /><EXTERNALREFID /><IN24 /><IN25 /><IN26 /><IN27 /><SENDERSYSID>MX</SENDERSYSID><ITEMSETID>SET02</ITEMSETID><ORDERUNIT>EACH</ORDERUNIT><ISSUEUNIT>EACH</ISSUEUNIT><DESCRIPTION_LONGDESCRIPTION langenabled=""1"" /><CONDITIONENABLED>0</CONDITIONENABLED><GROUPNAME /><METERNAME /><COMMODITYGROUP /><COMMODITY /><ITEMTYPE>ITEM</ITEMTYPE><PRORATE>0</PRORATE><ITEMID>326385</ITEMID><ISKIT>0</ISKIT><ATTACHONISSUE>0</ATTACHONISSUE><STOCKTYPE /><IN1 /><IN2 /><IN5 /><IN14 xsi:nil=""true"" /><MATERIALCLASS /><PACKSIZE xsi:nil=""true"" /><SETUPDATE xsi:nil=""true"" /><PLUSCISINHOUSECAL>1</PLUSCISINHOUSECAL><PLUSCISMTE>0</PLUSCISMTE><PLUSCISMTECLASS /><TRANS_LANGCODE>EN</TRANS_LANGCODE></ITEM></MXITEM></Content></MXITEMInterface>"
+
+            Case "NEW_AMAZON"
+                Console.WriteLine("Started to test a New AMAZON service")
+                Console.WriteLine("")
+
+                objStrmWrtrXMLRspns = File.CreateText(filePathResponse)
+                objStreamWriterXML = File.CreateText(filePath)
+                objStreamWriter = File.CreateText(logpath)
+                objStreamWriter.WriteLine("Started CYTEC MXM Test " & Now())
+
+                '' Ship Notice
+
+                'strInput = "<?xml version=""1.0"" encoding=""UTF-8""?><!DOCTYPE cXML SYSTEM "
+                'strInput += """http://xml.cxml.org/schemas/cXML/1.2.024/Fulfill.dtd""> "
+                'strInput += "<cXML payloadID=""1394645847931.18059.42xx@amazon.com"" "
+                'strInput += "timestamp=""2014-03-12T17:37:27+17:37"" xml:lang=""en-US""><Header><From><Credential domain=""NetworkId""><Identity>AMAZON</Identity></Credential></From><To><Credential domain=""NetworkId""><Identity>SDIINC</Identity></Credential></To><Sender><Credential domain=""NetworkId""><Identity>0000039777</Identity><SharedSecret>CNznizfS4klqFVc2FDCJGQ==</SharedSecret></Credential><UserAgent>Amazon LLC eProcurement Application</UserAgent></Sender></Header><Request><ShipNoticeRequest><ShipNoticeHeader shipmentID=""2199947375124"" operation="
+                'strInput += "  ""new"" noticeDate=""2014-03-12T17:37:35+17:37"" shipmentDate="
+                'strInput += "   ""2014-03-12T17:32:02+17:32"" "
+                'strInput += "   deliveryDate=""2014-03-14T03:00:00+03:00"" "
+                'strInput += "    shipmentType=""actual""/><ShipControl><CarrierIdentifier domain=""companyName""></CarrierIdentifier><ShipmentIdentifier>1Z1Y2E270339295041</ShipmentIdentifier><PackageIdentification rangeBegin=""1"" rangeEnd=""1""/></ShipControl><ShipNoticePortion><OrderReference orderDate=""2014-03-11T15:57:28-04:00"" orderID=""E010653511xxxx""><DocumentReference payloadID=""1394567848065.10310490xx.OrderRequest@xx.org""/></OrderReference><ShipNoticeItem lineNumber=""10"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""4"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""13"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""6"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""5"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""7"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""2"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""9"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""12"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""8"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""14"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""11"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""15"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""3"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""1"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem></ShipNoticePortion></ShipNoticeRequest></Request></cXML>"
+
+                ''Order Confirm
+
+                strInput = "<?xml version=""1.0"" encoding=""UTF-8""?><!DOCTYPE cXML SYSTEM"
+                strInput += " ""http://xml.cxml.org/schemas/cXML/1.2.024/Fulfill.dtd"">"
+                strInput += "<cXML payloadID=""1394568264055.446.73xx@amazon.com"" "
+                strInput += "timestamp=""2014-03-11T13:04:24+13:04"" xml:lang=""en-US""><Header><From><Credential "                strInput += "domain=""NetworkId""><Identity>AMAZON</Identity></Credential></From><To><Credential "                strInput += "domain=""NetworkId""><Identity>SDIINC</Identity></Credential></To><Sender><Credential "                strInput += "domain=""NetworkId""><Identity>0000039777</Identity><SharedSecret>CNznizfS4klqFVc2FDCJGQ==</SharedSecret></Credential><UserAgent>Amazon LLC eProcurement "                strInput += "Application</UserAgent></Sender></Header><Request><ConfirmationRequest><ConfirmationHeader confirmID=""105-5528563-5618617"" "
+                strInput += " operation=""new"" type=""detail"" "
+                strInput += " noticeDate=""2014-03-11T13:04:24+13:04""><Total><Money currency=""USD"">137.18</Money></Total><Shipping><Money currency=""USD"">0.00</Money><Description "                strInput += "xml:lang=""en-US"">Cost of "
+                strInput += "shipping, not including shipping tax</Description></Shipping><Tax><Money currency=""USD"">8.60</Money><Description xml:lang=""en-US"">Cost of tax, including "
+                strInput += "shipping tax</Description></Tax></ConfirmationHeader><OrderReference orderID=""E010653511913xxx"" orderDate="
+                strInput += " ""2014-03-11T12:57:28-07:00"">"
+                strInput += "<DocumentReference payloadID="
+                strInput += " ""1394567848065.10310490xx.OrderRequest@xx.org""/></OrderReference><ConfirmationItem quantity=""2"" "                strInput += "lineNumber=""1""><UnitOfMeasure>EA</UnitOfMeasure><ConfirmationStatus quantity=""2"" type=""detail""><UnitOfMeasure>EA</UnitOfMeasure><Tax><Money "                strInput += "currency=""USD"">0.60</Money><Description xml:lang=""en-US"">Cost of tax, including "
+                strInput += "shipping tax</Description></Tax><Shipping><Money currency=""USD"">0.00</Money><Description xml:lang=""en-US"">Cost of shipping, not including "
+                strInput += "shipping tax</Description></Shipping><Comments type=""confirmID"">105-5528563-5618617</Comments></ConfirmationStatus></ConfirmationItem><ConfirmationItem "                strInput += "quantity=""2"" lineNumber=""13""><UnitOfMeasure>EA</UnitOfMeasure><ConfirmationStatus quantity=""2"" type=""detail""><UnitOfMeasure>EA</UnitOfMeasure><Tax><Money "                strInput += "currency=""USD"">0.60</Money><Description xml:lang=""en-US"">Cost of tax, including "
+                strInput += "shipping tax</Description></Tax><Shipping><Money currency=""USD"">0.00</Money><Description xml:lang=""en-US"">Cost of shipping, not including "
+                strInput += "shipping tax</Description></Shipping><Comments type=""confirmID"">105-5528563-5618617</Comments></ConfirmationStatus></ConfirmationItem><ConfirmationItem "                strInput += "quantity=""2"" lineNumber=""14""><UnitOfMeasure>EA</UnitOfMeasure><ConfirmationStatus quantity=""2"" type=""detail""><UnitOfMeasure>EA</UnitOfMeasure><UnitPrice><Money "                strInput += "currency=""USD"">2.96</Money></UnitPrice><Tax><Money currency=""USD"">0.40</Money><Description xml:lang=""en-US"">Cost of tax, including "
+                strInput += "shipping tax</Description></Tax><Shipping><Money currency=""USD"">0.00</Money><Description xml:lang=""en-US"">Cost of shipping, not including "
+                strInput += "shipping tax</Description></Shipping><Comments type=""confirmID"">105-5528563-5618617</Comments></ConfirmationStatus></ConfirmationItem><ConfirmationItem "                strInput += "quantity=""2"" lineNumber=""15""><UnitOfMeasure>EA</UnitOfMeasure><ConfirmationStatus quantity=""2"" type=""detail""><UnitOfMeasure>EA</UnitOfMeasure><Tax><Money "                strInput += "currency=""USD"">0.60</Money><Description xml:lang=""en-US"">Cost of tax, including "
+                strInput += "shipping tax</Description></Tax><Shipping><Money currency=""USD"">0.00</Money><Description xml:lang=""en-US"">Cost of shipping, not including "
+                strInput += "shipping tax</Description></Shipping><Comments type=""confirmID"">105-5528563-"                strInput += "5618617</Comments></ConfirmationStatus></ConfirmationItem></ConfirmationRequest></Request></cXML>"
+
+                '    "https://sdiexchtest.sdi.com/WebSvcSDI/xmlinsdi.aspx"
+
+                ''strInput = ""
+                ''strInput += ""
+
+                'strInput = "<?xml version = '1.0' encoding = 'UTF-8'?>"
+                'strInput += "<!DOCTYPE cXML SYSTEM ""http://xml.cxml.org/schemas/cXML/1.2.017/cXML.dtd"">"
+                'strInput += "<cXML version=""1.2.017"" xml:lang=""en-US"" payloadID=""20151206ABCDE.1449509406.3418072@amazon12345.com"" timestamp=""2015-12-07T09:30:06-0800"">"
+                'strInput += " <Header><From><Credential domain=""NetworkId""><Identity>SDIDirectOrdering2356630089</Identity></Credential></From><To><Credential "                'strInput += "domain=""NetworkId""><Identity>Amazon</Identity></Credential></To><Sender><Credential "                'strInput += "domain=""NetworkId""><Identity>SDIDirectOrdering2356630089</Identity><SharedSecret>6LhhKUA2D53IrSMYujgODVmJq6AgK5</SharedSecret></Credential></Sender></Header><Request "                'strInput += "deploymentMode=""production""><OrderRequest><OrderRequestHeader orderDate=""2015-12-07T09:30:06-0800"" orderID=""ASBCDE12345"" orderType=""regular"" orderVersion=""1"" "                'strInput += "type=""new""><ShipTo><Address isoCountryCode=""US""><Name xml:lang=""en-US"">Main Address</Name><PostalAddress name=""default""><DeliverTo>Mr. "                'strInput += "James</DeliverTo><Street>600 Street ABCD</Street><Street>Apt 12345</Street><City>Seattle</City><State>WA</State><PostalCode>98019</PostalCode><Country "                'strInput += "isoCountryCode=""US"">United States</Country></PostalAddress><Email name=""default"">michael.randall@isacs.com</Email><Phone "                'strInput += "name=""default""><TelephoneNumber><CountryCode "                'strInput += "isoCountryCode=""US"">1</CountryCode><AreaOrCityCode>111</AreaOrCityCode><Number>1111111</Number></TelephoneNumber></Phone></Address></ShipTo><Extrinsic "                'strInput += "name=""email"">michael.randall@isacs.com</Extrinsic></OrderRequestHeader><ItemOut quantity=""1"" "                'strInput += "lineNumber=""1""><ItemID><SupplierPartID>0314194878</SupplierPartID></ItemID><ItemDetail><UnitPrice><Money "                'strInput += "currency=""USD"">87.94</Money></UnitPrice><UnitOfMeasure>EA</UnitOfMeasure></ItemDetail></ItemOut></OrderRequest></Request> </cXML>"
+
+                'https://https.amazonsedi.com/c47fcf9d-286d-498a-ba9f-df390c2757a2
+
             Case Else
                 Exit Sub
         End Select
@@ -708,13 +765,20 @@ Module Module1
 
     Private Sub Send1(ByRef strBox1 As String, ByRef strBox2 As String)
 
-        strBox2 = ""   '  my test URL: "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"   ' not seen outside: "http://websrv.sdi.com/sdiwebin/xmlinsdi.aspx"   '  
+        strBox2 = ""
+
+        ' new secure on IMS -   "https://sdiexchtest.sdi.com/WebSvcSDI/xmlinsdi.aspx"
+        '  my test URL: "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"   ' not seen outside: "http://websrv.sdi.com/sdiwebin/xmlinsdi.aspx"   '  
         ' "https://https.amazonsedi.com/073dbe31-c230-403f-990c-6f74eeed1510"  '  
+        ' new one:  "http://localhost/SDIWebProcessors/CytecPurchReqs.aspx"    '   "http://ims.sdi.com:8913/sdiwebinSvc/CytecMatMastIn.aspx"  
+        '  "http://ims.sdi.com:8913/sdiwebinSvc/CytecNstkPoRecpts.aspx"   '  "http://192.168.253.46:8011/sdiwebin/CytecMatMastIn.aspx"
 
         Dim sHttpResponse As String = ""
         Dim httpSession As New easyHttp
 
-        httpSession.URL = "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"  '    "http://localhost/SDIWebProcessors/XmlInSDI.aspx"   '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"  '   "https://https.amazonsedi.com/073dbe31-c230-403f-990c-6f74eeed1510"  '    "https://www.amazon.com/eprocurement/punchout"  '    "https://supplydev.hajoca.com/hajomid/eclipse.ecl"
+        httpSession.URL = "https://sdiexchtest.sdi.com/WebSvcSDI/xmlinsdi.aspx"   '   "https://https.amazonsedi.com/c47fcf9d-286d-498a-ba9f-df390c2757a2"  '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"    '  "http://192.168.253.46:8011/sdiwebin/CytecMatMastIn.aspx"  '   "http://ims.sdi.com:8913/sdiwebinSvc/CytecNstkPoRecpts.aspx"   ' "http://ims.sdi.com:8913/sdiwebinSvc/CytecPurchReqs.aspx"    '  "http://ims.sdi.com:8913/sdiwebinSvc/CytecStkReservIn.aspx"    '  "http://ims.sdi.com:8913/sdiwebinSvc/CytecMatMastIn.aspx"    '  "http://localhost/SDIWebProcessors/CytecMatMastIn.aspx"    '    "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"  '    "http://localhost/SDIWebProcessors/XmlInSDI.aspx"   '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx" 
+        '   "https://https.amazonsedi.com/073dbe31-c230-403f-990c-6f74eeed1510"  '    "https://www.amazon.com/eprocurement/punchout"  '    "https://supplydev.hajoca.com/hajomid/eclipse.ecl"
+
         httpSession.DataToPost = strBox1
         httpSession.ContentType = "text/xml; charset=utf-8"
         httpSession.Method = easyHttp.HTTPMethod.HTTP_POST

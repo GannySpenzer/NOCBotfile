@@ -490,7 +490,7 @@ Public Class punchOutSetupRequestDoc
                                                     Dim nodeOrderHeader As XmlNode = nodeOrder.AppendChild(docXML.CreateElement(name:="OrderRequestHeader"))
 
                                                     'add attributes
-                                                    Dim strPoDate As String = OrderDataSet.Tables(0).Rows(iOrd).Item("po_dt").ToString()
+                                                    Dim strPoDate As String = OrderDataSet.Tables(0).Rows(iOrd).Item("PO_DT").ToString()
                                                     Dim dDate1 As DateTime = CType(strPoDate, DateTime)
                                                     Dim dateOffset1 As New DateTimeOffset(dDate1, TimeZoneInfo.Local.GetUtcOffset(dDate1))
                                                     strPoDate = dateOffset1.ToString("o")
@@ -498,22 +498,22 @@ Public Class punchOutSetupRequestDoc
                                                     attrib = nodeOrderHeader.Attributes.Append(docXML.CreateAttribute(name:="orderDate"))
                                                     attrib.Value = strPoDate ' get from dataset
 
-                                                    Dim strPoId As String = OrderDataSet.Tables(0).Rows(iOrd).Item("po_id").ToString()
+                                                    Dim strPoId As String = OrderDataSet.Tables(0).Rows(iOrd).Item("PO_ID").ToString()
                                                     '(2) orderID
                                                     attrib = nodeOrderHeader.Attributes.Append(docXML.CreateAttribute(name:="orderID"))
                                                     attrib.Value = strPoId ' get from dataset
 
-                                                    Dim strPoOrderType As String = OrderDataSet.Tables(0).Rows(iOrd).Item("po_type").ToString()
+                                                    Dim strPoOrderType As String = OrderDataSet.Tables(0).Rows(iOrd).Item("ORDER_TYPE").ToString()
                                                     '(3) orderType
                                                     attrib = nodeOrderHeader.Attributes.Append(docXML.CreateAttribute(name:="orderType"))
                                                     attrib.Value = strPoOrderType  '  "regular"
 
-                                                    Dim strPoVersion As String = OrderDataSet.Tables(0).Rows(iOrd).Item("version").ToString()
+                                                    Dim strPoVersion As String = OrderDataSet.Tables(0).Rows(iOrd).Item("ORDER_VERSION").ToString()
                                                     ' (4) orderVersion
                                                     attrib = nodeOrderHeader.Attributes.Append(docXML.CreateAttribute(name:="orderVersion"))
                                                     attrib.Value = strPoVersion  '  "1"
 
-                                                    Dim strPoType As String = OrderDataSet.Tables(0).Rows(iOrd).Item("type_add").ToString()
+                                                    Dim strPoType As String = OrderDataSet.Tables(0).Rows(iOrd).Item("TYPE").ToString()
                                                     '(5) type
                                                     attrib = nodeOrderHeader.Attributes.Append(docXML.CreateAttribute(name:="type"))
                                                     attrib.Value = strPoType  '  "new"
@@ -522,8 +522,8 @@ Public Class punchOutSetupRequestDoc
                                                     Dim nodeTotal As XmlNode = nodeOrderHeader.AppendChild(docXML.CreateElement(name:="Total"))
                                                     ' Money - under Total
                                                     node = nodeTotal.AppendChild(docXML.CreateElement(name:="Money"))
-                                                    Dim strMoneyTotal As String = OrderDataSet.Tables(0).Rows(iOrd).Item("total_amt").ToString()
-                                                    Dim strCurrnc As String = OrderDataSet.Tables(0).Rows(iOrd).Item("currency_cd").ToString()
+                                                    Dim strMoneyTotal As String = OrderDataSet.Tables(0).Rows(iOrd).Item("TOTAL").ToString()
+                                                    Dim strCurrnc As String = OrderDataSet.Tables(0).Rows(iOrd).Item("CURRENCY").ToString()
                                                     ' (1) currency
                                                     attrib = node.Attributes.Append(docXML.CreateAttribute(name:="currency"))
                                                     attrib.Value = strCurrnc ' get from dataset
@@ -535,10 +535,10 @@ Public Class punchOutSetupRequestDoc
                                                     Dim nodeAddressShipTo As XmlNode = nodeShipTo.AppendChild(docXML.CreateElement(name:="Address"))
                                                     '       (1) addressID
                                                     attrib = nodeAddressShipTo.Attributes.Append(docXML.CreateAttribute(name:="addressID"))
-                                                    Dim straddressID As String = OrderDataSet.Tables(0).Rows(iOrd).Item("shipto_id").ToString()
+                                                    Dim straddressID As String = OrderDataSet.Tables(0).Rows(iOrd).Item("SHIPTO_ID").ToString()
                                                     attrib.Value = straddressID ' ShipToID -  get from dataset - like 'L0470-01'
 
-                                                    Dim strIsoCountryCode As String = OrderDataSet.Tables(0).Rows(iOrd).Item("country").ToString()
+                                                    Dim strIsoCountryCode As String = OrderDataSet.Tables(0).Rows(iOrd).Item("COUNTRY_2CHAR").ToString()
                                                     '       (2) isoCountryCode
                                                     attrib = nodeAddressShipTo.Attributes.Append(docXML.CreateAttribute(name:="isoCountryCode"))
                                                     attrib.Value = strIsoCountryCode ' get from dataset
@@ -547,7 +547,7 @@ Public Class punchOutSetupRequestDoc
                                                     '          (1) xml:lang - under name
                                                     attrib = nodeName.Attributes.Append(docXML.CreateAttribute(name:="xml:lang"))
                                                     attrib.Value = "en-US"
-                                                    Dim strShipToName As String = OrderDataSet.Tables(0).Rows(iOrd).Item("descr").ToString()
+                                                    Dim strShipToName As String = OrderDataSet.Tables(0).Rows(iOrd).Item("DESCR").ToString()
                                                     nodeName.InnerText = strShipToName ' get from dataset Money
 
 
@@ -559,32 +559,32 @@ Public Class punchOutSetupRequestDoc
 
                                                     '         DeliverTo under PostalAddress - under address - under ShipTo
                                                     node = nodePostalAddress.AppendChild(docXML.CreateElement(name:="DeliverTo"))
-                                                    Dim strDeliverTo As String = OrderDataSet.Tables(0).Rows(iOrd).Item("address1").ToString()
+                                                    Dim strDeliverTo As String = OrderDataSet.Tables(0).Rows(iOrd).Item("ADDRESS1").ToString()
                                                     node.InnerText = strDeliverTo
 
                                                     '         Street under PostalAddress - under address - under ShipTo
                                                     node = nodePostalAddress.AppendChild(docXML.CreateElement(name:="Street"))
-                                                    Dim strStreet2 As String = OrderDataSet.Tables(0).Rows(iOrd).Item("address2").ToString()
+                                                    Dim strStreet2 As String = OrderDataSet.Tables(0).Rows(iOrd).Item("ADDRESS2").ToString()
                                                     node.InnerText = strStreet2
 
                                                     '         Street under PostalAddress - under address - under ShipTo
                                                     node = nodePostalAddress.AppendChild(docXML.CreateElement(name:="Street"))
-                                                    Dim strStreet3 As String = OrderDataSet.Tables(0).Rows(iOrd).Item("address3").ToString()
+                                                    Dim strStreet3 As String = OrderDataSet.Tables(0).Rows(iOrd).Item("ADDRESS3").ToString()
                                                     node.InnerText = strStreet3
 
                                                     '         City under PostalAddress - under address - under ShipTo
                                                     node = nodePostalAddress.AppendChild(docXML.CreateElement(name:="City"))
-                                                    Dim strCity As String = OrderDataSet.Tables(0).Rows(iOrd).Item("city").ToString()
+                                                    Dim strCity As String = OrderDataSet.Tables(0).Rows(iOrd).Item("CITY").ToString()
                                                     node.InnerText = strCity
 
                                                     '         State under PostalAddress - under address - under ShipTo
                                                     node = nodePostalAddress.AppendChild(docXML.CreateElement(name:="State"))
-                                                    Dim strState As String = OrderDataSet.Tables(0).Rows(iOrd).Item("state").ToString()
+                                                    Dim strState As String = OrderDataSet.Tables(0).Rows(iOrd).Item("STATE").ToString()
                                                     node.InnerText = strState
 
                                                     '         PostalCode under PostalAddress - under address - under ShipTo
                                                     node = nodePostalAddress.AppendChild(docXML.CreateElement(name:="PostalCode"))
-                                                    Dim strPostalCode As String = OrderDataSet.Tables(0).Rows(iOrd).Item("postal").ToString()
+                                                    Dim strPostalCode As String = OrderDataSet.Tables(0).Rows(iOrd).Item("POSTAL").ToString()
                                                     node.InnerText = strPostalCode ' get from dataset
 
                                                     '         Country under PostalAddress - under address - under ShipTo
@@ -592,7 +592,7 @@ Public Class punchOutSetupRequestDoc
                                                     '       (1) isoCountryCode
                                                     attrib = node.Attributes.Append(docXML.CreateAttribute(name:="isoCountryCode"))
                                                     attrib.Value = strIsoCountryCode ' get from dataset
-                                                    Dim strCountry As String = OrderDataSet.Tables(0).Rows(iOrd).Item("name").ToString()
+                                                    Dim strCountry As String = OrderDataSet.Tables(0).Rows(iOrd).Item("COUNTRY_CODE").ToString()
                                                     node.InnerText = strCountry ' get from dataset
 
 
@@ -602,10 +602,10 @@ Public Class punchOutSetupRequestDoc
                                                     attrib = nodeEmail.Attributes.Append(docXML.CreateAttribute(name:="name"))
                                                     attrib.Value = "default"
                                                     Dim strEmail As String = ""
-                                                    If Not OrderDataSet.Tables(0).Rows(iOrd).Item("email_address").ToString() Is Nothing Then
+                                                    If Not OrderDataSet.Tables(0).Rows(iOrd).Item("EMAILID").ToString() Is Nothing Then
                                                         Try
-                                                            If Trim(OrderDataSet.Tables(0).Rows(iOrd).Item("email_address").ToString()) <> "" Then
-                                                                strEmail = Trim(OrderDataSet.Tables(0).Rows(iOrd).Item("email_address").ToString())
+                                                            If Trim(OrderDataSet.Tables(0).Rows(iOrd).Item("EMAILID").ToString()) <> "" Then
+                                                                strEmail = Trim(OrderDataSet.Tables(0).Rows(iOrd).Item("EMAILID").ToString())
                                                             Else
                                                                 strEmail = ""
                                                             End If
@@ -627,7 +627,7 @@ Public Class punchOutSetupRequestDoc
                                                     '                (1) isoCountryCode
                                                     attrib = node.Attributes.Append(docXML.CreateAttribute(name:="isoCountryCode"))
                                                     attrib.Value = strIsoCountryCode ' get from dataset
-                                                    Dim strCountryCode As String = OrderDataSet.Tables(0).Rows(iOrd).Item("country_code").ToString()
+                                                    Dim strCountryCode As String = OrderDataSet.Tables(0).Rows(iOrd).Item("COUNTRY_CODE").ToString()
                                                     node.InnerText = strCountryCode
 
                                                     '           AreaOrCityCode under TelephoneNumber under Phone - under address - under ShipTo
@@ -646,8 +646,8 @@ Public Class punchOutSetupRequestDoc
                                                     Dim nodeAddressBillTo As XmlNode = nodeBillTo.AppendChild(docXML.CreateElement(name:="Address"))
                                                     '       (1) addressID
                                                     attrib = nodeAddressBillTo.Attributes.Append(docXML.CreateAttribute(name:="addressID"))
-                                                    'Dim straddressIDBillTo As String = OrderDataSet.Tables(0).Rows(iOrd).Item("shipto_id").ToString()
-                                                    attrib.Value = ""  '  straddressIDBillTo ' BillToID -  get from dataset - like 'L0470-01'
+                                                    Dim straddressIDBillTo As String = OrderDataSet.Tables(0).Rows(iOrd).Item("BILLTO_ID").ToString()
+                                                    attrib.Value = straddressIDBillTo ' BillToID -  get from dataset - like 'L0470-01'
 
                                                     'Dim strIsoCountryCode As String = OrderDataSet.Tables(0).Rows(iOrd).Item("country").ToString()
                                                     '       (2) isoCountryCode
@@ -658,7 +658,7 @@ Public Class punchOutSetupRequestDoc
                                                     '          (1) xml:lang - under name
                                                     attrib = nodeNameBillTo.Attributes.Append(docXML.CreateAttribute(name:="xml:lang"))
                                                     attrib.Value = "en-US"
-                                                    Dim strBillToName As String = OrderDataSet.Tables(0).Rows(iOrd).Item("name1").ToString()
+                                                    Dim strBillToName As String = OrderDataSet.Tables(0).Rows(iOrd).Item("BILLTO_NAME").ToString()
                                                     nodeNameBillTo.InnerText = strBillToName ' get from dataset Money
 
 
@@ -674,32 +674,32 @@ Public Class punchOutSetupRequestDoc
 
                                                     '         DeliverTo (2nd time) under PostalAddress - under address - under BillTo
                                                     node = nodePostalAddressBillTo.AppendChild(docXML.CreateElement(name:="DeliverTo"))
-                                                    Dim strDeliverToBillTo As String = OrderDataSet.Tables(0).Rows(iOrd).Item("attn_to").ToString()
+                                                    Dim strDeliverToBillTo As String = OrderDataSet.Tables(0).Rows(iOrd).Item("BILLTO_NAME").ToString()
                                                     node.InnerText = strDeliverToBillTo
 
                                                     '         Street under PostalAddress - under address - under BillTo
                                                     node = nodePostalAddressBillTo.AppendChild(docXML.CreateElement(name:="Street"))
-                                                    Dim strStreet2BillTo As String = OrderDataSet.Tables(0).Rows(iOrd).Item("address1_bill").ToString()
+                                                    Dim strStreet2BillTo As String = OrderDataSet.Tables(0).Rows(iOrd).Item("BILLTO_ADD1").ToString()
                                                     node.InnerText = strStreet2BillTo
 
                                                     '         Street under PostalAddress - under address - under BillTo
                                                     node = nodePostalAddressBillTo.AppendChild(docXML.CreateElement(name:="Street"))
-                                                    'Dim strStreet3BillTo As String = OrderDataSet.Tables(0).Rows(iOrd).Item("???").ToString()
-                                                    node.InnerText = ""  '  strStreet3BillTo
+                                                    Dim strStreet3BillTo As String = OrderDataSet.Tables(0).Rows(iOrd).Item("BILLTO_ADD2").ToString()
+                                                    node.InnerText = strStreet3BillTo
 
                                                     '         City under PostalAddress - under address - under BillTo
                                                     node = nodePostalAddressBillTo.AppendChild(docXML.CreateElement(name:="City"))
-                                                    Dim strCityBillTo As String = OrderDataSet.Tables(0).Rows(iOrd).Item("city_bill").ToString()
+                                                    Dim strCityBillTo As String = OrderDataSet.Tables(0).Rows(iOrd).Item("BILLTO_CITY").ToString()
                                                     node.InnerText = strCityBillTo
 
                                                     '         State under PostalAddress - under address - under BillTo
                                                     node = nodePostalAddressBillTo.AppendChild(docXML.CreateElement(name:="State"))
-                                                    Dim strStateBillTo As String = OrderDataSet.Tables(0).Rows(iOrd).Item("state_bill").ToString()
+                                                    Dim strStateBillTo As String = OrderDataSet.Tables(0).Rows(iOrd).Item("BILLTO_STATE").ToString()
                                                     node.InnerText = strStateBillTo
 
                                                     '         PostalCode under PostalAddress - under address - under BillTo
                                                     node = nodePostalAddressBillTo.AppendChild(docXML.CreateElement(name:="PostalCode"))
-                                                    Dim strPostalCodeBillTo As String = OrderDataSet.Tables(0).Rows(iOrd).Item("postal_bill").ToString()
+                                                    Dim strPostalCodeBillTo As String = OrderDataSet.Tables(0).Rows(iOrd).Item("BILLTO_POSTAL").ToString()
                                                     node.InnerText = strPostalCodeBillTo ' get from dataset
 
                                                     '         Country under PostalAddress - under address - under BillTo
@@ -717,10 +717,10 @@ Public Class punchOutSetupRequestDoc
                                                     attrib = nodeEmailBillTo.Attributes.Append(docXML.CreateAttribute(name:="name"))
                                                     attrib.Value = "default"
                                                     Dim strEmailBillTo As String = ""
-                                                    If Not OrderDataSet.Tables(0).Rows(iOrd).Item("emailid").ToString() Is Nothing Then
+                                                    If Not OrderDataSet.Tables(0).Rows(iOrd).Item("BILLTO_EMAILID").ToString() Is Nothing Then
                                                         Try
-                                                            If Trim(OrderDataSet.Tables(0).Rows(iOrd).Item("emailid").ToString()) <> "" Then
-                                                                strEmailBillTo = Trim(OrderDataSet.Tables(0).Rows(iOrd).Item("emailid").ToString())
+                                                            If Trim(OrderDataSet.Tables(0).Rows(iOrd).Item("BILLTO_EMAILID").ToString()) <> "" Then
+                                                                strEmailBillTo = Trim(OrderDataSet.Tables(0).Rows(iOrd).Item("BILLTO_EMAILID").ToString())
                                                             Else
                                                                 strEmailBillTo = ""
                                                             End If
@@ -742,18 +742,18 @@ Public Class punchOutSetupRequestDoc
                                                     '                (1) isoCountryCode
                                                     attrib = node.Attributes.Append(docXML.CreateAttribute(name:="isoCountryCode"))
                                                     attrib.Value = strIsoCountryCode ' get from dataset
-                                                    ''Dim strCountryCodeBillTo As String = OrderDataSet.Tables(0).Rows(iOrd).Item("country_code").ToString()
-                                                    node.InnerText = strCountryCode
+                                                    Dim strCountryCodeBillTo As String = OrderDataSet.Tables(0).Rows(iOrd).Item("BILLTO_PHONE1").ToString()
+                                                    node.InnerText = strCountryCodeBillTo  '  strCountryCode
 
                                                     '           AreaOrCityCode under TelephoneNumber under Phone - under address - under BillTo
                                                     node = nodeTelephoneNumberBillTo.AppendChild(docXML.CreateElement(name:="AreaOrCityCode"))
-                                                    'Dim strAreaOrCityCodeBillTo As String = OrderDataSet.Tables(0).Rows(iOrd).Item("area_code").ToString()
-                                                    node.InnerText = strAreaOrCityCode
+                                                    Dim strAreaOrCityCodeBillTo As String = OrderDataSet.Tables(0).Rows(iOrd).Item("BILLTO_PHONE2").ToString()
+                                                    node.InnerText = strAreaOrCityCodeBillTo  '  strAreaOrCityCode
 
                                                     '           Number under TelephoneNumber under Phone - under address - under BillTo
                                                     node = nodeTelephoneNumberBillTo.AppendChild(docXML.CreateElement(name:="Number"))
-                                                    'Dim strNumberSuffixBillTo As String = OrderDataSet.Tables(0).Rows(iOrd).Item("phone_suffix").ToString()
-                                                    node.InnerText = strNumberSuffix
+                                                    Dim strNumberSuffixBillTo As String = OrderDataSet.Tables(0).Rows(iOrd).Item("BILLTO_PHONE3").ToString()
+                                                    node.InnerText = strNumberSuffixBillTo  '  strNumberSuffix
 
                                                     'Shipping
                                                     Dim nodeShipping As XmlNode = nodeOrderHeader.AppendChild(docXML.CreateElement(name:="Shipping"))
@@ -772,7 +772,7 @@ Public Class punchOutSetupRequestDoc
 
                                                     'PaymentTerm
                                                     Dim nodePaymentTerm As XmlNode = nodeOrderHeader.AppendChild(docXML.CreateElement(name:="PaymentTerm"))
-                                                    Dim strPayInNumberOfDays As String = OrderDataSet.Tables(0).Rows(iOrd).Item("pymnt_terms_cd").ToString()
+                                                    Dim strPayInNumberOfDays As String = OrderDataSet.Tables(0).Rows(iOrd).Item("PYMNT_TERMS_CD").ToString()
                                                     ' (1) payInNumberOfDays
                                                     attrib = nodePaymentTerm.Attributes.Append(docXML.CreateAttribute(name:="payInNumberOfDays"))
                                                     attrib.Value = strPayInNumberOfDays ' get from dataset
@@ -795,7 +795,7 @@ Public Class punchOutSetupRequestDoc
                                                 Dim nodeLine As XmlNode = nodeOrder.AppendChild(docXML.CreateElement(name:="ItemOut"))
 
                                                 'add attributes
-                                                Dim strQty As String = OrderDataSet.Tables(0).Rows(iOrd).Item("qty_po").ToString()
+                                                Dim strQty As String = OrderDataSet.Tables(0).Rows(iOrd).Item("QTY_PO").ToString()
                                                 Try
                                                     If IsNumeric(strQty) Then
                                                         strQty = FormatNumber(CType(strQty, Decimal), 1)
@@ -808,7 +808,7 @@ Public Class punchOutSetupRequestDoc
                                                 attrib.Value = strQty ' get from dataset
 
                                                 '(2) lineNumber
-                                                Dim strLineNo As String = OrderDataSet.Tables(0).Rows(iOrd).Item("line_nbr").ToString()
+                                                Dim strLineNo As String = OrderDataSet.Tables(0).Rows(iOrd).Item("LINE_NBR").ToString()
                                                 attrib = nodeLine.Attributes.Append(docXML.CreateAttribute(name:="lineNumber"))
                                                 attrib.Value = strLineNo ' get from dataset
 
@@ -817,13 +817,13 @@ Public Class punchOutSetupRequestDoc
                                                 '          SupplierPartID under ItemID under ItemOut
                                                 node = nodeItemID.AppendChild(docXML.CreateElement(name:="SupplierPartID"))
                                                 Dim strSupplierPartID As String = ""
-                                                If IsDBNull(OrderDataSet.Tables(0).Rows(iOrd).Item("itm_id_vndr").ToString()) Then
+                                                If IsDBNull(OrderDataSet.Tables(0).Rows(iOrd).Item("ITM_ID_VNDR").ToString()) Then
                                                     strSupplierPartID = ""
                                                 Else
-                                                    If Not OrderDataSet.Tables(0).Rows(iOrd).Item("itm_id_vndr").ToString() Is Nothing Then
+                                                    If Not OrderDataSet.Tables(0).Rows(iOrd).Item("ITM_ID_VNDR").ToString() Is Nothing Then
                                                         Try
-                                                            If Trim(OrderDataSet.Tables(0).Rows(iOrd).Item("itm_id_vndr").ToString()) <> "" Then
-                                                                strSupplierPartID = Trim(OrderDataSet.Tables(0).Rows(iOrd).Item("itm_id_vndr").ToString())
+                                                            If Trim(OrderDataSet.Tables(0).Rows(iOrd).Item("ITM_ID_VNDR").ToString()) <> "" Then
+                                                                strSupplierPartID = Trim(OrderDataSet.Tables(0).Rows(iOrd).Item("ITM_ID_VNDR").ToString())
                                                             Else
                                                                 strSupplierPartID = ""
                                                             End If
@@ -840,13 +840,13 @@ Public Class punchOutSetupRequestDoc
                                                 '          SupplierPartAuxiliaryID under ItemID under ItemOut
                                                 node = nodeItemID.AppendChild(docXML.CreateElement(name:="SupplierPartAuxiliaryID"))
                                                 Dim strSupplierPartAuxiliaryID As String = ""
-                                                If IsDBNull(OrderDataSet.Tables(0).Rows(iOrd).Item("INV_ITEM_ALIAS").ToString()) Then
+                                                If IsDBNull(OrderDataSet.Tables(0).Rows(iOrd).Item("ISA_ATTRVAL30").ToString()) Then
                                                     strSupplierPartAuxiliaryID = ""
                                                 Else
-                                                    If Not OrderDataSet.Tables(0).Rows(iOrd).Item("INV_ITEM_ALIAS").ToString() Is Nothing Then
+                                                    If Not OrderDataSet.Tables(0).Rows(iOrd).Item("ISA_ATTRVAL30").ToString() Is Nothing Then
                                                         Try
-                                                            If Trim(OrderDataSet.Tables(0).Rows(iOrd).Item("INV_ITEM_ALIAS").ToString()) <> "" Then
-                                                                strSupplierPartAuxiliaryID = Trim(OrderDataSet.Tables(0).Rows(iOrd).Item("INV_ITEM_ALIAS").ToString())
+                                                            If Trim(OrderDataSet.Tables(0).Rows(iOrd).Item("ISA_ATTRVAL30").ToString()) <> "" Then
+                                                                strSupplierPartAuxiliaryID = Trim(OrderDataSet.Tables(0).Rows(iOrd).Item("ISA_ATTRVAL30").ToString())
                                                             Else
                                                                 strSupplierPartAuxiliaryID = ""
                                                             End If
@@ -869,7 +869,7 @@ Public Class punchOutSetupRequestDoc
                                                 Dim nodeUnitPrice As XmlNode = nodeItemDetail.AppendChild(docXML.CreateElement(name:="UnitPrice"))
                                                 '              Money under UnitPrice under ItemDetail under ItemOut
                                                 node = nodeUnitPrice.AppendChild(docXML.CreateElement(name:="Money"))
-                                                Dim strMoneyLine As String = OrderDataSet.Tables(0).Rows(iOrd).Item("price_po").ToString()
+                                                Dim strMoneyLine As String = OrderDataSet.Tables(0).Rows(iOrd).Item("PRICE_PO").ToString()
                                                 Try
                                                     If IsNumeric(strMoneyLine) Then
                                                         strMoneyLine = FormatNumber(CType(strMoneyLine, Decimal), 2)
@@ -877,7 +877,7 @@ Public Class punchOutSetupRequestDoc
                                                 Catch ex As Exception
 
                                                 End Try
-                                                Dim strCurrncLine As String = OrderDataSet.Tables(0).Rows(iOrd).Item("currency_cd_itm").ToString()
+                                                Dim strCurrncLine As String = OrderDataSet.Tables(0).Rows(iOrd).Item("PO_CURRENCY").ToString()
                                                 ' (1) currency
                                                 attrib = node.Attributes.Append(docXML.CreateAttribute(name:="currency"))
                                                 attrib.Value = strCurrncLine ' get from dataset
@@ -888,12 +888,12 @@ Public Class punchOutSetupRequestDoc
                                                 ' (1) xml:lang - under Description
                                                 attrib = node.Attributes.Append(docXML.CreateAttribute(name:="xml:lang"))
                                                 attrib.Value = "en-US"
-                                                Dim strDescriptionLine As String = OrderDataSet.Tables(0).Rows(iOrd).Item("descr254_mixed").ToString()
+                                                Dim strDescriptionLine As String = OrderDataSet.Tables(0).Rows(iOrd).Item("DESCR254_MIXED").ToString()
                                                 node.InnerText = strDescriptionLine  '  get from dataset 
 
                                                 '           UnitOfMeasure under ItemDetail under ItemOut
                                                 node = nodeItemDetail.AppendChild(docXML.CreateElement(name:="UnitOfMeasure"))
-                                                Dim strUnitOfMeasure As String = OrderDataSet.Tables(0).Rows(iOrd).Item("unit_of_measure").ToString()
+                                                Dim strUnitOfMeasure As String = OrderDataSet.Tables(0).Rows(iOrd).Item("UNIT_OF_MEASURE").ToString()
                                                 node.InnerText = strUnitOfMeasure  '  get from dataset
 
                                                 '           Classification under ItemDetail under ItemOut
