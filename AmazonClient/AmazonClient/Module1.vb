@@ -22,32 +22,25 @@ Module Module1
     Dim logpath As String = "C:\Program Files\sdi\AmazonClient\AmazonLOGS\AmazonClientOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
     Dim filePath As String = "C:\Program Files\sdi\AmazonClient\AmazonXMLFiles\AmazonClientXMLOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".xml"
     Dim filePathResponse As String = "C:\Program Files\sdi\AmazonClient\AmazonXMLFiles\AmznClntXMLRspns" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".xml"
-    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=STAR")
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=DEVL")
 
     Sub Main()
 
         Dim strInput As String = ""  '  <?xml version=""1.0"" encoding=""UTF-8""?><!DOCTYPE cXML SYSTEM ""http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd""[]><cXML payloadID=""3/30/2015 11:56:16 AM 019768490@sdi.com"" xml:lang=""en-US"" timestamp=""3/30/2015 11:56:16 AM""><Header><From><Credential domain=""NetworkId""><Identity>SDIINC</Identity></Credential></From><To><Credential domain=""NetworkId""><Identity>Amazon</Identity></Credential></To><Sender><Credential domain=""DUNS""><Identity>SDIINC</Identity><SharedSecret>Y2XN7SefSxpPAoD5i6OtYix4w5TK402d</SharedSecret></Credential><UserAgent>Ariba Network 1.2</UserAgent></Sender></Header><Request><PunchOutSetupRequest operation=""create""><BuyerCookie>3xx1vu5dn5sttwrc2zqspprl</BuyerCookie><Extrinsic name=""UniqueName"">ROVENSKY,VITALY</Extrinsic><Extrinsic name=""UserEmail"">vitaly.rovensky@sdi.com</Extrinsic><Extrinsic name=""CostCenter"">I0256</Extrinsic><BrowserFormPost><URL>http://localhost/InsiteOnline/shopredirect.aspx?PUNOUT=YES</URL></BrowserFormPost><ShipTo><Address addressID=""L0256-01""><Name xml:lang=""en-US"">UNCC Facility Maint. Shop</Name><PostalAddress><DeliverTo>SDI c/o UNCC Facility Maint Shop</DeliverTo><Street>9201 University City Blvd.</Street><City>Charlotte</City><State>NC</State><PostalCode>28223</PostalCode><Country isoCountryCode=""US"">United States</Country></PostalAddress></Address></ShipTo></PunchOutSetupRequest></Request></cXML>"
         Dim strOutput As String = ""
-        Dim strWhatToTest As String = "AMAZON"  ' "NEW_AMAZON"  '    "CYTECMXM"  ' "AMAZON"  '
+        Dim strWhatToTest As String = "AMAZON"  '  "AMAZON"  ' "NEW_AMAZON"  '    "CYTECMXM"  ' "AMAZON"  '
         Dim Response_Doc As String
         Dim msgEx As String = ""
         Dim strMsgVendConfig As String = ""
+        objStreamWriter = File.CreateText(logpath)
 
         Select Case strWhatToTest
             Case "AMAZON"
                 Console.WriteLine("Started to check Amazon ready to Dispatch orders ")
                 Console.WriteLine("")
 
-                'If Dir(rootDir, FileAttribute.Directory) = "" Then
-                '    MkDir(rootDir)
-                'End If
-                'If Dir(rootDir & "\AmazonLOGS", FileAttribute.Directory) = "" Then
-                '    MkDir(rootDir & "\AmazonLOGS")
-                'End If
-
-                objStrmWrtrXMLRspns = File.CreateText(filePathResponse)
-                objStreamWriterXML = File.CreateText(filePath)
-                objStreamWriter = File.CreateText(logpath)
+                'objStrmWrtrXMLRspns = File.CreateText(filePathResponse)
+                'objStreamWriterXML = File.CreateText(filePath)
                 objStreamWriter.WriteLine("Started to check Amazon ready to Dispatch orders " & Now())
 
 
@@ -80,7 +73,6 @@ Module Module1
                 'Dim xmlDoc2 As Object
                 'Dim XMLPath As String
                 'Dim VendorURL As String
-                Dim doc As New XmlDocument
 
                 strMsgVendConfig = " 'm_vendorConfig.ConfigFile' is not defined"
                 Try
@@ -126,23 +118,8 @@ Module Module1
                     ''end special test
 
                     ' function to send order request - using strPunSite only
-                    strInput = getOrderRequest(strPunSite, OrderListDataSet)
+                    strInput = getOrderRequest(strPunSite, OrderListDataSet, strMsgVendConfig)
 
-                    objStreamWriter.WriteLine("Finished building XML out " & Now())
-                    If Trim(strInput) = "" Then
-                        If Not m_vendorConfig Is Nothing Then
-                            If Not m_vendorConfig.ConfigFile Is Nothing Then
-                                Try
-                                    strMsgVendConfig = m_vendorConfig.ConfigFile
-
-                                Catch ex2 As Exception
-                                    strMsgVendConfig = " 'm_vendorConfig.ConfigFile' is not defined. SubError: " & vbCrLf & ex2.Message & vbCrLf
-                                End Try
-                            End If
-                        End If
-                    Else
-                        doc.InnerXml = strInput
-                    End If
                 Catch ex As Exception
                     msgEx = "Not a valid identity or vendor URL for this catalog.<BR>Please report error" & _
                                           vbCrLf & "config =" & strMsgVendConfig & _
@@ -153,6 +130,9 @@ Module Module1
 
                     Exit Sub
                 End Try
+
+                Exit Sub
+
             Case "CYTECMXM"
                 Console.WriteLine("Started to test CYTEC MXM ")
                 Console.WriteLine("")
@@ -191,40 +171,40 @@ Module Module1
                 objStrmWrtrXMLRspns = File.CreateText(filePathResponse)
                 objStreamWriterXML = File.CreateText(filePath)
                 objStreamWriter = File.CreateText(logpath)
-                objStreamWriter.WriteLine("Started CYTEC MXM Test " & Now())
+                objStreamWriter.WriteLine("Started NEW_AMAZON Test " & Now())
 
                 '' Ship Notice
 
-                'strInput = "<?xml version=""1.0"" encoding=""UTF-8""?><!DOCTYPE cXML SYSTEM "
-                'strInput += """http://xml.cxml.org/schemas/cXML/1.2.024/Fulfill.dtd""> "
-                'strInput += "<cXML payloadID=""1394645847931.18059.42xx@amazon.com"" "
-                'strInput += "timestamp=""2014-03-12T17:37:27+17:37"" xml:lang=""en-US""><Header><From><Credential domain=""NetworkId""><Identity>AMAZON</Identity></Credential></From><To><Credential domain=""NetworkId""><Identity>SDIINC</Identity></Credential></To><Sender><Credential domain=""NetworkId""><Identity>0000039777</Identity><SharedSecret>CNznizfS4klqFVc2FDCJGQ==</SharedSecret></Credential><UserAgent>Amazon LLC eProcurement Application</UserAgent></Sender></Header><Request><ShipNoticeRequest><ShipNoticeHeader shipmentID=""2199947375124"" operation="
-                'strInput += "  ""new"" noticeDate=""2014-03-12T17:37:35+17:37"" shipmentDate="
-                'strInput += "   ""2014-03-12T17:32:02+17:32"" "
-                'strInput += "   deliveryDate=""2014-03-14T03:00:00+03:00"" "
-                'strInput += "    shipmentType=""actual""/><ShipControl><CarrierIdentifier domain=""companyName""></CarrierIdentifier><ShipmentIdentifier>1Z1Y2E270339295041</ShipmentIdentifier><PackageIdentification rangeBegin=""1"" rangeEnd=""1""/></ShipControl><ShipNoticePortion><OrderReference orderDate=""2014-03-11T15:57:28-04:00"" orderID=""E010653511xxxx""><DocumentReference payloadID=""1394567848065.10310490xx.OrderRequest@xx.org""/></OrderReference><ShipNoticeItem lineNumber=""10"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""4"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""13"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""6"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""5"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""7"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""2"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""9"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""12"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""8"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""14"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""11"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""15"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""3"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""1"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem></ShipNoticePortion></ShipNoticeRequest></Request></cXML>"
+                strInput = "<?xml version=""1.0"" encoding=""UTF-8""?><!DOCTYPE cXML SYSTEM "
+                strInput += """http://xml.cxml.org/schemas/cXML/1.2.024/Fulfill.dtd""> "
+                strInput += "<cXML payloadID=""1394645847931.18059.42xx@amazon.com"" "
+                strInput += "timestamp=""2014-03-12T17:37:27+17:37"" xml:lang=""en-US""><Header><From><Credential domain=""NetworkId""><Identity>0000039777</Identity></Credential></From><To><Credential domain=""NetworkId""><Identity>SDIDirectOrdering2356630089</Identity></Credential></To><Sender><Credential domain=""NetworkId""><Identity>0000039777</Identity><SharedSecret>CNznizfS4klqFVc2FDCJGQ==</SharedSecret></Credential><UserAgent>Amazon LLC eProcurement Application</UserAgent></Sender></Header><Request><ShipNoticeRequest><ShipNoticeHeader shipmentID=""2199947375124"" operation="
+                strInput += "  ""new"" noticeDate=""2014-03-12T17:37:35+17:37"" shipmentDate="
+                strInput += "   ""2014-03-12T17:32:02+17:32"" "
+                strInput += "   deliveryDate=""2014-03-14T03:00:00+03:00"" "
+                strInput += "    shipmentType=""actual""/><ShipControl><CarrierIdentifier domain=""companyName""></CarrierIdentifier><ShipmentIdentifier>1Z1Y2E270339295041</ShipmentIdentifier><PackageIdentification rangeBegin=""1"" rangeEnd=""1""/></ShipControl><ShipNoticePortion><OrderReference orderDate=""2014-03-11T15:57:28-04:00"" orderID=""E010653511xxxx""><DocumentReference payloadID=""1394567848065.10310490xx.OrderRequest@xx.org""/></OrderReference><ShipNoticeItem lineNumber=""10"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""4"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""13"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""6"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""5"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""7"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""2"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""9"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""12"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""8"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""14"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""11"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""15"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""3"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""1"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem></ShipNoticePortion></ShipNoticeRequest></Request></cXML>"
 
                 ''Order Confirm
 
-                strInput = "<?xml version=""1.0"" encoding=""UTF-8""?><!DOCTYPE cXML SYSTEM"
-                strInput += " ""http://xml.cxml.org/schemas/cXML/1.2.024/Fulfill.dtd"">"
-                strInput += "<cXML payloadID=""1394568264055.446.73xx@amazon.com"" "
-                strInput += "timestamp=""2014-03-11T13:04:24+13:04"" xml:lang=""en-US""><Header><From><Credential "                strInput += "domain=""NetworkId""><Identity>AMAZON</Identity></Credential></From><To><Credential "                strInput += "domain=""NetworkId""><Identity>SDIINC</Identity></Credential></To><Sender><Credential "                strInput += "domain=""NetworkId""><Identity>0000039777</Identity><SharedSecret>CNznizfS4klqFVc2FDCJGQ==</SharedSecret></Credential><UserAgent>Amazon LLC eProcurement "                strInput += "Application</UserAgent></Sender></Header><Request><ConfirmationRequest><ConfirmationHeader confirmID=""105-5528563-5618617"" "
-                strInput += " operation=""new"" type=""detail"" "
-                strInput += " noticeDate=""2014-03-11T13:04:24+13:04""><Total><Money currency=""USD"">137.18</Money></Total><Shipping><Money currency=""USD"">0.00</Money><Description "                strInput += "xml:lang=""en-US"">Cost of "
-                strInput += "shipping, not including shipping tax</Description></Shipping><Tax><Money currency=""USD"">8.60</Money><Description xml:lang=""en-US"">Cost of tax, including "
-                strInput += "shipping tax</Description></Tax></ConfirmationHeader><OrderReference orderID=""E010653511913xxx"" orderDate="
-                strInput += " ""2014-03-11T12:57:28-07:00"">"
-                strInput += "<DocumentReference payloadID="
-                strInput += " ""1394567848065.10310490xx.OrderRequest@xx.org""/></OrderReference><ConfirmationItem quantity=""2"" "                strInput += "lineNumber=""1""><UnitOfMeasure>EA</UnitOfMeasure><ConfirmationStatus quantity=""2"" type=""detail""><UnitOfMeasure>EA</UnitOfMeasure><Tax><Money "                strInput += "currency=""USD"">0.60</Money><Description xml:lang=""en-US"">Cost of tax, including "
-                strInput += "shipping tax</Description></Tax><Shipping><Money currency=""USD"">0.00</Money><Description xml:lang=""en-US"">Cost of shipping, not including "
-                strInput += "shipping tax</Description></Shipping><Comments type=""confirmID"">105-5528563-5618617</Comments></ConfirmationStatus></ConfirmationItem><ConfirmationItem "                strInput += "quantity=""2"" lineNumber=""13""><UnitOfMeasure>EA</UnitOfMeasure><ConfirmationStatus quantity=""2"" type=""detail""><UnitOfMeasure>EA</UnitOfMeasure><Tax><Money "                strInput += "currency=""USD"">0.60</Money><Description xml:lang=""en-US"">Cost of tax, including "
-                strInput += "shipping tax</Description></Tax><Shipping><Money currency=""USD"">0.00</Money><Description xml:lang=""en-US"">Cost of shipping, not including "
-                strInput += "shipping tax</Description></Shipping><Comments type=""confirmID"">105-5528563-5618617</Comments></ConfirmationStatus></ConfirmationItem><ConfirmationItem "                strInput += "quantity=""2"" lineNumber=""14""><UnitOfMeasure>EA</UnitOfMeasure><ConfirmationStatus quantity=""2"" type=""detail""><UnitOfMeasure>EA</UnitOfMeasure><UnitPrice><Money "                strInput += "currency=""USD"">2.96</Money></UnitPrice><Tax><Money currency=""USD"">0.40</Money><Description xml:lang=""en-US"">Cost of tax, including "
-                strInput += "shipping tax</Description></Tax><Shipping><Money currency=""USD"">0.00</Money><Description xml:lang=""en-US"">Cost of shipping, not including "
-                strInput += "shipping tax</Description></Shipping><Comments type=""confirmID"">105-5528563-5618617</Comments></ConfirmationStatus></ConfirmationItem><ConfirmationItem "                strInput += "quantity=""2"" lineNumber=""15""><UnitOfMeasure>EA</UnitOfMeasure><ConfirmationStatus quantity=""2"" type=""detail""><UnitOfMeasure>EA</UnitOfMeasure><Tax><Money "                strInput += "currency=""USD"">0.60</Money><Description xml:lang=""en-US"">Cost of tax, including "
-                strInput += "shipping tax</Description></Tax><Shipping><Money currency=""USD"">0.00</Money><Description xml:lang=""en-US"">Cost of shipping, not including "
-                strInput += "shipping tax</Description></Shipping><Comments type=""confirmID"">105-5528563-"                strInput += "5618617</Comments></ConfirmationStatus></ConfirmationItem></ConfirmationRequest></Request></cXML>"
+                'strInput = "<?xml version=""1.0"" encoding=""UTF-8""?><!DOCTYPE cXML SYSTEM"
+                'strInput += " ""http://xml.cxml.org/schemas/cXML/1.2.024/Fulfill.dtd"">"
+                'strInput += "<cXML payloadID=""1394568264055.446.73xx@amazon.com"" "
+                'strInput += "timestamp=""2014-03-11T13:04:24+13:04"" xml:lang=""en-US""><Header><From><Credential "                'strInput += "domain=""NetworkId""><Identity>0000039777</Identity></Credential></From><To><Credential "                'strInput += "domain=""NetworkId""><Identity>SDIDirectOrdering2356630089</Identity></Credential></To><Sender><Credential "                'strInput += "domain=""NetworkId""><Identity>0000039777</Identity><SharedSecret>CNznizfS4klqFVc2FDCJGQ==</SharedSecret></Credential><UserAgent>Amazon LLC eProcurement "                'strInput += "Application</UserAgent></Sender></Header><Request><ConfirmationRequest><ConfirmationHeader confirmID=""105-5528563-5618617"" "
+                'strInput += " operation=""new"" type=""detail"" "
+                'strInput += " noticeDate=""2014-03-11T13:04:24+13:04""><Total><Money currency=""USD"">137.18</Money></Total><Shipping><Money currency=""USD"">0.00</Money><Description "                'strInput += "xml:lang=""en-US"">Cost of "
+                'strInput += "shipping, not including shipping tax</Description></Shipping><Tax><Money currency=""USD"">8.60</Money><Description xml:lang=""en-US"">Cost of tax, including "
+                'strInput += "shipping tax</Description></Tax></ConfirmationHeader><OrderReference orderID=""E010653511913xxx"" orderDate="
+                'strInput += " ""2014-03-11T12:57:28-07:00"">"
+                'strInput += "<DocumentReference payloadID="
+                'strInput += " ""1394567848065.10310490xx.OrderRequest@xx.org""/></OrderReference><ConfirmationItem quantity=""2"" "                'strInput += "lineNumber=""1""><UnitOfMeasure>EA</UnitOfMeasure><ConfirmationStatus quantity=""2"" type=""detail""><UnitOfMeasure>EA</UnitOfMeasure><Tax><Money "                'strInput += "currency=""USD"">0.60</Money><Description xml:lang=""en-US"">Cost of tax, including "
+                'strInput += "shipping tax</Description></Tax><Shipping><Money currency=""USD"">0.00</Money><Description xml:lang=""en-US"">Cost of shipping, not including "
+                'strInput += "shipping tax</Description></Shipping><Comments type=""confirmID"">105-5528563-5618617</Comments></ConfirmationStatus></ConfirmationItem><ConfirmationItem "                'strInput += "quantity=""2"" lineNumber=""13""><UnitOfMeasure>EA</UnitOfMeasure><ConfirmationStatus quantity=""2"" type=""detail""><UnitOfMeasure>EA</UnitOfMeasure><Tax><Money "                'strInput += "currency=""USD"">0.60</Money><Description xml:lang=""en-US"">Cost of tax, including "
+                'strInput += "shipping tax</Description></Tax><Shipping><Money currency=""USD"">0.00</Money><Description xml:lang=""en-US"">Cost of shipping, not including "
+                'strInput += "shipping tax</Description></Shipping><Comments type=""confirmID"">105-5528563-5618617</Comments></ConfirmationStatus></ConfirmationItem><ConfirmationItem "                'strInput += "quantity=""2"" lineNumber=""14""><UnitOfMeasure>EA</UnitOfMeasure><ConfirmationStatus quantity=""2"" type=""detail""><UnitOfMeasure>EA</UnitOfMeasure><UnitPrice><Money "                'strInput += "currency=""USD"">2.96</Money></UnitPrice><Tax><Money currency=""USD"">0.40</Money><Description xml:lang=""en-US"">Cost of tax, including "
+                'strInput += "shipping tax</Description></Tax><Shipping><Money currency=""USD"">0.00</Money><Description xml:lang=""en-US"">Cost of shipping, not including "
+                'strInput += "shipping tax</Description></Shipping><Comments type=""confirmID"">105-5528563-5618617</Comments></ConfirmationStatus></ConfirmationItem><ConfirmationItem "                'strInput += "quantity=""2"" lineNumber=""15""><UnitOfMeasure>EA</UnitOfMeasure><ConfirmationStatus quantity=""2"" type=""detail""><UnitOfMeasure>EA</UnitOfMeasure><Tax><Money "                'strInput += "currency=""USD"">0.60</Money><Description xml:lang=""en-US"">Cost of tax, including "
+                'strInput += "shipping tax</Description></Tax><Shipping><Money currency=""USD"">0.00</Money><Description xml:lang=""en-US"">Cost of shipping, not including "
+                'strInput += "shipping tax</Description></Shipping><Comments type=""confirmID"">105-5528563-"                'strInput += "5618617</Comments></ConfirmationStatus></ConfirmationItem></ConfirmationRequest></Request></cXML>"
 
                 '    "https://sdiexchtest.sdi.com/WebSvcSDI/xmlinsdi.aspx"
 
@@ -267,8 +247,7 @@ Module Module1
         End If
 
         objStreamWriter.WriteLine("Checking Response XML file " & Now())
-        ' check strOutput - how? need structure of response
-        ' here - for now - I'm using just sample response file (like generated in UNCC XMLProcess/XmlIn.aspx)
+        ' check strOutput 
         Dim bIsOK As Boolean = False
         Response_Doc = Common.RemoveCrLf(strOutput)
         If Trim(Response_Doc) <> "" Then
@@ -451,10 +430,13 @@ Module Module1
     End Sub
 
 
-    Private Function getOrderRequest(ByVal strPunSite As String, ByRef OrderListDataSet As System.Data.DataSet) As String
+    Private Function getOrderRequest(ByVal strPunSite As String, ByRef OrderListDataSet As System.Data.DataSet, ByRef strMsgVendConfig As String) As String
         'Dim OrderListDataSet As System.Data.DataSet = New System.Data.DataSet()
         Dim rtn As String = "AmazonClient.Module1.getOrderRequest"
         Dim cXML As String = ""
+
+        Dim objStreamWriterXMLN1 As StreamWriter
+        Dim objStrmWrtrXMLRspnsN1 As StreamWriter
 
         m_setupReqDoc = Nothing
         m_vendorConfig = Nothing
@@ -502,19 +484,307 @@ Module Module1
                 If m_vendorConfig.ToIdentity.Id.Length > 0 And _
                    m_vendorConfig.VendorPunchoutSetupURL.Length > 0 Then
 
-                    ' create the doc based on order Request template
-                    m_setupReqDoc = punchOutSetupRequestDoc.CreateOrderRequestDoc(m_vendorConfig)
+                    'read view, get list of orders
+                    Dim strListOrders As String = "select distinct po_id from SYSADM.PS_ISA_PO_DISP_XML"
 
-                    ' put header info based on info already collected, and build same XML Header as in Punchout; 
-                    ' read view to get Order(s) info, and build XML based on XML order structure supplied
-                    cXML = m_setupReqDoc.CreateOrderRequestXML(connectOR, OrderListDataSet)
+                    Try
+                        Dim Command As OleDbCommand = New OleDbCommand(strListOrders, connectOR)
+                        Command.CommandTimeout = 120
+                        connectOR.Open()
+                        Dim dataAdapter As OleDbDataAdapter = New OleDbDataAdapter(Command)
 
-                End If
-            End If
+                        OrderListDataSet = New System.Data.DataSet()
+
+                        dataAdapter.Fill(OrderListDataSet)
+
+                        Dim strOrderNo As String = ""
+                        If Not OrderListDataSet Is Nothing Then
+                            If OrderListDataSet.Tables.Count > 0 Then
+                                If OrderListDataSet.Tables(0).Rows.Count > 0 Then
+                                    Dim iLst As Integer = 0
+
+
+                                    For iLst = 0 To OrderListDataSet.Tables(0).Rows.Count - 1
+                                        strOrderNo = OrderListDataSet.Tables(0).Rows(iLst).Item("po_id").ToString()
+                                        If iLst = 2 Then
+                                            Exit For
+                                        End If
+
+                                        Dim filePathN1 As String = "C:\Program Files\sdi\AmazonClient\AmazonXMLFiles\AmazonClientXMLOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".xml"
+                                        Dim filePathResponseN1 As String = "C:\Program Files\sdi\AmazonClient\AmazonXMLFiles\AmznClntXMLRspns" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".xml"
+                                        objStrmWrtrXMLRspnsN1 = File.CreateText(filePathResponseN1)
+                                        objStreamWriterXMLN1 = File.CreateText(filePathN1)
+                                        ' create the doc based on order Request template
+                                        m_setupReqDoc = punchOutSetupRequestDoc.CreateOrderRequestDoc(m_vendorConfig)
+
+                                        ' put header info based on info already collected, and build same XML Header as in Punchout; 
+                                        ' read view to get Order(s) info, and build XML based on XML order structure supplied
+                                        cXML = m_setupReqDoc.CreateOrderRequestXML(connectOR, strOrderNo)
+
+                                        objStreamWriter.WriteLine("Finished building XML out for this OrderNo: " & strOrderNo & " ; Date/Time: " & Now())
+                                        Dim doc As New XmlDocument
+                                        Dim strInput As String = cXML
+                                        If Trim(strInput) = "" Then
+                                            If Not m_vendorConfig Is Nothing Then
+                                                If Not m_vendorConfig.ConfigFile Is Nothing Then
+                                                    Try
+                                                        strMsgVendConfig = m_vendorConfig.ConfigFile
+
+                                                    Catch ex2 As Exception
+                                                        strMsgVendConfig = " 'm_vendorConfig.ConfigFile' is not defined. SubError: " & vbCrLf & ex2.Message & vbCrLf
+                                                    End Try
+                                                    objStreamWriter.WriteLine(strMsgVendConfig)
+                                                End If
+                                            End If
+                                        Else
+                                            doc.InnerXml = strInput
+                                        End If
+
+                                        ' start processing strInput
+                                        Dim strOutput As String = ""
+                                        If Trim(strInput) <> "" Then
+                                            objStreamWriter.WriteLine("Saving XML file to send for this OrderNo: " & strOrderNo & " ; Date/Time: " & Now())
+                                            objStreamWriterXMLN1.WriteLine(strInput)
+
+                                            Call Send1(strInput, strOutput)
+
+                                            objStreamWriter.WriteLine("Saving Response XML file for this OrderNo: " & strOrderNo & " ; Date/Time: " & Now())
+                                            objStrmWrtrXMLRspnsN1.WriteLine(strOutput)
+
+                                            'start analysing Output string
+
+                                            objStreamWriter.WriteLine("Checking Response XML file for this OrderNo: " & strOrderNo & " ; Date/Time: " & Now())
+                                            ' check strOutput 
+                                            Dim Response_Doc As String
+                                            Dim bIsOK As Boolean = False
+                                            Response_Doc = Common.RemoveCrLf(strOutput)
+                                            If Trim(Response_Doc) <> "" Then
+
+                                                '-----------------------------------------------------------------------
+                                                ' Parse the Server response and retrieve XML file
+                                                '-----------------------------------------------------------------------
+
+                                                Dim xmlResponse As New XmlDocument
+                                                Dim root As XmlElement = Nothing
+                                                Try
+                                                    xmlResponse.LoadXml(Response_Doc)
+                                                    root = xmlResponse.DocumentElement
+                                                    bIsOK = True
+                                                Catch ex As Exception
+                                                    objStreamWriter.WriteLine("Response XML file is NOT checked OK - 'LoadXml' area for this OrderNo: " & strOrderNo & " ; Date/Time: " & Now())
+                                                    bIsOK = False
+                                                End Try
+                                                'Dim objnode As XmlNode
+
+                                                If bIsOK Then
+                                                    Try
+                                                        Try
+                                                            If Not root.SelectNodes("Response/Status").Item(0).Attributes(name:="code").Value Is Nothing Then
+                                                                Try
+                                                                    bIsOK = (root.SelectNodes("Response/Status").Item(0).Attributes(name:="code").Value = "200")
+                                                                Catch ex As Exception
+                                                                    bIsOK = False
+                                                                End Try
+                                                            End If
+
+                                                            If Not bIsOK Then
+                                                                If Not root.SelectNodes("Response/Status").Item(0).Attributes(name:="text").Value Is Nothing Then
+                                                                    Try
+                                                                        bIsOK = (root.SelectNodes("Response/Status").Item(0).Attributes(name:="text").Value.ToUpper = "SUCCESS")
+                                                                    Catch ex As Exception
+                                                                        bIsOK = False
+                                                                    End Try
+                                                                End If
+
+                                                            End If
+                                                            If Not bIsOK Then
+                                                                If Not root.SelectNodes("Response/Status").Item(0).Attributes(name:="text").Value Is Nothing Then
+                                                                    Try
+                                                                        bIsOK = (root.SelectNodes("Response/Status").Item(0).Attributes(name:="text").Value.ToUpper = "OK")
+                                                                    Catch ex As Exception
+                                                                        bIsOK = False
+                                                                    End Try
+                                                                End If
+                                                            End If
+                                                        Catch ex As Exception
+                                                            bIsOK = False
+                                                        End Try
+
+                                                        If bIsOK Then
+                                                            'objStreamWriter.WriteLine("Response XML file checked OK. Changing Order statuses " & Now())
+                                                            'Dim strValueToWrite As String = Now.Year.ToString() & Now.Month.ToString() & Now.Day.ToString() & Now.GetHashCode.ToString()
+                                                            'Dim intNumberToWrite As Long = 0
+                                                            'If IsNumeric(strValueToWrite) Then
+                                                            '    intNumberToWrite = CType(strValueToWrite, Long)
+                                                            'Else
+                                                            '    intNumberToWrite = Now.GetHashCode
+                                                            'End If
+                                                            'Dim bNoErrors As Boolean = True
+                                                            'Dim strOrderNo As String = ""
+                                                            'connectOR.Open()
+                                                            'Try
+                                                            '    Dim iOrdCount As Integer = OrderListDataSet.Tables(0).Rows.Count
+                                                            '    ' run this query for every order sent:
+                                                            '    ' "update SYSADM.PS_PO_DISPATCHED set ECQUEUEINSTANCE=" & intNumberToWrite & " where po_id='" & "M010373791" & "'"
+                                                            '    If connectOR.State = ConnectionState.Open Then
+                                                            '    Else
+                                                            '        connectOR.Open()
+                                                            '    End If
+                                                            '    Dim rowsAffected As Integer = 0
+                                                            '    Dim iCnt As Integer = 0
+                                                            '    For iCnt = 0 To iOrdCount - 1
+                                                            '        If iCnt = 1 Then Exit For ' for testing ONLY!
+                                                            '        rowsAffected = 0
+                                                            '        strOrderNo = OrderListDataSet.Tables(0).Rows(iCnt).Item("po_id").ToString()
+                                                            '        'run query
+                                                            '        Dim strUpdateQuery As String = "update SYSADM.PS_PO_DISPATCHED set ECQUEUEINSTANCE=" & intNumberToWrite & " where po_id='" & strOrderNo & "'"
+                                                            '        'commented out for testing
+                                                            '        Dim UpdCommand As OleDbCommand = New OleDbCommand(strUpdateQuery, connectOR)
+                                                            '        UpdCommand.CommandTimeout = 120
+                                                            '        rowsAffected = UpdCommand.ExecuteNonQuery()
+                                                            '        Try
+                                                            '            UpdCommand.Dispose()
+                                                            '        Catch ex As Exception
+
+                                                            '        End Try
+                                                            '        If rowsAffected = 0 Then
+                                                            '            bNoErrors = False
+                                                            '            objStreamWriter.WriteLine("Order status change returned: 'rowsAffected = 0' for Order: " & strOrderNo)
+                                                            '        End If
+                                                            '    Next
+                                                            'Catch ex As Exception
+                                                            '    bNoErrors = False
+                                                            '    objStreamWriter.WriteLine("Error trying to update Order: " & strOrderNo & " Error Message: " & ex.Message)
+                                                            '    Try
+                                                            '        connectOR.Close()
+                                                            '    Catch ex1 As Exception
+
+                                                            '    End Try
+                                                            'End Try
+                                                            'Try
+                                                            '    connectOR.Close()
+                                                            'Catch ex As Exception
+
+                                                            'End Try
+                                                            'If bNoErrors Then
+                                                            '    objStreamWriter.WriteLine("Order statuses changed without errors " & Now())
+                                                            'Else
+                                                            'End If
+                                                        Else
+                                                            objStreamWriter.WriteLine("Response XML file is NOT checked OK for this OrderNo: " & strOrderNo & " ; Date/Time: " & Now())
+                                                            Dim msg As String = "" '  & _
+                                                            Try
+                                                                If Not root.SelectNodes("Response/Status").Item(0).Attributes(0) Is Nothing Then
+                                                                    If Not root.SelectNodes("Response/Status").Item(0).Attributes(0).Value Is Nothing Then
+                                                                        Try
+                                                                            msg += "'Code' = " & root.SelectNodes("Response/Status").Item(0).Attributes(0).Value '  & _
+                                                                        Catch ex As Exception
+                                                                            msg += "'Code' retrieving Error (inner): " & ex.Message
+                                                                        End Try
+                                                                    Else
+                                                                        msg += vbCrLf & " 'Code': root.SelectNodes('Response/Status').Item(0).Attributes(0).Value is Nothing"
+                                                                    End If
+                                                                Else
+                                                                    msg += vbCrLf & " 'Code': root.SelectNodes('Response/Status').Item(0).Attributes(0) is Nothing"
+                                                                End If
+                                                            Catch ex As Exception
+                                                                msg += vbCrLf & "'Code' retrieving Error (outer): " & ex.Message
+                                                            End Try
+
+                                                            Try
+                                                                If Not root.SelectNodes("Response/Status").Item(0).Attributes(1) Is Nothing Then
+                                                                    If Not root.SelectNodes("Response/Status").Item(0).Attributes(1).Value Is Nothing Then
+                                                                        Try
+                                                                            msg += "'Reason' = " & root.SelectNodes("Response/Status").Item(0).Attributes(1).Value '  & _
+                                                                        Catch ex As Exception
+                                                                            msg += "'Reason' retrieving Error (inner): " & ex.Message
+                                                                        End Try
+                                                                    Else
+                                                                        msg += vbCrLf & " 'Reason': root.SelectNodes('Response/Status').Item(0).Attributes(1).Value is Nothing"
+                                                                    End If
+                                                                Else
+                                                                    msg += vbCrLf & " 'Reason': root.SelectNodes('Response/Status').Item(0).Attributes(1) is Nothing"
+                                                                End If
+                                                            Catch ex As Exception
+                                                                msg += vbCrLf & "'Reason' retrieving Error (outer): " & ex.Message
+                                                            End Try
+
+                                                            msg += "" & vbCrLf
+                                                            objStreamWriter.WriteLine(msg & "  Timestamp: " & Now())
+                                                        End If
+
+                                                    Catch ex As Exception
+                                                        objStreamWriter.WriteLine("Error processing Response for this OrderNo: " & strOrderNo & " ; Error: " & ex.Message)
+                                                    End Try
+                                                End If
+
+                                            Else
+                                                ' output is empty - send is unsuccessful at all
+                                                objStreamWriter.WriteLine("Received empty Output string for this OrderNo: " & strOrderNo & " ; Date/Time: " & Now())
+                                                bIsOK = False
+                                            End If
+
+                                            objStreamWriter.WriteLine("End of Amazon Client build/send XML for this OrderNo: " & strOrderNo & " ; Date/Time: " & Now())
+
+                                        Else
+
+                                            objStreamWriter.WriteLine("Input string is empty. Possible cause: " & strMsgVendConfig)
+
+                                        End If
+
+                                        objStreamWriterXMLN1.Flush()
+                                        objStreamWriterXMLN1.Close()
+
+                                        objStrmWrtrXMLRspnsN1.Flush()
+                                        objStrmWrtrXMLRspnsN1.Close()
+
+                                    Next  '  For iLst = 0 To OrderListDataSet.Tables(0).Rows.Count - 1
+                                End If  '  If OrderListDataSet.Tables(0).Rows.Count > 0 Then
+                            End If
+                        End If
+                        Try
+                            dataAdapter.Dispose()
+                        Catch ex As Exception
+
+                        End Try
+                        Try
+                            Command.Dispose()
+                        Catch ex As Exception
+
+                        End Try
+                        Try
+                            OrderListDataSet.Dispose()
+                        Catch ex As Exception
+
+                        End Try
+                        Try
+                            connectOR.Close()
+                        Catch ex1 As Exception
+
+                        End Try
+                    Catch ex As Exception
+                        Try
+                            connectOR.Close()
+                        Catch ex1 As Exception
+
+                        End Try
+                    End Try
+
+                End If  ' got Vendor Config
+            End If  '  not Nothing
 
         Catch ex As Exception
 
         End Try
+
+        objStreamWriter.Flush()
+        objStreamWriter.Close()
+
+        'objStreamWriterXML.Flush()
+        'objStreamWriterXML.Close()
+
+        'objStrmWrtrXMLRspns.Flush()
+        'objStrmWrtrXMLRspns.Close()
 
         Return cXML
 
@@ -776,7 +1046,7 @@ Module Module1
         Dim sHttpResponse As String = ""
         Dim httpSession As New easyHttp
 
-        httpSession.URL = "https://sdiexchtest.sdi.com/WebSvcSDI/xmlinsdi.aspx"   '   "https://https.amazonsedi.com/c47fcf9d-286d-498a-ba9f-df390c2757a2"  '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"    '  "http://192.168.253.46:8011/sdiwebin/CytecMatMastIn.aspx"  '   "http://ims.sdi.com:8913/sdiwebinSvc/CytecNstkPoRecpts.aspx"   ' "http://ims.sdi.com:8913/sdiwebinSvc/CytecPurchReqs.aspx"    '  "http://ims.sdi.com:8913/sdiwebinSvc/CytecStkReservIn.aspx"    '  "http://ims.sdi.com:8913/sdiwebinSvc/CytecMatMastIn.aspx"    '  "http://localhost/SDIWebProcessors/CytecMatMastIn.aspx"    '    "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"  '    "http://localhost/SDIWebProcessors/XmlInSDI.aspx"   '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx" 
+        httpSession.URL = "https://sdiexchtest.sdi.com/WebSvcSDI/xmlinsdi.aspx"  '   "https://https.amazonsedi.com/c47fcf9d-286d-498a-ba9f-df390c2757a2"  '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"    '  "http://192.168.253.46:8011/sdiwebin/CytecMatMastIn.aspx"  '   "http://ims.sdi.com:8913/sdiwebinSvc/CytecNstkPoRecpts.aspx"   ' "http://ims.sdi.com:8913/sdiwebinSvc/CytecPurchReqs.aspx"    '  "http://ims.sdi.com:8913/sdiwebinSvc/CytecStkReservIn.aspx"    '  "http://ims.sdi.com:8913/sdiwebinSvc/CytecMatMastIn.aspx"    '  "http://localhost/SDIWebProcessors/CytecMatMastIn.aspx"    '    "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"  '    "http://localhost/SDIWebProcessors/XmlInSDI.aspx"   '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx" 
         '   "https://https.amazonsedi.com/073dbe31-c230-403f-990c-6f74eeed1510"  '    "https://www.amazon.com/eprocurement/punchout"  '    "https://supplydev.hajoca.com/hajomid/eclipse.ecl"
 
         httpSession.DataToPost = strBox1
