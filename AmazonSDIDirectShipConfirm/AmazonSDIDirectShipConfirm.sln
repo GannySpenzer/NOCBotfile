@@ -1,0 +1,35 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "AmazonSDIDirectShipConfirm", "AmazonSDIDirectShipConfirm\AmazonSDIDirectShipConfirm.vbproj", "{8425E8E8-20EE-45BF-9803-AA05157ED31D}"
+EndProject
+Global
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 2
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = http://vsfoundations:8080/tfs/insiteonline
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = AmazonSDIDirectShipConfirm\\AmazonSDIDirectShipConfirm.vbproj
+		SccProjectName1 = AmazonSDIDirectShipConfirm
+		SccLocalPath1 = AmazonSDIDirectShipConfirm
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8425E8E8-20EE-45BF-9803-AA05157ED31D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8425E8E8-20EE-45BF-9803-AA05157ED31D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8425E8E8-20EE-45BF-9803-AA05157ED31D}.Debug|x86.ActiveCfg = Debug|x86
+		{8425E8E8-20EE-45BF-9803-AA05157ED31D}.Debug|x86.Build.0 = Debug|x86
+		{8425E8E8-20EE-45BF-9803-AA05157ED31D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8425E8E8-20EE-45BF-9803-AA05157ED31D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8425E8E8-20EE-45BF-9803-AA05157ED31D}.Release|x86.ActiveCfg = Release|x86
+		{8425E8E8-20EE-45BF-9803-AA05157ED31D}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
