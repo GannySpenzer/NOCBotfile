@@ -158,16 +158,21 @@ Module Module1
                                     "(LAST_ACTIVITY IS NOT NULL AND ACTIVE_STATUS = 'A' AND LAST_ACTIVITY < (SYSDATE - 90))" & vbCrLf & _
                                     ""
                                 Try
-                                    'rowsUpdated = ORDBAccess.ExecNonQuery(strSqlString, connectOR)
-                                    'If rowsUpdated = 0 Then
-                                    '    m_logger.WriteErrorLog(rtn & " :: Error updating table PS_ISA_USERS_TBL - ACTIVE_STATUS was not updated")
-                                    '    m_logger.WriteErrorLog("Function'ORDBAccess.ExecNonQuery' returned 'rowsUpdated = 0' ")
-                                    '    m_logger.WriteErrorLog("SQL String: " & strSqlString)
+                                    rowsUpdated = ORDBAccess.ExecNonQuery(strSqlString, connectOR)
+                                    If rowsUpdated = 0 Then
+                                        m_logger.WriteErrorLog(rtn & " :: Error updating table PS_ISA_USERS_TBL - ACTIVE_STATUS was not updated")
+                                        m_logger.WriteErrorLog("Function'ORDBAccess.ExecNonQuery' returned 'rowsUpdated = 0' ")
+                                        m_logger.WriteErrorLog("SQL String: " & strSqlString)
 
-                                    '    bError = True
-                                    'Else
-                                    '    m_logger.WriteVerboseLog(rtn & " :: Total number of rows updated: " & rowsUpdated.ToString())
-                                    'End If
+                                        bError = True
+                                    Else
+                                        m_logger.WriteVerboseLog(rtn & " :: Total number of rows updated: " & rowsUpdated.ToString())
+                                    End If
+                                    Try
+                                        connectOR.Close()
+                                    Catch ex As Exception
+
+                                    End Try
                                 Catch ex18 As Exception
                                     m_logger.WriteErrorLog(rtn & " :: Error updating table PS_ISA_USERS_TBL - ACTIVE_STATUS was not updated")
                                     m_logger.WriteErrorLog("ERROR MSG: " & ex18.Message)
@@ -221,13 +226,16 @@ Module Module1
                                                 m_logger.WriteVerboseLog(rtn & " :: Email WAS NOT sent to: " & strEmailAddress & " ; Account ID: " & strAccount & " ; User Name: " & strUserName)
                                             Else
                                                 bSend = True
+                                                'If intX > 4 Then
+                                                '    SendEmail(strEmailAddress, strAccount, bSend)
+                                                'End If
                                                 SendEmail(strEmailAddress, strAccount, bSend)
                                                 If bSend Then
                                                     m_logger.WriteVerboseLog(rtn & " :: Email sent to: " & strEmailAddress & " ; Account ID: " & strAccount & " ; User Name: " & strUserName)
                                                     intX = intX + 1
-                                                    If intX = 3 Then
-                                                        Exit For
-                                                    End If
+                                                    'If intX = 2 Then
+                                                    '    Exit For
+                                                    'End If
                                                 Else
                                                     intNotSent = intNotSent + 1
                                                     m_logger.WriteVerboseLog(rtn & " :: Email WAS NOT sent to (tried to send): " & strEmailAddress & " ; Account ID: " & strAccount & " ; User Name: " & strUserName)
@@ -325,26 +333,26 @@ Module Module1
 
         'The email address of the recipient. 
         email.To = strEmailAddress
-        ' for testing
-        email.To = "vitaly.rovensky@sdi.com"
-        email.Cc = " "  '  "FieldOps.Helpdesk@sdi.com"
-        email.Bcc = " "  '  "vitaly.rovensky@sdi.com"
+        '' for testing
+        'email.To = "vitaly.rovensky@sdi.com;michael.randall@sdi.com"
+        email.Cc = " "
+        email.Bcc = " "
 
         strSource = ""
-        Try
-            strSource = My.Settings("onErrorEmail_BCC").ToString.Trim
-            If Trim(strSource) = "" Then
-                strSource = "webdev@sdi.com"
-            End If
-        Catch ex As Exception
-            strSource = "webdev@sdi.com"
-        End Try
-        If Trim(strSource) <> "" Then
-            email.Bcc = strSource
-        End If
+        'Try
+        '    strSource = My.Settings("onErrorEmail_BCC").ToString.Trim
+        '    If Trim(strSource) = "" Then
+        '        strSource = "webdev@sdi.com"
+        '    End If
+        'Catch ex As Exception
+        '    strSource = "webdev@sdi.com"
+        'End Try
+        'If Trim(strSource) <> "" Then
+        '    email.Bcc = strSource
+        'End If
 
         'The subject of the email
-        email.Subject = "Your SDiExchange Account has been deactivated due to 90 days inactivity"
+        email.Subject = " (Test for Mike) Your SDiExchange Account has been deactivated due to 90 days inactivity"
 
         Try
             strSource = My.Settings("onError_emailSubject").ToString.Trim
@@ -422,9 +430,9 @@ Module Module1
         email.From = "TechSupport@sdi.com"
 
         'The email address of the recipient. 
-        email.To = "vitaly.rovensky@sdi.com"
+        email.To = "Tony.Smith@sdi.com"
         email.Cc = " "
-        email.Bcc = " "  '  "webdev@sdi.com"
+        email.Bcc = "webdev@sdi.com"
 
         'The subject of the email
         email.Subject = "'DEACTIVATE - Not Active 90 Days' process Summary"
