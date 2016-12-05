@@ -16,6 +16,25 @@ Module Module1
             PopulateTable(dsUnilogBU_UNSPSC)
         End If
 
+        Dim strDbOracle As String = ORDBData.DbUrl
+
+        If UCase(Right(strDbOracle, 4)) = "RPTG" Then
+
+            LogMessage("Main", "Started updating SYSADM.PS_ISA_ENTERPRISE for RPTG")
+
+            Dim strMySql As String = "update SYSADM.PS_ISA_ENTERPRISE set ISA_CATALOG_ID = ' '"
+            Try
+                Dim myRows1 As Integer = ORDBData.ExecNonQuery(strMySql)
+                strMySql = "update SYSADM.PS_ISA_ENTERPRISE set ISA_CATALOG_ID = '9001' where ISA_BUSINESS_UNIT = 'I0489' or ISA_BUSINESS_UNIT like 'I049%'"
+                myRows1 = ORDBData.ExecNonQuery(strMySql)
+            Catch ex As Exception
+
+            End Try
+
+            LogMessage("Main", "Finished updating SYSADM.PS_ISA_ENTERPRISE for RPTG")
+
+        End If
+
         LogMessage("Main", "Ended utility Populate_BU_UNSPSC_Tbl")
     End Sub
 
@@ -105,9 +124,10 @@ Module Module1
 
         Try
             For Each drSubsetID As DataRow In dsUnilogBU_UNSPSC.Tables(0).Rows
-                Dim sSubsetId As String = drSubsetID.Item("subset_id").ToString
-                Dim sZeroPadding As String = "00000".Substring(0, 4 - sSubsetId.Length)
-                Dim sBU As String = "I" & sZeroPadding & sSubsetId
+                'Dim sSubsetId As String = drSubsetID.Item("subset_id").ToString
+                'Dim sZeroPadding As String = "00000".Substring(0, 4 - sSubsetId.Length)
+                Dim sBU As String = drSubsetID.Item("subset_id").ToString  '   "I" & sZeroPadding & sSubsetId
+                
                 Dim sUNSPSC As String = drSubsetID.Item("unspsc").ToString
 
                 strSQLstring = "INSERT INTO sdix_bu_unspsc " & vbCrLf & _
