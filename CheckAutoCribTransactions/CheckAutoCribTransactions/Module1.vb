@@ -417,7 +417,7 @@ Module Module1
 
         Try
             'SendLogger(eml.Subject, eml.Body, "QUOTEAPPROVAL", "Mail", eml.To, eml.Cc, eml.Bcc)
-            SendLogger(mailer.Subject, mailer.Body, "CHECKAUTOCRIBTRANSACTNS", "Mail", mailer.To, "", mailer.Bcc, mailer.From)
+            SendLogger(mailer.Subject, mailer.Body, "CHECKAUTOCRIBTRANS", "Mail", mailer.To, "", mailer.Bcc, mailer.From)
 
             '' old code
             'UpdEmailOut.UpdEmailOut.UpdEmailOut(mailer.Subject, mailer.From, mailer.To, "", "", "N", mailer.Body, connectOR)
