@@ -30,6 +30,9 @@ Module Module1
 
     Sub Main()
 
+        ' Production source share: \\solaris2\PSSHARE\efi\NBTY\inbound 
+        ' starting times: daily every hour at 09, 24, 39, 54
+
         Dim rtn As String = "Module1.Main"
 
         ' default log level
