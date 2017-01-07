@@ -457,6 +457,9 @@ Module Module1
                                                         Catch ex As Exception
                                                             strIsaCustChrcd = " "
                                                         End Try
+                                                        If Trim(strIsaCustChrcd) = "" Then
+                                                            strIsaCustChrcd = " "
+                                                        End If
                                                     Case "cmrpt_sdi_wo.warehouse_id"
                                                         Try
                                                             strWhouseId = nodeMxItem.ChildNodes(iItemMM).InnerText
