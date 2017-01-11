@@ -18,11 +18,66 @@ Module Module1
     Dim objStreamWriter As StreamWriter
     Dim objStreamWriterXML As StreamWriter
     Dim objStrmWrtrXMLRspns As StreamWriter
+
+    Dim objStreamWriterXMLN1 As StreamWriter
+    Dim objStrmWrtrXMLRspnsN1 As StreamWriter
+
+    ' if folder changed - make sure check all code for EXPLICIT directory settings like 'C:\Program Files\sdi\AmazonClient'!!!
+
+    Dim strUrlToSend As String = "https://https.amazonsedi.com/c47fcf9d-286d-498a-ba9f-df390c2757a2"
     Dim rootDir As String = "C:\Program Files\sdi\AmazonClient"
     Dim logpath As String = "C:\Program Files\sdi\AmazonClient\AmazonLOGS\AmazonClientOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
     Dim filePath As String = "C:\Program Files\sdi\AmazonClient\AmazonXMLFiles\AmazonClientXMLOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".xml"
     Dim filePathResponse As String = "C:\Program Files\sdi\AmazonClient\AmazonXMLFiles\AmznClntXMLRspns" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".xml"
     Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=DEVL")
+
+    Public Sub SendLogger(ByVal subject As String, ByVal body As String, ByVal messageType As String, ByVal MailType As String, ByVal EmailTo As String, ByVal EmailCc As String, ByVal EmailBcc As String)
+        Try
+            Dim SDIEmailService As AmazonSDIDirectEmailSvc.EmailServices = New AmazonSDIDirectEmailSvc.EmailServices()
+            Dim MailAttachmentName As String()
+            Dim MailAttachmentbytes As New List(Of Byte())()
+
+            'EmailTo = "vitaly.rovensky@sdi.com"
+            SDIEmailService.EmailUtilityServices(MailType, "SDIExchADMIN@sdi.com", EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
+
+        Catch ex As Exception
+
+        End Try
+    End Sub
+
+    Private Sub SendErrorEmail(ByVal strOrdrNo As String)
+
+        Dim rtn As String = "Module1.SendErrorEmail"
+
+        Dim strEmailCc As String = ""
+        Dim strEmailBcc As String = ""
+        Dim strEmailTo As String = ""
+        strEmailTo = "vitaly.rovensky@sdi.com"
+        strEmailCc = " "
+        strEmailBcc = "webdev@sdi.com"
+
+        ''The subject of the email
+        Dim strEmailSubject As String = ""
+        strEmailSubject = " (Test) 'Amazon SDI Direct send XML out' was completed with Error(s) for Order No: " & strOrdrNo
+
+        Dim strEmailBody As String = ""
+        strEmailBody = "<table><tr><td>'Amazon SDI Direct send XML out' process has completed with errors - check application Logs.</td></tr></table>"
+
+        'Send email and handle any error that occurs
+
+        Dim bSend As Boolean = False
+        Try
+
+            SendLogger(strEmailSubject, strEmailBody, "AMAZONORDRXMLOUT", "Mail", strEmailTo, strEmailCc, strEmailBcc)
+            bSend = True
+        Catch ex As Exception
+            bSend = False
+        End Try
+
+        If Not bSend Then
+            objStreamWriter.WriteLine(rtn & " :: Error - the email was not sent.")
+        End If
+    End Sub
 
     Sub Main()
 
@@ -35,14 +90,21 @@ Module Module1
         objStreamWriter = File.CreateText(logpath)
 
         Select Case strWhatToTest
-            Case "AMAZON"
+            Case "AMAZON"  ' This is for SDI Direct Amazon project
                 Console.WriteLine("Started to check Amazon ready to Dispatch orders ")
                 Console.WriteLine("")
 
-                'objStrmWrtrXMLRspns = File.CreateText(filePathResponse)
-                'objStreamWriterXML = File.CreateText(filePath)
                 objStreamWriter.WriteLine("Started to check Amazon ready to Dispatch orders " & Now())
 
+                '  URL send To
+                Dim rUrl As String = ""
+                Try
+                    rUrl = My.Settings("UrlToSend").ToString.Trim
+                Catch ex As Exception
+                End Try
+                If (rUrl.Length > 0) Then
+                    strUrlToSend = rUrl
+                End If
 
                 m_xmlConfig = New XmlDocument
                 m_xmlConfig.Load(filename:=m_configFile)
@@ -66,13 +128,6 @@ Module Module1
                 Dim OrderListDataSet As System.Data.DataSet = New System.Data.DataSet()
 
                 ' get info from The view (which is currently only available in DEVL) - SYSADM.PS_ISA_PO_DISP_XML.      
-
-                'Dim strURL As String
-
-                'Dim XMLhttp As Object
-                'Dim xmlDoc2 As Object
-                'Dim XMLPath As String
-                'Dim VendorURL As String
 
                 strMsgVendConfig = " 'm_vendorConfig.ConfigFile' is not defined"
                 Try
@@ -431,12 +486,9 @@ Module Module1
 
 
     Private Function getOrderRequest(ByVal strPunSite As String, ByRef OrderListDataSet As System.Data.DataSet, ByRef strMsgVendConfig As String) As String
-        'Dim OrderListDataSet As System.Data.DataSet = New System.Data.DataSet()
+
         Dim rtn As String = "AmazonClient.Module1.getOrderRequest"
         Dim cXML As String = ""
-
-        Dim objStreamWriterXMLN1 As StreamWriter
-        Dim objStrmWrtrXMLRspnsN1 As StreamWriter
 
         m_setupReqDoc = Nothing
         m_vendorConfig = Nothing
@@ -446,7 +498,6 @@ Module Module1
             Dim punchOutSiteId As String = CStr(strPunSite).Trim.ToUpper
             Dim punchOutSiteGrpId As String = "default"
 
-            'Dim userBU As String = ""
             Dim grpDefinitionFile As String = ""
             Dim grpIdentifier As punchOutGroupIdentifier = Nothing
 
@@ -479,10 +530,13 @@ Module Module1
             'End If
 
 
+            objStreamWriter.WriteLine("Started GetVendorConfig. Params: " & punchOutSiteId & " ; " & punchOutSiteGrpId & " ; " & Now())
             m_vendorConfig = punchoutVendorConfig.GetVendorConfig(punchOutSiteId, punchOutSiteGrpId)
             If Not (m_vendorConfig Is Nothing) Then
+                objStreamWriter.WriteLine("VendorConfig is not Nothing " & Now())
                 If m_vendorConfig.ToIdentity.Id.Length > 0 And _
                    m_vendorConfig.VendorPunchoutSetupURL.Length > 0 Then
+                    objStreamWriter.WriteLine("Got VendorConfig " & Now())
 
                     'read view, get list of orders
                     Dim strListOrders As String = "select distinct po_id from SYSADM.PS_ISA_PO_DISP_XML"
@@ -497,26 +551,31 @@ Module Module1
 
                         dataAdapter.Fill(OrderListDataSet)
 
+                        objStreamWriter.WriteLine("Filled Dataset " & Now())
                         Dim strOrderNo As String = ""
                         If Not OrderListDataSet Is Nothing Then
                             If OrderListDataSet.Tables.Count > 0 Then
                                 If OrderListDataSet.Tables(0).Rows.Count > 0 Then
                                     Dim iLst As Integer = 0
 
-
+                                    objStreamWriter.WriteLine("Have data " & Now())
                                     For iLst = 0 To OrderListDataSet.Tables(0).Rows.Count - 1
                                         strOrderNo = OrderListDataSet.Tables(0).Rows(iLst).Item("po_id").ToString()
-                                        If iLst = 2 Then
-                                            Exit For
-                                        End If
+                                        'If iLst = 2 Then
+                                        '    Exit For
+                                        'End If
 
+                                        objStreamWriter.WriteLine("Before CreateText " & Now())
                                         Dim filePathN1 As String = "C:\Program Files\sdi\AmazonClient\AmazonXMLFiles\AmazonClientXMLOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".xml"
                                         Dim filePathResponseN1 As String = "C:\Program Files\sdi\AmazonClient\AmazonXMLFiles\AmznClntXMLRspns" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".xml"
                                         objStrmWrtrXMLRspnsN1 = File.CreateText(filePathResponseN1)
                                         objStreamWriterXMLN1 = File.CreateText(filePathN1)
+
+                                        objStreamWriter.WriteLine("Before CreateOrderRequestDoc " & Now())
                                         ' create the doc based on order Request template
                                         m_setupReqDoc = punchOutSetupRequestDoc.CreateOrderRequestDoc(m_vendorConfig)
 
+                                        objStreamWriter.WriteLine("Before CreateOrderRequestXML " & Now())
                                         ' put header info based on info already collected, and build same XML Header as in Punchout; 
                                         ' read view to get Order(s) info, and build XML based on XML order structure supplied
                                         cXML = m_setupReqDoc.CreateOrderRequestXML(connectOR, strOrderNo)
@@ -540,6 +599,7 @@ Module Module1
                                             doc.InnerXml = strInput
                                         End If
 
+                                        objStreamWriter.WriteLine("Before Send1 " & Now())
                                         ' start processing strInput
                                         Dim strOutput As String = ""
                                         If Trim(strInput) <> "" Then
@@ -574,7 +634,6 @@ Module Module1
                                                     objStreamWriter.WriteLine("Response XML file is NOT checked OK - 'LoadXml' area for this OrderNo: " & strOrderNo & " ; Date/Time: " & Now())
                                                     bIsOK = False
                                                 End Try
-                                                'Dim objnode As XmlNode
 
                                                 If bIsOK Then
                                                     Try
@@ -611,68 +670,67 @@ Module Module1
                                                         End Try
 
                                                         If bIsOK Then
-                                                            'objStreamWriter.WriteLine("Response XML file checked OK. Changing Order statuses " & Now())
-                                                            'Dim strValueToWrite As String = Now.Year.ToString() & Now.Month.ToString() & Now.Day.ToString() & Now.GetHashCode.ToString()
-                                                            'Dim intNumberToWrite As Long = 0
-                                                            'If IsNumeric(strValueToWrite) Then
-                                                            '    intNumberToWrite = CType(strValueToWrite, Long)
-                                                            'Else
-                                                            '    intNumberToWrite = Now.GetHashCode
-                                                            'End If
-                                                            'Dim bNoErrors As Boolean = True
-                                                            'Dim strOrderNo As String = ""
-                                                            'connectOR.Open()
-                                                            'Try
-                                                            '    Dim iOrdCount As Integer = OrderListDataSet.Tables(0).Rows.Count
-                                                            '    ' run this query for every order sent:
-                                                            '    ' "update SYSADM.PS_PO_DISPATCHED set ECQUEUEINSTANCE=" & intNumberToWrite & " where po_id='" & "M010373791" & "'"
-                                                            '    If connectOR.State = ConnectionState.Open Then
-                                                            '    Else
-                                                            '        connectOR.Open()
-                                                            '    End If
-                                                            '    Dim rowsAffected As Integer = 0
-                                                            '    Dim iCnt As Integer = 0
-                                                            '    For iCnt = 0 To iOrdCount - 1
-                                                            '        If iCnt = 1 Then Exit For ' for testing ONLY!
-                                                            '        rowsAffected = 0
-                                                            '        strOrderNo = OrderListDataSet.Tables(0).Rows(iCnt).Item("po_id").ToString()
-                                                            '        'run query
-                                                            '        Dim strUpdateQuery As String = "update SYSADM.PS_PO_DISPATCHED set ECQUEUEINSTANCE=" & intNumberToWrite & " where po_id='" & strOrderNo & "'"
-                                                            '        'commented out for testing
-                                                            '        Dim UpdCommand As OleDbCommand = New OleDbCommand(strUpdateQuery, connectOR)
-                                                            '        UpdCommand.CommandTimeout = 120
-                                                            '        rowsAffected = UpdCommand.ExecuteNonQuery()
-                                                            '        Try
-                                                            '            UpdCommand.Dispose()
-                                                            '        Catch ex As Exception
+                                                            objStreamWriter.WriteLine("Response XML file checked OK. Changing Order statuses " & Now())
+                                                            Dim strValueToWrite As String = Now.Year.ToString() & Now.Month.ToString() & Now.Day.ToString() & Now.GetHashCode.ToString()
+                                                            Dim intNumberToWrite As Long = 0
+                                                            If IsNumeric(strValueToWrite) Then
+                                                                intNumberToWrite = CType(strValueToWrite, Long)
+                                                            Else
+                                                                intNumberToWrite = Now.GetHashCode
+                                                            End If
+                                                            Dim bNoErrors As Boolean = True
 
-                                                            '        End Try
-                                                            '        If rowsAffected = 0 Then
-                                                            '            bNoErrors = False
-                                                            '            objStreamWriter.WriteLine("Order status change returned: 'rowsAffected = 0' for Order: " & strOrderNo)
-                                                            '        End If
-                                                            '    Next
-                                                            'Catch ex As Exception
-                                                            '    bNoErrors = False
-                                                            '    objStreamWriter.WriteLine("Error trying to update Order: " & strOrderNo & " Error Message: " & ex.Message)
-                                                            '    Try
-                                                            '        connectOR.Close()
-                                                            '    Catch ex1 As Exception
+                                                            connectOR.Open()
+                                                            Try
+                                                                Dim iOrdCount As Integer = OrderListDataSet.Tables(0).Rows.Count
+                                                                ' run query for every order sent
+                                                                If connectOR.State = ConnectionState.Open Then
+                                                                Else
+                                                                    connectOR.Open()
+                                                                End If
+                                                                Dim rowsAffected As Integer = 0
+                                                                Dim iCnt As Integer = 0
+                                                                For iCnt = 0 To iOrdCount - 1
+                                                                    'If iCnt = 1 Then Exit For ' for testing ONLY!
+                                                                    rowsAffected = 0
+                                                                    strOrderNo = OrderListDataSet.Tables(0).Rows(iCnt).Item("po_id").ToString()
+                                                                    'run query
+                                                                    Dim strUpdateQuery As String = "update SYSADM.PS_PO_DISPATCHED set ECQUEUEINSTANCE=" & intNumberToWrite & " where po_id='" & strOrderNo & "'"
 
-                                                            '    End Try
-                                                            'End Try
-                                                            'Try
-                                                            '    connectOR.Close()
-                                                            'Catch ex As Exception
+                                                                    Dim UpdCommand As OleDbCommand = New OleDbCommand(strUpdateQuery, connectOR)
+                                                                    UpdCommand.CommandTimeout = 120
+                                                                    rowsAffected = UpdCommand.ExecuteNonQuery()
+                                                                    Try
+                                                                        UpdCommand.Dispose()
+                                                                    Catch ex As Exception
 
-                                                            'End Try
-                                                            'If bNoErrors Then
-                                                            '    objStreamWriter.WriteLine("Order statuses changed without errors " & Now())
-                                                            'Else
-                                                            'End If
+                                                                    End Try
+                                                                    If rowsAffected = 0 Then
+                                                                        bNoErrors = False
+                                                                        objStreamWriter.WriteLine("Order status change returned: 'rowsAffected = 0' for Order: " & strOrderNo)
+                                                                    End If
+                                                                Next
+                                                            Catch ex As Exception
+                                                                bNoErrors = False
+                                                                objStreamWriter.WriteLine("Error trying to update Order: " & strOrderNo & " Error Message: " & ex.Message)
+                                                                Try
+                                                                    connectOR.Close()
+                                                                Catch ex1 As Exception
+
+                                                                End Try
+                                                            End Try
+                                                            Try
+                                                                connectOR.Close()
+                                                            Catch ex As Exception
+
+                                                            End Try
+                                                            If bNoErrors Then
+                                                                objStreamWriter.WriteLine("Order statuses changed without errors " & Now())
+                                                            Else
+                                                            End If
                                                         Else
                                                             objStreamWriter.WriteLine("Response XML file is NOT checked OK for this OrderNo: " & strOrderNo & " ; Date/Time: " & Now())
-                                                            Dim msg As String = "" '  & _
+                                                            Dim msg As String = ""
                                                             Try
                                                                 If Not root.SelectNodes("Response/Status").Item(0).Attributes(0) Is Nothing Then
                                                                     If Not root.SelectNodes("Response/Status").Item(0).Attributes(0).Value Is Nothing Then
@@ -711,6 +769,7 @@ Module Module1
 
                                                             msg += "" & vbCrLf
                                                             objStreamWriter.WriteLine(msg & "  Timestamp: " & Now())
+
                                                         End If
 
                                                     Catch ex As Exception
@@ -724,6 +783,10 @@ Module Module1
                                                 bIsOK = False
                                             End If
 
+                                            If Not bIsOK Then
+                                                'send err email
+                                                Call SendErrorEmail(strOrderNo)
+                                            End If
                                             objStreamWriter.WriteLine("End of Amazon Client build/send XML for this OrderNo: " & strOrderNo & " ; Date/Time: " & Now())
 
                                         Else
@@ -742,6 +805,9 @@ Module Module1
                                 End If  '  If OrderListDataSet.Tables(0).Rows.Count > 0 Then
                             End If
                         End If
+
+                        objStreamWriter.WriteLine("Before Dispose ")
+
                         Try
                             dataAdapter.Dispose()
                         Catch ex As Exception
@@ -768,23 +834,27 @@ Module Module1
                         Catch ex1 As Exception
 
                         End Try
+
+                        objStreamWriter.WriteLine("Error: " & ex.Message & vbCrLf & " ; Trace: " & ex.StackTrace)
+
                     End Try
 
                 End If  ' got Vendor Config
+
+                objStreamWriter.WriteLine("After  End If  ' got Vendor Config")
+
             End If  '  not Nothing
 
+            objStreamWriter.WriteLine("After  End If  '  not Nothing")
+
         Catch ex As Exception
+
+            objStreamWriter.WriteLine("Error: " & ex.Message)
 
         End Try
 
         objStreamWriter.Flush()
         objStreamWriter.Close()
-
-        'objStreamWriterXML.Flush()
-        'objStreamWriterXML.Close()
-
-        'objStrmWrtrXMLRspns.Flush()
-        'objStrmWrtrXMLRspns.Close()
 
         Return cXML
 
@@ -1037,16 +1107,19 @@ Module Module1
 
         strBox2 = ""
 
+        ' new secure on SDIX (Production): "https://www.sdiexchange.com/websdi/xmlinsdi.aspx"
         ' new secure on IMS -   "https://sdiexchtest.sdi.com/WebSvcSDI/xmlinsdi.aspx"
         '  my test URL: "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"   ' not seen outside: "http://websrv.sdi.com/sdiwebin/xmlinsdi.aspx"   '  
-        ' "https://https.amazonsedi.com/073dbe31-c230-403f-990c-6f74eeed1510"  '  
+        ' Amazon SDI Direct (test): "https://https.amazonsedi.com/073dbe31-c230-403f-990c-6f74eeed1510"  '  
         ' new one:  "http://localhost/SDIWebProcessors/CytecPurchReqs.aspx"    '   "http://ims.sdi.com:8913/sdiwebinSvc/CytecMatMastIn.aspx"  
         '  "http://ims.sdi.com:8913/sdiwebinSvc/CytecNstkPoRecpts.aspx"   '  "http://192.168.253.46:8011/sdiwebin/CytecMatMastIn.aspx"
 
         Dim sHttpResponse As String = ""
         Dim httpSession As New easyHttp
 
-        httpSession.URL = "https://sdiexchtest.sdi.com/WebSvcSDI/xmlinsdi.aspx"  '   "https://https.amazonsedi.com/c47fcf9d-286d-498a-ba9f-df390c2757a2"  '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"    '  "http://192.168.253.46:8011/sdiwebin/CytecMatMastIn.aspx"  '   "http://ims.sdi.com:8913/sdiwebinSvc/CytecNstkPoRecpts.aspx"   ' "http://ims.sdi.com:8913/sdiwebinSvc/CytecPurchReqs.aspx"    '  "http://ims.sdi.com:8913/sdiwebinSvc/CytecStkReservIn.aspx"    '  "http://ims.sdi.com:8913/sdiwebinSvc/CytecMatMastIn.aspx"    '  "http://localhost/SDIWebProcessors/CytecMatMastIn.aspx"    '    "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"  '    "http://localhost/SDIWebProcessors/XmlInSDI.aspx"   '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx" 
+        httpSession.URL = strUrlToSend
+
+        '  "https://https.amazonsedi.com/c47fcf9d-286d-498a-ba9f-df390c2757a2"  '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"    '  "http://192.168.253.46:8011/sdiwebin/CytecMatMastIn.aspx"  '   "http://ims.sdi.com:8913/sdiwebinSvc/CytecNstkPoRecpts.aspx"   ' "http://ims.sdi.com:8913/sdiwebinSvc/CytecPurchReqs.aspx"    '  "http://ims.sdi.com:8913/sdiwebinSvc/CytecStkReservIn.aspx"    '  "http://ims.sdi.com:8913/sdiwebinSvc/CytecMatMastIn.aspx"    '  "http://localhost/SDIWebProcessors/CytecMatMastIn.aspx"    '    "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"  '    "http://localhost/SDIWebProcessors/XmlInSDI.aspx"   '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx" 
         '   "https://https.amazonsedi.com/073dbe31-c230-403f-990c-6f74eeed1510"  '    "https://www.amazon.com/eprocurement/punchout"  '    "https://supplydev.hajoca.com/hajomid/eclipse.ecl"
 
         httpSession.DataToPost = strBox1

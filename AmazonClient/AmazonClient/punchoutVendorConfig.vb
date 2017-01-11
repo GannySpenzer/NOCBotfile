@@ -213,6 +213,7 @@ Public Class punchoutVendorConfig
         vendorId = vendorId.Trim
         groupId = groupId.Trim
 
+        'objStreamWriter.WriteLine("Started GetVendorConfig " & Now())
         If vendorId.Length > 0 Then
             Try
                 vendorConfig = New punchoutVendorConfig(vendorId)
@@ -227,8 +228,9 @@ Public Class punchoutVendorConfig
 
                 ' config path/file
 
-                Dim xmlDir As String = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly.GetModules()(0).FullyQualifiedName) & "\PunchOutcXML\PunchOut.xml"
-                
+                Dim xmlDir As String = ""  '  System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly.GetModules()(0).FullyQualifiedName) & "\PunchOutcXML\PunchOut.xml"
+                xmlDir = "C:\Program Files\SDI\AmazonClient\PublishedVersion\PunchOutcXML\PunchOut.xml"
+
                 vendorConfig.ConfigFile = xmlDir
 
                 Dim cfg As New XmlDocument
