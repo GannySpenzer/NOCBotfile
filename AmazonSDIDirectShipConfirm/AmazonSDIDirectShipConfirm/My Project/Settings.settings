@@ -21,7 +21,7 @@
       <Value Profile="(Default)">webdev@sdi.com</Value>
     </Setting>
     <Setting Name="inputDirectory" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">\\ims\SDIWebProcessorsXMLFiles\OrderConfirmAmazon</Value>
+      <Value Profile="(Default)">C:\inetpub\wwwroot\SDIWebIn\SDIWebProcessorsXMLFiles\OrderConfirmAmazon</Value>
     </Setting>
   </Settings>
 </SettingsFile>

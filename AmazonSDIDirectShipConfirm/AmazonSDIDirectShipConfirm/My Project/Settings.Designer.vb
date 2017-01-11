@@ -111,7 +111,7 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("\\ims\SDIWebProcessorsXMLFiles\OrderConfirmAmazon")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("C:\inetpub\wwwroot\SDIWebIn\SDIWebProcessorsXMLFiles\OrderConfirmAmazon")>  _
         Public ReadOnly Property inputDirectory() As String
             Get
                 Return CType(Me("inputDirectory"),String)
