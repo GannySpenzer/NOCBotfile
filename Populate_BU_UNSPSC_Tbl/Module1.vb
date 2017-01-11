@@ -18,22 +18,22 @@ Module Module1
 
         Dim strDbOracle As String = ORDBData.DbUrl
 
-        If UCase(Right(strDbOracle, 4)) = "RPTG" Then
+        'If UCase(Right(strDbOracle, 4)) = "RPTG" Then
 
-            LogMessage("Main", "Started updating SYSADM.PS_ISA_ENTERPRISE for RPTG")
+        '    LogMessage("Main", "Started updating SYSADM.PS_ISA_ENTERPRISE for RPTG")
 
-            Dim strMySql As String = "update SYSADM.PS_ISA_ENTERPRISE set ISA_CATALOG_ID = ' '"
-            Try
-                Dim myRows1 As Integer = ORDBData.ExecNonQuery(strMySql)
-                strMySql = "update SYSADM.PS_ISA_ENTERPRISE set ISA_CATALOG_ID = '9001' where ISA_BUSINESS_UNIT = 'I0489' or ISA_BUSINESS_UNIT like 'I049%'"
-                myRows1 = ORDBData.ExecNonQuery(strMySql)
-            Catch ex As Exception
+        '    Dim strMySql As String = "update SYSADM.PS_ISA_ENTERPRISE set ISA_CATALOG_ID = ' '"
+        '    Try
+        '        Dim myRows1 As Integer = ORDBData.ExecNonQuery(strMySql)
+        '        strMySql = "update SYSADM.PS_ISA_ENTERPRISE set ISA_CATALOG_ID = '9001' where ISA_BUSINESS_UNIT = 'I0489' or ISA_BUSINESS_UNIT like 'I049%'"
+        '        myRows1 = ORDBData.ExecNonQuery(strMySql)
+        '    Catch ex As Exception
 
-            End Try
+        '    End Try
 
-            LogMessage("Main", "Finished updating SYSADM.PS_ISA_ENTERPRISE for RPTG")
+        '    LogMessage("Main", "Finished updating SYSADM.PS_ISA_ENTERPRISE for RPTG")
 
-        End If
+        'End If
 
         LogMessage("Main", "Ended utility Populate_BU_UNSPSC_Tbl")
     End Sub
@@ -50,8 +50,12 @@ Module Module1
     Private Function GetUnilogUNSPSCCodes(ByRef dsUnilogBU_UNSPSC As DataSet) As Boolean
         Dim bSuccess As Boolean = False
         Dim strSQLstring As String
+        'strSQLstring = "SELECT DISTINCT P.subset_id, V.unspsc " & vbCrLf & _
+        '    " FROM item_prices P, search_item_master_view_v2 V " & vbCrLf & _
+        '    " WHERE P.item_id = V.item_id " & vbCrLf & _
+        '" AND V.unspsc IS NOT NULL "
         strSQLstring = "SELECT DISTINCT P.subset_id, V.unspsc " & vbCrLf & _
-            " FROM item_prices P, search_item_master_view_v2 V " & vbCrLf & _
+            " FROM item_prices P, ITEM_MASTER V " & vbCrLf & _
             " WHERE P.item_id = V.item_id " & vbCrLf & _
         " AND V.unspsc IS NOT NULL "
 
@@ -85,7 +89,7 @@ Module Module1
         If ex.InnerException IsNot Nothing Then
             sLogMessage = sLogMessage & ex.InnerException.Message & " " & vbCrLf
         End If
-        sLogMessage = sLogMessage & ex.StackTrace.ToString
+        sLogMessage = sLogMessage & ex.StackTrace
 
         m_oLogger.WriteLine(sLogMessage)
 
@@ -121,6 +125,8 @@ Module Module1
         Dim strSQLstring As String = ""
         Dim iRowsAffected As Integer = 0
         Dim iInsertCount As Integer = 0
+        Dim strError As String = ""
+        Dim strFullErrorsList As String = ""
 
         Try
             For Each drSubsetID As DataRow In dsUnilogBU_UNSPSC.Tables(0).Rows
@@ -142,9 +148,21 @@ Module Module1
                     "       AND unspsc = '" & sUNSPSC & "' " & vbCrLf & _
                     " ) "
 
-                iRowsAffected = ORDBData.ExecuteNonQuery(trnsactSession, connection, strSQLstring)
+                strError = ""
+                iRowsAffected = ORDBData.ExecuteNonQuery(trnsactSession, connection, strSQLstring, strError)
                 If iRowsAffected > 0 Then
                     iInsertCount = iInsertCount + 1
+                Else
+                    If Trim(strError) <> "" Then
+                        LogMessage("PopulateBU_UNSPSC_Tbl", "Error trying to populate table SDIX_BU_UNSPSC: " & strError)
+                        LogMessage("PopulateBU_UNSPSC_Tbl", "strSQLstring : " & strSQLstring)
+                        strFullErrorsList = strFullErrorsList & "<TR><TD><b>Error trying to populate table SDIX_BU_UNSPSC</b>: " & strError & "</td></tr>" & vbCrLf
+                        strFullErrorsList = strFullErrorsList & "<TR><TD><b>strSQLstring</b>: " & strSQLstring & "</td></tr>" & vbCrLf
+
+                        'strbodydetl = strbodydetl & "<TR>" & vbCrLf
+                        'strbodydetl = strbodydetl & "<TD>" & vbCrLf
+                        'strbodydetl = strbodydetl & "<b>Error(s) List: </b><span> &nbsp;" & strErrorMessage & "</span></td></tr>"
+                    End If
                 End If
             Next
 
@@ -152,10 +170,18 @@ Module Module1
 
             bSuccess = True
 
+            If Trim(strFullErrorsList) <> "" Then
+                Try
+                    SendEmail(strFullErrorsList)
+                Catch exMail As Exception
+
+                End Try
+            End If
+            
         Catch ex As Exception
             bSuccess = False
             LogMessage("PopulateBU_UNSPSC_Tbl", "Error trying to populate table SDIX_BU_UNSPSC.", ex)
-            LogMessage("PurgeBU_UNSPSC_Tbl", "strSQLstring : " & strSQLstring)
+            LogMessage("PopulateBU_UNSPSC_Tbl", "strSQLstring : " & strSQLstring)
         End Try
 
         Return bSuccess
@@ -196,6 +222,8 @@ Module Module1
         Catch ex1 As Exception
         End Try
 
+        LogMessage("RollBackTransaction", "Rolled Back - due to errors")
+
         trnsactSession = Nothing
         connection = Nothing
     End Sub
@@ -204,8 +232,8 @@ Module Module1
         Try
             Const cErrMsg As String = "Utility Populate_BU_UNSPSC_Tbl had a critical error"
             Dim strBodyhead As String = ""
-            Dim strbodydetl As String
-            Dim strBody As String
+            Dim strbodydetl As String = ""
+            Dim strBody As String = ""
             Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
             Dim MailAttachmentName As String() = Nothing
             Dim MailAttachmentbytes As New List(Of Byte())()
@@ -237,7 +265,7 @@ Module Module1
             strbodydetl = strbodydetl & "&nbsp;<br>" & vbCrLf
             strBody = strBodyhead & strbodydetl
             Try
-                SDIEmailService.EmailUtilityServices("Mail", "SDIExchange@SDI.com", "WebDev@sdi.com", "Error from Populate_BU_UNSPSC_Tbl", "", "", strBody, "SDIERRMAIL", MailAttachmentName, MailAttachmentbytes.ToArray())
+                SDIEmailService.EmailUtilityServices("Mail", "SDIExchADMIN@SDI.com", "WebDev@sdi.com", "Error from Populate_BU_UNSPSC_Tbl", "", "", strBody, "SDIERRMAIL", MailAttachmentName, MailAttachmentbytes.ToArray())
 
             Catch ex1 As Exception
 
@@ -246,4 +274,63 @@ Module Module1
 
         End Try
     End Sub
+
+    Private Sub SendEmail(strErrorMessage As String)
+        Try
+            Const cErrMsg As String = "Erred out UNSPSC code(s) List"
+            Dim strBodyhead As String = ""
+            Dim strbodydetl As String = ""
+            Dim strBody As String = ""
+            Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
+            Dim MailAttachmentName As String() = Nothing
+            Dim MailAttachmentbytes As New List(Of Byte())()
+
+            strBodyhead = strBodyhead & "<center><span style='font-family:Arial;font-size:X-Large;width:256px;Color:RED'><b>" & cErrMsg & "</b> </span><center>" & vbCrLf
+            strBodyhead = strBodyhead & "&nbsp;" & vbCrLf
+            strbodydetl = "&nbsp;" & vbCrLf
+            strbodydetl = strbodydetl & "<HR width='100%' SIZE='1'>" & vbCrLf
+            strbodydetl = strbodydetl & "&nbsp;" & vbCrLf
+
+            strbodydetl = strbodydetl & "<TABLE cellSpacing='1' cellPadding='1' width='100%' border='0'>" & vbCrLf
+
+            strbodydetl = strbodydetl & "<TR>" & vbCrLf
+            strbodydetl = strbodydetl & "<TD>" & vbCrLf
+            strbodydetl = strbodydetl & "<b>Log File: </b><span> &nbsp;" & m_oLogger.LogFileSpec & " </span></td></tr>"
+            strbodydetl = strbodydetl & "<TR>" & vbCrLf
+            strbodydetl = strbodydetl & "<TD>" & vbCrLf
+            strbodydetl = strbodydetl & "<span>&nbsp;</span></td></tr>" & vbCrLf
+            strbodydetl = strbodydetl & "<TR>" & vbCrLf
+            strbodydetl = strbodydetl & "<TD>" & vbCrLf
+            strbodydetl = strbodydetl & "<b>Connection String: </b><span> &nbsp;" & ORDBData.DbUrl & " </span></td></tr>"
+            strbodydetl = strbodydetl & "<TR>" & vbCrLf
+            strbodydetl = strbodydetl & "<TD>" & vbCrLf
+            strbodydetl = strbodydetl & "<span>&nbsp;</span></td></tr>" & vbCrLf
+            strbodydetl = strbodydetl & "<TR>" & vbCrLf
+            strbodydetl = strbodydetl & "<TD>" & vbCrLf
+            strbodydetl = strbodydetl & "<b>Error(s) List: </b></td></tr>"
+            strbodydetl = strbodydetl & "<TR>" & vbCrLf
+            strbodydetl = strbodydetl & "<TD>" & vbCrLf
+            strbodydetl = strbodydetl & "<span>&nbsp;</span></td></tr>" & vbCrLf
+            strbodydetl = strbodydetl & strErrorMessage
+
+            strbodydetl = strbodydetl & "<TR>" & vbCrLf
+            strbodydetl = strbodydetl & "<TD>" & vbCrLf
+            strbodydetl = strbodydetl & "<span>&nbsp;</span></td></tr>" & vbCrLf
+            'strbodydetl = strbodydetl & "<TR>" & vbCrLf
+            'strbodydetl = strbodydetl & "<TD>" & vbCrLf
+            strbodydetl = strbodydetl & "&nbsp;<br>" & vbCrLf
+            strBody = strBodyhead & strbodydetl
+            Dim strSubject As String = " Error from Populate_BU_UNSPSC_Tbl"
+
+            Try
+                SDIEmailService.EmailUtilityServices("Mail", "SDIExchADMIN@SDI.com", "WebDev@sdi.com", strSubject, "", "", strBody, "SDIERRMAIL", MailAttachmentName, MailAttachmentbytes.ToArray())
+
+            Catch ex1 As Exception
+
+            End Try
+        Catch e As Exception
+
+        End Try
+    End Sub
+
 End Module
