@@ -27,7 +27,7 @@
 		<statusNotify name="Bob Dougherty" addy="bob.dougherty@isacs.com" />
 		<statusNotify name="John Waters" addy="john.waters@isacs.com" />
 	//-->
-	<serviceNotification notifySubject="SDI Quoted Non-Stock Email Service Notification" notifyFrom="service.notification@sdi.com">
+	<serviceNotification notifySubject="Check Auto Crib Transactions" notifyFrom="service.notification@sdi.com">
 		<statusNotify name="Vitaly Rovensky" addy="vitaly.rovensky@sdi.com" />
 	</serviceNotification>
 	<!-- EMAIL DEFAULT AND/OR INCLUDES
