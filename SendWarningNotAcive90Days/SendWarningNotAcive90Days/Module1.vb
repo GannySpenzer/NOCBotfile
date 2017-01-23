@@ -80,9 +80,10 @@ Module Module1
         Dim strEmailAddress As String = ""
         Dim strSqlString As String = ""
         Dim strAccount As String = ""
-        strSqlString = "SELECT ISA_EMPLOYEE_ID,ACTIVE_STATUS,LAST_ACTIVITY,ISA_EMPLOYEE_EMAIL FROM PS_ISA_USERS_TBL " & vbCrLf & _
+        Dim strUserName As String = ""
+        strSqlString = "SELECT ISA_EMPLOYEE_ID,ACTIVE_STATUS,LAST_ACTIVITY,ISA_EMPLOYEE_EMAIL, ISA_USER_NAME FROM PS_ISA_USERS_TBL " & vbCrLf & _
             "WHERE (LAST_ACTIVITY IS NULL AND ACTIVE_STATUS = 'A') OR " & vbCrLf & _
-            "(LAST_ACTIVITY IS NOT NULL AND ACTIVE_STATUS = 'A' AND LAST_ACTIVITY < (SYSDATE - 90))" & vbCrLf & _
+            "(LAST_ACTIVITY IS NOT NULL AND ACTIVE_STATUS = 'A' AND LAST_ACTIVITY < (SYSDATE - 90)) ORDER BY ISA_USER_NAME" & vbCrLf & _
             ""
         Dim ds As New DataSet
         Dim bError As Boolean = False
@@ -145,27 +146,38 @@ Module Module1
                             strAccount = ""
                         End Try
 
+                        strUserName = ""
+                        Try
+                            strUserName = CStr(ds.Tables(0).Rows(I).Item("ISA_USER_NAME"))
+                        Catch ex As Exception
+                            strUserName = "<No Name>"
+                        End Try
+
                         If Trim(strAccount) <> "" And Trim(strEmailAddress) <> "" Then
                             strAccount = Trim(strAccount)
                             strEmailAddress = Trim(strEmailAddress)
                             If LCase(strEmailAddress) = "pete.doyle@sdi.com" Or LCase(strEmailAddress) = "customer.service@sdi.com" Or LCase(strEmailAddress) = "erwin.bautista@sdi.com" Or LCase(strEmailAddress) = "bob.dougherty@isacs.com" Then
                                 'do nothing
                                 intNotSent = intNotSent + 1
+                                m_logger.WriteVerboseLog(rtn & " :: Email WAS NOT sent to: " & strEmailAddress & " ; Account ID: " & strAccount & " ; User Name: " & strUserName)
                             Else
                                 bSend = True
                                 SendEmail(strEmailAddress, strAccount, bSend)
                                 If bSend Then
-                                    m_logger.WriteVerboseLog(rtn & " :: Email sent to: " & strEmailAddress & " ; Account ID: " & strAccount)
+                                    m_logger.WriteVerboseLog(rtn & " :: Email sent to: " & strEmailAddress & " ; Account ID: " & strAccount & " ; User Name: " & strUserName)
                                     intX = intX + 1
-                                    'If intX = 3 Then
+                                    'If intX = 2 Then
                                     '    Exit For
                                     'End If
                                 Else
                                     intNotSent = intNotSent + 1
-                                    m_logger.WriteVerboseLog(rtn & " :: Email WAS NOT sent to: " & strEmailAddress & " ; Account ID: " & strAccount)
+                                    m_logger.WriteVerboseLog(rtn & " :: Email WAS NOT sent to (tried to send): " & strEmailAddress & " ; Account ID: " & strAccount & " ; User Name: " & strUserName)
                                 End If
-                            End If
-                        End If
+                            End If ' not existing e-mails
+                        Else
+                            intNotSent = intNotSent + 1
+                            m_logger.WriteVerboseLog(rtn & " :: Email WAS NOT sent to: " & strEmailAddress & " ; Account ID: " & strAccount & " ; User Name: " & strUserName)
+                        End If  '  If Trim(strAccount) <> "" And Trim(strEmailAddress) <> "" Then
 
                         'End If  ' If I > 5635 Then
                         
@@ -246,7 +258,7 @@ Module Module1
         'The email address of the recipient. 
         email.To = strEmailAddress
         '' for testing
-        'email.To = "vitaly.rovensky@sdi.com"
+        'email.To = "vitaly.rovensky@sdi.com;michael.randall@sdi.com"
         email.Cc = " "
         email.Bcc = "webdev@sdi.com"
 
@@ -284,8 +296,8 @@ Module Module1
         email.BodyFormat = MailFormat.Html
 
         email.Body = "<table><tr><td>WARNING! Your SDiExchange Account: <b>" & strAccount & "</b>, - has been inactive </td></tr>" & _
-            "<tr><td> for more than 90 days and <b>will be Deactivated on or about 1st day of the next month</b>, i.e. NOVEMBER 1st, 2016. </td></tr>" & _
-            "<tr><td>You can avoid Deactivation by logging into your SDiExchange Account.</td></tr>" & _
+            "<tr><td> for more than 90 days and <b>will be deactivated on or about 1st day of the next month</b>. </td></tr>" & _
+            "<tr><td>You can avoid deactivation by logging into your SDiExchange Account.</td></tr>" & _
             "</table>" & vbCrLf
         email.Body &= "<HR width='100%' SIZE='1'>" & vbCrLf
         email.Body &= "<img src='http://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & vbCrLf
@@ -306,7 +318,7 @@ Module Module1
     Private Sub SendEmail1(ByVal mailer As System.Web.Mail.MailMessage)
 
         Try
-            ' for the first bulk send
+            ' for testing
             mailer.Cc = " "
             mailer.Bcc = " "
             SendLogger(mailer.Subject, mailer.Body, "WRNNGNOTACTVE90DAYS", "Mail", mailer.To, mailer.Cc, mailer.Bcc)
@@ -321,8 +333,6 @@ Module Module1
             Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
             Dim MailAttachmentName As String()
             Dim MailAttachmentbytes As New List(Of Byte())()
-            Dim objException As String
-            Dim objExceptionTrace As String
 
             'EmailTo = "vitaly.rovensky@sdi.com"
             SDIEmailService.EmailUtilityServices(MailType, "TechSupport@sdi.com", EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
