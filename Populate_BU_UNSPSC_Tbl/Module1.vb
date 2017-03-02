@@ -18,23 +18,6 @@ Module Module1
 
         Dim strDbOracle As String = ORDBData.DbUrl
 
-        'If UCase(Right(strDbOracle, 4)) = "RPTG" Then
-
-        '    LogMessage("Main", "Started updating SYSADM.PS_ISA_ENTERPRISE for RPTG")
-
-        '    Dim strMySql As String = "update SYSADM.PS_ISA_ENTERPRISE set ISA_CATALOG_ID = ' '"
-        '    Try
-        '        Dim myRows1 As Integer = ORDBData.ExecNonQuery(strMySql)
-        '        strMySql = "update SYSADM.PS_ISA_ENTERPRISE set ISA_CATALOG_ID = '9001' where ISA_BUSINESS_UNIT = 'I0489' or ISA_BUSINESS_UNIT like 'I049%'"
-        '        myRows1 = ORDBData.ExecNonQuery(strMySql)
-        '    Catch ex As Exception
-
-        '    End Try
-
-        '    LogMessage("Main", "Finished updating SYSADM.PS_ISA_ENTERPRISE for RPTG")
-
-        'End If
-
         LogMessage("Main", "Ended utility Populate_BU_UNSPSC_Tbl")
     End Sub
 
@@ -301,7 +284,7 @@ Module Module1
             strbodydetl = strbodydetl & "<span>&nbsp;</span></td></tr>" & vbCrLf
             strbodydetl = strbodydetl & "<TR>" & vbCrLf
             strbodydetl = strbodydetl & "<TD>" & vbCrLf
-            strbodydetl = strbodydetl & "<b>Connection String: </b><span> &nbsp;" & ORDBData.DbUrl & " </span></td></tr>"
+            strbodydetl = strbodydetl & "<b>Data Source: </b><span> &nbsp;" & Right(ORDBData.DbUrl, 4) & " </span></td></tr>"
             strbodydetl = strbodydetl & "<TR>" & vbCrLf
             strbodydetl = strbodydetl & "<TD>" & vbCrLf
             strbodydetl = strbodydetl & "<span>&nbsp;</span></td></tr>" & vbCrLf
