@@ -27,6 +27,7 @@ Module Module1
 
     Private m_arrXMLErrFiles As String
     Private m_arrErrorsList As String
+    Private strDbName As String = ""
 
     Sub Main()
 
@@ -52,6 +53,9 @@ Module Module1
             End Try
             connectOR = Nothing
             connectOR = New OleDbConnection(cnStringORA)
+            strDbName = cnStringORA.Substring(Len(cnStringORA) - 4)
+        Else
+            strDbName = "PROD"
         End If
         '   (2) root directory
         Dim rDir As String = ""
@@ -125,7 +129,7 @@ Module Module1
         m_logger.WriteInformationLog(rtn & " :: Process of NBTY Mat. Mast. Inbound for: " & sPlantCode)
 
         '// ***
-        '// This is the moving of files to the XMLIN folder ...
+        '// This is the moving of files to the XMLIN folder ... 
         '// ***
 
         Dim sInputDir As String = "C:\NBTYMatMast\XMLIN_SRC"
@@ -136,14 +140,39 @@ Module Module1
         End Try
         sInputDir = sInputDir & "\" & sPlantCode
 
-        Dim dirInfo As DirectoryInfo = New DirectoryInfo(sInputDir)
-
         Dim strFiles As String
         Dim arrOrders As ArrayList
         arrOrders = New ArrayList
+        Dim aSrcFiles As FileInfo() = Nothing
 
-        strFiles = "*.XML"
-        Dim aSrcFiles As FileInfo() = dirInfo.GetFiles(strFiles)
+        Dim dirInfo As DirectoryInfo = Nothing
+        Try
+            dirInfo = New DirectoryInfo(sInputDir)
+
+            strFiles = "*.XML"
+            aSrcFiles = dirInfo.GetFiles(strFiles)
+        Catch exDirInf As Exception
+            myLoggr1.WriteErrorLog(rtn & " :: Error retrieving Directory Info from: " & sInputDir)
+            myLoggr1.WriteErrorLog(rtn & " :: " & exDirInf.ToString)
+            If Trim(m_arrXMLErrFiles) = "" Then
+                m_arrXMLErrFiles = rtn & " :: Error retrieving Directory Info from: " & sInputDir
+            Else
+                m_arrXMLErrFiles &= "," & rtn & " :: Error retrieving Directory Info from: " & sInputDir
+            End If
+            Dim strErrDirInfo As String = exDirInf.ToString
+            If Len(strErrDirInfo) > 250 Then
+                strErrDirInfo = Microsoft.VisualBasic.Left(strErrDirInfo, 250)
+            End If
+            If Trim(m_arrErrorsList) = "" Then
+                m_arrErrorsList = strErrDirInfo
+            Else
+                m_arrErrorsList &= "," & strErrDirInfo
+            End If
+            ' send error e-mail
+            SendEmail(True)
+            Exit Sub
+        End Try
+
         Dim I As Integer = 0
 
         Try
@@ -863,13 +892,22 @@ Module Module1
         End If
 
         'The email address of the recipient. 
-        email.To = "vitaly.rovensky@sdi.com"
         If bIsSendOut Then
-            If (CStr(My.Settings(propertyName:="onErrorEmail_To")) <> "") Then
-                email.To = CStr(My.Settings(propertyName:="onErrorEmail_To")).Trim
-            End If
-        End If
+            If strDbName = "PROD" Then
 
+                If bIsSendOut Then
+                    email.To = "vitaly.rovensky@sdi.com;"
+                    If (CStr(My.Settings(propertyName:="onErrorEmail_To")) <> "") Then
+                        email.To = CStr(My.Settings(propertyName:="onErrorEmail_To")).Trim
+                    End If
+                End If
+
+            Else
+                email.To = "vitaly.rovensky@sdi.com"
+            End If
+
+        End If
+        
         If (CStr(My.Settings(propertyName:="onErrorEmail_CC")) <> "") Then
             email.Cc = CStr(My.Settings(propertyName:="onErrorEmail_CC")).Trim
         Else
@@ -891,12 +929,17 @@ Module Module1
         email.Body &= "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI, Inc</span></center><center><span >NbtyMatMastXmlIn Error</span></center>&nbsp;&nbsp;"
 
         email.Body &= "<table><tr><td>NbtyMatMastXmlIn has completed with "
+        If strDbName = "PROD" Then
+            email.Subject = "NbtyMatMastXmlIn "
+        Else
+            email.Subject = " -- TEST -- NbtyMatMastXmlIn "
+        End If
         If bolWarning = True Then
             email.Body &= "warnings,"
-            email.Subject = " NbtyMatMastXmlIn Warning"
+            email.Subject &= "Warning"
         Else
             email.Body &= "errors;"
-            email.Subject = " NbtyMatMastXmlIn Error"
+            email.Subject &= "Error"
         End If
 
         'VR 12/18/2014 Adding file names and error descriptions in message body
@@ -946,34 +989,12 @@ Module Module1
         email.Body &= "<br><P><CENTER><SPAN style='FONT-SIZE: 12pt'><SPAN style='FONT-SIZE: 12pt'><FONT color=teal size=2>The information in this communication, including any attachments, is the property of SDI, Inc,&nbsp;</SPAN>is intended only for the addressee and may contain confidential, proprietary, and/or privileged material. Any review, retransmission, dissemination or other use of, or taking of any action in reliance upon, this information by persons or entities other than the intended recipient is prohibited. If you received this in error, please immediately contact the sender by replying to this email and delete the material from all computers.</FONT></SPAN></CENTER></P>"
         email.Body &= "</body></html>"
 
-        Try
-            email.Attachments.Add(New System.Web.Mail.MailAttachment(filename:=sErrLogPath))
-        Catch ex As Exception
-        End Try
-
-        Dim int1 As Integer = 0
-
-        Try
-            If Not m_arrXMLErrFiles Is Nothing Then
-                If Trim(m_arrXMLErrFiles) <> "" Then
-                    Dim arrErrFiles() As String = Split(m_arrXMLErrFiles, ",")
-                    If arrErrFiles.Length > 0 Then
-                        m_logger.WriteInformationLog(rtn & " :: erroneous xml file count = " & arrErrFiles.Length.ToString)
-                        For int1 = 0 To arrErrFiles.Length - 1
-                            Dim myFileName2 As String = "C:\NBTYMatMast\BadXML\" & arrErrFiles(int1)
-                            email.Attachments.Add(New System.Web.Mail.MailAttachment(myFileName2))
-                        Next
-                    End If
-                End If
-            End If
-        Catch ex As Exception
-
-        End Try
-
         Dim bSend As Boolean = False
         Try
+            If bIsSendOut Then
+                SendEmail1(email)
+            End If
 
-            SendEmail1(email)
             bSend = True
             m_arrXMLErrFiles = ""
             m_arrErrorsList = ""
@@ -1004,11 +1025,9 @@ Module Module1
             Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
             Dim MailAttachmentName As String()
             Dim MailAttachmentbytes As New List(Of Byte())()
-            Dim objException As String
-            Dim objExceptionTrace As String
 
             'EmailTo = "vitaly.rovensky@sdi.com"
-            SDIEmailService.EmailUtilityServices(MailType, "SDIExchADMIN@sdi.com", EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
+            SDIEmailService.EmailUtilityServices(MailType, "TechSupport@sdi.com", EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
 
             'UpdEmailOut.UpdEmailOut.UpdEmailOut(subject, "SDIExchADMIN@sdi.com", EmailTo, "", EmailBcc, "N", body, m_CN)
 
