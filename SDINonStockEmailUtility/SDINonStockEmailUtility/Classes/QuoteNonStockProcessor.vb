@@ -626,12 +626,15 @@ Public Class QuoteNonStockProcessor
 
             If Not trackOrderNo Is Nothing And trackOrderNo.ToLower().Equals("true") Then
                 If m_colMsgs.Count > 0 Then
-                    m_logger.WriteVerboseLog("The following Orders were processed: " & SBord.ToString().TrimEnd(",") & " by Quote Non Stock Email Utility. ")
                     SendLogger("Logging execution of Quote Non Stock Utility", "The following Orders were processed: " & SBord.ToString().TrimEnd(",") & " by Quote Non Stock Email Utility. <br/>Execution is ended at " & DateTime.Now.ToShortTimeString(), "LOGGER", "Mail", "WebDev@sdi.com;SDIportalsupport@avasoft.biz", String.Empty, String.Empty)
                 Else
-                    m_logger.WriteVerboseLog("No Orders were found. Nothing was processed by Quote Non Stock Email Utility. ")
                     SendLogger("Logging execution of Quote Non Stock Utility", "No Orders were found. Nothing was processed by Quote Non Stock Email Utility. ", "LOGGER", "Mail", "WebDev@sdi.com;SDIportalsupport@avasoft.biz", String.Empty, String.Empty)
                 End If
+            End If
+            If m_colMsgs.Count > 0 Then
+                m_logger.WriteVerboseLog("The following Orders were processed: " & SBord.ToString().TrimEnd(",") & " by Quote Non Stock Email Utility. ")
+            Else
+                m_logger.WriteVerboseLog("No Orders were found. Nothing was processed by Quote Non Stock Email Utility. ")
             End If
 
             m_CN.Close()
