@@ -484,7 +484,7 @@ Public Class punchOutSetupRequestDoc
                                     Dim strPoOrderType As String = OrderDataSet.Tables(0).Rows(iOrd).Item("ORDER_TYPE").ToString()
                                     '(3) orderType
                                     attrib = nodeOrderHeader.Attributes.Append(docXML.CreateAttribute(name:="orderType"))
-                                    attrib.Value = strPoOrderType  '  "regular"
+                                    attrib.Value = LCase(strPoOrderType)  '  "regular"
 
                                     Dim strPoVersion As String = OrderDataSet.Tables(0).Rows(iOrd).Item("ORDER_VERSION").ToString()
                                     ' (4) orderVersion
@@ -494,7 +494,7 @@ Public Class punchOutSetupRequestDoc
                                     Dim strPoType As String = OrderDataSet.Tables(0).Rows(iOrd).Item("TYPE").ToString()
                                     '(5) type
                                     attrib = nodeOrderHeader.Attributes.Append(docXML.CreateAttribute(name:="type"))
-                                    attrib.Value = strPoType  '  "new"
+                                    attrib.Value = LCase(strPoType)  '  "new"
 
                                     ' Total
                                     Dim nodeTotal As XmlNode = nodeOrderHeader.AppendChild(docXML.CreateElement(name:="Total"))
