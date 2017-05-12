@@ -219,7 +219,7 @@ Module Module1
         Dim XMLContent As String = ""
         Dim strXMLError As String = ""
         Dim bLineError As Boolean = False
-
+        Dim strErrorFromHeaderComments As String = ""
         Dim xmlRequest As New XmlDocument
 
         Dim I As Integer
@@ -314,9 +314,32 @@ Module Module1
                                         arrLineQtys(0) = ""
                                         ReDim arrUoms(0)
                                         arrUoms(0) = ""
+                                        strErrorFromHeaderComments = ""
                                         For iCnt = 0 To nodeConfReqst.ChildNodes.Count - 1
                                             Dim strNodeName1 As String = UCase(nodeConfReqst.ChildNodes(iCnt).Name)
                                             'header info
+                                            If strNodeName1 = "CONFIRMATIONHEADER" Then
+                                                'get <comments> node - this is order problem description
+                                                Dim nodeConfHeader As XmlNode = nodeConfReqst.ChildNodes(iCnt)
+                                                ' it could be NOT present - so Try/Catch
+                                                Try
+                                                    If nodeConfHeader.ChildNodes.Count > 0 Then
+                                                        Dim strChldNodeNameCF1 As String = ""
+                                                        For Each ChildItemNode As XmlNode In nodeConfHeader.ChildNodes()
+                                                            strChldNodeNameCF1 = UCase(ChildItemNode.Name)
+                                                            Select Case strChldNodeNameCF1
+                                                                Case "COMMENTS"
+                                                                    strErrorFromHeaderComments = ChildItemNode.InnerText
+                                                                    Exit For
+                                                                Case Else
+                                                                    strErrorFromHeaderComments = ""
+                                                            End Select
+                                                        Next  '  For Each ChildItemNode As XmlNode In nodeConfHeader.ChildNodes()
+                                                    End If  '  If nodeConfHeader.ChildNodes.Count > 0 Then
+                                                Catch ex As Exception
+                                                    strErrorFromHeaderComments = ""
+                                                End Try
+                                            End If
                                             If strNodeName1 = "ORDERREFERENCE" Then
                                                 Dim nodeOrdrRefr As XmlNode = nodeConfReqst.ChildNodes(iCnt)
                                                 If nodeOrdrRefr.Attributes.Count > 0 Then
@@ -350,7 +373,12 @@ Module Module1
                                                                             If UCase(attrib.Value) = "DETAIL" Then
                                                                             Else
                                                                                 bContinue = False
-                                                                                strXMLError = strXMLError & "'ConfirmationStatus' node 'Type' attribute is not equal to 'Detail' for Order No: " & strOrderNum & vbCrLf
+                                                                                strXMLError = strXMLError & "'ConfirmationStatus' node 'Type' attribute is not 'Detail' (value is '" & attrib.Value & "') for Order No: " & strOrderNum & " ; " & vbCrLf
+                                                                                strErrorFromHeaderComments = Replace(strErrorFromHeaderComments, ",", " ")
+                                                                                If Trim(strErrorFromHeaderComments) <> "" Then
+                                                                                    strErrorFromHeaderComments = Trim(strErrorFromHeaderComments)
+                                                                                    strXMLError = strXMLError & " Error: " & strErrorFromHeaderComments & " ; " & vbCrLf
+                                                                                End If
                                                                                 Exit For
                                                                             End If
                                                                         End If
@@ -471,9 +499,9 @@ Module Module1
                             m_arrXMLErrFiles &= "," & aFiles(I).Name
                         End If
                         If Trim(strXMLError) <> "" Then
-                            If Len(strXMLError) > 250 Then
-                                strXMLError = Microsoft.VisualBasic.Left(strXMLError, 250)
-                            End If
+                            'If Len(strXMLError) > 250 Then
+                            '    strXMLError = Microsoft.VisualBasic.Left(strXMLError, 250)
+                            'End If
                             If Trim(m_arrErrorsList) = "" Then
                                 m_arrErrorsList = strXMLError
                             Else
@@ -508,9 +536,9 @@ Module Module1
                 m_arrXMLErrFiles &= "," & aFiles(I).Name
             End If
             If Trim(strXMLError) <> "" Then
-                If Len(strXMLError) > 250 Then
-                    strXMLError = Microsoft.VisualBasic.Left(strXMLError, 250)
-                End If
+                'If Len(strXMLError) > 250 Then
+                '    strXMLError = Microsoft.VisualBasic.Left(strXMLError, 250)
+                'End If
                 If Trim(m_arrErrorsList) = "" Then
                     m_arrErrorsList = strXMLError
                 Else
@@ -563,7 +591,7 @@ Module Module1
                 " B.DESCR, B.ADDRESS1, B.ADDRESS2, B.ADDRESS3, B.ADDRESS4," & vbCrLf & _
                 " B.CITY, B.STATE, B.POSTAL" & vbCrLf & _
                 " FROM PS_PO_LINE_SHIP A, PS_LOCATION_TBL B, PS_PO_HDR C" & vbCrLf & _
-                " WHERE C.BUSINESS_UNIT IN (" & strBUs & ")" & vbCrLf & _
+                " WHERE C.BUSINESS_UNIT IN ('" & strBUs & "')" & vbCrLf & _
                 " AND C.PO_ID = '" & ponum & "'" & vbCrLf & _
                 " AND C.VENDOR_SETID = 'MAIN1'" & vbCrLf & _
                 " AND C.VENDOR_ID = '" & vendor & "'" & vbCrLf & _
@@ -1119,11 +1147,15 @@ Module Module1
             strEmailBcc = CStr(My.Settings(propertyName:="onErrorEmail_BCC")).Trim
         End If
 
-        Dim strEmailSubject As String = ""
-        strEmailSubject = " (TEST) Amazon SDI Direct process Order Confirm Error(s)"
-
+        Dim strEmailSubject As String = "Amazon SDI Direct process Order Confirm Error(s)"
+        Dim strDbname As String = ""
+        strDbname = Right(connectOR.ConnectionString, 4)
+        If UCase(strDbname) = "STAR" Or UCase(strDbname) = "DEVL" Or UCase(strDbname) = "RPTG" Or UCase(strDbname) = "PLGR" Then
+            strEmailSubject = " (TEST) Amazon SDI Direct process Order Confirm Error(s)"
+        End If
+        
         Dim strEmailBody As String = ""
-        strEmailBody &= "<html><body><img src='https://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' />"
+        strEmailBody &= "<html><body><img src='https://www.sdiexchange.com/images/sdi_logo2017_yellow.jpg' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' />"
         strEmailBody &= "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI, Inc</span></center><center><span >Amazon SDI Direct process Order Confirm Error(s)</span></center>&nbsp;&nbsp;"
 
         strEmailBody &= "<table><tr><td>Amazon SDI Direct process Order Confirm has completed with error(s)"
