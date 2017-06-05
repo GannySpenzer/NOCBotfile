@@ -93,7 +93,7 @@ Module Module1
             'get the list and send e-mails
             strSqlString = "SELECT ISA_EMPLOYEE_ID,ACTIVE_STATUS,LAST_ACTIVITY,ISA_EMPLOYEE_EMAIL, ISA_USER_NAME FROM PS_ISA_USERS_TBL " & vbCrLf & _
                 "WHERE (LAST_ACTIVITY IS NULL AND ACTIVE_STATUS = 'A') OR " & vbCrLf & _
-                "(LAST_ACTIVITY IS NOT NULL AND ACTIVE_STATUS = 'A' AND LAST_ACTIVITY < (SYSDATE - 90))" & vbCrLf & _
+                "(LAST_ACTIVITY IS NOT NULL AND ACTIVE_STATUS = 'A' AND LAST_ACTIVITY < (SYSDATE - 100))" & vbCrLf & _
                 ""
 
             Try
@@ -155,7 +155,7 @@ Module Module1
                                 'deactivate - get rows afftected
                                 strSqlString = "UPDATE PS_ISA_USERS_TBL SET ACTIVE_STATUS = 'I' " & vbCrLf & _
                                     "WHERE (LAST_ACTIVITY IS NULL AND ACTIVE_STATUS = 'A') OR " & vbCrLf & _
-                                    "(LAST_ACTIVITY IS NOT NULL AND ACTIVE_STATUS = 'A' AND LAST_ACTIVITY < (SYSDATE - 90))" & vbCrLf & _
+                                    "(LAST_ACTIVITY IS NOT NULL AND ACTIVE_STATUS = 'A' AND LAST_ACTIVITY < (SYSDATE - 100))" & vbCrLf & _
                                     ""
                                 Try
                                     rowsUpdated = ORDBAccess.ExecNonQuery(strSqlString, connectOR)
@@ -352,7 +352,7 @@ Module Module1
         'End If
 
         'The subject of the email
-        email.Subject = " (Test for Mike) Your SDiExchange Account has been deactivated due to 90 days inactivity"
+        email.Subject = "Your SDiExchange Account has been deactivated due to 90 days inactivity"
 
         Try
             strSource = My.Settings("onError_emailSubject").ToString.Trim
