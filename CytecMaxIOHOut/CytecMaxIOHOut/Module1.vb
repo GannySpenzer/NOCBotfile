@@ -175,6 +175,9 @@ Module Module1
 
             Dim strTemplateXml As String = System.AppDomain.CurrentDomain.BaseDirectory.ToString & "CytecMaxIOHTemplate.xml"
 
+            Console.WriteLine("Total number of lines to send: " & ds.Tables(0).Rows.Count.ToString())
+            Console.WriteLine("")
+
             For I = 0 To ds.Tables(0).Rows.Count - 1
                 Dim intIsaIdent As Long = 0
                 Dim sErrMsgFromSendXmlOut As String = ""
@@ -373,7 +376,7 @@ Module Module1
                         bolLineError = False
 
                         'send XML file to Cytec
-                        bolLineError = SendXMLOut(strXmlFileNameToSave21, sFileName, sErrMsgFromSendXmlOut)
+                        bolLineError = SendXMLOut(strXmlFileNameToSave21, sFileName, sErrMsgFromSendXmlOut, I.ToString())
                         Dim strErr254 As String = ""
                         If Trim(sErrMsgFromSendXmlOut) <> "" Then
                             sErrMsgFromSendXmlOut = Trim(sErrMsgFromSendXmlOut)
@@ -515,9 +518,15 @@ Module Module1
     End Function
 
     Private Function SendXMLOut(ByVal strXmlFileNameToSave21 As String, ByVal sFileName As String, _
-                ByRef sErrMsgFromSendXmlOut As String) As Boolean
+                ByRef sErrMsgFromSendXmlOut As String, Optional ByVal strLineNo As String = "") As Boolean
         Dim rtn As String = "Cytec Maximo Process XML Out.getXMLOut"
-        Console.WriteLine("Start send of Cytec Maximo XML out")
+        Dim strLineToShow As String = "Start send of Cytec Maximo XML out - line "
+        If Trim(strLineNo) <> "" Then
+            If IsNumeric(strLineNo) Then
+                strLineToShow = strLineToShow & strLineNo
+            End If
+        End If
+        Console.WriteLine(strLineToShow)
         Console.WriteLine("")
 
         Dim sr As System.IO.StreamReader = Nothing
