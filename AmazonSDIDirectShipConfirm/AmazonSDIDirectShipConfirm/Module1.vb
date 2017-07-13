@@ -129,49 +129,52 @@ Module Module1
         Dim aSrcFiles As FileInfo() = dirInfo.GetFiles(strFiles)
         Dim I As Integer
 
+        Dim strXMLError As String = ""
+        Dim bFoundCorrectFile As Boolean = False
         Dim strSrcFileName As String = ""
         Try
             If aSrcFiles.Length > 0 Then
                 For I = 0 To aSrcFiles.Length - 1
+                    strXMLError = ""
                     If aSrcFiles(I).Name.Length > Len("OrderConfirm") - 1 Then
                         strSrcFileName = UCase(aSrcFiles(I).Name)
                         If strSrcFileName.StartsWith("ORDERCONFIRM") Then
                             File.Copy(aSrcFiles(I).FullName, "C:\AmazonSdiDirectIn\XMLIN\OrderConfirm\" & aSrcFiles(I).Name, True)
                             File.Delete(aSrcFiles(I).FullName)
                             m_logger.WriteInformationLog(rtn & " :: " & aSrcFiles(I).FullName & " moved to " & "C:\AmazonSdiDirectIn\XMLIN\OrderConfirm\" & aSrcFiles(I).Name)
-
-                        End If
+                            bFoundCorrectFile = True
+                        Else
+                            'write to error log and copy to BADXML dir
+                            strXMLError = "Short file name: " & aSrcFiles(I).Name
+                            myLoggr1.WriteErrorLog(strXMLError)
+                            File.Copy(aSrcFiles(I).FullName, "C:\AmazonSdiDirectIn\BadXML\OrderConfirm\" & aSrcFiles(I).Name, True)
+                            File.Delete(aSrcFiles(I).FullName)
+                        End If  '  If strSrcFileName.StartsWith("ORDERCONFIRM") Then
+                    Else
+                        'write to error log and copy to BADXML dir
+                        strXMLError = "Wrong file name: " & aSrcFiles(I).Name
+                        myLoggr1.WriteErrorLog(strXMLError)
+                        File.Copy(aSrcFiles(I).FullName, "C:\AmazonSdiDirectIn\BadXML\OrderConfirm\" & aSrcFiles(I).Name, True)
+                        File.Delete(aSrcFiles(I).FullName)
+                    End If  '  If aSrcFiles(I).Name.Length > Len("OrderConfirm") - 1 Then
+                    If Trim(strXMLError) <> "" Then
+                        SaveErrorToFormVars(strXMLError, aSrcFiles(I).FullName)
                     End If
-                Next
+                Next  '  For I = 0 To aSrcFiles.Length - 1
+                If Not bFoundCorrectFile Then
+                    bError = True
+                    m_logger.WriteInformationLog(rtn & " :: No Correctly Named files to copy from " & dirInfo.FullName & ". Check C:\AmazonSdiDirectIn\BADXML\OrderConfirm directory")
+                End If
             Else
                 m_logger.WriteInformationLog(rtn & " :: No files to copy from " & dirInfo.FullName)
-            End If
+            End If  '  If aSrcFiles.Length > 0 Then
         Catch ex As Exception
-            myLoggr1.WriteErrorLog(rtn & " :: Error moving file(s) from " & dirInfo.FullName & " to C:\AmazonSdiDirectIn\XMLIN\OrderConfirm\ " & "...")
+            myLoggr1.WriteErrorLog(rtn & " :: Error moving file: " & aSrcFiles(I).FullName & " - from " & dirInfo.FullName & " to C:\AmazonSdiDirectIn\XMLIN\OrderConfirm\ " & "...")
             myLoggr1.WriteErrorLog(rtn & " :: " & ex.ToString)
             bError = True
-            Dim strXMLError As String = ex.Message
-            If Trim(m_arrXMLErrFiles) = "" Then
-                m_arrXMLErrFiles = aSrcFiles(I).FullName
-            Else
-                m_arrXMLErrFiles &= "," & aSrcFiles(I).FullName
-            End If
-            If Trim(strXMLError) <> "" Then
-                If Len(strXMLError) > 250 Then
-                    strXMLError = Microsoft.VisualBasic.Left(strXMLError, 250)
-                End If
-                If Trim(m_arrErrorsList) = "" Then
-                    m_arrErrorsList = strXMLError
-                Else
-                    m_arrErrorsList &= "," & strXMLError
-                End If
-            Else
-                If Trim(m_arrErrorsList) = "" Then
-                    m_arrErrorsList = "No Error Description"
-                Else
-                    m_arrErrorsList &= "," & "No Error Description"
-                End If
-            End If
+            strXMLError = ex.Message
+            SaveErrorToFormVars(strXMLError, aSrcFiles(I).FullName)
+
         End Try
 
         If bError Then
@@ -202,6 +205,27 @@ Module Module1
 
         m_logger.WriteInformationLog(rtn & " :: End of Amazon SDI Direct process Order Confirm")
 
+    End Sub
+
+    Private Sub SaveErrorToFormVars(ByVal strXMLError As String, ByVal strFullName As String)
+        If Trim(m_arrXMLErrFiles) = "" Then
+            m_arrXMLErrFiles = strFullName
+        Else
+            m_arrXMLErrFiles &= "," & strFullName
+        End If
+        If Trim(strXMLError) <> "" Then
+            If Trim(m_arrErrorsList) = "" Then
+                m_arrErrorsList = strXMLError
+            Else
+                m_arrErrorsList &= "," & strXMLError
+            End If
+        Else
+            If Trim(m_arrErrorsList) = "" Then
+                m_arrErrorsList = "No Error Description"
+            Else
+                m_arrErrorsList &= "," & "No Error Description"
+            End If
+        End If
     End Sub
 
     Private Function AmazonSDIDirectOrdrConfirm() As Boolean
@@ -302,9 +326,12 @@ Module Module1
                                     arrLineQtys(0) = ""
                                     Dim arrUoms(0) As String
                                     arrUoms(0) = ""
+                                    Dim arrLineConfirmed(0) As String
+                                    arrLineConfirmed(0) = ""
+                                    Dim bAtLeastOneLineConfrmd As Boolean = False
                                     Dim strOrderNum As String = ""
                                     Dim strOrderDate As String = ""
-                                    'parse and process
+                                    'parse and process each XML file - that is confirmation for the each PO received by Amazon
                                     Dim nodeConfReqst As XmlNode = nodeOrdConf.FirstChild()
                                     If nodeConfReqst.ChildNodes.Count > 0 Then
                                         j1 = 0
@@ -314,7 +341,13 @@ Module Module1
                                         arrLineQtys(0) = ""
                                         ReDim arrUoms(0)
                                         arrUoms(0) = ""
+                                        ReDim arrLineConfirmed(0)
+                                        arrLineConfirmed(0) = ""
+                                        bAtLeastOneLineConfrmd = False
+                                        strOrderNum = ""
+                                        strOrderDate = ""
                                         strErrorFromHeaderComments = ""
+                                        ' get header info and line(s) for each PO
                                         For iCnt = 0 To nodeConfReqst.ChildNodes.Count - 1
                                             Dim strNodeName1 As String = UCase(nodeConfReqst.ChildNodes(iCnt).Name)
                                             'header info
@@ -340,6 +373,7 @@ Module Module1
                                                     strErrorFromHeaderComments = ""
                                                 End Try
                                             End If
+                                            ' get PO Number (strOrderNum) and Order Date (strOrderDate)
                                             If strNodeName1 = "ORDERREFERENCE" Then
                                                 Dim nodeOrdrRefr As XmlNode = nodeConfReqst.ChildNodes(iCnt)
                                                 If nodeOrdrRefr.Attributes.Count > 0 Then
@@ -360,7 +394,7 @@ Module Module1
                                                 Dim nodeConfItem1 As XmlNode = nodeConfReqst.ChildNodes(iCnt)
                                                 Dim bContinue As Boolean = True
                                                 If nodeConfItem1.ChildNodes.Count > 0 Then
-                                                    'get Status type ("detail"), UOM, 
+                                                    'get Status type ("detail" or "reject"), UOM, 
                                                     Dim strChldNodeName1 As String = ""
                                                     For Each ChildItemNode As XmlNode In nodeConfItem1.ChildNodes()
                                                         strChldNodeName1 = ChildItemNode.Name
@@ -370,45 +404,53 @@ Module Module1
                                                                     'get attribute type value
                                                                     For Each attrib As XmlAttribute In ChildItemNode.Attributes()
                                                                         If UCase(attrib.Name) = "TYPE" Then
-                                                                            If UCase(attrib.Value) = "DETAIL" Then
+                                                                            If j1 = 0 Then
                                                                             Else
-                                                                                bContinue = False
+                                                                                ReDim Preserve arrLineConfirmed(j1)
+                                                                            End If
+                                                                            arrLineConfirmed(j1) = "N"
+                                                                            If UCase(attrib.Value) = "DETAIL" Then
+                                                                                'confirmed OK
+                                                                                arrLineConfirmed(j1) = "Y"
+                                                                                bAtLeastOneLineConfrmd = True
+                                                                            Else
+                                                                                'bContinue = False
                                                                                 strXMLError = strXMLError & "'ConfirmationStatus' node 'Type' attribute is not 'Detail' (value is '" & attrib.Value & "') for Order No: " & strOrderNum & " ; " & vbCrLf
                                                                                 strErrorFromHeaderComments = Replace(strErrorFromHeaderComments, ",", " ")
                                                                                 If Trim(strErrorFromHeaderComments) <> "" Then
                                                                                     strErrorFromHeaderComments = Trim(strErrorFromHeaderComments)
                                                                                     strXMLError = strXMLError & " Error: " & strErrorFromHeaderComments & " ; " & vbCrLf
                                                                                 End If
-                                                                                Exit For
                                                                             End If
-                                                                        End If
-                                                                    Next
+                                                                            Exit For
+                                                                        End If  '  If UCase(attrib.Name) = "TYPE" Then
+                                                                    Next  '  For Each attrib As XmlAttribute In ChildItemNode.Attributes()
                                                                 Else
-                                                                    bContinue = False
-                                                                    Exit For
+                                                                    'bContinue = False
+                                                                    'Exit For
                                                                 End If
-                                                                If bContinue Then
-                                                                    '' get order confirmID
-                                                                    'If ChildItemNode.ChildNodes.Count > 0 Then
-                                                                    '    Dim strConfStatusChldname As String = ""
-                                                                    '    For Each ConfStatusChild In ChildItemNode
-                                                                    '        strConfStatusChldname = ConfStatusChild.Name
-                                                                    '        Select Case strConfStatusChldname
-                                                                    '            Case "Comments"
-                                                                    '             ' if attribute type="confirmID"
-                                                                    '             ' <confirmID> = ConfStatusChild.InnerText
-                                                                    '            Case Else
-                                                                    '                'do nothing
-                                                                    '        End Select
-                                                                    '    Next  '  For Each ConfStatusChild In ChildItemNode
-                                                                    '    If Not bContinue Then
-                                                                    '        Exit For ' this line is rejected
-                                                                    '    End If
-                                                                    'Else
-                                                                    '    bContinue = False
-                                                                    '    Exit For
-                                                                    'End If
-                                                                End If
+                                                                'If bContinue Then
+                                                                '    '' get order confirmID
+                                                                '    'If ChildItemNode.ChildNodes.Count > 0 Then
+                                                                '    '    Dim strConfStatusChldname As String = ""
+                                                                '    '    For Each ConfStatusChild In ChildItemNode
+                                                                '    '        strConfStatusChldname = ConfStatusChild.Name
+                                                                '    '        Select Case strConfStatusChldname
+                                                                '    '            Case "Comments"
+                                                                '    '             ' if attribute type="confirmID"
+                                                                '    '             ' <confirmID> = ConfStatusChild.InnerText
+                                                                '    '            Case Else
+                                                                '    '                'do nothing
+                                                                '    '        End Select
+                                                                '    '    Next  '  For Each ConfStatusChild In ChildItemNode
+                                                                '    '    If Not bContinue Then
+                                                                '    '        Exit For ' this line is rejected
+                                                                '    '    End If
+                                                                '    'Else
+                                                                '    '    bContinue = False
+                                                                '    '    Exit For
+                                                                '    'End If
+                                                                'End If
 
                                                             Case "UnitOfMeasure"
                                                                 If j1 = 0 Then
@@ -421,7 +463,7 @@ Module Module1
                                                         End Select
                                                     Next  '  For Each ChildItemNode As XmlNode In nodeConfItem1.ChildNodes()
                                                 Else
-                                                    bContinue = False
+                                                    'bContinue = False
                                                 End If  '  If nodeConfItem1.ChildNodes.Count > 0 Then
                                                 If bContinue Then
                                                     'get line # & Qty and put them in arrays
@@ -443,7 +485,7 @@ Module Module1
                                                             End If
                                                         Next  '  For Each attrib As XmlAttribute In nodeConfItem1.Attributes()
                                                     Else
-                                                        bContinue = False
+                                                        'bContinue = False
                                                     End If  '  If nodeConfItem1.Attributes.Count > 0 Then
                                                     If bContinue Then
                                                         j1 = j1 + 1
@@ -453,15 +495,19 @@ Module Module1
                                                 End If  '   If bContinue Then
                                             End If  '  If strNodeName1 = "CONFIRMATIONITEM" Then
                                         Next  '  For iCnt = 0 To nodeConfReqst.ChildNodes.Count - 1
-                                        If j1 = 0 Then
-                                            'empty line items - get out
-                                            strXMLError = strXMLError & "Empty/rejected 'CONFIRMATIONITEM' for Order No: " & strOrderNum & vbCrLf
+                                        'If j1 = 0 Then
+                                        '    'empty line items - get out
+                                        '    strXMLError = strXMLError & "Empty/rejected 'CONFIRMATIONITEM' for Order No: " & strOrderNum & vbCrLf
 
+                                        'End If
+                                        If Trim(strXMLError) <> "" Then
+                                            myLoggr1.WriteErrorLog(rtn & " :: " & strXMLError)
                                         End If
-                                        myLoggr1.WriteErrorLog(rtn & " :: " & strXMLError)
-                                        If Trim(strXMLError) = "" Then
-                                            'writing to Oracle tables here
-                                            Dim intQueueInst As Integer
+
+                                        'writing to Oracle tables here
+                                        ' writing always - if at least one line confirmed - new business rule - VR 07/12/2017
+                                        Dim intQueueInst As Integer = 0
+                                        If bAtLeastOneLineConfrmd Then
                                             intQueueInst = getNextQueueInst()
                                             If intQueueInst = 0 Then
                                                 strXMLError = "Error getting queue number for Order No: " & strOrderNum
@@ -472,20 +518,23 @@ Module Module1
                                                 strVendorId = GetVendorId(strOrderNum)
 
                                                 Dim bolErrM1 As Boolean = False
-                                                bolErrM1 = createECConfirmation(intQueueInst, strVendorId, strOrderNum, strSiteBu, strOrderDate, arrLineNums, arrLineQtys, arrUoms)
+                                                ' adding one more array (arrLineConfirmed) to this function - VR 07/12/2017
+                                                bolErrM1 = createECConfirmation(intQueueInst, strVendorId, strOrderNum, strSiteBu, strOrderDate, arrLineNums, arrLineQtys, arrUoms, arrLineConfirmed)
                                                 If bolErrM1 Then
                                                     strXMLError = "Error updating EC tables for Order No: " & strOrderNum
                                                 Else
                                                     strXMLError = ""
                                                 End If
                                             End If
+
                                         End If
+                                        
                                     Else
                                         strXMLError = "Empty node 'ConfirmationRequest'"
                                     End If  '  If nodeConfReqst.ChildNodes.Count > 0 Then
                                 Case Else
                                     strXMLError = "Unexpected node name: " & strFirstChildName
-                            End Select
+                            End Select  '  end each existing good XML file processing
                         Else
                             strXMLError = "Empty node 'Request'"
                         End If '  If nodeOrdConf.ChildNodes.Count > 0 Then
@@ -493,64 +542,26 @@ Module Module1
                     ' if there's an error, capture the filename of the XML and corresponding error message
                     If Trim(strXMLError) <> "" Or bolError Then
                         bolError = True
-                        If Trim(m_arrXMLErrFiles) = "" Then
-                            m_arrXMLErrFiles = aFiles(I).Name
-                        Else
-                            m_arrXMLErrFiles &= "," & aFiles(I).Name
-                        End If
-                        If Trim(strXMLError) <> "" Then
-                            'If Len(strXMLError) > 250 Then
-                            '    strXMLError = Microsoft.VisualBasic.Left(strXMLError, 250)
-                            'End If
-                            If Trim(m_arrErrorsList) = "" Then
-                                m_arrErrorsList = strXMLError
-                            Else
-                                m_arrErrorsList &= "," & strXMLError
-                            End If
-                        Else
-                            If Trim(m_arrErrorsList) = "" Then
-                                m_arrErrorsList = "Check Log for the Error Description"
-                            Else
-                                m_arrErrorsList &= "," & "Check Log for the Error Description"
-                            End If
-                        End If
+                        SaveErrorToFormVars(strXMLError, aFiles(I).Name)
+                        
                         'move file to BadXML folder
                         File.Copy(aFiles(I).FullName, "C:\AmazonSdiDirectIn\BadXML\OrderConfirm\" & aFiles(I).Name, True)
                         File.Delete(aFiles(I).FullName)
                         m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & "C:\AmazonSdiDirectIn\BadXML\OrderConfirm\" & aFiles(I).Name)
-                    Else
+                    Else  ' Processed OK
 
                         'move file to XMLInProcessed folder
                         File.Copy(aFiles(I).FullName, "C:\AmazonSdiDirectIn\XMLINProcessed\OrderConfirm\" & aFiles(I).Name, True)
                         File.Delete(aFiles(I).FullName)
                         m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & "C:\AmazonSdiDirectIn\XMLINProcessed\OrderConfirm\" & aFiles(I).Name)
 
-                    End If
-                Next  '  For I = 0 To aFiles.Length - 1
+                    End If  ' If Trim(strXMLError) <> "" Or bolError Then
+                Next  ' (XML Files List)  For I = 0 To aFiles.Length - 1
             End If  '  If aFiles.Length > 0 Then
 
         Catch ex As Exception
-            If Trim(m_arrXMLErrFiles) = "" Then
-                m_arrXMLErrFiles = aFiles(I).Name
-            Else
-                m_arrXMLErrFiles &= "," & aFiles(I).Name
-            End If
-            If Trim(strXMLError) <> "" Then
-                'If Len(strXMLError) > 250 Then
-                '    strXMLError = Microsoft.VisualBasic.Left(strXMLError, 250)
-                'End If
-                If Trim(m_arrErrorsList) = "" Then
-                    m_arrErrorsList = strXMLError
-                Else
-                    m_arrErrorsList &= "," & strXMLError
-                End If
-            Else
-                If Trim(m_arrErrorsList) = "" Then
-                    m_arrErrorsList = "Check Log for the Error Description"
-                Else
-                    m_arrErrorsList &= "," & "Check Log for the Error Description"
-                End If
-            End If
+            strXMLError = strXMLError & "::  Error: " & ex.Message
+            SaveErrorToFormVars(strXMLError, aFiles(I).Name)
 
             'move file to BadXML folder 
             File.Copy(aFiles(I).FullName, "C:\AmazonSdiDirectIn\BadXML\OrderConfirm\" & aFiles(I).Name, True)
@@ -766,7 +777,7 @@ Module Module1
 
     Private Function createECConfirmation(ByVal intQueueInst As Integer, ByVal strVendorId As String, ByVal strPoId As String, _
                 ByVal strPoSiteBu As String, ByVal strOrderDate As String, ByVal arrLineNums() As String, _
-                ByVal arrLineQtys() As String, ByVal arrUoms() As String) As Boolean
+                ByVal arrLineQtys() As String, ByVal arrUoms() As String, ByVal arrLineConfirmed() As String) As Boolean
 
         Dim bolUpdateFailed As Boolean = False
         Try
@@ -884,7 +895,7 @@ Module Module1
                             Else
                                 strQtyMy3 = dsPOdata.Tables(0).Rows(I).Item("QTY_PO")
                             End If
-                            'strQtyMy3 = dsPOdata.Tables(0).Rows(I).Item("QTY_PO")
+
                             If Trim(strQtyMy3) = "" Then
                                 decQTY = 0
                             Else
@@ -893,6 +904,14 @@ Module Module1
                                     decQTY = CType(strQtyMy3, Decimal)
                                 Else
                                     decQTY = 0
+                                End If
+                            End If
+
+                            If decQTY > 0 Then
+                                If iLoc1 > -1 Then
+                                    If arrLineConfirmed(iLoc1) = "N" Then
+                                        decQTY = 0
+                                    End If
                                 End If
                             End If
 
@@ -1241,8 +1260,6 @@ Module Module1
             
             SendLogger(strEmailSubject, strEmailBody, "AMAZONORDRCONFIRMIN", "Mail", strEmailTo, strEmailCc, strEmailBcc)
             bSend = True
-            m_arrXMLErrFiles = ""
-            m_arrErrorsList = ""
         Catch ex As Exception
 
         End Try
@@ -1250,6 +1267,10 @@ Module Module1
         If Not bSend Then
             m_logger.WriteErrorLog(rtn & " :: Error - the email was not sent.")
         End If
+
+        m_arrXMLErrFiles = ""
+        m_arrErrorsList = ""
+
     End Sub
 
     Public Sub SendLogger(ByVal subject As String, ByVal body As String, ByVal messageType As String, ByVal MailType As String, ByVal EmailTo As String, ByVal EmailCc As String, ByVal EmailBcc As String)
