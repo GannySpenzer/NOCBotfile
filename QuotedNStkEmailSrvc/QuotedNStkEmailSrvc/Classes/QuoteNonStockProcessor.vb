@@ -14,9 +14,9 @@ Imports System.Xml
 
 Public Class QuoteNonStockProcessor
 
-    Private Const LETTER_HEAD_SdiExch As String = "<table><tbody><tr><td style='width:71%;'><img src='http://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></td>" & _
-                                                    "<td><br/><br/><br/><div align='center'><SPAN style='FONT-SIZE: x-large; WIDTH: 256px; FONT-FAMILY: Arial'>SDI Marketplace</SPAN></div>" & _
-                                                    "<div align='center'><SPAN>SDiExchange - Request for Quote</SPAN></div></td></tr></tbody></table>" & _
+    Private Const LETTER_HEAD_SdiExch As String = "<table bgcolor='black'><tbody><tr><td style='width:71%;'><img src='https://www.sdiexchange.com/images/SDNewLogo_Email.png' alt='SDI' vspace='0' hspace='0' /></td>" & _
+                                                    "<td><br/><br/><br/><div align='center'><SPAN style='FONT-SIZE: x-large; WIDTH: 256px; FONT-FAMILY: Arial; Color:White;'>SDI Marketplace</SPAN></div>" & _
+                                                    "<div align='center'><SPAN style='FONT-FAMILY: Arial; Color:White;'>SDiExchange - Request for Quote</SPAN></div></td></tr></tbody></table>" & _
                                                     "<HR width='100%' SIZE='1'>"
     Private Const LETTER_HEAD As String = "<div><img src='http://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></div>" & _
                                             "<div align=""center""><SPAN style=""FONT-SIZE: x-large; WIDTH: 256px; FONT-FAMILY: Arial"">SDI Marketplace</SPAN></div>" & _
@@ -1488,7 +1488,7 @@ Public Class QuoteNonStockProcessor
                     ''System.Web.Mail.SmtpMail.Send(message:=eml)
                     Try
                         'SDIEmailService.EmailUtilityServices("MailandStore", eml.From.ToString(), eml.To.ToString(), eml.Subject, String.Empty, String.Empty, eml.Body, "SDIERR", MailAttachmentName, MailAttachmentbytes.ToArray())
-                        SDIEmailService.EmailUtilityServices("MailandStore", "SDIExchADMIN@sdi.com", "WebDev@sdi.com;sriram.s@avasoft.biz;madhuvanthy.u@avasoft.biz;Karguvelrajan.P@avasoft.biz", eml.Subject, String.Empty, String.Empty, eml.Body, "QUOTEAPPROVAL", MailAttachmentName, MailAttachmentbytes.ToArray())
+                        SDIEmailService.EmailUtilityServices("MailandStore", "SDIExchADMIN@sdi.com", "WebDev@sdi.com;sdiportalsupport@avasoft.biz", eml.Subject, String.Empty, String.Empty, eml.Body, "QUOTEAPPROVAL", MailAttachmentName, MailAttachmentbytes.ToArray())
                     Catch ex As Exception
 
                     End Try
@@ -1529,7 +1529,7 @@ Public Class QuoteNonStockProcessor
                             eml.Cc = ""
                             eml.Subject &= " (copy)"
                             ''System.Web.Mail.SmtpMail.Send(message:=eml)
-                            SDIEmailService.EmailUtilityServices("MailandStore", "madhuvanthy.u@avasoft.biz", "madhuvanthy.u@avasoft.biz", eml.Subject, String.Empty, String.Empty, eml.Body, "SDIERR", MailAttachmentName, MailAttachmentbytes.ToArray())
+                            SDIEmailService.EmailUtilityServices("MailandStore", "SDIExchADMIN@sdi.com", "WebDev@sdi.com;sdiportalsupport@avasoft.biz", eml.Subject, String.Empty, String.Empty, eml.Body, "SDIERR", MailAttachmentName, MailAttachmentbytes.ToArray())
                         End If
                     Catch ex As Exception
                         ' just ignore
