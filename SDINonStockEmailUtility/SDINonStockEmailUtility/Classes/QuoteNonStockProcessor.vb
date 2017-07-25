@@ -17,9 +17,9 @@ Imports SDI.ApplicationLogger
 Public Class QuoteNonStockProcessor
 
     Private m_logger As appLogger = Nothing
-    Private Const LETTER_HEAD_SdiExch As String = "<table><tbody><tr><td style='width:71%;'><img src='https://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></td>" & _
-                                                    "<td><br/><br/><br/><div align='center'><SPAN style='FONT-SIZE: x-large; WIDTH: 256px; FONT-FAMILY: Arial'>SDI Marketplace</SPAN></div>" & _
-                                                    "<div align='center'><SPAN>SDiExchange - Request for Quote</SPAN></div></td></tr></tbody></table>" & _
+    Private Const LETTER_HEAD_SdiExch As String = "<table width='100%' bgcolor='black'><tbody><tr><td><img src='https://www.sdiexchange.com/images/SDNewLogo_Email.png' alt='SDI' vspace='0' hspace='0' /></td>" & _
+                                                    "<td width='100%'><br/><br/><br/><div align='center'><SPAN style='FONT-SIZE: x-large; WIDTH: 256px; FONT-FAMILY: Arial; Color: White;'>SDI Marketplace</SPAN></div>" & _
+                                                    "<div align='center'><SPAN style='FONT-FAMILY: Arial; Color: White;'>SDiExchange - Request for Quote</SPAN></div></td></tr></tbody></table>" & _
                                                     "<HR width='100%' SIZE='1'>"
     Private Const LETTER_HEAD As String = "<div><img src='https://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></div>" & _
                                             "<div align=""center""><SPAN style=""FONT-SIZE: x-large; WIDTH: 256px; FONT-FAMILY: Arial"">SDI Marketplace</SPAN></div>" & _
