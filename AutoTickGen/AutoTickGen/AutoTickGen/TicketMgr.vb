@@ -71,13 +71,13 @@
         Try
             ' read last-used ticket ID
             strSQLstring = "SELECT max(Magic_Ticket_number) " & vbCrLf & _
-                       " FROM  [pubs].[dbo].[Magic_Numbers]"
+                       " FROM  [Magic_Numbers]"
             Dim sTickID As String = SQLDBData.GetProdSQLScalarSPC3(strSQLstring)
             Dim iTickID As Integer = CType(sTickID, Integer)
 
             ' increment last-used ticket ID and store it into the ticket number table
             iTickID = iTickID + 1
-            strSQLstring = "update  [pubs].[dbo].[Magic_numbers] set magic_ticket_number = '" & iTickID.ToString & "'"
+            strSQLstring = "update  [Magic_numbers] set magic_ticket_number = '" & iTickID.ToString & "'"
             Dim rows_affected As Integer = SQLDBData.ExecNonQuerySQLSPC3(strSQLstring)
             If rows_affected = 1 Then
                 bSuccess = True
@@ -114,7 +114,7 @@
             If oTicketInfo.RequestorInfo.ExistsUser Then
                 If oTicketInfo.AssigneeInfo.ExistsUser Then
                     strSQLstring = _
-                        "INSERT INTO  [pubs].[dbo].[Magic_Ticket_Master]" & vbCrLf & _
+                        "INSERT INTO  [Magic_Ticket_Master]" & vbCrLf & _
                                 "([Magic_ticket_ID], [Magic_DatetimeAdded], [Magic_Ticket_type]" & vbCrLf & _
                                 ",[Magic_User_Department], [Magic_Request_Type], [Magic_Status]" & vbCrLf & _
                                 ",[Magic_Priority], [Magic_Open_Date], [Magic_Due_Date]" & vbCrLf & _
@@ -176,7 +176,7 @@
 
         Try
             strSQLstring = _
-                        "INSERT INTO  [pubs].[dbo].[Magic_Ticket_Child]" & vbCrLf & _
+                        "INSERT INTO [Magic_Ticket_Child]" & vbCrLf & _
                             "([Magic_ticket_ID], [M_DatetimeAdded], [M_Status]" & vbCrLf & _
                             ",[M_Start_Date], [M_Date_Assigned], [M_Date_Completed]" & vbCrLf & _
                             ",[M_UserID], [M_Resolution], [M_Description]" & vbCrLf & _
