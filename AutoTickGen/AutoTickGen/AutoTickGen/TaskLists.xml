@@ -4,12 +4,12 @@
     <TicketInfo>
       <EmailSubject>Check Servers - BARDE1</EmailSubject>
       <Priority>Medium</Priority>
-      <AssigneeID>BARDE2</AssigneeID>
+      <AssigneeID>ROVENSV1</AssigneeID>
       <RequestorID>BARDE1</RequestorID>
       <TicketType>Ticket</TicketType>
       <IncludeWeekends>False</IncludeWeekends>
       <Frequency></Frequency>
-      <EmailCCs>BardE1;BardE2</EmailCCs>
+      <EmailCCs>VROV1@SDI.COM</EmailCCs>
       <Tasks>
         <Task>Check server space</Task>
         <Task>Check vsFoundations is running</Task>
@@ -18,9 +18,9 @@
     </TicketInfo>
     <TicketInfo>
       <EmailSubject>Daily Tasks - BARDE2</EmailSubject>
-      <AssigneeID>BARDE1</AssigneeID>
+      <AssigneeID>ROVENSV1</AssigneeID>
       <Priority>Low</Priority>
-      <RequestorID>BARDE2</RequestorID>
+      <RequestorID>ROVENSV1</RequestorID>
       <TicketType>Work Order</TicketType>
       <IncludeWeekends>False</IncludeWeekends>
       <Frequency>Daily</Frequency>

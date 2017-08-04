@@ -97,7 +97,7 @@
                 "           OR " & vbCrLf & _
                 "           (U.n_parentid = 0 AND U.n_id = P.n_id) " & vbCrLf & _
                 "       )"
-            Dim dsOREMP As DataSet = SQLDBData.GetSQLAdapterDazzle(strSQLString)
+            Dim dsOREMP As DataSet = SQLDBData.GetSQLAdapter(strSQLString)
 
             If dsOREMP.Tables(0).Rows.Count = 0 Then
                 ' If no record exists in the SQL Server "assignee" table, 
@@ -131,7 +131,7 @@
                         "A.BUSINESS_UNIT," & vbCrLf & _
                         "A.ISA_EMPLOYEE_NAME," & vbCrLf & _
                         "C.ISA_COMPANY_ID as Site_Name " & vbCrLf & _
-                              " FROM ps_isa_users_tbl A,  ps_isa_enterprise C" & vbCrLf & _
+                              " FROM SYSADM8.ps_isa_users_tbl A,  SYSADM8.ps_isa_enterprise C" & vbCrLf & _
                               " WHERE UPPER(A.ISA_EMPLOYEE_ID) = '" & sUserID.ToUpper & "'" & vbCrLf & _
                               " AND A.ACTIVE_STATUS = 'A' and" & vbCrLf & _
                               " C.SETID = 'MAIN1' AND " & vbCrLf & _
@@ -157,7 +157,7 @@
                             "A.BUSINESS_UNIT," & vbCrLf & _
                             "A.ISA_EMPLOYEE_NAME," & vbCrLf & _
                             "C.ISA_COMPANY_ID as Site_Name " & vbCrLf & _
-                                  " FROM ps_isa_users_tbl A,  ps_isa_enterprise C" & vbCrLf & _
+                                  " FROM SYSADM8.ps_isa_users_tbl A,  SYSADM8.ps_isa_enterprise C" & vbCrLf & _
                                   " WHERE UPPER(A.first_name_srch) = '" & sAssigneeFirstName & "'" & vbCrLf & _
                                   " AND UPPER(A.last_name_srch) = '" & sAssigneeLastName & "'" & vbCrLf & _
                                   " AND A.ACTIVE_STATUS = 'A' and" & vbCrLf & _

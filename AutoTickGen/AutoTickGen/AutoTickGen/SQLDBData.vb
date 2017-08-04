@@ -69,7 +69,7 @@ Public Class SQLDBData
         Return rowsAffected
     End Function
 
-    Public Shared Function GetSQLAdapterDazzle(ByVal p_strQuery As String) As DataSet
+    Public Shared Function GetSQLAdapter(ByVal p_strQuery As String) As DataSet
         Dim UserdataSet As System.Data.DataSet = New System.Data.DataSet
         Dim connString As String
         connString = DbSQLUrl1

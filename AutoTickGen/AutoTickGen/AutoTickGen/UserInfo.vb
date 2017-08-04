@@ -75,7 +75,7 @@
                     "A.BUSINESS_UNIT," & vbCrLf & _
                     "A.ISA_EMPLOYEE_NAME," & vbCrLf & _
                     "C.ISA_COMPANY_ID " & vbCrLf & _
-                          " FROM ps_isa_users_tbl A,  ps_isa_enterprise C" & vbCrLf & _
+                          " FROM SYSADM8.ps_isa_users_tbl A,  SYSADM8.ps_isa_enterprise C" & vbCrLf & _
                           " WHERE UPPER(A.ISA_EMPLOYEE_ID) = '" & sUserID.ToUpper & "'" & vbCrLf & _
                           " AND A.ACTIVE_STATUS = 'A' and" & vbCrLf & _
                           " C.SETID = 'MAIN1' AND " & vbCrLf & _
