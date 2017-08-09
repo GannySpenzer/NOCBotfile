@@ -19,7 +19,7 @@ Public Class PODueDTChangeEmail
 
     Private Const oraCN_default_provider As String = "Provider=OraOLEDB.Oracle.1;"
     Private Const oraCN_default_creden As String = "User ID=einternet;Password=einternet;"
-    Private Const oraCN_default_DB As String = "Data Source=RPTG"
+    Private Const oraCN_default_DB As String = "Data Source=STAR"
 
     Private m_xmlConfig As XmlDocument
     Private m_configFile As String = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly.GetModules()(0).FullyQualifiedName) & "\PODueDTChangeEmail.exe.config"
@@ -1385,7 +1385,7 @@ Public Class PODueDTChangeEmail
             logger.WriteVerboseLog(" SEND USER EMAIL?  GETTING INFO FOR BUS UNIT: " & myBusinessUnit & " USER: " & myUserID)
             sSQL = "" & _
     "                  select isa_employee_id, isa_iol_op_value " & vbCrLf & _
-    "                    from sysadm.ps_isa_users_privs " & vbCrLf & _
+    "                    from sysadm8.ps_isa_users_privs " & vbCrLf & _
     "                   where ISA_IOL_OP_NAME='EMLPODUEDT' and ISA_IOL_OP_TYPE='IOL' " & vbCrLf & _
     "                            AND BUSINESS_UNIT='" & myBusinessUnit & "' AND upper(isa_employee_id)= upper('" & myUserID & "')"
 
@@ -1455,7 +1455,7 @@ Public Class PODueDTChangeEmail
             logger.WriteVerboseLog("GetPOEmailAddress(" & myBusinessUnit & "  " & myEmployeeID & ")")
             sSQL = "" & _
     "                  SELECT DISTINCT E.BUSINESS_UNIT as BUSINESS_UNIT, E.ISA_EMPLOYEE_ID as ISA_EMPLOYEE_ID, E.ISA_EMPLOYEE_EMAIL as ISA_EMPLOYEE_EMAIL  "    '  & _
-            sSQL = sSQL & "                     FROM sysadm.PS_ISA_USERS_TBL E "   '   & _
+            sSQL = sSQL & "                     FROM sysadm8.PS_ISA_USERS_TBL E "   '   & _
             If Trim(strBu3) <> "" Then
                 strBu3 = Trim(strBu3)
 
@@ -1588,7 +1588,7 @@ Public Class PODueDTChangeEmail
         Try
 
             sSQL = "" & _
-    "                  INSERT INTO SYSADM.PS_ISA_PODUEDTMON " & vbCrLf & _
+    "                  INSERT INTO SYSADM8.PS_ISA_PODUEDTMON " & vbCrLf & _
     "                  (BUSINESS_UNIT, PO_ID, LINE_NBR, SCHED_NBR, DUE_DT, ADD_DTTM, NOTIFY_DTTM) " & vbCrLf & _
     "                   VALUES " & vbCrLf & _
     "                   ('" & myBusinessUnit & "', '" & myPOID & "', '" & myLineNBR.ToString & "'," & _
@@ -1640,7 +1640,7 @@ Public Class PODueDTChangeEmail
         Try
 
             sSQL = "" & _
-    "                  UPDATE SYSADM.PS_ISA_PODUEDTMON " & vbCrLf & _
+    "                  UPDATE SYSADM8.PS_ISA_PODUEDTMON " & vbCrLf & _
     "                     SET DUE_DT = to_date('" & myPODueDate & "', 'mm/dd/yyyy'), ADD_DTTM = SYSDATE, NOTIFY_DTTM = SYSDATE " & vbCrLf & _
     "                  WHERE BUSINESS_UNIT = '" & myBusinessUnit & "' AND PO_ID = '" & myPOID & "' " & vbCrLf & _
     "                    AND LINE_NBR= '" & myLineNBR & "'  AND SCHED_NBR = '" & mySchedNBR & "'"
@@ -1708,11 +1708,11 @@ Public Class PODueDTChangeEmail
             ",MAX(trunc(A.ORIG_PROM_DT)) AS ORIG_PROMISE_DT " & vbCrLf & _
             ",MAX(trunc(A.DUE_DT)) AS DUE_DT " & vbCrLf & _
             "FROM " & vbCrLf & _
-            " SYSADM.PS_PO_LINE_SHIP A " & vbCrLf & _
-            ",SYSADM.PS_PO_HDR B " & vbCrLf & _
-            ",SYSADM.PS_PO_LINE L " & vbCrLf & _
-            ",sysadm.PS_PO_LINE_DISTRIB LB " & vbCrLf & _
-            ",sysadm.PS_REQ_LINE RL " & vbCrLf & _
+            " SYSADM8.PS_PO_LINE_SHIP A " & vbCrLf & _
+            ",SYSADM8.PS_PO_HDR B " & vbCrLf & _
+            ",SYSADM8.PS_PO_LINE L " & vbCrLf & _
+            ",sysadm8.PS_PO_LINE_DISTRIB LB " & vbCrLf & _
+            ",sysadm8.PS_REQ_LINE RL " & vbCrLf & _
             "WHERE B.PO_STATUS NOT IN ('X','C') " & vbCrLf & _
             "  AND B.PO_DT > LAST_DAY(ADD_MONTHS(SYSDATE, -12)) " & vbCrLf & _
             "  AND B.BUSINESS_UNIT = A.BUSINESS_UNIT " & vbCrLf & _
@@ -1754,14 +1754,14 @@ Public Class PODueDTChangeEmail
             s = ""
             s = " AND NOT EXISTS ( " & vbCrLf & _
             "                  SELECT 'X' " & vbCrLf & _
-            "                  FROM SYSADM.PS_ISA_PODUEDTMON DTMON " & vbCrLf & _
+            "                  FROM SYSADM8.PS_ISA_PODUEDTMON DTMON " & vbCrLf & _
             "                  WHERE DTMON.BUSINESS_UNIT = A.BUSINESS_UNIT " & vbCrLf & _
             "                    AND DTMON.PO_ID = A.PO_ID " & vbCrLf & _
             "                    AND DTMON.LINE_NBR = A.LINE_NBR " & vbCrLf & _
             "                    AND DTMON.SCHED_NBR = A.SCHED_NBR " & vbCrLf & _
             "                    AND (DTMON.NOTIFY_DTTM IS NOT NULL  and trunc(A.DUE_DT) = trunc(dtmon.due_dt)) " & vbCrLf & _
                         "                 ) " & vbCrLf & _
-                        " and not exists (Select 'X' FROM SYSADM.PS_RECV_LN RCV WHERE A.BUSINESS_UNIT = RCV.BUSINESS_UNIT " & vbCrLf & _
+                        " and not exists (Select 'X' FROM SYSADM8.PS_RECV_LN RCV WHERE A.BUSINESS_UNIT = RCV.BUSINESS_UNIT " & vbCrLf & _
                                           "AND A.PO_ID = RCV.PO_ID  AND A.LINE_NBR = RCV.LINE_NBR ) " & vbCrLf & _
             "GROUP BY " & vbCrLf & _
             " B.BUSINESS_UNIT " & vbCrLf & _

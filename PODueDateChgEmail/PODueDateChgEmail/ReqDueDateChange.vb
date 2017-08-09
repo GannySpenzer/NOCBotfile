@@ -267,12 +267,12 @@ Public Class ReqDueDateChange
         sSql = "select intfc_h.business_unit_om, intfc_h.ORDER_NO, intfc_l.LINE_NBR, req_hdr.req_status, " & _
                        "intfc_l.inv_item_id, intfc_l.descr254, trunc(intfc_l.EXPECTED_DELIV_DT) as EXPECTED_DELIV_DT, " & _
                        "req_line.sched_nbr, trunc(req_line.DUE_DT) as DUE_DT, REQ_L.isa_employee_id, E.ISA_EMPLOYEE_NAME, E.ISA_EMPLOYEE_EMAIL " & _
-                 "from sysadm.ps_isa_ord_intfc_h intfc_h, " & _
-                      "sysadm.ps_isa_ord_intfc_l intfc_l, " & _
-                      "SYSADM.PS_REQ_LINE_SHIP req_line, " & _
-                      "sysadm.ps_req_line req_l, " & _
-                      "sysadm.ps_req_hdr req_hdr, " & _
-                      "sysadm.PS_ISA_USERS_TBL E " & _
+                 "from sysadm8.ps_isa_ord_intfc_h intfc_h, " & _
+                      "sysadm8.ps_isa_ord_intfc_l intfc_l, " & _
+                      "SYSADM8.PS_REQ_LINE_SHIP req_line, " & _
+                      "sysadm8.ps_req_line req_l, " & _
+                      "sysadm8.ps_req_hdr req_hdr, " & _
+                      "sysadm8.PS_ISA_USERS_TBL E " & _
                   "where intfc_h.isa_identifier = intfc_l.isa_parent_ident " & _
                     "and intfc_h.order_no = req_HDR.req_id " & _
                     "and intfc_h.order_no = req_line.req_id  " & _
@@ -285,7 +285,7 @@ Public Class ReqDueDateChange
                     "and req_l.source_status = 'A' " & _
                     " AND NOT EXISTS ( " & vbCrLf & _
                     "                  SELECT 'X' " & vbCrLf & _
-                    "                    FROM SYSADM.PS_ISA_PODUEDTMON DTMON " & vbCrLf & _
+                    "                    FROM SYSADM8.PS_ISA_PODUEDTMON DTMON " & vbCrLf & _
                     "                   WHERE DTMON.BUSINESS_UNIT = intfc_h.Business_unit_om  " & vbCrLf & _
                     "                     AND DTMON.PO_ID = intfc_h.ORDER_NO " & vbCrLf & _
                     "                     AND DTMON.LINE_NBR = intfc_l.LINE_NBR " & vbCrLf & _
