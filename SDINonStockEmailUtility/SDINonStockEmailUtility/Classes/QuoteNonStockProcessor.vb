@@ -224,7 +224,7 @@ Public Class QuoteNonStockProcessor
                   "  AND A.REQ_STATUS = 'Q' " & vbCrLf & _
                   "  AND NOT EXISTS ( " & vbCrLf & _
                   "                  SELECT 'X' " & vbCrLf & _
-                  "                  FROM SYSADM.PS_NLINK_CUST_PLNT C " & vbCrLf & _
+                  "                  FROM SYSADM8.PS_NLINK_CUST_PLNT C " & vbCrLf & _
                   "                  WHERE C.ISA_SAP_PO_PREF = SUBSTR(A.REQ_ID,1,2) " & vbCrLf & _
                   "                    AND C.ISA_SAP_PO_PREF <> ' ' " & vbCrLf & _
                   "                 ) " & vbCrLf & _
@@ -914,7 +914,7 @@ Public Class QuoteNonStockProcessor
                                  ",A4.OPRID_MODIFIED_BY AS OPRID_MODIFIED_BY " & vbCrLf & _
                                  "FROM " & vbCrLf & _
                                  " PS_REQ_HDR A" & vbCrLf & _
-                                 ",SYSADM.PS_ROLEXLATOPR B" & vbCrLf & _
+                                 ",SYSADM8.PS_ROLEXLATOPR B" & vbCrLf & _
                                  ",PS_REQ_LINE A1" & vbCrLf & _
                                  ",PS_ISA_USERS_TBL A2" & vbCrLf & _
                                  ",PS_ISA_ENTERPRISE A3" & vbCrLf & _
@@ -931,7 +931,7 @@ Public Class QuoteNonStockProcessor
                                  "  AND A.REQ_STATUS = 'Q' " & vbCrLf & _
                                  "  AND NOT EXISTS ( " & vbCrLf & _
                                  "                  SELECT 'X' " & vbCrLf & _
-                                 "                  FROM SYSADM.PS_NLINK_CUST_PLNT C " & vbCrLf & _
+                                 "                  FROM SYSADM8.PS_NLINK_CUST_PLNT C " & vbCrLf & _
                                  "                  WHERE C.ISA_SAP_PO_PREF = SUBSTR(A.REQ_ID,1,2) " & vbCrLf & _
                                  "                    AND C.ISA_SAP_PO_PREF <> ' ' " & vbCrLf & _
                                  "                 ) " & vbCrLf & _
@@ -1298,7 +1298,7 @@ Public Class QuoteNonStockProcessor
         Dim sRet As String = ""
         Dim sWebAppName As String = "ims.sdi.com:8080/sdiconnect/"
         Dim sCNString As String = m_CN.ConnectionString
-        Dim strDBase As String = "RPTG"
+        Dim strDBase As String = "STAR"
         If Len(sCNString) > 4 Then
             strDBase = UCase(Right(sCNString, 4))
         End If
@@ -2135,7 +2135,7 @@ Public Class QuoteNonStockProcessor
             Dim strInsertQuery As String = String.Empty
             Dim rowsaffected As Integer = 0
 
-            strInsertQuery = "INSERT INTO sysadm.ps_isa_SDIXaudit " & vbCrLf & _
+            strInsertQuery = "INSERT INTO sysadm8.ps_isa_SDIXaudit " & vbCrLf & _
                 " ( " & vbCrLf & _
                 " descr, rcdsrc, table_name " & vbCrLf & _
                 ", key_01, key_02, key_03 " & vbCrLf & _
