@@ -25,7 +25,7 @@ Module orderStatEmailOut
 
     Private Const oraCN_default_provider As String = "Provider=MSDAORA.1;"
     Private Const oraCN_default_creden As String = "User ID=einternet;Password=einternet;"
-    Private Const oraCN_default_DB As String = "Data Source=RPTG;"
+    Private Const oraCN_default_DB As String = "Data Source=STAR;"
 
     Dim rootDir As String = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly.GetModules()(0).FullyQualifiedName)
     Dim logpath As String = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly.GetModules()(0).FullyQualifiedName) & "\LOGS\shipStatEmailOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"

@@ -3,4 +3,4 @@
 @rem FTP -s:C:\SHIPXML\ShipXMLIn\DDGetXML.ftp
 @rem
 cd "C:\Program Files\SDI\OrderStatus.EmailNotification"
-"C:\Program Files\SDI\OrderStatus.EmailNotification\orderStatEmailOut.exe" /log=verbose /db=RPTG
+"C:\Program Files\SDI\OrderStatus.EmailNotification\orderStatEmailOut.exe" /log=verbose /db=STAR
