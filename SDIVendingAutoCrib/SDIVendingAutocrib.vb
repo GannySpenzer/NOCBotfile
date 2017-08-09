@@ -155,7 +155,7 @@ Module SDIVendingAutocrib
         cmd.Transaction = trans
 
         Dim cmdstr As String
-        cmdstr = "Select NVL(MAX(A.TRANSACTION_NBR),0) FROM sysadm.PS_ISA_AUTOCRB_TRX A WHERE BUSINESS_UNIT = '" & strBU & "'"
+        cmdstr = "Select NVL(MAX(A.TRANSACTION_NBR),0) FROM sysadm8.PS_ISA_AUTOCRB_TRX A WHERE BUSINESS_UNIT = '" & strBU & "'"
         cmd.CommandText = cmdstr
 
         ' Dim commandOR1 As New OleDbCommand("Select NVL(MAX(A.TRANSACTION_NBR),0)" & vbCrLf & _
@@ -378,7 +378,7 @@ Module SDIVendingAutocrib
             End If
             Dim strSQL As String = ""
 
-            strSQL = "INSERT INTO SYSADM.PS_ISA_AUTOCRB_TRX" & vbCrLf & _
+            strSQL = "INSERT INTO SYSADM8.PS_ISA_AUTOCRB_TRX" & vbCrLf & _
                         " (TRANSACTION_NBR,DT_TIMESTAMP, ISA_SPRO_DEVICE," & vbCrLf & _
                         " ISA_AUTOCRIB_BIN,ISA_BIN_TYPE,INV_ITEM_ID," & vbCrLf & _
                         " INV_ITEM_TYPE,QTY,PACK_QTY_1," & vbCrLf & _
@@ -477,7 +477,7 @@ Module SDIVendingAutocrib
         connectOR.Open()
 
         Dim commandOR1 As New OleDbCommand("Select CUST_ID, ISA_AUTOCRIB_DB, ISA_AUTOCRIB_USER, ISA_AUTOCRIB_PWD, ISA_BUSINESS_UNIT " & vbCrLf & _
-                                           "FROM sysadm.PS_ISA_ENTERPRISE ENT WHERE ISA_AUTOCRIB_USER IS NOT NULL and ISA_AUTOCRIB_DB <> ' '", connectOR)
+                                           "FROM sysadm8.PS_ISA_ENTERPRISE ENT WHERE ISA_AUTOCRIB_USER IS NOT NULL and ISA_AUTOCRIB_DB <> ' '", connectOR)
         Dim objDataAdapter As New OleDbDataAdapter(commandOR1)
 
         Try
