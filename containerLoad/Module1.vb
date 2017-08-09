@@ -18,7 +18,7 @@ Module Module1
     Dim objStreamWriter As StreamWriter
     Dim rootDir As String = "C:\ContainerLoad"
     Dim logpath As String = "C:\ContainerLoad\LOGS\ContainerLoad" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=PROD")
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=STAR")
 
     Sub Main()
 
