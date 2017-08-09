@@ -8,7 +8,7 @@
 	<sourceDB cnstring="Provider=MSDAORA.1;Data Source=PLGR;User ID=ewindows;Password=ewindows;"
 		type="oracle8" />
 	//-->
-	<sourceDB cnString="Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=RPTG"
+	<sourceDB cnString="Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=STAR"
 		type="oracle11g" />
 	<!-- TIMER
 		 timer object properties for checking newly added quoted non-stock items on the database.  this

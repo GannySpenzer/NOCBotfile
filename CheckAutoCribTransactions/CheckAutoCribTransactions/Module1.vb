@@ -16,7 +16,7 @@ Module Module1
     Dim objStreamWriter As StreamWriter
     Dim rootDir As String = "C:\Program Files (x86)\SDI\CheckAutoCribTrans"
     Dim logpath As String = "C:\Program Files (x86)\SDI\CheckAutoCribTrans\LOGS\CheckAutoCribTransOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=RPTG")
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=STAR")
     'ISA_EMAIL_ID                              NOT NULL NUMBER(38)
     'DATETIME_ADDED                                     DATE
     'EMAIL_SUBJECT_LONG                        NOT NULL VARCHAR2(80)
@@ -146,7 +146,7 @@ Module Module1
         'Dim strLastName As String
         Dim strBusUnitMy As String = dr.Item("isa_business_unit")
 
-        strSQLstring = "select * from SYSADM.ps_isa_autocrb_trx " & vbCrLf & _
+        strSQLstring = "select * from SYSADM8.ps_isa_autocrb_trx " & vbCrLf & _
                     " where business_unit='" & strBusUnitMy & "' " & vbCrLf & _
                     " AND INV_ITEM_ID != ' ' and trunc(dt_timestamp, 'DDD') > trunc(sysdate - 2, 'DDD')"
 
@@ -239,6 +239,7 @@ Module Module1
                             .To = strTo    '  "vitaly.rovensky@sdi.com"
                             If connectOR.DataSource.ToUpper = "RPTG" Or _
                                     connectOR.DataSource.ToUpper = "SNBX" Or _
+                                    connectOR.DataSource.ToUpper = "STAR" Or _
                                     connectOR.DataSource.ToUpper = "DEVL" Then
 
                                 .To = "DoNotSendRPTG@sdi.com"
@@ -270,14 +271,14 @@ Module Module1
                         End If
                     End If
                 Else
-                    objStreamWriter.WriteLine("No data from SYSADM.ps_isa_autocrb_trx for " & dr.Item("ISA_COMPANY_ID") & " (BU: " & strBusUnitMy & ") on " & dDate.ToShortDateString())
+                    objStreamWriter.WriteLine("No data from SYSADM8.ps_isa_autocrb_trx for " & dr.Item("ISA_COMPANY_ID") & " (BU: " & strBusUnitMy & ") on " & dDate.ToShortDateString())
                 End If
             Else
-                objStreamWriter.WriteLine("No data from SYSADM.ps_isa_autocrb_trx for " & dr.Item("ISA_COMPANY_ID") & " (BU: " & strBusUnitMy & ") on " & dDate.ToShortDateString())
+                objStreamWriter.WriteLine("No data from SYSADM8.ps_isa_autocrb_trx for " & dr.Item("ISA_COMPANY_ID") & " (BU: " & strBusUnitMy & ") on " & dDate.ToShortDateString())
             End If
         Catch ex As Exception
             bReslt = False
-            objStreamWriter.WriteLine("Error retrieving data from SYSADM.ps_isa_autocrb_trx for " & dr.Item("ISA_COMPANY_ID") & " (BU: " & strBusUnitMy & ") on " & dDate.ToShortDateString())
+            objStreamWriter.WriteLine("Error retrieving data from SYSADM8.ps_isa_autocrb_trx for " & dr.Item("ISA_COMPANY_ID") & " (BU: " & strBusUnitMy & ") on " & dDate.ToShortDateString())
             objStreamWriter.WriteLine("Error: " & ex.Message)
         End Try
 
