@@ -15,7 +15,7 @@ Imports UpdEmailOut
  
 Public Class GenericClass
     Inherits ExchangeBaseClass
-    Dim connectOR As New OleDbConnection("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=prod")
+    Dim connectOR As New OleDbConnection("Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=STAR")
     Dim connectSQL As New SqlClient.SqlConnection("server=192.168.253.16;uid=sa;pwd=sdiadmin;initial catalog='pubs'")
     Dim objStreamWriter As StreamWriter
     'server=192.168.253.16;uid=sa;pwd=sdiadmin;initial catalog=pubs;
