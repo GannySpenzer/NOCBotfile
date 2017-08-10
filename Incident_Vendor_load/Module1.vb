@@ -13,14 +13,14 @@ Imports System.Data.SqlClient
 Imports System.Math
 
 Module Module1
-    Dim ORDB As String = "PROD"
+    Dim ORDB As String = "STAR"
     'Dim SQLDB As String = "CONTENTPLUS_JR"
     Dim SQLDB As String = "CPLUS_PROD"
     Dim SQLDBPROD As String = "DAZZLE"
     Dim objStreamWriter As StreamWriter
     Dim rootDir As String = "C:\Incident_Vendor"
     Dim logpath As String = "C:\Incident_Vendor\LOGS\Incident_Vendor" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=RPTG")
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=STAR")
     'Dim connectCplus As New SqlConnection("server=" & SQLDB & ";uid=einternet;pwd=einternet;Initial Catalog=ContentPlus;Data Source=" & SQLDB & "")
     Dim connectCplus = "server=DAZZLE2;uid=sa;pwd=sdiadmin;initial catalog=pubs;"
     'Dim connectionOS As New OleDbConnection(ORDBData.DbUrl)
