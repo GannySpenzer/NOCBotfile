@@ -14,7 +14,7 @@ Module Module1
     Dim objStreamWriter As StreamWriter
     Dim rootDir As String = "C:\SendCustEmail"
     Dim logpath As String = "C:\SendCustEmail\LOGS\SendCustEmailOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=RPTG")
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=STAR")
     'ISA_EMAIL_ID                              NOT NULL NUMBER(38)
     'DATETIME_ADDED                                     DATE
     'EMAIL_SUBJECT_LONG                        NOT NULL VARCHAR2(80)
@@ -44,7 +44,7 @@ Module Module1
         Try
             cnString = My.Settings("oraCNString1").ToString.Trim
         Catch ex As Exception
-            cnString = "Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=RPTG"
+            cnString = "Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=STAR"
         End Try
         If Trim(cnString) <> "" Then
             cnString = Trim(cnString)
@@ -57,7 +57,7 @@ Module Module1
             Try
                 connectOR = New OleDbConnection(cnString)
             Catch ex As Exception
-                connectOR = New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=PROD")
+                connectOR = New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=STAR")
             End Try
         End If
 
@@ -272,6 +272,7 @@ Module Module1
             Mailer.To = Trim(dr.Item("ISA_EMAIL_BCC"))
         ElseIf connectOR.DataSource.ToUpper = "RPTG" Or _
                 connectOR.DataSource.ToUpper = "SNBX" Or _
+                connectOR.DataSource.ToUpper = "STAR" Or _
                 connectOR.DataSource.ToUpper = "DEVL" Then
             Mailer.To = "DoNotSendRPTG@sdi.com"
         Else

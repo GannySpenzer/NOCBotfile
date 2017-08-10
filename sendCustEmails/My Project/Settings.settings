@@ -6,7 +6,7 @@
       <Value Profile="(Default)">http://dazzle2/SDI_loadbalance_IO/SDI_loadbalance_IO.asmx</Value>
     </Setting>
     <Setting Name="oraCNString1" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=RPTG</Value>
+      <Value Profile="(Default)">Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=STAR</Value>
     </Setting>
     <Setting Name="sendCustEmails_SDiEmailUtilityService_EmailServices" Type="(Web Service URL)" Scope="Application">
       <Value Profile="(Default)">http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx</Value>
