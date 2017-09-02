@@ -29,7 +29,7 @@ Module Module1
     Dim logpath As String = "C:\Program Files\sdi\AmazonClient\AmazonLOGS\AmazonClientOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
     Dim filePath As String = "C:\Program Files\sdi\AmazonClient\AmazonXMLFiles\AmazonClientXMLOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".xml"
     Dim filePathResponse As String = "C:\Program Files\sdi\AmazonClient\AmazonXMLFiles\AmznClntXMLRspns" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".xml"
-    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=DEVL")
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=PROD")
 
     Public Sub SendLogger(ByVal subject As String, ByVal body As String, ByVal messageType As String, ByVal MailType As String, ByVal EmailTo As String, ByVal EmailCc As String, ByVal EmailBcc As String)
         Try
@@ -539,7 +539,7 @@ Module Module1
                     objStreamWriter.WriteLine("Got VendorConfig " & Now())
 
                     'read view, get list of orders
-                    Dim strListOrders As String = "select distinct po_id from SYSADM.PS_ISA_PO_DISP_XML"
+                    Dim strListOrders As String = "select distinct po_id from SYSADM.PS_ISA_PO_DISP_XML"  '  WHERE PO_ID = '0003672252'"
 
                     Try
                         Dim Command As OleDbCommand = New OleDbCommand(strListOrders, connectOR)
@@ -561,7 +561,7 @@ Module Module1
                                     objStreamWriter.WriteLine("Have data " & Now())
                                     For iLst = 0 To OrderListDataSet.Tables(0).Rows.Count - 1
                                         strOrderNo = OrderListDataSet.Tables(0).Rows(iLst).Item("po_id").ToString()
-                                        'If iLst = 2 Then
+                                        'If iLst = 1 Then
                                         '    Exit For
                                         'End If
 
@@ -1117,7 +1117,7 @@ Module Module1
         Dim sHttpResponse As String = ""
         Dim httpSession As New easyHttp
 
-        httpSession.URL = strUrlToSend
+        httpSession.URL = strUrlToSend  '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"    '  strUrlToSend  '  
 
         '  "https://https.amazonsedi.com/c47fcf9d-286d-498a-ba9f-df390c2757a2"  '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"    '  "http://192.168.253.46:8011/sdiwebin/CytecMatMastIn.aspx"  '   "http://ims.sdi.com:8913/sdiwebinSvc/CytecNstkPoRecpts.aspx"   ' "http://ims.sdi.com:8913/sdiwebinSvc/CytecPurchReqs.aspx"    '  "http://ims.sdi.com:8913/sdiwebinSvc/CytecStkReservIn.aspx"    '  "http://ims.sdi.com:8913/sdiwebinSvc/CytecMatMastIn.aspx"    '  "http://localhost/SDIWebProcessors/CytecMatMastIn.aspx"    '    "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"  '    "http://localhost/SDIWebProcessors/XmlInSDI.aspx"   '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx" 
         '   "https://https.amazonsedi.com/073dbe31-c230-403f-990c-6f74eeed1510"  '    "https://www.amazon.com/eprocurement/punchout"  '    "https://supplydev.hajoca.com/hajomid/eclipse.ecl"
