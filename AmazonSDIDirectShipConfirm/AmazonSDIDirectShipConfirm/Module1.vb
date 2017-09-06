@@ -414,43 +414,41 @@ Module Module1
                                                                                 arrLineConfirmed(j1) = "Y"
                                                                                 bAtLeastOneLineConfrmd = True
                                                                             Else
-                                                                                'bContinue = False
-                                                                                strXMLError = strXMLError & "'ConfirmationStatus' node 'Type' attribute is not 'Detail' (value is '" & attrib.Value & "') for Order No: " & strOrderNum & " ; " & vbCrLf
+
+                                                                                strXMLError = strXMLError & "'ConfirmationStatus' node 'Type' attribute is not 'Detail' (value is '" & attrib.Value & "') for Order No: " & strOrderNum & " and this Line Index: " & (j1 + 1).ToString & " ; " & vbCrLf
                                                                                 strErrorFromHeaderComments = Replace(strErrorFromHeaderComments, ",", " ")
                                                                                 If Trim(strErrorFromHeaderComments) <> "" Then
                                                                                     strErrorFromHeaderComments = Trim(strErrorFromHeaderComments)
-                                                                                    strXMLError = strXMLError & " Error: " & strErrorFromHeaderComments & " ; " & vbCrLf
+                                                                                    strXMLError = strXMLError & " <b>Order Level Error:</b> " & strErrorFromHeaderComments & " ; " & vbCrLf
                                                                                 End If
                                                                             End If
                                                                             Exit For
                                                                         End If  '  If UCase(attrib.Name) = "TYPE" Then
                                                                     Next  '  For Each attrib As XmlAttribute In ChildItemNode.Attributes()
-                                                                Else
-                                                                    'bContinue = False
-                                                                    'Exit For
-                                                                End If
-                                                                'If bContinue Then
-                                                                '    '' get order confirmID
-                                                                '    'If ChildItemNode.ChildNodes.Count > 0 Then
-                                                                '    '    Dim strConfStatusChldname As String = ""
-                                                                '    '    For Each ConfStatusChild In ChildItemNode
-                                                                '    '        strConfStatusChldname = ConfStatusChild.Name
-                                                                '    '        Select Case strConfStatusChldname
-                                                                '    '            Case "Comments"
-                                                                '    '             ' if attribute type="confirmID"
-                                                                '    '             ' <confirmID> = ConfStatusChild.InnerText
-                                                                '    '            Case Else
-                                                                '    '                'do nothing
-                                                                '    '        End Select
-                                                                '    '    Next  '  For Each ConfStatusChild In ChildItemNode
-                                                                '    '    If Not bContinue Then
-                                                                '    '        Exit For ' this line is rejected
-                                                                '    '    End If
-                                                                '    'Else
-                                                                '    '    bContinue = False
-                                                                '    '    Exit For
-                                                                '    'End If
-                                                                'End If
+                                                                
+                                                                End If  '  If ChildItemNode.Attributes.Count > 0 Then
+
+                                                                ' get Line Level Error - is exists
+                                                                If ChildItemNode.ChildNodes.Count > 0 Then
+                                                                    Dim strConfStatusChldname As String = ""
+                                                                    For Each ConfStatusChild In ChildItemNode
+                                                                        strConfStatusChldname = ConfStatusChild.Name
+                                                                        Select Case strConfStatusChldname
+                                                                            Case "Comments"
+                                                                                'this node contains line error message
+                                                                                Dim strLineErrorDescr As String = ""
+                                                                                strLineErrorDescr = ConfStatusChild.InnerText
+                                                                                strLineErrorDescr = Replace(strLineErrorDescr, ",", " ")
+                                                                                'If Trim(strErrorFromHeaderComments) <> "" Then
+                                                                                '    strErrorFromHeaderComments = Trim(strErrorFromHeaderComments)
+                                                                                strXMLError = strXMLError & " <b>Line Level Error:</b> " & strLineErrorDescr & " ; " & vbCrLf
+                                                                                'End If
+                                                                            Case Else
+                                                                                'do nothing
+                                                                        End Select
+                                                                    Next  '  For Each ConfStatusChild In ChildItemNode
+                                                                    
+                                                                End If  '  If ChildItemNode.ChildNodes.Count > 0 Then
 
                                                             Case "UnitOfMeasure"
                                                                 If j1 = 0 Then
@@ -458,6 +456,7 @@ Module Module1
                                                                     ReDim Preserve arrUoms(j1)
                                                                 End If
                                                                 arrUoms(j1) = ChildItemNode.InnerText
+                                                           
                                                             Case Else
                                                                 'do nothing
                                                         End Select
@@ -491,7 +490,7 @@ Module Module1
                                                         j1 = j1 + 1
                                                     End If
                                                 Else
-                                                    strXMLError = strXMLError & "'ConfirmationStatus' node doesn't have all necessary info for Order No: " & strOrderNum & vbCrLf
+                                                    strXMLError = strXMLError & " 'ConfirmationStatus' node doesn't have all necessary info for Order No: " & strOrderNum & vbCrLf
                                                 End If  '   If bContinue Then
                                             End If  '  If strNodeName1 = "CONFIRMATIONITEM" Then
                                         Next  '  For iCnt = 0 To nodeConfReqst.ChildNodes.Count - 1
@@ -510,7 +509,7 @@ Module Module1
                                         If bAtLeastOneLineConfrmd Then
                                             intQueueInst = getNextQueueInst()
                                             If intQueueInst = 0 Then
-                                                strXMLError = "Error getting queue number for Order No: " & strOrderNum
+                                                strXMLError &= " Error getting queue number for Order No: " & strOrderNum
                                             Else
                                                 ' continue writing to Oracle tables
 
@@ -521,9 +520,9 @@ Module Module1
                                                 ' adding one more array (arrLineConfirmed) to this function - VR 07/12/2017
                                                 bolErrM1 = createECConfirmation(intQueueInst, strVendorId, strOrderNum, strSiteBu, strOrderDate, arrLineNums, arrLineQtys, arrUoms, arrLineConfirmed)
                                                 If bolErrM1 Then
-                                                    strXMLError = "Error updating EC tables for Order No: " & strOrderNum
+                                                    strXMLError &= " Error updating EC tables for Order No: " & strOrderNum
                                                 Else
-                                                    strXMLError = ""
+                                                    strXMLError &= ""
                                                 End If
                                             End If
 
