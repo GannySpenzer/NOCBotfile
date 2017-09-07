@@ -13,14 +13,31 @@ Imports Microsoft.VisualBasic
  Imports System.Net
  Imports System.Web.HttpBrowserCapabilities
 Imports System.Threading.Thread
-  
+Imports System.Collections.Generic
+
 Module Module1
     Dim objStreamWriter As StreamWriter
     Dim rootDir As String = "C:\ContainerLoad"
     Dim logpath As String = "C:\ContainerLoad\LOGS\ContainerLoad" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=STAR")
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=PLGR")
 
     Sub Main()
+
+        Dim cnStringORA As String = "Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=PLGR"
+        Try
+            cnStringORA = My.Settings("oraCNString1").ToString.Trim
+        Catch ex As Exception
+            cnStringORA = ""
+        End Try
+        If (cnStringORA.Length > 0) Then
+            ' drop current connection and re-create
+            Try
+                connectOR.Dispose()
+            Catch ex As Exception
+            End Try
+            connectOR = Nothing
+            connectOR = New OleDbConnection(cnStringORA)
+        End If
 
         'As what we have talked about last night. 
         ' Can you write a quick report for Moveway that will send alert
@@ -71,19 +88,11 @@ Module Module1
 
     End Sub
     Function buildSendContainerOut() As Boolean
-        Dim strSQLstring As String
+        Dim strSQLstring As String = ""
         Dim dteStrDate As Date = Now.AddMonths(-3).ToString
         'Now().ToString("yyyy-M-d")
         Dim dteStr As String = Now().ToString("yyMMdd")
         Dim d As String = dteStrDate.ToString
-
-        'Dim dd As String
-
-
-        ''AND A.ADD_DTTM > TO_DATE('" & dteStrDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
-
-
-
 
         strSQLstring = "SELECT " & vbCrLf & _
         " Load_id " & vbCrLf & _
@@ -143,9 +152,9 @@ Module Module1
         End If
 
         connectOR.Open()
-        Dim strPreOrderno As String
+        'Dim strPreOrderno As String
         Dim I As Integer
-        Dim X As Integer
+        'Dim X As Integer
         Dim dsEmail As New DataTable
         Dim dr1 As DataRow
 
@@ -192,18 +201,11 @@ Module Module1
 
         Next
 
-        'Dim bolEmailSent As Boolean
-
-        connectOR.Open()
-        'For I = 0 To ds.Tables(0).Rows.Count - 1
-        '    buildSendCustEmailOut = sendCustEmail(ds.Tables(0).Rows(I))
-        '    If buildSendCustEmailOut = False Then
-        '        buildSendCustEmailOut = updateSendEmailTbl(ds.Tables(0).Rows(I))
-        '    End If
-
-        'Next
         objStreamWriter.WriteLine("  Container Load e-mail sent. Number of lines in grid = " & ds.Tables(0).Rows.Count)
-        connectOR.Close()
+
+        If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
+            connectOR.Close()
+        End If
 
     End Function
     
@@ -305,12 +307,9 @@ Module Module1
             connectOR.DataSource.ToUpper = "DEVL" Or _
             connectOR.DataSource.ToUpper = "STAR" Or _
             connectOR.DataSource.ToUpper = "PLGR" Then
-            Mailer.To = "DoNotSendPLGR@sdi.com"
-            'Mailer1.To = strEmail
+            Mailer.To = "webdev@sdi.com"
         Else
-            'Mailer1.To = strPurchaserEmail
-            'Mailer1.To = strEmail
-            'Mailer1.To = "eric.wilson@sdi.com"
+            
         End If
 
         Mailer.Subject = "SDiExchange - List of Containers Pending Load  " & Now.Month & "/" & Now.Day & "/" & Now.Year
@@ -323,11 +322,33 @@ Module Module1
 
         Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
 
-        UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer.Subject, Mailer.From, Mailer.To, "", Mailer.Bcc, "N", Mailer.Body, connectOR)
+        Dim bSend As Boolean = False
+        Try
+
+            SendLogger(Mailer.Subject, Mailer.Body, "CONTAINERLOAD", "Mail", Mailer.To, "", Mailer.Bcc)
+            bSend = True
+        Catch ex As Exception
+
+        End Try
+
+        'UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer.Subject, Mailer.From, Mailer.To, "", Mailer.Bcc, "N", Mailer.Body, connectOR)
 
         ''    <setting name="sendEmailToAgent_TO" serializeAs="String">
         ''            <value>Michael.Marrinan@sdi.com;vitaly.rovensky@sdi.com</value>
         ''    </setting>
+    End Sub
+
+    Public Sub SendLogger(ByVal subject As String, ByVal body As String, ByVal messageType As String, ByVal MailType As String, ByVal EmailTo As String, ByVal EmailCc As String, ByVal EmailBcc As String)
+        Try
+            Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
+            Dim MailAttachmentName As String()
+            Dim MailAttachmentbytes As New List(Of Byte())()
+
+            SDIEmailService.EmailUtilityServices(MailType, "SDIExchange@sdi.com", EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
+
+        Catch ex As Exception
+
+        End Try
     End Sub
 
 End Module
