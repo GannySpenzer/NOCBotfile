@@ -8,6 +8,7 @@ Imports System.Net
 Imports System.Net.Mail
 Imports SDI.ApplicationLogger
 Imports SDI.UNCC.WorkOrderAdapter
+Imports System.Collections.Generic
 
 Module module1
 
@@ -19,7 +20,7 @@ Module module1
     Dim rootDir As String = "C:\INTFCXML"
     Dim logpath As String = "C:\INTFCXML\LOGS\UpdINTFCXMLIn" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
     Dim sErrLogPath As String = "C:\INTFCXML\LOGS\MyErredSQLs" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=PROD")
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=PROD")
     Dim connectSQL As New SqlClient.SqlConnection("server=cplus_prod;uid=einternet;pwd=einternet;initial catalog='contentplus'")
     Dim strOverride As String
     Dim bolWarning As Boolean = False
@@ -29,19 +30,6 @@ Module module1
     Private m_arrErrorsList As String
 
     Sub Main()
-
-        '<setting name="onErrorEmail_To" serializeAs="String">
-        '    <value>breese1@uncc.edu</value>
-        'debug
-#If DEBUG Then
-        Try
-            connectOR.Close()
-            connectOR.Dispose()
-            connectOR = Nothing
-            connectOR = New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=PROD")
-        Catch ex As Exception
-        End Try
-#End If
 
         Dim rtn As String = "Module1.Main"
 
@@ -174,22 +162,6 @@ Module module1
         Console.WriteLine("Start INTFC XML in")
         Console.WriteLine("")
 
-        'If Dir(rootDir, FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir)
-        'End If
-        'If Dir(rootDir & "\LOGS", FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir & "\LOGS")
-        'End If
-        'If Dir(rootDir & "\XMLINProcessed", FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir & "\XMLINProcessed")
-        'End If
-        'If Dir(rootDir & "\BadXML", FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir & "\BadXML")
-        'End If
-
-        ' disabled since logging functionality was ported to SDI.ApplicationLogger
-        'objStreamWriter = File.CreateText(logpath)
-        'objStreamWriter.WriteLine("  Update of INTFC IN XML " & Now())
         m_logger.WriteInformationLog(rtn & " :: Update of INTFC IN XML.")
 
         m_logger.WriteVerboseLog(rtn & " :: (Oracle)connection string : [" & connectOR.ConnectionString & "]")
@@ -259,9 +231,7 @@ Module module1
         '// ***
 
         Dim bolError As Boolean
-        ''''''2
-
-        'bolError = getINTFCXMLIn()
+        
         Try
             bolError = getINTFCXMLIn()
         Catch ex As Exception
@@ -1057,7 +1027,7 @@ Module module1
         'myEmail.From = New System.Net.Mail.MailAddress(email.From)
 
         'The email address of the recipient. 
-        email.To = "erwin.bautista@sdi.com"
+        email.To = "vitaly.rovensky@sdi.com"
         If bIsSendOut Then
             If (CStr(My.Settings(propertyName:="onErrorEmail_To")) <> "") Then
                 email.To = CStr(My.Settings(propertyName:="onErrorEmail_To")).Trim
@@ -1066,9 +1036,22 @@ Module module1
 
         'myEmail.To.Add(email.To)
 
+        email.Cc = " "
         If (CStr(My.Settings(propertyName:="onErrorEmail_CC")) <> "") Then
             email.Cc = CStr(My.Settings(propertyName:="onErrorEmail_CC")).Trim
         End If
+
+        Try
+            If email.Cc Is Nothing Then
+                email.Cc = " "
+            Else
+                If Trim(email.Cc) = "" Then
+                    email.Cc = " "
+                End If
+            End If
+        Catch ex As Exception
+            email.Cc = " "
+        End Try
 
         'If email.Cc Is Nothing Then
         '    email.Cc = ""
@@ -1208,36 +1191,30 @@ Module module1
         '    End If
         'End If
 
-        Try
-            If Not m_arrXMLErrFiles Is Nothing Then
-                If Trim(m_arrXMLErrFiles) <> "" Then
-                    Dim arrErrFiles() As String = Split(m_arrXMLErrFiles, ",")
-                    If arrErrFiles.Length > 0 Then
-                        m_logger.WriteInformationLog(rtn & " :: erroneous xml file count = " & arrErrFiles.Length.ToString)
-                        For int1 = 0 To arrErrFiles.Length - 1
-                            Dim myFileName2 As String = "C:\INTFCXML\BadXML\" & arrErrFiles(int1)
-                            email.Attachments.Add(New System.Web.Mail.MailAttachment(myFileName2))
-                        Next
-                    End If
-                End If
-            End If
-        Catch ex As Exception
+        'Try
+        '    If Not m_arrXMLErrFiles Is Nothing Then
+        '        If Trim(m_arrXMLErrFiles) <> "" Then
+        '            Dim arrErrFiles() As String = Split(m_arrXMLErrFiles, ",")
+        '            If arrErrFiles.Length > 0 Then
+        '                m_logger.WriteInformationLog(rtn & " :: erroneous xml file count = " & arrErrFiles.Length.ToString)
+        '                For int1 = 0 To arrErrFiles.Length - 1
+        '                    Dim myFileName2 As String = "C:\INTFCXML\BadXML\" & arrErrFiles(int1)
+        '                    email.Attachments.Add(New System.Web.Mail.MailAttachment(myFileName2))
+        '                Next
+        '            End If
+        '        End If
+        '    End If
+        'Catch ex As Exception
 
-        End Try
+        'End Try
 
         Dim bSend As Boolean = False
         Try
-            ''Dim myClt As System.Net.Mail.SmtpClient = New SmtpClient("SDIMBX01.isacs.com")  '  ("localhost")
-            ''myClt.Send(myEmail)
-
-            'System.Web.Mail.SmtpMail.Send(email)
-
+            
             SendEmail1(email)
             bSend = True
         Catch ex As Exception    ' this is crashing because 'ex' is Nothing
 
-            'm_logger.WriteErrorLog(rtn & " :: Error - the email was not sent.")
-            'm_logger.WriteErrorLog(rtn & " :: " & ex.ToString())  
         End Try
 
         If Not bSend Then
@@ -1246,12 +1223,30 @@ Module module1
     End Sub
 
     Private Sub SendEmail1(ByVal mailer As System.Web.Mail.MailMessage)
-
+        Dim bSent As Boolean = False
         Try
             
-            UpdEmailOut.UpdEmailOut.UpdEmailOut(mailer.Subject, mailer.From, mailer.To, mailer.Cc, mailer.Bcc, "N", mailer.Body, connectOR)
+            'UpdEmailOut.UpdEmailOut.UpdEmailOut(mailer.Subject, mailer.From, mailer.To, mailer.Cc, mailer.Bcc, "N", mailer.Body, connectOR)
+
+            SendLogger(mailer.Subject, mailer.Body, "INTFCXMLUPDATE", "Mail", mailer.To, mailer.Cc, mailer.Bcc)
+
+            bSent = True
         Catch ex As Exception
-            'SendEmail()
+            bSent = False
+        End Try
+
+    End Sub
+
+    Public Sub SendLogger(ByVal subject As String, ByVal body As String, ByVal messageType As String, ByVal MailType As String, ByVal EmailTo As String, ByVal EmailCc As String, ByVal EmailBcc As String)
+        Try
+            Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
+            Dim MailAttachmentName As String()
+            Dim MailAttachmentbytes As New List(Of Byte())()
+
+            SDIEmailService.EmailUtilityServices(MailType, "SDIExchange@sdi.com", EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
+
+        Catch ex As Exception
+
         End Try
     End Sub
 
@@ -1962,9 +1957,8 @@ Module module1
 
             Mailer.Subject = "IntfcXMLUpdate - Material Request - Stock"
             Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
-            'SmtpMail.SmtpServer = "localhost"
+
             SendEmail1(Mailer)
-            'SmtpMail.Send(Mailer)
 
             SWstk.Close()
             htmlTWstk.Close()
@@ -2040,6 +2034,7 @@ Module module1
 
             Mailer.Subject = "IntfcXMLUpdate - Material Request - Non-Stock "
             Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
+
             SendEmail1(Mailer)
 
             SWstk.Close()
@@ -2087,23 +2082,23 @@ Module module1
 
     End Function
 
-    Private Function getGroupID(ByVal strprodview As String) As Integer
+    'Private Function getGroupID(ByVal strprodview As String) As Integer
 
-        Dim strSQLString As String
-        strSQLString = "SELECT groupID" & vbCrLf & _
-                " FROM GroupCatalogs" & vbCrLf & _
-                " WHERE (productviewID = '" & strprodview & "')"
+    '    Dim strSQLString As String
+    '    strSQLString = "SELECT groupID" & vbCrLf & _
+    '            " FROM GroupCatalogs" & vbCrLf & _
+    '            " WHERE (productviewID = '" & strprodview & "')"
 
-        Dim command1 As SqlClient.SqlCommand
-        command1 = New SqlClient.SqlCommand(strSQLString, connectSQL)
-        Dim strGroupid As String = command1.ExecuteScalar
-        If Trim(strGroupid) = "" Then
-            getGroupID = 0
-        Else
-            getGroupID = Convert.ToInt32(strGroupid)
-        End If
+    '    Dim command1 As SqlClient.SqlCommand
+    '    command1 = New SqlClient.SqlCommand(strSQLString, connectSQL)
+    '    Dim strGroupid As String = command1.ExecuteScalar
+    '    If Trim(strGroupid) = "" Then
+    '        getGroupID = 0
+    '    Else
+    '        getGroupID = Convert.ToInt32(strGroupid)
+    '    End If
 
-    End Function
+    'End Function
 
     Private Function checkPriority(ByVal strEmpID As String) As String
         'pfd
