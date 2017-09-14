@@ -24,13 +24,6 @@ Module Module1
         Console.WriteLine("Start StatChg Email send")
         Console.WriteLine("")
 
-        'If Dir(rootDir, FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir)
-        'End If
-        'If Dir(rootDir & "\LOGS", FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir & "\LOGS")
-        'End If
-
         objStreamWriter = File.CreateText(logpath)
         objStreamWriter.WriteLine("  Send emails out " & Now())
 
