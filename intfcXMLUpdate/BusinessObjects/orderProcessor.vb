@@ -240,7 +240,7 @@ Public Class orderProcessor
                                 ' re-query id
                                 sql21 = "" & _
                                       "SELECT A.ORDER_NO " & vbCrLf & _
-                                      "FROM PS_ISA_ORD_INTF_HD A " & vbCrLf & _
+                                      "FROM SYSADM8.PS_ISA_ORD_INTF_HD A " & vbCrLf & _
                                       "WHERE " & vbCrLf & _
                                       "      A.BUSINESS_UNIT_OM = '" & Me.OrderRequest.BusinessUnit & "' " & vbCrLf & _
                                       "  AND A.ORDER_NO = '" & Me.OrderRequest.OrderNo_SDI & "' " & vbCrLf & _
@@ -325,14 +325,15 @@ Public Class orderProcessor
                                     '//     B - Waiting Budget Approval; C - Cancelled
                                     ' line
                                     sql21 = "" & _
-                                          "UPDATE PS_ISA_ORD_INTFC_L " & vbCrLf & _
+                                          "UPDATE SYSADM8.PS_ISA_ORD_INTF_LN " & vbCrLf & _
                                           "SET " & vbCrLf & _
-                                          " ISA_order_status = 'Q' " & vbCrLf & _
-                                          ",QTY_REQ = 0 " & vbCrLf & _
+                                          " ISA_LINE_STATUS = 'QTR' " & vbCrLf & _
+                                          ",QTY_REQUESTED = 0 " & vbCrLf & _
                                           ",LASTUPDDTTM = TO_DATE('" & Now.ToString & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
                                           "WHERE " & vbCrLf & _
-                                          "      ISA_PARENT_IDENT = '" & sdiAssocOrder.Id.ToString & "' " & vbCrLf & _
-                                          "  AND LINE_NBR = '" & sdiAssocOrderLine.OrderLineNo.ToString & "' " & vbCrLf & _
+                                          "      BUSINESS_UNIT_OM = '" & sdiAssocOrder.BusinessUnit.ToString & "' " & vbCrLf & _
+                                          "   AND   ORDER_NO = '" & sdiAssocOrder.Id.ToString & "' " & vbCrLf & _
+                                          "  AND ISA_INTFC_LN = '" & sdiAssocOrderLine.OrderLineNo.ToString & "' " & vbCrLf & _
                                           ""
                                     cmd = cnORA.CreateCommand
                                     cmd.CommandText = sql21
@@ -344,12 +345,13 @@ Public Class orderProcessor
                                     cmd = Nothing
                                     ' header status
                                     sql21 = "" & _
-                                          "UPDATE PS_ISA_ORD_INTFC_H " & vbCrLf & _
+                                          "UPDATE SYSADM8.PS_ISA_ORD_INTF_HD " & vbCrLf & _
                                           "SET " & vbCrLf & _
                                           "ORDER_STATUS  = 'P' " & vbCrLf & _
                                           ",LASTUPDDTTM = TO_DATE('" & Now.ToString & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
                                           "WHERE " & vbCrLf & _
-                                          "      ISA_IDENTIFIER = '" & sdiAssocOrder.Id.ToString & "' " & vbCrLf & _
+                                          "      BUSINESS_UNIT_OM = '" & sdiAssocOrder.BusinessUnit.ToString & "' " & vbCrLf & _
+                                          "   AND   ORDER_NO = '" & sdiAssocOrder.Id.ToString & "' " & vbCrLf & _
                                           ""
                                     cmd = cnORA.CreateCommand
                                     cmd.CommandText = sql21
@@ -886,8 +888,9 @@ Public Class orderProcessor
             '//     if priority flag is not set, check if employee Id is on "special" list
             For Each o In Me.OrderRequest.OrderLines
                 If o.PriorityCode.Trim.Length = 0 Then
+                    o.PriorityCode = "0"
                     If Me.IsPrioritizeOrderBaseOnEmp(o.EmployeeId) Then
-                        o.PriorityCode = "Y"
+                        o.PriorityCode = "1"  '  "Y"
                     End If
                 End If
             Next
@@ -896,7 +899,7 @@ Public Class orderProcessor
             '//     this order will be prioritized
             If Not (Me.OrderRequest.PriorityCode.Trim.ToUpper = "Y") Then
                 For Each o In Me.OrderRequest.OrderLines
-                    If o.PriorityCode.Trim.ToUpper = "Y" Then
+                    If o.PriorityCode.Trim.ToUpper = "1" Then
                         Me.OrderRequest.PriorityCode = "Y"
                         Exit For
                     End If
@@ -1328,7 +1331,7 @@ Public Class orderProcessor
         'REQUESTOR_ID,ISA_ORDER_TYPE,ADD_DTTM,LASTUPDDTTM
 
         sql = "" & _
-              "INSERT INTO PS_ISA_ORD_INTF_HD " & vbCrLf & _
+              "INSERT INTO SYSADM8.PS_ISA_ORD_INTF_HD " & vbCrLf & _
               "( " & vbCrLf & _
               " BUSINESS_UNIT_OM " & vbCrLf & _
               ",ORDER_NO " & vbCrLf & _
@@ -1351,7 +1354,7 @@ Public Class orderProcessor
               ",' ' " & vbCrLf & _
               ",TO_DATE('" & Now.ToString & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
               ",'1' " & vbCrLf & _
-              ",' ' " & vbCrLf & _
+              ",'" & orderReq.EmployeeId.ToUpper & "' " & vbCrLf & _
               ",' ' " & vbCrLf & _
               ",TO_DATE('" & Now.ToString & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
               ",TO_DATE('" & Now.ToString & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
@@ -1459,17 +1462,18 @@ Public Class orderProcessor
         ' reference number to determine if it is a Punchin/Punchout
 
         Dim strlineordstat As String = CStr(IIf(orderReqLine.OrderLineStatus.Trim.Length = 0, " ", orderReqLine.OrderLineStatus.Trim.ToUpper))
-        If (uom.Trim.Length > 0) Then
-            strlineordstat = stringEncoder.formStringForSQL(strlineordstat, 1)
-        End If
-        Try
-            If Not strlineordstat = "P" Then
-                strlineordstat = "1"
+        'If (uom.Trim.Length > 0) Then
+        '    strlineordstat = stringEncoder.formStringForSQL(strlineordstat, 1)
+        'End If
+        'Try
+        '    If Not strlineordstat = "P" Then
+        '        strlineordstat = "1"
 
-            End If
-        Catch ex As Exception
-            strlineordstat = "1"
-        End Try
+        '    End If
+        'Catch ex As Exception
+        '    strlineordstat = "1"
+        'End Try
+        strlineordstat = "NEW"
 
         Dim workOrderNo As String = CStr(IIf(orderReqLine.WorkOrderNo.Trim.Length = 0, " ", orderReqLine.WorkOrderNo.Trim.ToUpper))
         If (workOrderNo.Trim.Length > 0) Then
@@ -1511,104 +1515,156 @@ Public Class orderProcessor
             strItmIDVndr = " "
         End Try
 
-        sql = "" & _
-              "INSERT INTO PS_ISA_ORD_INTF_LN " & vbCrLf & _
-              "( " & vbCrLf & _
-              " ISA_PARENT_IDENT " & vbCrLf & _
-              ",REQUESTOR_ID " & vbCrLf & _
-              ",LINE_NBR " & vbCrLf & _
-              ",ISA_REQUIRED_BY_DT " & vbCrLf & _
-              ",EXPECTED_DELIV_DT " & vbCrLf & _
-              ",QTY_REQ " & vbCrLf & _
-              ",QTY_SHIPPED " & vbCrLf & _
-              ",SHIP_FROM_BU " & vbCrLf & _
-              ",ITM_SETID " & vbCrLf & _
-              ",INV_ITEM_ID " & vbCrLf & _
-              ",VENDOR_SETID " & vbCrLf & _
-              ",VENDOR_ID " & vbCrLf & _
-              ",VNDR_LOC " & vbCrLf & _
-              ",ITM_ID_VNDR " & vbCrLf & _
-              ",VNDR_CATALOG_ID " & vbCrLf & _
-              ",SHIPTO_ID " & vbCrLf & _
-              ",SHIP_TO_CUST_ID " & vbCrLf & _
-              ",BUYER_ID " & vbCrLf & _
-              ",UNIT_OF_MEASURE " & vbCrLf & _
-              ",MFG_ID " & vbCrLf & _
-              ",ISA_MFG_FREEFORM " & vbCrLf & _
-              ",PRICE_PO_BSE " & vbCrLf & _
-              ",PRICE_PO " & vbCrLf & _
-              ",NET_UNIT_PRICE_BSE " & vbCrLf & _
-              ",NET_UNIT_PRICE " & vbCrLf & _
-              ",RFQ_IND " & vbCrLf & _
-              ",INSPECT_CD " & vbCrLf & _
-              ",INVENTORY_SRC_FLG " & vbCrLf & _
-              ",ROUTING_ID " & vbCrLf & _
-              ",ISA_TRACKING_ID " & vbCrLf & _
-              ",DESCR254 " & vbCrLf & _
-              ",ISA_CUST_NOTES " & vbCrLf & _
-              ",MFG_ITM_ID " & vbCrLf & _
-              ",CUSTOMER_PO " & vbCrLf & _
-              ",CUSTOMER_PO_LINE " & vbCrLf & _
-              ",EMPLID " & vbCrLf & _
-              ",ISA_CUST_CHARGE_CD " & vbCrLf & _
-              ",ISA_WORK_ORDER_NO " & vbCrLf & _
-              ",ISA_MACHINE_NO " & vbCrLf & _
-              ",ISA_INTFC_LN_TYPE " & vbCrLf & _
-              ",ISA_ORDER_STATUS" & vbCrLf & _
-              ",ADD_DTTM " & vbCrLf & _
-              ",LASTUPDDTTM " & vbCrLf & _
-              ",PROCESS_INSTANCE " & vbCrLf & _
-              ",IN_PROCESS_FLG " & vbCrLf & _
-              ") " & vbCrLf & _
-              "VALUES " & vbCrLf & _
-              "( " & vbCrLf & _
-              " '" & orderReq.Id.ToString & "' " & vbCrLf & _
-              ",' ' " & vbCrLf & _
-              ",'" & orderReqLine.OrderLineNo.ToString & "' " & vbCrLf & _
-              ",TO_DATE('" & dtRequired.ToString & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
-              ",TO_DATE('" & dtRequired.ToString & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
-              "," & orderReqLine.Quantity.ToString & " " & vbCrLf & _
-              ",0 " & vbCrLf & _
-              ",' ' " & vbCrLf & _
-              ",'MAIN1' " & vbCrLf & _
-              ",'" & itemId & "' " & vbCrLf & _
-              ",'MAIN1' " & vbCrLf & _
-              ",'" & strVendid & "' " & vbCrLf & _
-              ",'" & strVenloc & "' " & vbCrLf & _
-              ",'" & strItmIDVndr & "' " & vbCrLf & _
-              ",' ' " & vbCrLf & _
-              ",'" & shipto & "' " & vbCrLf & _
-              ",'" & customerId & "' " & vbCrLf & _
-              ",' ' " & vbCrLf & _
-              ",'" & uom & "' " & vbCrLf & _
-              ",'" & mfgId & "' " & vbCrLf & _
-              ",'" & mfgFreeForm & "' " & vbCrLf & _
-              ",0 " & vbCrLf & _
-              ",'" & orderReqLine.NetPOPrice.ToString & "' " & vbCrLf & _
-              ",0 " & vbCrLf & _
-              ",'" & orderReqLine.NetUnitPrice.ToString & "' " & vbCrLf & _
-              ",'N' " & vbCrLf & _
-              ",'N' " & vbCrLf & _
-              ",'N' " & vbCrLf & _
-              ",' ' " & vbCrLf & _
-              ",' ' " & vbCrLf & _
-              ",'" & itemDesc & "' " & vbCrLf & _
-              ",'" & notes & "' " & vbCrLf & _
-              ",'" & mfgPartNo & "' " & vbCrLf & _
-              ",' ' " & vbCrLf & _
-              ",' ' " & vbCrLf & _
-              ",'" & empId & "' " & vbCrLf & _
-              ",'" & chargeCode & "' " & vbCrLf & _
-              ",'" & workOrderNo & "' " & vbCrLf & _
-              ",' ' " & vbCrLf & _
-              ",' ' " & vbCrLf & _
-              ",'" & strlineordstat & "' " & vbCrLf & _
-              ",TO_DATE('" & Now.ToString & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
-              ",TO_DATE('" & Now.ToString & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
-              ",0 " & vbCrLf & _
-              ",'N' " & vbCrLf & _
-              ") " & vbCrLf & _
-              ""
+        'BUSINESS_UNIT_OM,ORDER_NO,ISA_INTFC_LN,BUSINESS_UNIT_IN,BUSINESS_UNIT_PO,REF_ORDER_NO,REF_LINE_NBR,SHIP_TO_CUST_ID,
+        'OPRID_APPROVED_BY,APPROVAL_DTTM - not null - ,ITM_SETID,INV_ITEM_ID,CANCEL_DTTM - not null - ,CONTRACT_NUM,CONTRACT_LINE_NUM2,
+        'TXN_CURRENCY_CD,CURRENCY_CD_BASE,PRICE_VNDR,ISA_SELL_PRICE,ISA_REQUIRED_BY_DT,EXPECTED_DATE,UNIT_OF_MEASURE,
+        'QTY_REQUESTED,QTY_ORDERED_BASE,ISA_LINE_STATUS,CHANGE_FLAG,TAX_EXEMPT,TAX_EXEMPT_CERT,TAX_GROUP,ISA_EMPLOYEE_ID,
+        'ISA_PRIORITY_FLAG,NEEDS_REPAIR_SW,PRIORITY_NBR,VENDOR_SETID,VENDOR_ID,ITM_ID_VNDR,MFG_ID,ISA_MFG_FREEFORM,MFG_ITM_ID,
+        'ISA_NONCAT_KEY,INSPECT_CD,DESCR254,ISA_UNLOADING_PT,DELIVERED_TO,PROCESS_INSTANCE,CUSTOMER_PO,ISA_CUST_PO_LINE,
+        'ACCOUNT,ISA_WORK_ORDER_NO,ISA_ACTIVITY_NBR,ISA_MACHINE_NO,NETWORK_ID,ISA_WBS_ELMNT,PROJECT_ID,ISA_CUST_CHARGE_CD,
+        'ISA_QUOTE_REF,ISA_INTFC_LN_TYPE,ADD_DTTM,LASTUPDDTTM,OPRID_ENTERED_BY,OPRID_MODIFIED_BY,SHIPTO_ID,LOCATION2,
+        'QTY_RECEIVED,QTY_SHIPPED,KIT_PRESENT_FLG,ISA_KIT_ID,LINE_FIELD_C6,RFQ_IND,ISA_PICK_COMPLETE,ISA_SUGGESTED_VNDR,
+        'STORAGE_AREA,STOR_LEVEL_1,STOR_LEVEL_2,STOR_LEVEL_3,STOR_LEVEL_4,HAZARDOUS_SW,ISA_ITEM_CAT,DELIVERED_FLG,ISA_LANE_ID,
+        'ISA_STOP_NBR,BUYER_ID,SERIAL_ID,USER_CHAR1,USER_CHAR2,USER_CHAR3,USER_DATE1,USER_DATE2,USER_AMT1,USER_AMT2,
+        'USER_DTTM1,USER1,ISA_USER1,ISA_USER2,ISA_USER3,ISA_USER4,ISA_USER5,ERROR_FLAG
+
+        Dim StrDueDate As String = dtRequired.ToString
+
+        sql = "INSERT INTO SYSADM8.PS_ISA_ORD_INTF_LN (BUSINESS_UNIT_OM,ORDER_NO,ISA_INTFC_LN,BUSINESS_UNIT_IN,BUSINESS_UNIT_PO," & _
+                    "REF_ORDER_NO,REF_LINE_NBR,SHIP_TO_CUST_ID,OPRID_APPROVED_BY,ITM_SETID," & _
+                    "INV_ITEM_ID,CONTRACT_NUM,CONTRACT_LINE_NUM2,TXN_CURRENCY_CD,CURRENCY_CD_BASE,PRICE_VNDR,ISA_SELL_PRICE," & _
+                    "UNIT_OF_MEASURE,QTY_REQUESTED,QTY_ORDERED_BASE,ISA_LINE_STATUS,CHANGE_FLAG,TAX_EXEMPT,TAX_EXEMPT_CERT," & _
+                    "TAX_GROUP,ISA_EMPLOYEE_ID,ISA_PRIORITY_FLAG,NEEDS_REPAIR_SW,PRIORITY_NBR,VENDOR_SETID,VENDOR_ID," & _
+                    "ITM_ID_VNDR,MFG_ID,ISA_MFG_FREEFORM,MFG_ITM_ID,ISA_NONCAT_KEY,INSPECT_CD,DESCR254,ISA_UNLOADING_PT," & _
+                    "DELIVERED_TO,PROCESS_INSTANCE,CUSTOMER_PO,ISA_CUST_PO_LINE,ACCOUNT,ISA_WORK_ORDER_NO,ISA_ACTIVITY_NBR,ISA_MACHINE_NO," & _
+                    "NETWORK_ID,ISA_WBS_ELMNT,PROJECT_ID,ISA_CUST_CHARGE_CD,ISA_QUOTE_REF,ISA_INTFC_LN_TYPE,ADD_DTTM,OPRID_ENTERED_BY," &
+                    "SHIPTO_ID,LOCATION2,QTY_RECEIVED,QTY_SHIPPED,KIT_PRESENT_FLG,ISA_KIT_ID,LINE_FIELD_C6,RFQ_IND,ISA_PICK_COMPLETE," & _
+                    "ISA_SUGGESTED_VNDR,STORAGE_AREA,STOR_LEVEL_1,STOR_LEVEL_2,STOR_LEVEL_3,STOR_LEVEL_4,HAZARDOUS_SW,ISA_ITEM_CAT," & _
+                    "DELIVERED_FLG,ISA_LANE_ID,BUYER_ID,SERIAL_ID,USER_CHAR1,USER_CHAR2,USER_CHAR3,USER_AMT1,USER_AMT2,USER_AMT3,USER1," & _
+                    "ISA_USER1,ISA_USER2,ISA_USER3,ISA_USER4,ISA_USER5,ERROR_FLAG,OPRID_MODIFIED_BY,ISA_STOP_NBR"
+
+        If Not String.IsNullOrEmpty(StrDueDate) Then
+            sql = sql + ",ISA_REQUIRED_BY_DT"
+        End If
+        sql = sql + ")"
+
+
+        sql = sql & "VALUES ('I0256','" & orderReq.OrderNo_SDI.ToString & "','" & orderReqLine.OrderLineNo.ToString & "',' ',' '," & _
+            "' ',0,'" & customerId & "',' ','MAIN1'," & _
+            "'" & itemId & "',' ',0,' ',' ','" & orderReqLine.NetPOPrice.ToString & "','" & orderReqLine.NetUnitPrice.ToString & "'," & _
+            "'" & uom & "'," & orderReqLine.Quantity.ToString & ",0,'" & strlineordstat & "',' ',' ',' '," & _
+            "' ','" & empId & "', '" & orderReqLine.PriorityCode & "',' ',0,'MAIN1','" & strVendid & "'," & _
+            "'" & strItmIDVndr & "','" & mfgId & "','" & mfgFreeForm & "','" & mfgPartNo & "',' ','N','" & itemDesc & "',' '," & _
+            "' ',0,' ','0',' ','" & workOrderNo & "',' ',' '," & _
+            "' ',' ',' ','" & chargeCode & "',' ',' ',TO_DATE('" & Now.ToString & "', 'MM/DD/YYYY HH:MI:SS AM'),'" & empId & "'," & _
+            "'" & shipto & "',' ','" & orderReqLine.Quantity.ToString & "',0,' ',' ',' ','N',' '," & _
+            "' ',' ',' ',' ',' ',' ',' ',' '," & _
+            "' ',0,' ',' ',' ',' ',' ',0,0,0,' ',' ',' ',' ',' ',' ',' ',' ',0"
+
+        If Not String.IsNullOrEmpty(StrDueDate) Then
+            sql = sql + ",TO_DATE('" & StrDueDate.ToString & "', 'MM/DD/YYYY HH:MI:SS AM')"
+        End If
+        sql = sql + ")"
+
+        ''sql = "" & _
+        ''      "INSERT INTO PS_ISA_ORD_INTF_LN " & vbCrLf & _
+        ''      "( " & vbCrLf & _
+        ''      " ISA_PARENT_IDENT " & vbCrLf & _
+        ''      ",REQUESTOR_ID " & vbCrLf & _
+        ''      ",LINE_NBR " & vbCrLf & _
+        ''      ",ISA_REQUIRED_BY_DT " & vbCrLf & _
+        ''      ",EXPECTED_DELIV_DT " & vbCrLf & _
+        ''      ",QTY_REQ " & vbCrLf & _
+        ''      ",QTY_SHIPPED " & vbCrLf & _
+        ''      ",SHIP_FROM_BU " & vbCrLf & _
+        ''      ",ITM_SETID " & vbCrLf & _
+        ''      ",INV_ITEM_ID " & vbCrLf & _
+        ''      ",VENDOR_SETID " & vbCrLf & _
+        ''      ",VENDOR_ID " & vbCrLf & _
+        ''      ",VNDR_LOC " & vbCrLf & _
+        ''      ",ITM_ID_VNDR " & vbCrLf & _
+        ''      ",VNDR_CATALOG_ID " & vbCrLf & _
+        ''      ",SHIPTO_ID " & vbCrLf & _
+        ''      ",SHIP_TO_CUST_ID " & vbCrLf & _
+        ''      ",BUYER_ID " & vbCrLf & _
+        ''      ",UNIT_OF_MEASURE " & vbCrLf & _
+        ''      ",MFG_ID " & vbCrLf & _
+        ''      ",ISA_MFG_FREEFORM " & vbCrLf & _
+        ''      ",PRICE_PO_BSE " & vbCrLf & _
+        ''      ",PRICE_PO " & vbCrLf & _
+        ''      ",NET_UNIT_PRICE_BSE " & vbCrLf & _
+        ''      ",NET_UNIT_PRICE " & vbCrLf & _
+        ''      ",RFQ_IND " & vbCrLf & _
+        ''      ",INSPECT_CD " & vbCrLf & _
+        ''      ",INVENTORY_SRC_FLG " & vbCrLf & _
+        ''      ",ROUTING_ID " & vbCrLf & _
+        ''      ",ISA_TRACKING_ID " & vbCrLf & _
+        ''      ",DESCR254 " & vbCrLf & _
+        ''      ",ISA_CUST_NOTES " & vbCrLf & _
+        ''      ",MFG_ITM_ID " & vbCrLf & _
+        ''      ",CUSTOMER_PO " & vbCrLf & _
+        ''      ",CUSTOMER_PO_LINE " & vbCrLf & _
+        ''      ",EMPLID " & vbCrLf & _
+        ''      ",ISA_CUST_CHARGE_CD " & vbCrLf & _
+        ''      ",ISA_WORK_ORDER_NO " & vbCrLf & _
+        ''      ",ISA_MACHINE_NO " & vbCrLf & _
+        ''      ",ISA_INTFC_LN_TYPE " & vbCrLf & _
+        ''      ",ISA_ORDER_STATUS" & vbCrLf & _
+        ''      ",ADD_DTTM " & vbCrLf & _
+        ''      ",LASTUPDDTTM " & vbCrLf & _
+        ''      ",PROCESS_INSTANCE " & vbCrLf & _
+        ''      ",IN_PROCESS_FLG " & vbCrLf & _
+        ''      ") " & vbCrLf & _
+        ''      "VALUES " & vbCrLf & _
+        ''      "( " & vbCrLf & _
+        ''      " '" & orderReq.Id.ToString & "' " & vbCrLf & _
+        ''      ",' ' " & vbCrLf & _
+        ''      ",'" & orderReqLine.OrderLineNo.ToString & "' " & vbCrLf & _
+        ''      ",TO_DATE('" & dtRequired.ToString & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
+        ''      ",TO_DATE('" & dtRequired.ToString & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
+        ''      "," & orderReqLine.Quantity.ToString & " " & vbCrLf & _
+        ''      ",0 " & vbCrLf & _
+        ''      ",' ' " & vbCrLf & _
+        ''      ",'MAIN1' " & vbCrLf & _
+        ''      ",'" & itemId & "' " & vbCrLf & _
+        ''      ",'MAIN1' " & vbCrLf & _
+        ''      ",'" & strVendid & "' " & vbCrLf & _
+        ''      ",'" & strVenloc & "' " & vbCrLf & _
+        ''      ",'" & strItmIDVndr & "' " & vbCrLf & _
+        ''      ",' ' " & vbCrLf & _
+        ''      ",'" & shipto & "' " & vbCrLf & _
+        ''      ",'" & customerId & "' " & vbCrLf & _
+        ''      ",' ' " & vbCrLf & _
+        ''      ",'" & uom & "' " & vbCrLf & _
+        ''      ",'" & mfgId & "' " & vbCrLf & _
+        ''      ",'" & mfgFreeForm & "' " & vbCrLf & _
+        ''      ",0 " & vbCrLf & _
+        ''      ",'" & orderReqLine.NetPOPrice.ToString & "' " & vbCrLf & _
+        ''      ",0 " & vbCrLf & _
+        ''      ",'" & orderReqLine.NetUnitPrice.ToString & "' " & vbCrLf & _
+        ''      ",'N' " & vbCrLf & _
+        ''      ",'N' " & vbCrLf & _
+        ''      ",'N' " & vbCrLf & _
+        ''      ",' ' " & vbCrLf & _
+        ''      ",' ' " & vbCrLf & _
+        ''      ",'" & itemDesc & "' " & vbCrLf & _
+        ''      ",'" & notes & "' " & vbCrLf & _
+        ''      ",'" & mfgPartNo & "' " & vbCrLf & _
+        ''      ",' ' " & vbCrLf & _
+        ''      ",' ' " & vbCrLf & _
+        ''      ",'" & empId & "' " & vbCrLf & _
+        ''      ",'" & chargeCode & "' " & vbCrLf & _
+        ''      ",'" & workOrderNo & "' " & vbCrLf & _
+        ''      ",' ' " & vbCrLf & _
+        ''      ",' ' " & vbCrLf & _
+        ''      ",'" & strlineordstat & "' " & vbCrLf & _
+        ''      ",TO_DATE('" & Now.ToString & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
+        ''      ",TO_DATE('" & Now.ToString & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
+        ''      ",0 " & vbCrLf & _
+        ''      ",'N' " & vbCrLf & _
+        ''      ") " & vbCrLf & _
+        ''      ""
+
         Return sql
     End Function
 

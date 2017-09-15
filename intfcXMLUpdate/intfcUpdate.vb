@@ -967,22 +967,22 @@ Module module1
 
     Private Sub SendBuyerEmail()
 
-        Dim strSQLstring As String
-        strSQLstring = "SELECT A.CUST_ID, A.ORDER_NO, A.OPRID_ENTERED_BY," & vbCrLf & _
+        Dim strSQLstring As String = ""
+        strSQLstring = "SELECT A.BILL_TO_CUST_ID AS CUST_ID, A.ORDER_NO, B.OPRID_ENTERED_BY," & vbCrLf & _
                     " TO_CHAR(A.ADD_DTTM,'YYYY-MM-DD-HH24.MI.SS') as HdrAddDate," & vbCrLf & _
-                    " B.LINE_NBR," & vbCrLf & _
-                    " B.QTY_REQ, B.INV_ITEM_ID, B.UNIT_OF_MEASURE," & vbCrLf & _
-                    " B.MFG_ID, B.ISA_MFG_FREEFORM, B.NET_UNIT_PRICE," & vbCrLf & _
-                    " B.DESCR254, B.MFG_ITM_ID, B.EMPLID," & vbCrLf & _
+                    " B.ISA_INTFC_LN AS LINE_NBR," & vbCrLf & _
+                    " B.QTY_REQUESTED AS QTY_REQ, B.INV_ITEM_ID, B.UNIT_OF_MEASURE," & vbCrLf & _
+                    " B.MFG_ID, B.ISA_MFG_FREEFORM, B.ISA_SELL_PRICE AS NET_UNIT_PRICE," & vbCrLf & _
+                    " B.DESCR254, B.MFG_ITM_ID, B.ISA_EMPLOYEE_ID AS EMPLID," & vbCrLf & _
                     " B.ISA_WORK_ORDER_NO," & vbCrLf & _
                     " TO_CHAR(B.ADD_DTTM,'YYYY-MM-DD-HH24.MI.SS') as LnAddDate," & vbCrLf & _
-                    " B.ISA_CUST_NOTES, PROJECT_ID," & vbCrLf & _
+                    " '' AS ISA_CUST_NOTES, ' ' AS PROJECT_ID," & vbCrLf & _
                     " TO_CHAR(B.ISA_REQUIRED_BY_DT,'YYYY-MM-DD') as ReqByDate" & vbCrLf & _
-                    " FROM PS_ISA_ORD_INTFC_H A, PS_ISA_ORD_INTFC_L B" & vbCrLf & _
+                    " FROM PS_ISA_ORD_INTF_HD A, PS_ISA_ORD_INTF_LN B" & vbCrLf & _
                     " WHERE A.ORDER_STATUS = 'S'" & vbCrLf & _
-                    " AND A.ISA_IDENTIFIER = B.ISA_PARENT_IDENT" & vbCrLf & _
-                    " AND B.ISA_ORDER_STATUS IN ('1','Q')" & vbCrLf & _
-                    " ORDER BY A.ORDER_NO, B.LINE_NBR"
+                    " AND A.ORDER_NO = B.ORDER_NO" & vbCrLf & _
+                    " AND B.ISA_LINE_STATUS IN ('NEW','QTS')" & vbCrLf & _
+                    " ORDER BY A.ORDER_NO, B.ISA_INTFC_LN"
 
         Dim ds As DataSet = ORDBAccess.GetAdapter(strSQLstring, connectOR)
 
@@ -1707,7 +1707,7 @@ Module module1
         Dim strSQLstring As String
         Dim rowsaffected As Integer
 
-        strSQLstring = "UPDATE PS_ISA_ORD_INTFC_H" & vbCrLf & _
+        strSQLstring = "UPDATE PS_ISA_ORD_INTF_HD" & vbCrLf & _
             " SET ORDER_STATUS = '" & strStatus & "'" & vbCrLf & _
             " WHERE BUSINESS_UNIT_OM = '" & strBU & "'" & vbCrLf & _
             " AND ORDER_NO = '" & strIntfcreqid & "'"
@@ -1774,26 +1774,26 @@ Module module1
         Dim strCustEmail As String
         Dim strCustPhone As String
         Dim strrefno As String = " "
-        connectOR.Open()
-        Dim objUserTbl As clsUserTbl
-        objUserTbl = New clsUserTbl(dsOrder.Tables(0).Rows(0).Item("EMPLID"), strBU, connectOR)
-        strCustName = objUserTbl.EmployeeName
-        strCustEmail = objUserTbl.EmployeeEmail
-        strCustPhone = objUserTbl.PhoneNum
-        connectOR.Close()
-        ' see if there is a order_number (reference number) in the quote table.... if so it is a punchin record
-        connectOR.Open()
-        Dim objRefNo As clsQuote
-        Try
-            objRefNo = New clsQuote(dsOrder.Tables(0).Rows(0).Item("ORDER_NO"), dsOrder.Tables(0).Rows(0).Item("LINE_NO"), connectOR)
-            strrefno = objRefNo.ORDER_NO.ToString
-            If IsDBNull(strrefno) Then
-                strrefno = " "
-            End If
-        Catch ex As Exception
-            strrefno = " "
-            connectOR.Close()
-        End Try
+        'connectOR.Open()
+        'Dim objUserTbl As clsUserTbl
+        'objUserTbl = New clsUserTbl(dsOrder.Tables(0).Rows(0).Item("EMPLID"), strBU, connectOR)
+        'strCustName = objUserTbl.EmployeeName
+        'strCustEmail = objUserTbl.EmployeeEmail
+        'strCustPhone = objUserTbl.PhoneNum
+        'connectOR.Close()
+        '' see if there is a order_number (reference number) in the quote table.... if so it is a punchin record
+        'connectOR.Open()
+        'Dim objRefNo As clsQuote
+        'Try
+        '    objRefNo = New clsQuote(dsOrder.Tables(0).Rows(0).Item("ORDER_NO"), dsOrder.Tables(0).Rows(0).Item("LINE_NO"), connectOR)
+        '    strrefno = objRefNo.ORDER_NO.ToString
+        '    If IsDBNull(strrefno) Then
+        '        strrefno = " "
+        '    End If
+        'Catch ex As Exception
+        '    strrefno = " "
+        '    connectOR.Close()
+        'End Try
 
 
 
@@ -1953,9 +1953,9 @@ Module module1
             'Mailer.body = Mailer.body + "<TR><TD Class='DetailRow' align='right'>Order Total&nbsp;&nbsp;&nbsp;" & decOrderTot & "&nbsp;&nbsp;&nbsp;</TD></TR>"
             Mailer.body = Mailer.body & "</TABLE>" & vbCrLf
 
-            Mailer.To = objEnterprise.STKREQEmail
+            Mailer.To = "webdev@sdi.com"  '  objEnterprise.STKREQEmail
 
-            Mailer.Subject = "IntfcXMLUpdate - Material Request - Stock"
+            Mailer.Subject = " TEST SDIX 92 - IntfcXMLUpdate - Material Request - Stock"
             Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
 
             SendEmail1(Mailer)
@@ -2024,15 +2024,15 @@ Module module1
             Mailer.body = Mailer.body + "<TR><TD Class='DetailRow'>&nbsp;</TD></TR>"
             'Mailer.body = Mailer.body + "<TR><TD Class='DetailRow' align='right'>Order Total&nbsp;&nbsp;&nbsp;" & decOrderTot & "&nbsp;&nbsp;&nbsp;</TD></TR>"
             Mailer.body = Mailer.body & "</TABLE>" & vbCrLf
-            Mailer.To = objEnterprise.NONSKREQEmail
+            Mailer.To = "webdev@sdi.com"  '  objEnterprise.NONSKREQEmail
 
             If Convert.ToString(dsOrder.Tables(0).Rows(0).Item("PROJECT_ID")).Length > 7 Then
                 If Convert.ToString(dsOrder.Tables(0).Rows(0).Item("PROJECT_ID")).Substring(0, 8).ToUpper = "PRIORITY" Then
-                    Mailer.To = objEnterprise.SiteEmail
+                    Mailer.To = "webdev@sdi.com"  '  objEnterprise.SiteEmail
                 End If
             End If
 
-            Mailer.Subject = "IntfcXMLUpdate - Material Request - Non-Stock "
+            Mailer.Subject = " TEST SDIX 92 - IntfcXMLUpdate - Material Request - Non-Stock "
             Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
 
             SendEmail1(Mailer)
@@ -2144,11 +2144,11 @@ Module module1
         Dim I As Integer
 
         strSQLstring = "SELECT A.ORDER_NO" & vbCrLf & _
-                    " FROM PS_ISA_ORD_INTFC_H A, PS_ISA_ORD_INTFC_L B" & vbCrLf & _
+                    " FROM PS_ISA_ORD_INTF_HD A, PS_ISA_ORD_INTF_LN B" & vbCrLf & _
                     " WHERE A.BUSINESS_UNIT_OM = 'I0256'" & vbCrLf & _
                     " AND A.ORDER_STATUS = 'O'" & vbCrLf & _
-                    " AND A.ISA_IDENTIFIER = B.ISA_PARENT_IDENT" & vbCrLf & _
-                    " AND B.ISA_ORDER_STATUS = '1'"
+                    " AND A.ORDER_NO = B.ORDER_NO" & vbCrLf & _
+                    " AND B.ISA_LINE_STATUS = 'NEW'"
         Dim ds As DataSet = ORDBAccess.GetAdapter(strSQLstring, connectOR)
         If Not ds Is Nothing Then
             If ds.Tables(0).Rows.Count > 0 Then
