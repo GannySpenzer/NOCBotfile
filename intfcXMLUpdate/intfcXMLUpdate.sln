@@ -6,24 +6,30 @@ Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
 		SccNumberOfProjects = 2
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = http://192.168.253.77:8080/tfs/insiteonline
+		SccTeamFoundationServer = http://vsfoundations:8080/tfs/insiteonline
 		SccLocalPath0 = .
 		SccProjectUniqueName1 = intfcXMLUpdate.vbproj
 		SccLocalPath1 = .
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{B2E7024C-5E14-4B5C-8B6C-5B6711706FF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B2E7024C-5E14-4B5C-8B6C-5B6711706FF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2E7024C-5E14-4B5C-8B6C-5B6711706FF3}.Debug|x64.ActiveCfg = Debug|x64
+		{B2E7024C-5E14-4B5C-8B6C-5B6711706FF3}.Debug|x64.Build.0 = Debug|x64
 		{B2E7024C-5E14-4B5C-8B6C-5B6711706FF3}.Debug|x86.ActiveCfg = Debug|x86
 		{B2E7024C-5E14-4B5C-8B6C-5B6711706FF3}.Debug|x86.Build.0 = Debug|x86
 		{B2E7024C-5E14-4B5C-8B6C-5B6711706FF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B2E7024C-5E14-4B5C-8B6C-5B6711706FF3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2E7024C-5E14-4B5C-8B6C-5B6711706FF3}.Release|x64.ActiveCfg = Release|Any CPU
+		{B2E7024C-5E14-4B5C-8B6C-5B6711706FF3}.Release|x64.Build.0 = Release|Any CPU
 		{B2E7024C-5E14-4B5C-8B6C-5B6711706FF3}.Release|x86.ActiveCfg = Release|x86
 		{B2E7024C-5E14-4B5C-8B6C-5B6711706FF3}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
