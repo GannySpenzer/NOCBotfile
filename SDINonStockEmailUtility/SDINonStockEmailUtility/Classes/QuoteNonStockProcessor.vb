@@ -211,21 +211,22 @@ Public Class QuoteNonStockProcessor
         Dim cHdr As String = "QuoteNonStockProcessor.Evaluate: "
         Try
             ''''-ss.m_eventLogger.WriteEntry("evaluating busines rule(s) ...", EventLogEntryType.Information)
+            'Return True
 
             Dim cSQL As String = "" & _
                   "SELECT COUNT(1) AS RECCOUNT " & vbCrLf & _
-                  "FROM PS_REQ_HDR A " & vbCrLf & _
+                  "FROM SYSADM8.PS_ISA_ORD_INTF_LN A " & vbCrLf & _
                   "WHERE NOT EXISTS (" & vbCrLf & _
                   "                  SELECT 'X' " & vbCrLf & _
                   "                  FROM PS_ISA_REQ_EML_LOG B " & vbCrLf & _
-                  "                  WHERE B.BUSINESS_UNIT = A.BUSINESS_UNIT " & vbCrLf & _
-                  "                    AND B.REQ_ID = A.REQ_ID " & vbCrLf & _
+                  "                  WHERE B.BUSINESS_UNIT = A.BUSINESS_UNIT_OM " & vbCrLf & _
+                  "                    AND B.REQ_ID = A.ORDER_NO " & vbCrLf & _
                   "                 ) " & vbCrLf & _
-                  "  AND A.REQ_STATUS = 'Q' " & vbCrLf & _
+                  "  AND A.ISA_LINE_STATUS = 'QTS' " & vbCrLf & _
                   "  AND NOT EXISTS ( " & vbCrLf & _
                   "                  SELECT 'X' " & vbCrLf & _
                   "                  FROM SYSADM8.PS_NLINK_CUST_PLNT C " & vbCrLf & _
-                  "                  WHERE C.ISA_SAP_PO_PREF = SUBSTR(A.REQ_ID,1,2) " & vbCrLf & _
+                  "                  WHERE C.ISA_SAP_PO_PREF = SUBSTR(A.ORDER_NO,1,2) " & vbCrLf & _
                   "                    AND C.ISA_SAP_PO_PREF <> ' ' " & vbCrLf & _
                   "                 ) " & vbCrLf & _
                   ""
@@ -608,13 +609,17 @@ Public Class QuoteNonStockProcessor
             Dim htmlTWstk As New HtmlTextWriter(SWstk)
             Dim SBord As New StringBuilder
             If GetQuotedItems() > 0 Then
-
+                Dim iCnt As Integer = 0
                 If m_colMsgs.Count > 0 Then
-
+                    iCnt = 0
                     For Each itmQuoted As QuotedNStkItem In m_colMsgs
                         SBord.Append(itmQuoted.OrderID + ",")
                         If itmQuoted.PriceBlockFlag = "N" Then
                             SendMessages(itmQuoted)
+                            iCnt += 1
+                            If iCnt = 10 Then
+                                Exit For
+                            End If
                         Else
                             PriceUpdate(itmQuoted.OrderID)
                             UpdateReqEmailLog(itmQuoted)
@@ -901,34 +906,39 @@ Public Class QuoteNonStockProcessor
             Dim cSQL As String = "" & _
                                  "SELECT " & vbCrLf & _
                                  " A.BUSINESS_UNIT AS BUSINESS_UNIT" & vbCrLf & _
-                                 ",A.REQ_ID AS REQ_ID,A.BUYER_ID,B.DESCR,B.EMAILID" & vbCrLf & _
+                                 ",A.REQ_ID AS REQ_ID,A1.BUYER_ID,B.DESCR,B.EMAILID" & vbCrLf & _
                                  ",A1.LINE_NBR AS LINE_NBR" & vbCrLf & _
-                                 ",A1.SOLD_TO_CUST_ID AS SOLD_TO_CUST_ID" & vbCrLf & _
+                                 ",A4.BILL_TO_CUST_ID AS SOLD_TO_CUST_ID" & vbCrLf & _
                                  ",A2.ISA_EMPLOYEE_EMAIL AS ISA_EMPLOYEE_EMAIL" & vbCrLf & _
                                  ",A2.ISA_EMPLOYEE_NAME AS ISA_EMPLOYEE_NAME" & vbCrLf & _
                                  ",A2.ISA_PRICE_BLOCK AS ISA_PRICE_BLOCK" & vbCrLf & _
                                  ",A3.ISA_NONSKREQ_EMAIL AS ISA_NONSKREQ_EMAIL" & vbCrLf & _
-                                 ",A4.OPRID_ENTERED_BY AS ISA_EMPLOYEE_ID" & vbCrLf & _
+                                 ",L.OPRID_ENTERED_BY AS ISA_EMPLOYEE_ID" & vbCrLf & _
                                  ",A4.BUSINESS_UNIT_OM AS BUSINESS_UNIT_OM" & vbCrLf & _
-                                 ",A4.PROJECT_ID,A4.ORIGIN" & vbCrLf & _
-                                 ",A4.OPRID_MODIFIED_BY AS OPRID_MODIFIED_BY " & vbCrLf & _
+                                 ",L.PROJECT_ID,A4.ORIGIN" & vbCrLf & _
+                                 ",L.OPRID_MODIFIED_BY AS OPRID_MODIFIED_BY " & vbCrLf & _
                                  "FROM " & vbCrLf & _
                                  " PS_REQ_HDR A" & vbCrLf & _
                                  ",SYSADM8.PS_ROLEXLATOPR B" & vbCrLf & _
                                  ",PS_REQ_LINE A1" & vbCrLf & _
                                  ",PS_ISA_USERS_TBL A2" & vbCrLf & _
                                  ",PS_ISA_ENTERPRISE A3" & vbCrLf & _
-                                 ",PS_ISA_ORD_INTFC_H A4 " & vbCrLf & _
+                                 ",SYSADM8.PS_ISA_ORD_INTF_HD A4, SYSADM8.PS_ISA_ORD_INTF_LN L, sysadm8.ps_isa_req_bi_info I  " & vbCrLf & _
                                  " WHERE A.BUSINESS_UNIT = A1.BUSINESS_UNIT" & vbCrLf & _
-                                 "  AND A.BUYER_ID = B.ROLEUSER (+)" & vbCrLf & _
+                                 "  AND A1.BUYER_ID = B.ROLEUSER (+)" & vbCrLf & _
                                  "  AND A.REQ_ID = A1.REQ_ID" & vbCrLf & _
-                                 "  AND A.REQ_ID = A4.ORDER_NO (+)" & vbCrLf & _
-                                 "  AND A4.ORIGIN IN ('IOL','MOB','RFQ','IAP')" & vbCrLf & _
-                                 "  AND A4.BUSINESS_UNIT_OM = A2.BUSINESS_UNIT (+)" & vbCrLf & _
-                                 "  AND A4.OPRID_ENTERED_BY = A2.ISA_EMPLOYEE_ID (+) " & vbCrLf & _
+                                 "  AND A.REQ_ID = A4.ORDER_NO" & vbCrLf & _
+                                 "  AND A1.BUSINESS_UNIT = I.BUSINESS_UNIT" & vbCrLf & _
+                                 "  AND A1.REQ_ID = I.REQ_ID" & vbCrLf & _
+                                 "  AND A1.line_nbr = I.line_nbr" & vbCrLf & _
+                                 "  AND I.BUSINESS_UNIT_OM = L.BUSINESS_UNIT_OM" & vbCrLf & _
+                                 "  AND A.REQ_ID = L.ORDER_NO" & vbCrLf & _
+                                 "  AND A4.ORIGIN IN ('IOL','MOB','RFQ','IAP','PCH')" & vbCrLf & _
+                                 "  AND L.BUSINESS_UNIT_OM = A2.BUSINESS_UNIT (+)" & vbCrLf & _
+                                 "  AND L.OPRID_ENTERED_BY = A2.ISA_EMPLOYEE_ID (+) " & vbCrLf & _
                                  "  AND 'MAIN1' = A3.SETID (+)" & vbCrLf & _
-                                 "  AND A1.SOLD_TO_CUST_ID = A3.CUST_ID (+)" & vbCrLf & _
-                                 "  AND A.REQ_STATUS = 'Q' " & vbCrLf & _
+                                 "  AND A4.BILL_TO_CUST_ID = A3.CUST_ID (+)" & vbCrLf & _
+                                 "  AND L.ISA_LINE_STATUS = 'QTS' " & vbCrLf & _
                                  "  AND NOT EXISTS ( " & vbCrLf & _
                                  "                  SELECT 'X' " & vbCrLf & _
                                  "                  FROM SYSADM8.PS_NLINK_CUST_PLNT C " & vbCrLf & _
@@ -937,9 +947,9 @@ Public Class QuoteNonStockProcessor
                                  "                 ) " & vbCrLf & _
                                  "  AND NOT EXISTS (" & vbCrLf & _
                                  "                  SELECT 'X'" & vbCrLf & _
-                                 "                  FROM PS_ISA_REQ_EML_LOG B" & vbCrLf & _
-                                 "                  WHERE B.BUSINESS_UNIT = A.BUSINESS_UNIT" & vbCrLf & _
-                                 "                    AND B.REQ_ID = A.REQ_ID" & vbCrLf & _
+                                 "                  FROM PS_ISA_REQ_EML_LOG B1" & vbCrLf & _
+                                 "                  WHERE B1.BUSINESS_UNIT = A.BUSINESS_UNIT" & vbCrLf & _
+                                 "                    AND B1.REQ_ID = A.REQ_ID" & vbCrLf & _
                                  "                 )" & vbCrLf & _
                                  " ORDER BY A1.BUSINESS_UNIT, A1.REQ_ID, A1.LINE_NBR " & vbCrLf & _
                                  ""
@@ -1314,6 +1324,8 @@ Public Class QuoteNonStockProcessor
         Select Case strDBase
             Case "PROD"
                 sRet = "https://www.sdiexchange.com/"
+            Case "STAR", "PLGR"
+                sRet = "https://sdix92.sdi.com/"
             Case Else
                 sRet = "http://" & sWebAppName
         End Select
@@ -1735,10 +1747,22 @@ Public Class QuoteNonStockProcessor
                     eml.Cc = ""
                 End If
 
+                Dim sCNString As String = m_CN.ConnectionString
+                Dim strDBase As String = "STAR"
+                If Len(sCNString) > 4 Then
+                    strDBase = UCase(Right(sCNString, 4))
+                End If
+
+                Select Case strDBase
+                    Case "STAR", "PLGR", "RPTG"
+                        eml.Subject = " TEST SDIX92 - " & eml.Subject
+                        eml.To = "webdev@sdi.com"
+                    Case Else
+
+                End Select
                 ' send this email
-                ''System.Web.Mail.SmtpMail.Send(message:=eml)
                 Try
-                    ''SDIEmailService.EmailUtilityServices("MailandStore", "SDIExchADMIN@sdi.com", "sriram.s@avasoft.biz", eml.Subject, String.Empty, String.Empty, eml.Body, "QUOTEAPPROVAL", MailAttachmentName, MailAttachmentbytes.ToArray())
+
                     SendLogger(eml.Subject, eml.Body, "QUOTEAPPROVAL", "Mail", eml.To, eml.Cc, eml.Bcc)
                 Catch ex As Exception
 
