@@ -4,7 +4,7 @@ Imports System.Data.OleDb
 Imports System.Web.Mail
 Imports SDI.ApplicationLogger
 Imports SDI.UNCC.WorkOrderAdapter
-
+Imports System.Collections.Generic
 
 Module Module1
     ' this program takes all the status changes from one day and creates an xml to catch anything we miss going to UNCC.  It will be run at night at 11 o'clock.
@@ -385,13 +385,29 @@ Module Module1
 
         'Send the email and handle any error that occurs
         Try
-            'SmtpMail.Send(email)
-            UpdEmailOut.UpdEmailOut.UpdEmailOut(email.Subject, email.From, email.To, "", "", "Y", email.Body, connectOR)
+
+            'UpdEmailOut.UpdEmailOut.UpdEmailOut(email.Subject, email.From, email.To, "", "", "Y", email.Body, connectOR)
+
+            SendLogger(email.Subject, email.Body, "UNCCSTTCHNGROLLUP", "Mail", email.To, "", "")
+
         Catch
-            'objStreamWriter.WriteLine("     Error - the email was not sent")
+
             m_logger.WriteErrorLog(rtn & " :: Error - the email was not sent")
         End Try
 
+    End Sub
+
+    Public Sub SendLogger(ByVal subject As String, ByVal body As String, ByVal messageType As String, ByVal MailType As String, ByVal EmailTo As String, ByVal EmailCc As String, ByVal EmailBcc As String)
+        Try
+            Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
+            Dim MailAttachmentName As String()
+            Dim MailAttachmentbytes As New List(Of Byte())()
+
+            SDIEmailService.EmailUtilityServices(MailType, "SDIExchange@sdi.com", EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
+
+        Catch ex As Exception
+
+        End Try
     End Sub
 
 End Module
