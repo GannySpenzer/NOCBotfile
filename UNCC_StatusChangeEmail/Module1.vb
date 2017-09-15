@@ -4,6 +4,7 @@ Imports System.Data.OleDb
 Imports System.Web.Mail
 Imports System.Web.UI
 Imports System.Text
+Imports System.Collections.Generic
 
 Module Module1
 
@@ -882,12 +883,10 @@ Module Module1
 
         Mailer.Subject = "SDiExchange - Order Status " & strOrderNo & " is ready for pickup"
         Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
-        'SmtpMail.Send(Mailer)
-        'SendEmail(Mailer)
+        
+        'UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer.Subject, Mailer.From, Mailer.To, "", "", "N", Mailer.Body, connectOR)
 
-        UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer.Subject, Mailer.From, Mailer.To, "", "", "N", Mailer.Body, connectOR)
-
-        'objStreamWriter.WriteLine("The email was sent: SDiExchange - Order Status: " & strOrderNo & " is ready for pickup")
+        SendLogger(Mailer.Subject, Mailer.Body, "UNCCSTTCHNGEML", "Mail", Mailer.To, "", "")
     End Sub
 
     Private Sub SendEmail()
@@ -914,15 +913,31 @@ Module Module1
 
         'Send the email and handle any error that occurs
         Try
-            'objStreamWriter.WriteLine("The email was sent: UNCC_StatusChangeEmail has completed with errors, review log")
-            UpdEmailOut.UpdEmailOut.UpdEmailOut(email.Subject, email.From, email.To, "", "", "Y", email.Body, connectOR)
+
+            'UpdEmailOut.UpdEmailOut.UpdEmailOut(email.Subject, email.From, email.To, "", "", "Y", email.Body, connectOR)
+
+            SendLogger(email.Subject, email.Body, "UNCCSTTCHNGEML", "Mail", email.To, "", "")
+
         Catch
             objStreamWriter.WriteLine("     Error - the email was not sent")
         End Try
 
     End Sub
 
-    Private Sub sendemail(ByVal mailer As MailMessage)
+    Public Sub SendLogger(ByVal subject As String, ByVal body As String, ByVal messageType As String, ByVal MailType As String, ByVal EmailTo As String, ByVal EmailCc As String, ByVal EmailBcc As String)
+        Try
+            Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
+            Dim MailAttachmentName As String()
+            Dim MailAttachmentbytes As New List(Of Byte())()
+
+            SDIEmailService.EmailUtilityServices(MailType, "SDIExchange@sdi.com", EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
+
+        Catch ex As Exception
+
+        End Try
+    End Sub
+
+    Private Sub Sendemail1(ByVal mailer As MailMessage)
 
         Try
             'SmtpMail.Send(mailer)
@@ -1261,20 +1276,20 @@ Module Module1
             connectOR.DataSource.ToUpper = "DEVL" Or _
             connectOR.DataSource.ToUpper = "STAR" Or _
             connectOR.DataSource.ToUpper = "PLGR" Then
-            Mailer1.To = "DoNotSendPLGR@sdi.com"
-            'Mailer1.To = strEmail
+
+            Mailer1.To = "webdev@sdi.com"
         Else
-            'Mailer1.To = strPurchaserEmail
+
             Mailer1.To = strEmail
         End If
 
-        'Mailer1.Subject = "SDiExchange - Order Status records for" & Now.Month & "/" & Now.Day & "/" & Now.Year
         Mailer1.Subject = "SDiExchange - Order Status records for ORDER NUMBER: " & strOrderNo
         Mailer1.BodyFormat = System.Web.Mail.MailFormat.Html
         
-        UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer1.Subject, Mailer1.From, Mailer1.To, "", Mailer1.Bcc, "N", Mailer1.Body, connectOR)
+        'UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer.Subject, Mailer.From, Mailer.To, "", "", "N", Mailer.Body, connectOR)
 
-        'objStreamWriter.WriteLine("The email was sent: SDiExchange - Order Status records for ORDER NUMBER: " & strOrderNo)
+        SendLogger(Mailer1.Subject, Mailer1.Body, "UNCCSTTCHNGEML", "Mail", Mailer1.To, "", "")
+
     End Sub
     'Private Function updateEnterprise(ByVal strBU As String, ByVal dteEndDate As DateTime) As Boolean
     '    connectOR.Close()
