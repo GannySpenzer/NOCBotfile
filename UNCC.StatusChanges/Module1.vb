@@ -14,7 +14,7 @@ Module Module1
     'Dim objStreamWriter As StreamWriter
     Dim rootDir As String = "C:\INTFCXML"
     Dim logpath As String = "C:\INTFCXML\LOGS\StatusChgUNCC" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=RPTG")
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=STAR")
 
     Sub Main()
 
@@ -62,25 +62,6 @@ Module Module1
             logpath = sLogPath & "\StatusChgUNCC" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
         End If
         '   END : 3/19/2014 erwin
-
-        'If Dir(rootDir, FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir)
-        'End If
-        'If Dir(rootDir & "\LOGS", FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir & "\LOGS")
-        'End If
-        'If Dir(rootDir & "\XMLIN", FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir & "\XMLIN")
-        'End If
-        'If Dir(rootDir & "\XMLOUT", FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir & "\XMLOUT")
-        'End If
-        'If Dir(rootDir & "\XMLINProcessed", FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir & "\XMLINProcessed")
-        'End If
-        'If Dir(rootDir & "\XMLOUTProcessed", FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir & "\XMLOUTProcessed")
-        'End If
 
         ' default log level
         Dim logLevel As System.Diagnostics.TraceLevel = TraceLevel.Verbose
@@ -166,22 +147,42 @@ Module Module1
                     " WHERE A.BUSINESS_UNIT_OM = 'I0256'"
 
         '" MAX( TO_CHAR(A.DTTM_STAMP,'YYYY-MM-DD-HH24.MI.SS AM')) as MAXDATE" & vbCrLf & _
+        Dim dr As OleDbDataReader = Nothing
+
         Try
             Dim command As OleDbCommand
             Command = New OleDbCommand(strSQLstring, connectOR)
             connectOR.Open()
-            Dim dr As OleDbDataReader
 
-            dr = Command.ExecuteReader
-            If dr.Read Then
-                dteEndDate = Convert.ToDateTime(dr.Item("MAXDATE"))
+            dr = command.ExecuteReader
+            If dr.HasRows Then
+                If dr.Read Then
+                    Try
+                        dteEndDate = Convert.ToDateTime(dr.Item("MAXDATE"))
+                    Catch ex As Exception
+                        dteEndDate = Now.ToString
+                    End Try
+
+                Else
+                    dteEndDate = Now.ToString
+                End If
             Else
                 dteEndDate = Now.ToString
             End If
-
+            
+            dr.Close()
             connectOR.Close()
 
         Catch OleDBExp As OleDbException
+            Try
+                If Not dr Is Nothing Then
+
+                    dr.Close()
+                End If
+                connectOR.Close()
+            Catch ex As Exception
+
+            End Try
             'objStreamWriter.WriteLine("     Error - error reading end date FROM PS_ISAORDSTATUSLOG A")
             m_logger.WriteErrorLog(rtn & " :: Error - error reading end date FROM PS_ISAORDSTATUSLOG A")
             Return True
@@ -194,16 +195,13 @@ Module Module1
 
         Dim ds As New DataSet
         Dim bolerror As Boolean
-        strSQLstring = "SELECT A.ORDER_NO, A.LINE_NBR," & vbCrLf & _
-                            " TO_CHAR(A.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP," & vbCrLf & _
-                            " A.ISA_ORDER_STATUS" & vbCrLf & _
+        strSQLstring = "SELECT A.ORDER_NO, A.ISA_INTFC_LN AS LINE_NBR," & vbCrLf & _
+                            " TO_CHAR(A.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP" & vbCrLf & _
+                            " ,A.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(A.ISA_LINE_STATUS,'CRE','1','NEW','2','DSP','3','PKA','4','DLP','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','9') AS OLD_ORDER_STATUS" & vbCrLf & _
                             " FROM PS_ISAORDSTATUSLOG A" & vbCrLf & _
                             " WHERE A.BUSINESS_UNIT_OM = 'I0256'" & vbCrLf & _
                             " AND A.DTTM_STAMP > TO_DATE('" & dteStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
                             " AND A.DTTM_STAMP <= TO_DATE('" & dteEndDate & "', 'MM/DD/YYYY HH:MI:SS AM')"
-
-        '" AND TO_DATE(TO_CHAR(A.DTTM_STAMP,'MM/DD/YY HH24:MI:SS')) > TO_DATE('" & dteStartDate & "', 'MM/DD/YY HH24:MI:SS')" & vbCrLf & _
-        '" AND TO_DATE(TO_CHAR(A.DTTM_STAMP,'MM/DD/YY HH24:MI:SS')) <= TO_DATE('" & dteEndDate & "', 'MM/DD/YY HH24:MI:SS')"
 
         Try
             ds = ORDBAccess.GetAdapter(strSQLstring, connectOR)
@@ -267,14 +265,14 @@ Module Module1
             objXMLWriter.WriteElementString("ORDER_NO", unccOrderNo)
             objXMLWriter.WriteElementString("LINE_NBR", ds.Tables(0).Rows(I).Item("LINE_NBR"))
             objXMLWriter.WriteElementString("DTTM_STAMP", ds.Tables(0).Rows(I).Item("DTTM_STAMP"))
-            strOrdStatusToCheck = ds.Tables(0).Rows(I).Item("ISA_ORDER_STATUS")
-            Try
-                If UCase(Trim(strOrdStatusToCheck)) = "8" Then
-                    strOrdStatusToCheck = "6"
-                End If
-            Catch ex As Exception
-                strOrdStatusToCheck = ds.Tables(0).Rows(I).Item("ISA_ORDER_STATUS")
-            End Try
+            strOrdStatusToCheck = ds.Tables(0).Rows(I).Item("OLD_ORDER_STATUS")
+            'Try
+            '    If UCase(Trim(strOrdStatusToCheck)) = "8" Then
+            '        strOrdStatusToCheck = "6"
+            '    End If
+            'Catch ex As Exception
+            '    strOrdStatusToCheck = ds.Tables(0).Rows(I).Item("ISA_ORDER_STATUS")
+            'End Try
             objXMLWriter.WriteElementString("ISA_ORDER_STATUS", strOrdStatusToCheck)
 
             objXMLWriter.WriteEndElement()
