@@ -11,20 +11,13 @@ Module Module1
     Dim objStreamWriter As StreamWriter
     Dim rootDir As String = "C:\StatChg"
     Dim logpath As String = "C:\StatChg\LOGS\StatChgEmailOutUNCC" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=EINTERNET;User ID=EINTERNET;Data Source=RPTG")
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=STAR")
 
     Sub Main()
 
         Console.WriteLine("Start StatChg Email send")
         Console.WriteLine("")
 
-        'If Dir(rootDir, FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir)
-        'End If
-        'If Dir(rootDir & "\LOGS", FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir & "\LOGS")
-        'End If
-        
         'read settings
 
         '   (1) connection string / db connection
@@ -100,6 +93,7 @@ Module Module1
             If dsRows.Tables(0).Rows(I).Item("SITESTK") = "Y" And dsRows.Tables(0).Rows(I).Item("SITEBU") = "I0256" Then
                 objStreamWriter.WriteLine("  StatChg Email send stock emails for " & dsRows.Tables(0).Rows(I).Item("SITEBU"))
                 buildstatchgout = checkStock(dsRows.Tables(0).Rows(I).Item("SITEBU"), dsRows.Tables(0).Rows(I).Item("SITESTART"))
+                buildstatchgout = False
                 If buildstatchgout = True Then
                     bolErrorSomeWhere = True
                 End If
@@ -160,39 +154,40 @@ Module Module1
             Return True
         End Try
 
-        strSQLstring = "SELECT DISTINCT A.ORDER_NO, B.LINE_NBR, E.RECEIVER_ID," & vbCrLf & _
-                " E.RECV_LN_NBR, A.BUSINESS_UNIT_OM, B.EMPLID, E.DESCR254_MIXED" & vbCrLf & _
-                " FROM PS_ISA_ORD_INTFC_H A, PS_ISA_ORD_INTFC_L B," & vbCrLf & _
+        strSQLstring = "SELECT DISTINCT A.ORDER_NO, B.ISA_INTFC_LN AS LINE_NBR, E.RECEIVER_ID," & vbCrLf & _
+                " E.RECV_LN_NBR, A.BUSINESS_UNIT_OM, B.ISA_EMPLOYEE_ID AS EMPLID, E.DESCR254_MIXED" & vbCrLf & _
+                " FROM PS_ISA_ORD_INTF_HD A, PS_ISA_ORD_INTF_LN B," & vbCrLf & _
                 " PS_ISA_USERS_TBL C, PS_PO_LINE_DISTRIB D," & vbCrLf & _
-                " PS_RECV_LN E" & vbCrLf & _
+                " PS_RECV_LN_SHIP E" & vbCrLf & _
                 " WHERE A.BUSINESS_UNIT_OM = 'I0256'" & vbCrLf & _
                 " AND A.ADD_DTTM > TO_DATE('" & dteStrDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
                 " AND A.ADD_DTTM > TO_DATE('" & dtrStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
-                " AND A.ISA_IDENTIFIER = B.ISA_PARENT_IDENT" & vbCrLf & _
+                " AND A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf & _
+                " AND A.ORDER_NO = B.ORDER_NO" & vbCrLf & _
                 " AND A.BUSINESS_UNIT_OM = C.BUSINESS_UNIT" & vbCrLf & _
-                " AND B.EMPLID = C.ISA_EMPLOYEE_ID" & vbCrLf & _
+                " AND B.ISA_EMPLOYEE_ID = C.ISA_EMPLOYEE_ID" & vbCrLf & _
                 " AND D.BUSINESS_UNIT = 'ISA00'" & vbCrLf & _
                 " AND A.ORDER_NO = D.REQ_ID" & vbCrLf & _
-                " AND B.LINE_NBR = D.REQ_LINE_NBR" & vbCrLf & _
+                " AND B.ISA_INTFC_LN = D.REQ_LINE_NBR" & vbCrLf & _
                 " AND D.BUSINESS_UNIT = E.BUSINESS_UNIT" & vbCrLf & _
                 " AND D.PO_ID = E.PO_ID" & vbCrLf & _
                 " AND D.LINE_NBR = E.LINE_NBR" & vbCrLf & _
-                " AND E.QTY_LN_ACCPT > 0" & vbCrLf & _
+                " AND E.QTY_SH_ACCPT > 0" & vbCrLf & _
                 " AND NOT EXISTS (SELECT 'X'" & vbCrLf & _
                 " FROM PS_RTV_LN F" & vbCrLf & _
                 " WHERE F.BUSINESS_UNIT_PO = D.BUSINESS_UNIT" & vbCrLf & _
                 " AND F.PO_ID = D.PO_ID" & vbCrLf & _
                 " AND F.LINE_NBR = D.LINE_NBR" & vbCrLf & _
-                " AND F.QTY_LN_RETRN_SUOM = E.QTY_LN_ACCPT" & vbCrLf & _
-                " AND F.REJECT_REASON = 'MTX')" & vbCrLf & _
+                " AND F.QTY_LN_RETRN_SUOM = E.QTY_SH_ACCPT" & vbCrLf & _
+                " AND F.RETURN_REASON = 'MTX')" & vbCrLf & _
                 " AND NOT EXISTS (SELECT 'X'" & vbCrLf & _
                 " FROM PS_ISA_ORDSTAT_EML G" & vbCrLf & _
                 " WHERE A.BUSINESS_UNIT_OM = G.BUSINESS_UNIT_OM" & vbCrLf & _
                 " AND A.ORDER_NO = G.ORDER_NO" & vbCrLf & _
-                " AND B.LINE_NBR = G.LINE_NBR" & vbCrLf & _
+                " AND B.ISA_INTFC_LN = G.LINE_NBR" & vbCrLf & _
                 " AND E.RECEIVER_ID = G.RECEIVER_ID" & vbCrLf & _
                 " AND E.RECV_LN_NBR = G.RECV_LN_NBR" & vbCrLf & _
-                " AND G.ISA_ORDER_STATUS = 'R')" & vbCrLf & _
+                " AND G.ISA_LINE_STATUS = 'RET')" & vbCrLf & _
                 " ORDER BY ORDER_NO, LINE_NBR, RECEIVER_ID, RECV_LN_NBR"
 
         Command = New OleDbCommand(strSQLstring, connectOR)
@@ -238,7 +233,7 @@ Module Module1
                         " '" & strRECEIVERID & "'," & vbCrLf & _
                         " '" & strRECVLNNBR & "'," & vbCrLf & _
                         " '" & strEMPLID & "'," & vbCrLf & _
-                        " 'R', '')" & vbCrLf
+                        " 'RET', '')" & vbCrLf
                          
 
             Dim command1 As OleDbCommand
@@ -277,91 +272,34 @@ Module Module1
         Dim dteStrDate As DateTime
         dteStrDate = Now.AddMonths(-3).ToString
         Dim strSQLstring As String
-        strSQLstring = "SELECT A.ORDER_NO, D.INTFC_LINE_NUM, E.ORDER_INT_LINE_NO, E.DEMAND_LINE_NO," & vbCrLf & _
-                " A.BUSINESS_UNIT_OM, B.EMPLID, I.DESCR60, I.INV_ITEM_ID" & vbCrLf & _
-                " FROM PS_ISA_ORD_INTFC_H A, PS_ISA_ORD_INTFC_L B," & vbCrLf & _
-                " PS_ISA_USERS_TBL C, PS_ISA_ORD_INTFC_O D," & vbCrLf & _
-                " PS_MASTER_ITEM_TBL I," & vbCrLf & _
-                " PS_SHIP_INF_INV E" & vbCrLf & _
+        strSQLstring = "SELECT B.ORDER_NO, B.ISA_INTFC_LN AS INTFC_LINE_NUM, B.ISA_INTFC_LN AS ORDER_INT_LINE_NO, D.DEMAND_LINE_NO," & vbCrLf & _
+                " B.BUSINESS_UNIT_OM, B.ISA_EMPLOYEE_ID AS EMPLID, E.DESCR60, E.INV_ITEM_ID" & vbCrLf & _
+                " FROM PS_ISA_ORD_INTF_HD A, PS_ISA_ORD_INTF_LN B," & vbCrLf & _
+                " PS_ISA_USERS_TBL C, SYSADM8.PS_IN_DEMAND D," & vbCrLf & _
+                " PS_MASTER_ITEM_TBL E" & vbCrLf & _
                 " WHERE A.BUSINESS_UNIT_OM = 'I0256'" & vbCrLf & _
                 " AND A.ADD_DTTM > TO_DATE('" & dteStrDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
                 " AND A.ADD_DTTM > TO_DATE('" & dtrStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
-                " AND A.ISA_IDENTIFIER = B.ISA_PARENT_IDENT" & vbCrLf & _
+                " AND A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf & _
+                " AND A.ORDER_NO = B.ORDER_NO" & vbCrLf & _
                 " AND B.INV_ITEM_ID <> ' '" & vbCrLf & _
                 " AND A.BUSINESS_UNIT_OM = C.BUSINESS_UNIT" & vbCrLf & _
-                " AND B.EMPLID = C.ISA_EMPLOYEE_ID" & vbCrLf & _
-                " AND A.BUSINESS_UNIT_OM = D.BUSINESS_UNIT_OM" & vbCrLf & _
-                " AND A.ORDER_NO = D.ORDER_NO" & vbCrLf & _
-                " AND I.SETID = 'MAIN1'" & vbCrLf & _
-                " AND E.INV_ITEM_ID = I.INV_ITEM_ID" & vbCrLf & _
-                " AND B.LINE_NBR = D.INTFC_LINE_NUM" & vbCrLf & _
-                " AND E.DEMAND_SOURCE = 'OM'" & vbCrLf & _
-                " AND E.SOURCE_BUS_UNIT = A.BUSINESS_UNIT_OM" & vbCrLf & _
-                " AND D.ORDER_NO = E.ORDER_NO" & vbCrLf & _
-                " AND D.ORDER_INT_LINE_NO = E.ORDER_INT_LINE_NO" & vbCrLf & _
-                " AND E.QTY_PICKED > 0" & vbCrLf & _
+                " AND B.ISA_EMPLOYEE_ID = C.ISA_EMPLOYEE_ID" & vbCrLf & _
+                " AND B.ISA_INTFC_LN = D.ORDER_INT_LINE_NO" & vbCrLf & _
+                " AND B.ORDER_NO = D.ORDER_NO" & vbCrLf & _
+                " AND E.SETID = 'MAIN1'" & vbCrLf & _
+                " AND D.INV_ITEM_ID = E.INV_ITEM_ID" & vbCrLf & _
+                " AND D.IN_FULFILL_STATE IN ('60','50')" & vbCrLf & _
+                " AND D.DEMAND_SOURCE = 'OM'" & vbCrLf & _
+                " AND D.QTY_PICKED > 0" & vbCrLf & _
                 " AND NOT EXISTS (SELECT 'X'" & vbCrLf & _
-                " FROM PS_DEMAND_INV F" & vbCrLf & _
-                " WHERE F.BUSINESS_UNIT = E.BUSINESS_UNIT" & vbCrLf & _
-                " AND F.DEMAND_SOURCE = E.DEMAND_SOURCE" & vbCrLf & _
-                " AND F.SOURCE_BUS_UNIT = E.SOURCE_BUS_UNIT" & vbCrLf & _
-                " AND F.ORDER_NO = E.ORDER_NO" & vbCrLf & _
-                " AND F.ORDER_INT_LINE_NO = E.ORDER_INT_LINE_NO" & vbCrLf & _
-                " AND F.SCHED_LINE_NO = E.SCHED_LINE_NO" & vbCrLf & _
-                " AND F.INV_ITEM_ID = E.INV_ITEM_ID" & vbCrLf & _
-                " AND F.DEMAND_LINE_NO = E.DEMAND_LINE_NO)" & vbCrLf & _
-                " AND NOT EXISTS (SELECT 'X'" & vbCrLf & _
-                " FROM PS_ISA_ORDSTAT_EML G" & vbCrLf & _
-                " WHERE A.BUSINESS_UNIT_OM = G.BUSINESS_UNIT_OM" & vbCrLf & _
-                " AND A.ORDER_NO = G.ORDER_NO" & vbCrLf & _
-                " AND D.INTFC_LINE_NUM = G.LINE_NBR" & vbCrLf & _
-                " AND E.ORDER_INT_LINE_NO = G.ORDER_INT_LINE_NO" & vbCrLf & _
-                " AND E.DEMAND_LINE_NO = G.DEMAND_LINE_NO" & vbCrLf & _
-                " AND G.ISA_ORDER_STATUS = '7')" & vbCrLf & _
-                " UNION ALL" & vbCrLf & _
-                " SELECT A.ORDER_NO, D.INTFC_LINE_NUM, E.ORDER_INT_LINE_NO,  E.DEMAND_LINE_NO," & vbCrLf & _
-                " A.BUSINESS_UNIT_OM, B.EMPLID, I.DESCR60, I.INV_ITEM_ID" & vbCrLf & _
-                " FROM PS_ISA_ORD_INTFC_H A, PS_ISA_ORD_INTFC_L B," & vbCrLf & _
-                " PS_ISA_USERS_TBL C, PS_ISA_ORD_INTFC_O D," & vbCrLf & _
-                " PS_MASTER_ITEM_TBL I," & vbCrLf & _
-                " PS_DEMAND_INV E" & vbCrLf & _
-                " WHERE A.BUSINESS_UNIT_OM = 'I0256'" & vbCrLf & _
-                " AND A.ADD_DTTM > TO_DATE('" & dteStrDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
-                " AND A.ADD_DTTM > TO_DATE('" & dtrStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
-                " AND A.ISA_IDENTIFIER = B.ISA_PARENT_IDENT" & vbCrLf & _
-                " AND B.INV_ITEM_ID <> ' '" & vbCrLf & _
-                " AND A.BUSINESS_UNIT_OM = C.BUSINESS_UNIT" & vbCrLf & _
-                " AND B.EMPLID = C.ISA_EMPLOYEE_ID" & vbCrLf & _
-                " AND A.BUSINESS_UNIT_OM = D.BUSINESS_UNIT_OM" & vbCrLf & _
-                " AND A.ORDER_NO = D.ORDER_NO" & vbCrLf & _
-                " AND I.SETID = 'MAIN1'" & vbCrLf & _
-                " AND E.INV_ITEM_ID = I.INV_ITEM_ID" & vbCrLf & _
-                " AND B.LINE_NBR = D.INTFC_LINE_NUM" & vbCrLf & _
-                " AND E.DEMAND_SOURCE = 'OM'" & vbCrLf & _
-                " AND E.SOURCE_BUS_UNIT = A.BUSINESS_UNIT_OM" & vbCrLf & _
-                " AND D.ORDER_NO = E.ORDER_NO" & vbCrLf & _
-                " AND D.ORDER_INT_LINE_NO = E.ORDER_INT_LINE_NO" & vbCrLf & _
-                " AND E.QTY_PICKED > 0" & vbCrLf & _
-                " AND E.CONFIRMED_FLAG = 'Y'" & vbCrLf & _
-                " AND NOT EXISTS (SELECT 'X'" & vbCrLf & _
-                " FROM PS_SHIP_INF_INV F" & vbCrLf & _
-                " WHERE F.BUSINESS_UNIT = E.BUSINESS_UNIT" & vbCrLf & _
-                " AND F.DEMAND_SOURCE = E.DEMAND_SOURCE" & vbCrLf & _
-                " AND F.SOURCE_BUS_UNIT = E.SOURCE_BUS_UNIT" & vbCrLf & _
-                " AND F.ORDER_NO = E.ORDER_NO" & vbCrLf & _
-                " AND F.ORDER_INT_LINE_NO = E.ORDER_INT_LINE_NO" & vbCrLf & _
-                " AND F.SCHED_LINE_NO = E.SCHED_LINE_NO" & vbCrLf & _
-                " AND F.INV_ITEM_ID = E.INV_ITEM_ID" & vbCrLf & _
-                " AND F.DEMAND_LINE_NO = E.DEMAND_LINE_NO)" & vbCrLf & _
-                " AND NOT EXISTS (SELECT 'X'" & vbCrLf & _
-                " FROM PS_ISA_ORDSTAT_EML G" & vbCrLf & _
-                " WHERE A.BUSINESS_UNIT_OM = G.BUSINESS_UNIT_OM" & vbCrLf & _
-                " AND A.ORDER_NO = G.ORDER_NO" & vbCrLf & _
-                " AND D.INTFC_LINE_NUM = G.LINE_NBR" & vbCrLf & _
-                " AND E.ORDER_INT_LINE_NO = G.ORDER_INT_LINE_NO" & vbCrLf & _
-                " AND E.DEMAND_LINE_NO = G.DEMAND_LINE_NO" & vbCrLf & _
-                " AND G.ISA_ORDER_STATUS = '7')" & vbCrLf & _
-                " ORDER BY ORDER_NO, INTFC_LINE_NUM, ORDER_INT_LINE_NO, DEMAND_LINE_NO"
+                " FROM PS_ISA_ORDSTAT_EML F" & vbCrLf & _
+                " WHERE F.BUSINESS_UNIT_OM = D.SOURCE_BUS_UNIT" & vbCrLf & _
+                " AND F.ORDER_NO = D.ORDER_NO" & vbCrLf & _
+                " AND F.DEMAND_LINE_NO = D.DEMAND_LINE_NO" & vbCrLf & _
+                " AND F.ORDER_INT_LINE_NO = D.ORDER_INT_LINE_NO" & vbCrLf & _
+                " AND F.ISA_LINE_STATUS IN ('PKP', 'PKF'))" & vbCrLf & _
+                " ORDER BY ORDER_NO, INTFC_LINE_NUM, DEMAND_LINE_NO"
 
         Dim Command = New OleDbCommand(strSQLstring, connectOR)
         connectOR.Open()
@@ -406,24 +344,8 @@ Module Module1
                         " '" & strDEMANDLINENO & "'," & vbCrLf & _
                         " ' ',0," & vbCrLf & _
                         " '" & strEMPLID & "'," & vbCrLf & _
-                         " '7', '')" & vbCrLf
-                         
-
-            'strSQLstring = "INSERT INTO PS_ISA_ORDSTAT_EML" & vbCrLf & _
-            '                        " VALUES ('" & strBUSINESSUNITOM & "'," & vbCrLf & _
-            '                        " '" & strORDERNO & "'," & vbCrLf & _
-            '                        " '" & strINTFCLINENUM & "'," & vbCrLf & _
-            '                        " '0'," & vbCrLf & _
-            '                        " '0'," & vbCrLf & _
-            '                        " '" & strRECEIVERID & "'," & vbCrLf & _
-            '                        " '" & strRECVLNNBR & "'," & vbCrLf & _
-            '                        " '" & strEMPLID & "'," & vbCrLf & _
-            '                        " 'R'," & vbCrLf & _
-            '                        " ''," & vbCrLf & _
-            '                        " '" & strDesc254 & "')" & vbCrLf
-
-
-
+                         " 'PKF', '')" & vbCrLf
+                   
             Dim command1 As OleDbCommand
             command1 = New OleDbCommand(strSQLstring, connectOR)
             Try
@@ -468,15 +390,15 @@ Module Module1
 
         ' get all stock lines that have been picked
         strSQLString = "SELECT A.BUSINESS_UNIT_OM, A.ORDER_NO, A.LINE_NBR," & vbCrLf & _
-                " A.EMPLID, A.ISA_ORDER_STATUS," & vbCrLf & _
-                " B.INV_ITEM_ID, B.QTY_LN_ACCPT," & vbCrLf & _
+                " A.EMPLID, A.ISA_LINE_STATUS AS ISA_ORDER_STATUS," & vbCrLf & _
+                " B.INV_ITEM_ID, B.QTY_SH_ACCPT AS QTY_LN_ACCPT," & vbCrLf & _
                 " B.DESCR254_MIXED , D.ISA_EMPLOYEE_EMAIL," & vbCrLf & _
                 " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH" & vbCrLf & _
                 " FROM PS_ISA_ORDSTAT_EML A," & vbCrLf & _
-                " PS_RECV_LN B," & vbCrLf & _
+                " PS_RECV_LN_SHIP B," & vbCrLf & _
                 " PS_ISA_USERS_TBL D" & vbCrLf & _
                 " WHERE A.EMAIL_DATETIME Is NULL" & vbCrLf & _
-                " AND A.ISA_ORDER_STATUS = 'R'" & vbCrLf & _
+                " AND A.ISA_LINE_STATUS = 'RET'" & vbCrLf & _
                 " AND (SELECT DFL.BUSINESS_UNIT" & vbCrLf & _
                 " FROM PS_PO_LOADER_DFL DFL" & vbCrLf & _
                 " WHERE DFL.LOADER_BU = A.BUSINESS_UNIT_OM" & vbCrLf & _
@@ -526,12 +448,11 @@ Module Module1
                 'take this code down below so u can have multiple Order num's per email.
 
                 If I = ds.Tables(0).Rows.Count - 1 Then
-                    sendCustEmail(dsEmail, _
-                        ds.Tables(0).Rows(I).Item("ORDER_NO"), _
-                        ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
-                        ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
-                        ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
-                        'ds.Tables(0).Rows(I).Item("DESCR254_MIXED")
+                    'sendCustEmail(dsEmail, _
+                    '    ds.Tables(0).Rows(I).Item("ORDER_NO"), _
+                    '    ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
+                    '    ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
+                    '    ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
 
                     dsEmail.Clear()
                     If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
@@ -546,11 +467,11 @@ Module Module1
                    & ds.Tables(0).Rows(I + 1).Item("ORDER_NO") <> _
                    ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM") _
                    & ds.Tables(0).Rows(I).Item("ORDER_NO") Then
-                    sendCustEmail(dsEmail, _
-                        ds.Tables(0).Rows(I).Item("ORDER_NO"), _
-                        ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
-                        ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
-                        ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
+                    'sendCustEmail(dsEmail, _
+                    '    ds.Tables(0).Rows(I).Item("ORDER_NO"), _
+                    '    ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
+                    '    ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
+                    '    ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
                     dsEmail.Clear()
                     If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
                         connectOR.Close()
@@ -576,17 +497,17 @@ Module Module1
 
         ' get all stock lines that have been picked
         strSQLString = "SELECT A.BUSINESS_UNIT_OM, A.ORDER_NO, A.LINE_NBR," & vbCrLf & _
-                " A.EMPLID, A.ISA_ORDER_STATUS," & vbCrLf & _
+                " A.EMPLID, A.ISA_LINE_STATUS AS ISA_ORDER_STATUS," & vbCrLf & _
                 " B.INV_ITEM_ID, B.QTY_PICKED, B.QTY_BACKORDER," & vbCrLf & _
                 " C.DESCR60, D.ISA_EMPLOYEE_EMAIL," & vbCrLf & _
                 " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH," & vbCrLf & _
                 " C.INV_ITEM_ID" & vbCrLf & _
                 " FROM PS_ISA_ORDSTAT_EML A," & vbCrLf & _
-                " PS_SHIP_INF_INV B," & vbCrLf & _
+                " SYSADM8.PS_IN_DEMAND B," & vbCrLf & _
                 " PS_MASTER_ITEM_TBL C," & vbCrLf & _
                 " PS_ISA_USERS_TBL D" & vbCrLf & _
                 " WHERE A.EMAIL_DATETIME Is NULL" & vbCrLf & _
-                " AND A.ISA_ORDER_STATUS = '7'" & vbCrLf & _
+                " AND A.ISA_LINE_STATUS = 'PKF'" & vbCrLf & _
                 " AND B.DEMAND_SOURCE = 'OM'" & vbCrLf & _
                 " AND B.SOURCE_BUS_UNIT = A.BUSINESS_UNIT_OM" & vbCrLf & _
                 " AND A.ORDER_NO = B.ORDER_NO" & vbCrLf & _
@@ -597,50 +518,9 @@ Module Module1
                 " AND A.BUSINESS_UNIT_OM = D.BUSINESS_UNIT" & vbCrLf & _
                 " AND A.BUSINESS_UNIT_OM = 'I0256'" & vbCrLf & _
                 " AND A.EMPLID = D.ISA_EMPLOYEE_ID" & vbCrLf & _
-                " AND NOT EXISTS (SELECT 'X'" & vbCrLf & _
-                " FROM PS_DEMAND_INV F" & vbCrLf & _
-                " WHERE F.BUSINESS_UNIT = B.BUSINESS_UNIT" & vbCrLf & _
-                " AND F.DEMAND_SOURCE = B.DEMAND_SOURCE" & vbCrLf & _
-                " AND F.SOURCE_BUS_UNIT = B.SOURCE_BUS_UNIT" & vbCrLf & _
-                " AND F.ORDER_NO = B.ORDER_NO" & vbCrLf & _
-                " AND F.ORDER_INT_LINE_NO = B.ORDER_INT_LINE_NO" & vbCrLf & _
-                " AND F.SCHED_LINE_NO = B.SCHED_LINE_NO" & vbCrLf & _
-                " AND F.INV_ITEM_ID = B.INV_ITEM_ID" & vbCrLf & _
-                " AND F.DEMAND_LINE_NO = B.DEMAND_LINE_NO)" & vbCrLf & _
-                " UNION ALL" & vbCrLf & _
-                "SELECT A.BUSINESS_UNIT_OM, A.ORDER_NO, A.LINE_NBR," & vbCrLf & _
-                " A.EMPLID, A.ISA_ORDER_STATUS," & vbCrLf & _
-                " B.INV_ITEM_ID, B.QTY_PICKED, B.QTY_BACKORDER," & vbCrLf & _
-                " C.DESCR60, D.ISA_EMPLOYEE_EMAIL," & vbCrLf & _
-                " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH," & vbCrLf & _
-                " C.INV_ITEM_ID" & vbCrLf & _
-                " FROM PS_ISA_ORDSTAT_EML A," & vbCrLf & _
-                " PS_DEMAND_INV B," & vbCrLf & _
-                " PS_MASTER_ITEM_TBL C," & vbCrLf & _
-                " PS_ISA_USERS_TBL D" & vbCrLf & _
-                " WHERE A.EMAIL_DATETIME Is NULL" & vbCrLf & _
-                " AND A.ISA_ORDER_STATUS = '7'" & vbCrLf & _
+                " AND B.IN_FULFILL_STATE IN ('60','50')" & vbCrLf & _
                 " AND B.DEMAND_SOURCE = 'OM'" & vbCrLf & _
-                " AND B.SOURCE_BUS_UNIT = A.BUSINESS_UNIT_OM" & vbCrLf & _
-                " AND A.ORDER_NO = B.ORDER_NO" & vbCrLf & _
-                " AND A.ORDER_INT_LINE_NO = B.ORDER_INT_LINE_NO" & vbCrLf & _
-                " AND A.DEMAND_LINE_NO = B.DEMAND_LINE_NO" & vbCrLf & _
-                " AND C.SETID = 'MAIN1'" & vbCrLf & _
-                " AND B.INV_ITEM_ID = C.INV_ITEM_ID" & vbCrLf & _
-                " AND A.BUSINESS_UNIT_OM = D.BUSINESS_UNIT" & vbCrLf & _
-                " AND A.BUSINESS_UNIT_OM = 'I0256'" & vbCrLf & _
-                " AND A.EMPLID = D.ISA_EMPLOYEE_ID" & vbCrLf & _
-                " AND NOT EXISTS (SELECT 'X'" & vbCrLf & _
-                " FROM PS_SHIP_INF_INV F" & vbCrLf & _
-                " WHERE F.BUSINESS_UNIT = B.BUSINESS_UNIT" & vbCrLf & _
-                " AND F.DEMAND_SOURCE = B.DEMAND_SOURCE" & vbCrLf & _
-                " AND F.SOURCE_BUS_UNIT = B.SOURCE_BUS_UNIT" & vbCrLf & _
-                " AND F.ORDER_NO = B.ORDER_NO" & vbCrLf & _
-                " AND F.ORDER_INT_LINE_NO = B.ORDER_INT_LINE_NO" & vbCrLf & _
-                " AND F.SCHED_LINE_NO = B.SCHED_LINE_NO" & vbCrLf & _
-                " AND F.INV_ITEM_ID = B.INV_ITEM_ID" & vbCrLf & _
-                " AND F.DEMAND_LINE_NO = B.DEMAND_LINE_NO)" & vbCrLf & _
-                " ORDER BY 1, 2, 3, 4, 5" & vbCrLf
+                " AND B.QTY_PICKED > 0" & vbCrLf
 
         Dim Command = New OleDbCommand(strSQLString, connectOR)
         connectOR.Open()
@@ -696,11 +576,11 @@ Module Module1
                 End If
                 dsEmail.Rows.Add(dr)
                 If I = ds.Tables(0).Rows.Count - 1 Then
-                    sendCustEmail(dsEmail, _
-                        ds.Tables(0).Rows(I).Item("ORDER_NO"), _
-                        ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
-                        ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
-                        ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
+                    'sendCustEmail(dsEmail, _
+                    '    ds.Tables(0).Rows(I).Item("ORDER_NO"), _
+                    '    ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
+                    '    ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
+                    '    ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
                     dsEmail.Clear()
                     If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
                         connectOR.Close()
@@ -714,11 +594,11 @@ Module Module1
                    & ds.Tables(0).Rows(I + 1).Item("ORDER_NO") <> _
                    ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM") _
                    & ds.Tables(0).Rows(I).Item("ORDER_NO") Then
-                    sendCustEmail(dsEmail, _
-                        ds.Tables(0).Rows(I).Item("ORDER_NO"), _
-                        ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
-                        ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
-                        ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
+                    'sendCustEmail(dsEmail, _
+                    '    ds.Tables(0).Rows(I).Item("ORDER_NO"), _
+                    '    ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
+                    '    ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
+                    '    ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
                     dsEmail.Clear()
                     If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
                         connectOR.Close()
@@ -749,11 +629,11 @@ Module Module1
         connectOR.Open()
         Dim strSQLstring As String
         strSQLstring = "SELECT SUM( B.QTY_ORDERED)" & vbCrLf & _
-                " FROM PS_ISA_ORD_INTFC_O A, PS_ORD_LINE B" & vbCrLf & _
+                " FROM PS_ISA_ORD_INTF_LN A, PS_ORD_LINE B" & vbCrLf & _
                 " WHERE A.ORDER_NO = '" & strOrderNo & "'" & vbCrLf & _
-                " AND A.INTFC_LINE_NUM = " & intLineNbr & vbCrLf & _
+                " AND A.ISA_INTFC_LN = " & intLineNbr & vbCrLf & _
                 " AND A.ORDER_NO = B.ORDER_NO" & vbCrLf & _
-                " AND A.ORDER_INT_LINE_NO = B.ORDER_INT_LINE_NO"
+                " AND A.ISA_INTFC_LN = B.ORDER_INT_LINE_NO"
 
         Try
             getQtyOrdered = ORDBAccess.GetScalar(strSQLstring, connectOR)
@@ -773,32 +653,15 @@ Module Module1
         connectOR.Open()
         Dim strSQLstring As String
         strSQLstring = "SELECT SUM( B.QTY_PICKED)" & vbCrLf & _
-                " FROM PS_ISA_ORD_INTFC_O A, PS_DEMAND_PHYS_INV B" & vbCrLf & _
+                " FROM PS_ISA_ORD_INTF_LN A, SYSADM8.PS_IN_DEMAND B" & vbCrLf & _
                 " WHERE A.ORDER_NO = '" & strOrderNo & "'" & vbCrLf & _
-                " AND A.INTFC_LINE_NUM = " & intLineNbr & vbCrLf & _
+                " AND A.ISA_INTFC_LN = " & intLineNbr & vbCrLf & _
                 " AND A.ORDER_NO = B.ORDER_NO" & vbCrLf & _
-                " AND A.ORDER_INT_LINE_NO = B.ORDER_INT_LINE_NO" & vbCrLf & _
-                " AND (EXISTS (SELECT 'X'" & vbCrLf & _
-                " FROM PS_DEMAND_INV C" & vbCrLf & _
-                " WHERE C.BUSINESS_UNIT = B.BUSINESS_UNIT" & vbCrLf & _
-                " AND C.DEMAND_SOURCE = B.DEMAND_SOURCE" & vbCrLf & _
-                " AND C.SOURCE_BUS_UNIT = B.SOURCE_BUS_UNIT" & vbCrLf & _
-                " AND C.ORDER_NO = B.ORDER_NO" & vbCrLf & _
-                " AND C.ORDER_INT_LINE_NO = B.ORDER_INT_LINE_NO" & vbCrLf & _
-                " AND C.SCHED_LINE_NO = B.SCHED_LINE_NO" & vbCrLf & _
-                " AND C.INV_ITEM_ID = B.INV_ITEM_ID" & vbCrLf & _
-                " AND C.DEMAND_LINE_NO = B.DEMAND_LINE_NO" & vbCrLf & _
-                " AND C.CONFIRMED_FLAG = 'Y')" & vbCrLf & _
-                " OR EXISTS (SELECT 'X'" & vbCrLf & _
-                " FROM PS_SHIP_INF_INV D" & vbCrLf & _
-                " WHERE D.BUSINESS_UNIT = B.BUSINESS_UNIT" & vbCrLf & _
-                " AND D.DEMAND_SOURCE = B.DEMAND_SOURCE" & vbCrLf & _
-                " AND D.SOURCE_BUS_UNIT = B.SOURCE_BUS_UNIT" & vbCrLf & _
-                " AND D.ORDER_NO = B.ORDER_NO" & vbCrLf & _
-                " AND D.ORDER_INT_LINE_NO = B.ORDER_INT_LINE_NO" & vbCrLf & _
-                " AND D.SCHED_LINE_NO = B.SCHED_LINE_NO" & vbCrLf & _
-                " AND D.INV_ITEM_ID = B.INV_ITEM_ID" & vbCrLf & _
-                " AND D.DEMAND_LINE_NO = B.DEMAND_LINE_NO))"
+                " AND A.ISA_INTFC_LN = B.ORDER_INT_LINE_NO" & vbCrLf & _
+                " AND B.IN_FULFILL_STATE IN ('60','50')" & vbCrLf & _
+                " AND B.DEMAND_SOURCE = 'OM'" & vbCrLf & _
+                " AND B.QTY_PICKED > 0" & vbCrLf & _
+                ""
         Try
             getQtyShipped = ORDBAccess.GetScalar(strSQLstring, connectOR)
         Catch ex As Exception
@@ -876,7 +739,7 @@ Module Module1
             connectOR.DataSource.ToUpper = "DEVL" Or _
             connectOR.DataSource.ToUpper = "STAR" Or _
             connectOR.DataSource.ToUpper = "PLGR" Then
-            Mailer.To = "DoNotSendPLGR@sdi.com"
+            Mailer.To = "WEBDEV@sdi.com"
         Else
             Mailer.To = strPurchaserEmail
         End If
@@ -954,7 +817,7 @@ Module Module1
                        " SET EMAIL_DATETIME = TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
                        " WHERE BUSINESS_UNIT_OM = 'I0256'" & vbCrLf & _
                        " AND ORDER_NO = '" & strOrderNo & "'" & vbCrLf & _
-                       " AND ISA_ORDER_STATUS = '" & strOrderStatus & "'"
+                       " AND ISA_LINE_STATUS = '" & strOrderStatus & "'"
 
         Dim Command1 As OleDbCommand
         Command1 = New OleDbCommand(strSQLstring, connectOR)
@@ -983,23 +846,31 @@ Module Module1
             " to_char(MAX( A.DTTM_STAMP), 'MM/DD/YY HH24:MI:SS') as MAXDATE" & vbCrLf & _
             " FROM PS_ISAORDSTATUSLOG A" & vbCrLf & _
              " WHERE A.BUSINESS_UNIT_OM = 'I0256'" & vbCrLf
+
+        Dim dr As OleDbDataReader = Nothing
         Try
             Dim command As OleDbCommand
             command = New OleDbCommand(strSQLstring, connectOR)
             connectOR.Open()
-            Dim dr As OleDbDataReader
 
             dr = command.ExecuteReader
-            If dr.Read Then
-                dteEndDate = (dr.Item("MAXDATE"))
-            Else
-                dteEndDate = Now.ToString
-            End If
+            Try
 
+                If dr.Read Then
+                    dteEndDate = (dr.Item("MAXDATE"))
+                Else
+                    dteEndDate = Now.ToString
+                End If
+            Catch ex As Exception
+                dteEndDate = Now.ToString
+            End Try
+
+            dr.Close()
             connectOR.Close()
 
         Catch OleDBExp As OleDbException
             Try
+                dr.Close()
                 connectOR.Close()
             Catch exOR As Exception
 
@@ -1035,47 +906,46 @@ Module Module1
         ' PS_ISAORDSTATUSLOG the line number points to the line number in ps_isa_ord_intfc_l
         '         '  
 
-        strSQLstring = "SELECT A.BUSINESS_UNIT_OM, A.ORDER_NO, B.line_nbr," & vbCrLf & _
-                 " B.EMPLID, B.ISA_ORDER_STATUS as ORDER_TYPE," & vbCrLf & _
+        strSQLstring = "SELECT * FROM (SELECT A.BUSINESS_UNIT_OM, G.BUSINESS_UNIT_OM AS G_BUS_UNIT, D.BUSINESS_UNIT, D.ISA_EMPLOYEE_ID, A.ORDER_NO, B.ISA_INTFC_LN AS line_nbr," & vbCrLf & _
+                 " B.ISA_EMPLOYEE_ID AS EMPLID, B.ISA_LINE_STATUS as ORDER_TYPE," & vbCrLf & _
                  " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, " & vbCrLf & _
-                 " G.ISA_ORDER_STATUS," & vbCrLf & _
+                 " G.ISA_LINE_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','1','NEW','2','DSP','3','PKA','4','DLP','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','9') AS OLD_ORDER_STATUS," & vbCrLf & _
                  " (SELECT E.XLATLONGNAME" & vbCrLf & _
                                 " FROM XLATTABLE E" & vbCrLf & _
                                 " WHERE E.EFFDT =" & vbCrLf & _
                                 " (SELECT MAX(E_ED.EFFDT) FROM XLATTABLE E_ED" & vbCrLf & _
                                 " WHERE(E.FIELDNAME = E_ED.FIELDNAME)" & vbCrLf & _
-                                " AND E.LANGUAGE_CD = E_ED.LANGUAGE_CD" & vbCrLf & _
                                 " AND E.FIELDVALUE = E_ED.FIELDVALUE" & vbCrLf & _
                                 " AND E_ED.EFFDT <= SYSDATE)" & vbCrLf & _
-                                " AND E.FIELDNAME = 'ISA_ORDER_STATUS'" & vbCrLf & _
-                                " AND E.FIELDVALUE = G.ISA_ORDER_STATUS) as ORDER_STATUS_DESC, " & vbCrLf & _
+                                " AND E.FIELDNAME = 'ISA_LINE_STATUS'" & vbCrLf & _
+                                " AND E.FIELDVALUE = G.ISA_LINE_STATUS) as ORDER_STATUS_DESC, " & vbCrLf & _
                  " B.DESCR254 As NONSTOCK_DESCRIPTION, C.DESCR60 as STOCK_DESCRIPTION, D.ISA_EMPLOYEE_EMAIL," & vbCrLf & _
                  " B.INV_ITEM_ID as INV_ITEM_ID," & vbCrLf & _
                  " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH" & vbCrLf & _
-                 " FROM ps_isa_ord_intfc_H A," & vbCrLf & _
-                 " ps_isa_ord_intfc_l B," & vbCrLf & _
+                 " FROM ps_isa_ord_intf_HD A," & vbCrLf & _
+                 " ps_isa_ord_intf_LN B," & vbCrLf & _
                  " PS_MASTER_ITEM_TBL C," & vbCrLf & _
                  " PS_ISA_USERS_TBL D," & vbCrLf & _
-                 " PS_ISAORDSTATUSLOG G, " & vbCrLf & _
-                 " PS_ISA_USERS_PRIVS H " & vbCrLf & _
+                 " PS_ISAORDSTATUSLOG G " & vbCrLf & _
                  " where G.BUSINESS_UNIT_OM = 'I0256'" & vbCrLf & _
-                 " AND G.BUSINESS_UNIT_OM = H.BUSINESS_UNIT " & vbCrLf & _
                  " AND G.BUSINESS_UNIT_OM = A.BUSINESS_UNIT_OM " & vbCrLf & _
-                  " AND H.BUSINESS_UNIT = D.BUSINESS_UNIT " & vbCrLf & _
                  " AND G.BUSINESS_UNIT_OM = D.BUSINESS_UNIT " & vbCrLf & _
-                 " and A.ISA_IDENTIFIER = B.ISA_PARENT_IDENT" & vbCrLf & _
+                 " and A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf & _
+                 " and A.ORDER_NO = B.ORDER_NO" & vbCrLf & _
                  " and C.SETID (+) = 'MAIN1'" & vbCrLf & _
                  " and C.INV_ITEM_ID(+) = B.INV_ITEM_ID " & vbCrLf & _
                  " AND G.ORDER_NO = A.ORDER_NO " & vbCrLf & _
-                 " AND B.LINE_NBR = G.LINE_NBR" & vbCrLf & _
+                 " AND B.ISA_INTFC_LN = G.ISA_INTFC_LN" & vbCrLf & _
                  " AND A.BUSINESS_UNIT_OM = D.BUSINESS_UNIT" & vbCrLf & _
                  " AND G.DTTM_STAMP > TO_DATE('" & dteStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
                  " AND G.DTTM_STAMP <= TO_DATE('" & dteEndDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
-                 " AND B.EMPLID = H.ISA_EMPLOYEE_ID" & vbCrLf & _
-                 " AND B.EMPLID = D.ISA_EMPLOYEE_ID" & vbCrLf & _
-                 " AND SUBSTR(H.ISA_IOL_OP_NAME,10) = G.ISA_ORDER_STATUS " & vbCrLf & _
+                 " AND B.ISA_EMPLOYEE_ID = D.ISA_EMPLOYEE_ID) TBL, PS_ISA_USERS_PRIVS H " & vbCrLf & _
+                 " WHERE TBL.G_BUS_UNIT = H.BUSINESS_UNIT " & vbCrLf & _
+                 " AND H.BUSINESS_UNIT = TBL.BUSINESS_UNIT " & vbCrLf & _
+                 " AND TBL.EMPLID = H.ISA_EMPLOYEE_ID " & vbCrLf & _
+                 " AND SUBSTR(H.ISA_IOL_OP_NAME,10) = TBL.OLD_ORDER_STATUS " & vbCrLf & _
                  " AND H.ISA_IOL_OP_VALUE = 'Y' " & vbCrLf & _
-                 " AND H.ISA_EMPLOYEE_ID = D.ISA_EMPLOYEE_ID" & vbCrLf
+                 " AND H.ISA_EMPLOYEE_ID = TBL.ISA_EMPLOYEE_ID" & vbCrLf
         ' the tenth byte of isa_iol_op_name has the one character g.isa_order_status code
         ' example: substr(emlsubmit1,10) = '1'   order status code 1
 
@@ -1090,7 +960,7 @@ Module Module1
 
 
         If IsDBNull(ds.Tables(0).Rows.Count) Or (ds.Tables(0).Rows.Count) = 0 Then
-            objStreamWriter.WriteLine("     Warning - no status changes to process at this time")
+            objStreamWriter.WriteLine("     Warning - no status changes to process at this time for All statuses")
             Return False
         End If
 
@@ -1136,17 +1006,17 @@ Module Module1
             If I = ds.Tables(0).Rows.Count - 1 Then
 
                 strEmail_test = ";vitaly.rovensky@sdi.com"
-                sendCustEmail1(dsEmail, _
-                ds.Tables(0).Rows(I).Item("ORDER_NO"), _
-                dteCompanyID, _
-                dteCustID, _
-                ds.Tables(0).Rows(I).Item("ISA_ORDER_STATUS"), _
-                ds.Tables(0).Rows(I).Item("ORDER_STATUS_DESC"), _
-                 ds.Tables(0).Rows(I).Item("INV_ITEM_ID"), _
-                ds.Tables(0).Rows(I).Item("LINE_NBR"), _
-                 ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
-                ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
-                ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
+                'sendCustEmail1(dsEmail, _
+                'ds.Tables(0).Rows(I).Item("ORDER_NO"), _
+                'dteCompanyID, _
+                'dteCustID, _
+                'ds.Tables(0).Rows(I).Item("ISA_ORDER_STATUS"), _
+                'ds.Tables(0).Rows(I).Item("ORDER_STATUS_DESC"), _
+                ' ds.Tables(0).Rows(I).Item("INV_ITEM_ID"), _
+                'ds.Tables(0).Rows(I).Item("LINE_NBR"), _
+                ' ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
+                'ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
+                'ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
 
                 dsEmail.Clear()
                 If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
@@ -1157,17 +1027,17 @@ Module Module1
                           ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM") _
                           & ds.Tables(0).Rows(I).Item("ORDER_NO") Then
 
-                sendCustEmail1(dsEmail, _
-               ds.Tables(0).Rows(I).Item("ORDER_NO"), _
-               dteCompanyID, _
-               dteCustID, _
-               ds.Tables(0).Rows(I).Item("ISA_ORDER_STATUS"), _
-               ds.Tables(0).Rows(I).Item("ORDER_STATUS_DESC"), _
-               ds.Tables(0).Rows(I).Item("INV_ITEM_ID"), _
-               ds.Tables(0).Rows(I).Item("LINE_NBR"), _
-                ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
-                ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
-               ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
+                ' sendCustEmail1(dsEmail, _
+                'ds.Tables(0).Rows(I).Item("ORDER_NO"), _
+                'dteCompanyID, _
+                'dteCustID, _
+                'ds.Tables(0).Rows(I).Item("ISA_ORDER_STATUS"), _
+                'ds.Tables(0).Rows(I).Item("ORDER_STATUS_DESC"), _
+                'ds.Tables(0).Rows(I).Item("INV_ITEM_ID"), _
+                'ds.Tables(0).Rows(I).Item("LINE_NBR"), _
+                ' ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
+                ' ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
+                'ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
                 
                 dsEmail.Clear()
 
@@ -1185,12 +1055,6 @@ Module Module1
         If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
             connectOR.Close()
         End If
-
-        'If strBU <> "I0256" Then
-        '    bolerror1 = updateEnterprise(strBU, dteEndDate)
-        'End If
-
-
 
     End Function
 
