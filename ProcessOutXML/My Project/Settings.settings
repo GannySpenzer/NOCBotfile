@@ -17,9 +17,6 @@
     <Setting Name="onError_emailSubject" Type="System.String" Scope="Application">
       <Value Profile="(Default)">UNCC XML OUT Error - v3</Value>
     </Setting>
-    <Setting Name="oraCNString1" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=RPTG</Value>
-    </Setting>
     <Setting Name="unixServer_IOH" Type="System.String" Scope="Application">
       <Value Profile="(Default)">\\solaris2\PSSHARE\efi\I0256\outbound\IOH</Value>
     </Setting>
@@ -34,6 +31,12 @@
     </Setting>
     <Setting Name="url_archibus_uncc_edu" Type="System.String" Scope="Application">
       <Value Profile="(Default)">http://websrv.sdi.com/sdiwebin/xmlinsdi.aspx</Value>
+    </Setting>
+    <Setting Name="oraCNString1" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=STAR</Value>
+    </Setting>
+    <Setting Name="ProcessOutXML_SDiEmailUtilityService_EmailServices" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">http://sdixbatch:8011/EmailSvcProd/EmailServices.asmx</Value>
     </Setting>
   </Settings>
 </SettingsFile>

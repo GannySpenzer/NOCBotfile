@@ -3,6 +3,7 @@ Imports System.IO
 Imports System.Web.Mail
 Imports Microsoft.JScript
 Imports SDI.ApplicationLogger
+Imports System.Collections.Generic
 
 Module Module1
 
@@ -18,7 +19,7 @@ Module Module1
     Dim rootDir As String = "C:\INTFCXML"
     Dim logpath As String = "C:\INTFCXML\LOGS\UpdINTFCXMLOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
     Dim logpath1 As String = "C:\INTFCXML\LOGS\UpdINTFCXMLloggerOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim connectOR As New System.Data.OleDb.OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=prod")
+    Dim connectOR As New System.Data.OleDb.OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=STAR")
     Dim strOverride As String
 
     Private m_unixServer_IOH As String = "\\solaris2\PSSHARE\efi\I0256\outbound\IOH"
@@ -27,7 +28,7 @@ Module Module1
 
     Private m_onError_emailFrom As String = "TechSupport@sdi.com"
     Private m_onError_emailTo As String = "michael.randall@sdi.com;vitaly.rovensky@sdi.com;"
-    Private m_onError_emailSubject As String = "UNCC XML OUT Error"
+    Private m_onError_emailSubject As String = "UNCC 'Process XML OUT' Error"
 
     Private m_url_archibus_uncc_edu As String = "http://websrv.sdi.com/sdiwebin/xmlinsdi.aspx"
 
@@ -203,25 +204,6 @@ Module Module1
                                      "")
         Console.WriteLine("Start UNCC XML out")
         Console.WriteLine("")
-
-        'If Dir(rootDir, FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir)
-        'End If
-        'If Dir(rootDir & "\LOGS", FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir & "\LOGS")
-        'End If
-        'If Dir(rootDir & "\XMLIN", FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir & "\XMLIN")
-        'End If
-        'If Dir(rootDir & "\XMLOUT", FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir & "\XMLOUT")
-        'End If
-        'If Dir(rootDir & "\XMLINProcessed", FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir & "\XMLINProcessed")
-        'End If
-        'If Dir(rootDir & "\XMLOUTProcessed", FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir & "\XMLOUTProcessed")
-        'End If
 
         objStreamWriter = File.CreateText(logpath)
         objStreamWriter.WriteLine("  Update of SP Processing XML out " & Now())
@@ -589,13 +571,30 @@ Module Module1
         'Send the email and handle any error that occurs
         Dim rtn As String = "SendEmail"
         Try
-            UpdEmailOut.UpdEmailOut.UpdEmailOut(email.Subject, email.From, email.To, "", "", "Y", email.Body, connectOR)
+
+            'UpdEmailOut.UpdEmailOut.UpdEmailOut(email.Subject, email.From, email.To, " ", "webdev@sdi.com", "Y", email.Body, connectOR)
+
+            SendLogger(email.Subject, email.Body, "UNCCPROCOUTXML", "Mail", email.To, "", "")
+
         Catch ex As Exception
             objStreamWriter.WriteLine("     Error - the email was not sent")
             m_logger.WriteErrorLog(rtn & " ::the email was not sent Error " & ex.Message.ToString)
 
         End Try
 
+    End Sub
+
+    Public Sub SendLogger(ByVal subject As String, ByVal body As String, ByVal messageType As String, ByVal MailType As String, ByVal EmailTo As String, ByVal EmailCc As String, ByVal EmailBcc As String)
+        Try
+            Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
+            Dim MailAttachmentName As String()
+            Dim MailAttachmentbytes As New List(Of Byte())()
+
+            SDIEmailService.EmailUtilityServices(MailType, "SDIExchange@sdi.com", EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
+
+        Catch ex As Exception
+
+        End Try
     End Sub
 
 End Module
