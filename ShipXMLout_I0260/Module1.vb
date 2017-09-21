@@ -116,16 +116,19 @@ Module Module1
         m_logger.WriteInformationLog(rtn & " :: Start of SP Processing XML out I0260 version.")
         m_logger.WriteVerboseLog(rtn & " :: connection string : [" & connectOR.ConnectionString & "]")
 
-        m_logger.WriteInformationLog(rtn & " :: Update of SP Processing XML out.")
+        m_logger.WriteInformationLog(rtn & " :: Update of SP Processing XML out I0260 version.")
 
         Dim bolError As Boolean = buildPickingXMLOut()
 
-        m_logger.WriteInformationLog(rtn & " :: Sending email notification.")
+        If bolError Then
 
-        SendEmail(bolError)
+            m_logger.WriteInformationLog(rtn & " :: Sending Error email for I0260 version.")
+
+            SendEmail(bolError)
+        End If
 
         ' final log for this run
-        m_logger.WriteInformationLog(rtn & " :: Ending XML out process.")
+        m_logger.WriteInformationLog(rtn & " :: Ending XML out I0260 version process.")
 
         ' destroy logger object
         Try
@@ -612,7 +615,7 @@ Module Module1
             Console.WriteLine("***OLEDB error - " & OleDBExp.ToString)
             Console.WriteLine("")
             connectOR.Close()
-            m_logger.WriteErrorLog(rtn & " :: Error - error reading transaction FROM PS_ISA_PICKING_CNT A, PS_ISA_PICKING_INT B")
+            m_logger.WriteErrorLog(rtn & " :: Error - error reading transaction FROM PS_ISA_PICKING_CNT A, PS_ISA_PICKING_INT B for I0260 version.")
             Return True
         End Try
 
@@ -709,7 +712,7 @@ Module Module1
         End If
 
         If Not (arr.Orders.Count > 0) Then
-            m_logger.WriteWarningLog(rtn & " :: Warning - no containers (stock order) to process at this time.")
+            m_logger.WriteWarningLog(rtn & " :: Warning - no containers (stock order) to process at this time for I0260 version.")
             'Return True
         End If
 
@@ -748,9 +751,9 @@ Module Module1
                             o.Containers.Add(c)
                             arr.Orders.Add(o)
                             c = Nothing
-                            m_logger.WriteVerboseLog(rtn & " :: order " & o.OrderNo & " included for further processing.")
+                            m_logger.WriteVerboseLog(rtn & " :: order " & o.OrderNo & " included for further processing for I0260 version.")
                         Else
-                            m_logger.WriteVerboseLog(rtn & " :: order " & o.OrderNo & " was not fully shipped. Excluding order.")
+                            m_logger.WriteVerboseLog(rtn & " :: order " & o.OrderNo & " was not fully shipped. Excluding order for I0260 version.")
                         End If
                     End If
                 Next
@@ -758,8 +761,8 @@ Module Module1
         End If
 
         If Not (arr.Orders.Count > 0) Then
-            m_logger.WriteWarningLog(rtn & " :: Warning - no containers (stock nor non-stock order) to process at this time.")
-            Return True
+            m_logger.WriteWarningLog(rtn & " :: Warning - no containers (stock nor non-stock order) to process at this time for I0260 version.")
+            Return False
         End If
 
 
@@ -946,11 +949,12 @@ Module Module1
 
         'The subject of the email
         If bolError = True Then
-            email.Subject = "Shipping XML OUT Error for I0260"
+            email.Subject = "Shipping XML OUT Error(s) for I0260"
         Else
             email.Subject = "Shipping XML has completed for I0260"
         End If
 
+        'email.Subject = " (Test) " & email.Subject
 
         'The Priority attached and displayed for the email
         email.Priority = System.Web.Mail.MailPriority.High
@@ -958,13 +962,13 @@ Module Module1
         email.BodyFormat = MailFormat.Html
 
         If bolError = True Then
-            email.Body = "<html><body><table><tr><td>ShipXMLOut has completed with errors, review log.</td></tr>"
+            email.Body = "<html><body><table><tr><td>ShipXMLOut260 has completed with errors, review log.</td></tr>"
         Else
-            email.Body = "<html><body><table><tr><td>ShipXMLOut has completed.</td></tr>"
+            email.Body = "<html><body><table><tr><td>ShipXMLOut260 has completed.</td></tr>"
         End If
 
         email.Bcc = "webdev@sdi.com"
-        email.Cc = ""
+        email.Cc = " "
 
         'Send the email and handle any error that occurs
         Try
@@ -1040,6 +1044,11 @@ Module Module1
                     End If
                 End While
             End If
+            Try
+                rdr.Close()
+            Catch ex43 As Exception
+
+            End Try
         Catch ex As Exception
         End Try
         Try
@@ -1212,7 +1221,7 @@ Module Module1
 
                 If Not (rdr Is Nothing) Then
                     If Not rdr.HasRows Then
-                        m_logger.WriteVerboseLog(rtn & " :: order # " & ord.OrderNo & " may have already been processed/sent.")
+                        m_logger.WriteVerboseLog(rtn & " :: order # " & ord.OrderNo & " may have already been processed/sent for I0260 version.")
                     End If
 
                     Dim demandSrc As String = ""
