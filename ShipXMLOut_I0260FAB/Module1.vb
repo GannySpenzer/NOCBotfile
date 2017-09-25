@@ -102,16 +102,19 @@ Module Module1
         m_logger.WriteInformationLog(rtn & " :: Start of SP Processing XML out I0260 FAB version.")
         m_logger.WriteVerboseLog(rtn & " :: connection string : [" & connectOR.ConnectionString & "]")
 
-        m_logger.WriteInformationLog(rtn & " :: Update of SP Processing XML out.")
+        m_logger.WriteInformationLog(rtn & " :: Update of SP Processing XML out I0260 FAB version.")
 
         Dim bolError As Boolean = buildPickingXMLOut()
 
-        m_logger.WriteInformationLog(rtn & " :: Sending email notification.")
+        If bolError Then
+            m_logger.WriteInformationLog(rtn & " :: Sending email notification for I0260 FAB version.")
 
-        SendEmail(bolError)
+            SendEmail(bolError)
 
+        End If
+        
         ' final log for this run
-        m_logger.WriteInformationLog(rtn & " :: Ending XML out process.")
+        m_logger.WriteInformationLog(rtn & " :: Ending XML out process for I0260 FAB version.")
 
         ' destroy logger object
         Try
@@ -263,7 +266,7 @@ Module Module1
             Console.WriteLine("***OLEDB error - " & OleDBExp.ToString)
             Console.WriteLine("")
             connectOR.Close()
-            m_logger.WriteErrorLog(rtn & " :: Error - error reading transaction FROM PS_ISA_PICKING_CNT A, PS_ISA_PICKING_INT B")
+            m_logger.WriteErrorLog(rtn & " :: Error - error reading transaction FROM PS_ISA_PICKING_CNT A, PS_ISA_PICKING_INT B for I0260 FAB version")
             Return True
         End Try
 
@@ -362,8 +365,8 @@ Module Module1
         End If
 
         If Not (arr.Orders.Count > 0) Then
-            m_logger.WriteWarningLog(rtn & " :: Warning - no containers to process at this time.")
-            Return True
+            m_logger.WriteWarningLog(rtn & " :: Warning - no containers to process at this time for I0260 FAB version.")
+            Return False
         End If
 
         Try
@@ -590,11 +593,11 @@ Module Module1
         email.To = "vitaly.rovensky@sdi.com"
 
         email.Bcc = "webdev@sdi.com"
-        email.Cc = ""
+        email.Cc = " "
 
         'The subject of the email
         If bolError = True Then
-            email.Subject = "Shipping XML OUT Error for I0260 (FAB)"
+            email.Subject = "Shipping XML OUT Error(s) for I0260 (FAB)"
         Else
             email.Subject = "Shipping XML has completed for I0260 (FAB)"
         End If
@@ -658,6 +661,11 @@ Module Module1
                     End If
                 End While
             End If
+            Try
+                rdr.Close()
+            Catch ex43 As Exception
+
+            End Try
         Catch ex As Exception
         End Try
         Try
