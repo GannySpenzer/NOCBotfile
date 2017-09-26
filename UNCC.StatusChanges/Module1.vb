@@ -198,8 +198,11 @@ Module Module1
         strSQLstring = "SELECT A.ORDER_NO, A.ISA_INTFC_LN AS LINE_NBR," & vbCrLf & _
                             " TO_CHAR(A.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP" & vbCrLf & _
                             " ,A.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(A.ISA_LINE_STATUS,'CRE','1','NEW','2','DSP','3','PKA','4','DLP','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','9') AS OLD_ORDER_STATUS" & vbCrLf & _
-                            " FROM PS_ISAORDSTATUSLOG A" & vbCrLf & _
+                            " FROM PS_ISAORDSTATUSLOG A, SYSADM8.PS_ISA_ORD_INTF_HD B" & vbCrLf & _
                             " WHERE A.BUSINESS_UNIT_OM = 'I0256'" & vbCrLf & _
+                            " AND B.ORIGIN = 'IOL'" & vbCrLf & _
+                            " AND A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf & _
+                            " AND A.ORDER_NO = B.ORDER_NO " & vbCrLf & _
                             " AND A.DTTM_STAMP > TO_DATE('" & dteStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
                             " AND A.DTTM_STAMP <= TO_DATE('" & dteEndDate & "', 'MM/DD/YYYY HH:MI:SS AM')"
 
