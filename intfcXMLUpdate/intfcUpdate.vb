@@ -256,9 +256,6 @@ Module module1
         'objStreamWriter.Close()
         m_logger.WriteInformationLog(rtn & " :: End of INTFC IN XML.")
 
-        ' check to see if there are any status '1' lines that have a header of "O"
-        checkLineStatus()
-
     End Sub
 
     Private Function getINTFCXMLIn() As Boolean
@@ -286,95 +283,6 @@ Module module1
         strFiles = "*.XML"
         Dim aFiles As FileInfo() = dirInfo.GetFiles(strFiles)
         Dim root As XmlElement
-
-        '' old code
-
-        ''Try
-        'For I = 0 To aFiles.Length - 1
-        '    'objStreamWriter.WriteLine(" Start File " & aFiles(I).Name)
-        '    m_logger.WriteInformationLog(rtn & " :: Start File " & aFiles(I).Name)
-        '    sr = New System.IO.StreamReader(aFiles(I).FullName)
-        '    XMLContent = sr.ReadToEnd()
-        '    XMLContent = Replace(XMLContent, "&", "&amp;")
-        '    'here where we load the xml into memory
-        '    'XMLContent = Replace(XMLContent, "'", "&#39;")
-        '    'XMLContent = Replace(XMLContent, """", "&quot;")
-        '    sr.Close()
-
-        '    Try
-        '        xmlRequest.LoadXml(XMLContent)
-        '    Catch ex As Exception
-        '        Console.WriteLine("")
-        '        Console.WriteLine("***error - " & ex.ToString)
-        '        Console.WriteLine("")
-        '        'objStreamWriter.WriteLine("     Error " & ex.message.ToString & " in file " & aFiles(I).Name)
-        '        m_logger.WriteErrorLog(rtn & " :: Error " & ex.message.ToString & " in file " & aFiles(I).Name)
-        '        strXMLError = ex.ToString
-        '        bolError = True
-        '    End Try
-        '    If Trim(strXMLError) = "" Then
-        '        root = xmlRequest.DocumentElement
-        '        'firstchild.name = PS_ISA_ORD_INTFC_H
-
-        '        If root.FirstChild Is Nothing Then
-        '            strXMLError = "empty UNCC in file"
-        '        ElseIf root.LastChild.Name.ToUpper = "PS_ISA_ORD_INTFC_L" Or _
-        '            root.LastChild.Name.ToUpper = "EMP_ROW" Then
-        '            strXMLError = ""
-        '        Else
-        '            strXMLError = "Missing last INTFC_L Element"
-        '        End If
-
-        '        If Trim(strXMLError) = "" Then
-        '            If root.LastChild.Name.ToUpper = "PS_ISA_ORD_INTFC_L" Then
-        '                strXMLError = UpdIntfcTable(aFiles(I).FullName)
-        '            ElseIf root.LastChild.Name.ToUpper = "EMP_ROW" Then
-        '                strXMLError = UpdEmpTable(aFiles(I).FullName)
-        '            End If
-        '        End If
-
-        '        If Trim(strXMLError) = "" Or _
-        '            Trim(strXMLError) = "Invalid Status" Then
-        '            Try
-        '                File.Move(aFiles(I).FullName, "C:\INTFCXML\XMLINProcessed\" & aFiles(I).Name)
-        '                If Trim(strXMLError) = "Invalid Status" Then
-        '                    'objStreamWriter.WriteLine(" not status I or C in File " & aFiles(I).Name)
-        '                    m_logger.WriteInformationLog(rtn & " :: not status I or C in File " & aFiles(I).Name)
-        '                End If
-        '                'objStreamWriter.WriteLine(" End - File " & aFiles(I).Name & " has been moved")
-        '                m_logger.WriteInformationLog(rtn & " :: End - File " & aFiles(I).Name & " has been moved")
-        '            Catch ex As Exception
-        '                'objStreamWriter.WriteLine("     Error " & ex.Message.ToString & " in file " & aFiles(I).Name)
-        '                m_logger.WriteErrorLog(rtn & " :: Error " & ex.Message.ToString & " in file " & aFiles(I).Name)
-        '            End Try
-        '            File.Delete(aFiles(I).FullName)
-        '        Else
-        '            'objStreamWriter.WriteLine("**")
-        '            'objStreamWriter.WriteLine("     Error " & strXMLError & " in file " & aFiles(I).Name)
-        '            'objStreamWriter.WriteLine("**")
-        '            m_logger.WriteErrorLog(rtn & " :: ** ")
-        '            m_logger.WriteErrorLog(rtn & " :: Error " & strXMLError & " in file " & aFiles(I).Name)
-        '            m_logger.WriteErrorLog(rtn & " :: ** ")
-        '            bolError = True
-        '            Try
-        '                File.Move(aFiles(I).FullName, "C:\INTFCXML\BadXML\" & aFiles(I).Name)
-        '                File.Delete(aFiles(I).FullName)
-        '            Catch ex As Exception
-        '                'objStreamWriter.WriteLine("**")
-        '                'objStreamWriter.WriteLine("     Error " & ex.Message & " in file " & aFiles(I).Name)
-        '                'objStreamWriter.WriteLine("**")
-        '                m_logger.WriteErrorLog(rtn & " :: ** ")
-        '                m_logger.WriteErrorLog(rtn & " :: Error " & ex.Message & " in file " & aFiles(I).Name)
-        '                m_logger.WriteErrorLog(rtn & " :: ** ")
-        '            End Try
-        '        End If
-
-        '    End If
-
-        '    strXMLError = ""
-        'Next
-
-        'new Erwin code
 
         Dim sXMLFilename As String = ""
 
@@ -419,7 +327,6 @@ Module module1
                 End Try
                 If Trim(strXMLError) = "" Then
                     root = xmlRequest.DocumentElement
-                    'firstchild.name = PS_ISA_ORD_INTFC_H
 
                     If root.FirstChild Is Nothing Then
                         strXMLError = "empty UNCC in file"
@@ -1250,455 +1157,455 @@ Module module1
         End Try
     End Sub
 
-    Private Function updateIntfcLine(ByVal ds As DataSet, _
-                                    ByVal strBU As String, _
-                                    ByVal strSitePrefix As String, _
-                                    ByVal strIntfcreqid As String, _
-                                    ByVal strStatus As String) As String
+    'Private Function updateIntfcLine(ByVal ds As DataSet, _
+    '                                ByVal strBU As String, _
+    '                                ByVal strSitePrefix As String, _
+    '                                ByVal strIntfcreqid As String, _
+    '                                ByVal strStatus As String) As String
 
-        'Insert into the INTFC PRH and PRL tables
+    '    'Insert into the INTFC PRH and PRL tables
 
-        Dim rtn As String = "intfcUpdate.updateIntfcLine"
-        Dim strSQLstring As String
-        Dim rowsaffected As Integer
-        Dim I As Integer
+    '    Dim rtn As String = "intfcUpdate.updateIntfcLine"
+    '    Dim strSQLstring As String
+    '    Dim rowsaffected As Integer
+    '    Dim I As Integer
 
-        Dim strCustID As String
+    '    Dim strCustID As String
 
-        connectOR.Open()
-        Dim objEnterprise As New clsEnterprise(strBU, connectOR)
-        strCustID = objEnterprise.CustID
-        connectOR.Close()
-        If Trim(strCustID) = "" Then
-            strCustID = " "
-        End If
+    '    connectOR.Open()
+    '    Dim objEnterprise As New clsEnterprise(strBU, connectOR)
+    '    strCustID = objEnterprise.CustID
+    '    connectOR.Close()
+    '    If Trim(strCustID) = "" Then
+    '        strCustID = " "
+    '    End If
 
-        Dim decQty As Integer = 0
-        Dim decPrice As Decimal = 0.0
-        Dim decCost As Decimal = 0.0
-        Dim strItemID As String
-        Dim strShipto As String
-        Dim strUOM As String
-        Dim strMfgID As String
-        Dim strMfgFreeForm As String
-        Dim strMfgPartNum As String
-        Dim strDescription As String
-        Dim strNotes As String
-        Dim strEmpID As String
-        Dim strChgCD As String
-        Dim strWorkOrder As String
-        Dim dteReqByDate As Date
-        Dim strReqByDate As Date
-        Dim strPriority As String
+    '    Dim decQty As Integer = 0
+    '    Dim decPrice As Decimal = 0.0
+    '    Dim decCost As Decimal = 0.0
+    '    Dim strItemID As String
+    '    Dim strShipto As String
+    '    Dim strUOM As String
+    '    Dim strMfgID As String
+    '    Dim strMfgFreeForm As String
+    '    Dim strMfgPartNum As String
+    '    Dim strDescription As String
+    '    Dim strNotes As String
+    '    Dim strEmpID As String
+    '    Dim strChgCD As String
+    '    Dim strWorkOrder As String
+    '    Dim dteReqByDate As Date
+    '    Dim strReqByDate As Date
+    '    Dim strPriority As String
 
-        strSQLstring = "SELECT ISA_IDENTIFIER" & vbCrLf & _
-                        " FROM PS_ISA_ORD_INTFC_H" & vbCrLf & _
-                        " WHERE BUSINESS_UNIT_OM = '" & strBU & "'" & vbCrLf & _
-                        " AND ORDER_NO = '" & strIntfcreqid & "'"
+    '    strSQLstring = "SELECT ORDER_NO" & vbCrLf & _
+    '                    " FROM PS_ISA_ORD_INTF_HD" & vbCrLf & _
+    '                    " WHERE BUSINESS_UNIT_OM = '" & strBU & "'" & vbCrLf & _
+    '                    " AND ORDER_NO = '" & strIntfcreqid & "'"
 
-        Dim intParentID As Integer = ORDBAccess.GetScalar(strSQLstring, connectOR)
+    '    Dim intParentID As Integer = ORDBAccess.GetScalar(strSQLstring, connectOR)
 
-        If intParentID.ToString = "" Then
-            Return "Error retreiving ParentID for order " & strIntfcreqid
-        End If
+    '    If intParentID.ToString = "" Then
+    '        Return "Error retreiving ParentID for order " & strIntfcreqid
+    '    End If
 
-        Dim objIntfcLine As clsIntfcLine
+    '    Dim objIntfcLine As clsIntfcLine
 
-        For I = 0 To ds.Tables(1).Rows.Count - 1
-            ' check to see order does already exist
-            Dim strLineNumber As String = getColumnValue(ds.Tables(1).Rows(I), "LINE_NBR", 5)
-            If Trim(strLineNumber) = "" Then
-                strLineNumber = I + 100
-            End If
-            'If Trim(strLineNumber) = "" Then
-            '    Return "Error missing line number for order " & strIntfcreqid & " - " & I
-            'End If
-            Try
-                If strStatus = "C" Then
-                    decQty = 0
-                Else
-                    decQty = System.Convert.ToDecimal(getColumnValue(ds.Tables(1).Rows(I), "QTY", 20))
-                End If
+    '    For I = 0 To ds.Tables(1).Rows.Count - 1
+    '        ' check to see order does already exist
+    '        Dim strLineNumber As String = getColumnValue(ds.Tables(1).Rows(I), "LINE_NBR", 5)
+    '        If Trim(strLineNumber) = "" Then
+    '            strLineNumber = I + 100
+    '        End If
+    '        'If Trim(strLineNumber) = "" Then
+    '        '    Return "Error missing line number for order " & strIntfcreqid & " - " & I
+    '        'End If
+    '        Try
+    '            If strStatus = "C" Then
+    '                decQty = 0
+    '            Else
+    '                decQty = System.Convert.ToDecimal(getColumnValue(ds.Tables(1).Rows(I), "QTY", 20))
+    '            End If
 
-            Catch ex As Exception
-                Return "Error invalid quantity for order " & strIntfcreqid & " - " & I
-            End Try
-            Try
-                decPrice = System.Convert.ToDecimal(getColumnValue(ds.Tables(1).Rows(I), "NET_UNIT_PRICE", 21))
-            Catch ex As Exception
-                decPrice = 0.0
-            End Try
-            strItemID = getColumnValue(ds.Tables(1).Rows(I), "INV_ITEM_ID", 18)
-            If Trim(strItemID) = "" Then
-                strItemID = " "
-                'strLineNumber = Convert.ToInt16(strLineNumber) + 50
-                strLineNumber = Convert.ToInt16(strLineNumber)
-            ElseIf (strItemID.ToUpper = "NON-STOCK-PART") Then
-                strItemID = " "
-                'strLineNumber = Convert.ToInt16(strLineNumber) + 50
-                strLineNumber = Convert.ToInt16(strLineNumber)
-            Else
-                If strItemID.Length > 3 Then
-                    If Not strItemID.Substring(0, 3) = strSitePrefix Then
-                        strItemID = strSitePrefix & strItemID
-                    End If
-                Else
-                    strItemID = strSitePrefix & strItemID
-                End If
-            End If
-            ' store due date in the requested by date field
-            Try
-                strReqByDate = getColumnValue(ds.Tables(1).Rows(I), "DUE_DATE", 10).ToString
-                dteReqByDate = strReqByDate.ToString("yyyy-M-d")
-            Catch ex As Exception
-                dteReqByDate = ""
-            End Try
-            ' store the LOCATION in the NOTES field allong with the suggested cost
-            strNotes = getColumnValue(ds.Tables(1).Rows(I), "LOCATION", 254)
-            If Trim(strNotes) = "" Then
-                strNotes = " "
-            Else
-                strNotes = "Location - " & strNotes
-            End If
-            Try
-                decCost = System.Convert.ToDecimal(getColumnValue(ds.Tables(1).Rows(I), "COST", 21))
-            Catch ex As Exception
-                decCost = 0.0
-            End Try
-            If decCost > 0 Then
-                strNotes = strNotes & " Suggested cost - " & decCost
-            End If
-            strShipto = getColumnValue(ds.Tables(1).Rows(I), "LOCATION", 10)
-            If strShipto = "" Then
-                strShipto = " "
-            End If
-            strUOM = getColumnValue(ds.Tables(1).Rows(I), "UNIT_OF_MEASURE", 3)
-            If strUOM = "" Then
-                strUOM = " "
-            End If
-            strMfgID = getColumnValue(ds.Tables(1).Rows(I), "MFG_ID", 10)
-            If strMfgID = "" Then
-                strMfgID = " "
-            End If
-            strMfgFreeForm = getColumnValue(ds.Tables(1).Rows(I), "MFG_ID", 30)
-            If strMfgFreeForm = "" Then
-                strMfgFreeForm = " "
-            End If
-            ' this is where I think the change should be made - pfd I think that the ' and the " should be left alone.
-            strDescription = getColumnValue(ds.Tables(1).Rows(I), "DESCR_254MIXED", 254)
+    '        Catch ex As Exception
+    '            Return "Error invalid quantity for order " & strIntfcreqid & " - " & I
+    '        End Try
+    '        Try
+    '            decPrice = System.Convert.ToDecimal(getColumnValue(ds.Tables(1).Rows(I), "NET_UNIT_PRICE", 21))
+    '        Catch ex As Exception
+    '            decPrice = 0.0
+    '        End Try
+    '        strItemID = getColumnValue(ds.Tables(1).Rows(I), "INV_ITEM_ID", 18)
+    '        If Trim(strItemID) = "" Then
+    '            strItemID = " "
+    '            'strLineNumber = Convert.ToInt16(strLineNumber) + 50
+    '            strLineNumber = Convert.ToInt16(strLineNumber)
+    '        ElseIf (strItemID.ToUpper = "NON-STOCK-PART") Then
+    '            strItemID = " "
+    '            'strLineNumber = Convert.ToInt16(strLineNumber) + 50
+    '            strLineNumber = Convert.ToInt16(strLineNumber)
+    '        Else
+    '            If strItemID.Length > 3 Then
+    '                If Not strItemID.Substring(0, 3) = strSitePrefix Then
+    '                    strItemID = strSitePrefix & strItemID
+    '                End If
+    '            Else
+    '                strItemID = strSitePrefix & strItemID
+    '            End If
+    '        End If
+    '        ' store due date in the requested by date field
+    '        Try
+    '            strReqByDate = getColumnValue(ds.Tables(1).Rows(I), "DUE_DATE", 10).ToString
+    '            dteReqByDate = strReqByDate.ToString("yyyy-M-d")
+    '        Catch ex As Exception
+    '            dteReqByDate = ""
+    '        End Try
+    '        ' store the LOCATION in the NOTES field allong with the suggested cost
+    '        strNotes = getColumnValue(ds.Tables(1).Rows(I), "LOCATION", 254)
+    '        If Trim(strNotes) = "" Then
+    '            strNotes = " "
+    '        Else
+    '            strNotes = "Location - " & strNotes
+    '        End If
+    '        Try
+    '            decCost = System.Convert.ToDecimal(getColumnValue(ds.Tables(1).Rows(I), "COST", 21))
+    '        Catch ex As Exception
+    '            decCost = 0.0
+    '        End Try
+    '        If decCost > 0 Then
+    '            strNotes = strNotes & " Suggested cost - " & decCost
+    '        End If
+    '        strShipto = getColumnValue(ds.Tables(1).Rows(I), "LOCATION", 10)
+    '        If strShipto = "" Then
+    '            strShipto = " "
+    '        End If
+    '        strUOM = getColumnValue(ds.Tables(1).Rows(I), "UNIT_OF_MEASURE", 3)
+    '        If strUOM = "" Then
+    '            strUOM = " "
+    '        End If
+    '        strMfgID = getColumnValue(ds.Tables(1).Rows(I), "MFG_ID", 10)
+    '        If strMfgID = "" Then
+    '            strMfgID = " "
+    '        End If
+    '        strMfgFreeForm = getColumnValue(ds.Tables(1).Rows(I), "MFG_ID", 30)
+    '        If strMfgFreeForm = "" Then
+    '            strMfgFreeForm = " "
+    '        End If
+    '        ' this is where I think the change should be made - pfd I think that the ' and the " should be left alone.
+    '        strDescription = getColumnValue(ds.Tables(1).Rows(I), "DESCR_254MIXED", 254)
 
-            If strDescription = "" Then
-                strDescription = " "
-            End If
-            If Not strBU = "I0256" Then
-                strDescription = Replace(strDescription, "&#34;", "IN ")
-                strDescription = Replace(strDescription, "''", "FT ")
-            End If
-            strMfgPartNum = getColumnValue(ds.Tables(1).Rows(I), "MFG_ITM_ID", 35)
-            If strMfgPartNum = "" Then
-                strMfgPartNum = " "
-            End If
-            strEmpID = getColumnValue(ds.Tables(1).Rows(I), "EMPLID", 20)
-            If strEmpID.Length > 8 Then
-                 
-                strEmpID = strEmpID.Substring(0, 8)
-                'strEmpID = Right(strEmpID, 8)
-            End If
-            If strEmpID = "" Then
-                strEmpID = " "
-            End If
-            strChgCD = getColumnValue(ds.Tables(1).Rows(I), "ISA_CUST_CHARGE_CD", 40)
-            If Trim(strChgCD) = "" Then
-                strChgCD = "USE WORK ORDER"
-            End If
-            strWorkOrder = getColumnValue(ds.Tables(1).Rows(I), "ISA_WORK_ORDER_NO", 20)
-            If strWorkOrder = "" Then
-                strWorkOrder = " "
-            End If
+    '        If strDescription = "" Then
+    '            strDescription = " "
+    '        End If
+    '        If Not strBU = "I0256" Then
+    '            strDescription = Replace(strDescription, "&#34;", "IN ")
+    '            strDescription = Replace(strDescription, "''", "FT ")
+    '        End If
+    '        strMfgPartNum = getColumnValue(ds.Tables(1).Rows(I), "MFG_ITM_ID", 35)
+    '        If strMfgPartNum = "" Then
+    '            strMfgPartNum = " "
+    '        End If
+    '        strEmpID = getColumnValue(ds.Tables(1).Rows(I), "EMPLID", 20)
+    '        If strEmpID.Length > 8 Then
 
-            objIntfcLine = New clsIntfcLine(strIntfcreqid, strBU, strLineNumber, connectOR)
+    '            strEmpID = strEmpID.Substring(0, 8)
+    '            'strEmpID = Right(strEmpID, 8)
+    '        End If
+    '        If strEmpID = "" Then
+    '            strEmpID = " "
+    '        End If
+    '        strChgCD = getColumnValue(ds.Tables(1).Rows(I), "ISA_CUST_CHARGE_CD", 40)
+    '        If Trim(strChgCD) = "" Then
+    '            strChgCD = "USE WORK ORDER"
+    '        End If
+    '        strWorkOrder = getColumnValue(ds.Tables(1).Rows(I), "ISA_WORK_ORDER_NO", 20)
+    '        If strWorkOrder = "" Then
+    '            strWorkOrder = " "
+    '        End If
 
-            Dim strParentID As String = objIntfcLine.ParentID
-            Dim strOKtoDeleteStatus As String = "12QWBC"
-            Dim searchStatus As Char() = strOKtoDeleteStatus.ToCharArray
+    '        objIntfcLine = New clsIntfcLine(strIntfcreqid, strBU, strLineNumber, connectOR)
 
-            If Not Trim(strParentID) = "" Then
-                Try
-                    connectOR.Close()
-                Catch ex As Exception
+    '        Dim strParentID As String = objIntfcLine.ParentID
+    '        Dim strOKtoDeleteStatus As String = "12QWBC"
+    '        Dim searchStatus As Char() = strOKtoDeleteStatus.ToCharArray
 
-                End Try
-                If strStatus = "C" Then
-                    If objIntfcLine.LineStatus.IndexOfAny(searchStatus) >= 0 Then
-                        '// can ONLY cancel existing order line IF
-                        '//     1 - Submitted; 2 - Processing Order; Q - Waiting Quote; W - Waiting Order Approval
-                        '//     B - Waiting Budget Approval; C - Cancelled
-                        strSQLstring = "UPDATE PS_ISA_ORD_INTFC_L" & vbCrLf & _
-                        " SET ISA_ORDER_STATUS = 'Q'," & vbCrLf & _
-                        " QTY_REQ = " & decQty & vbCrLf & _
-                        " WHERE ISA_PARENT_IDENT = '" & strParentID & "'" & vbCrLf & _
-                        " AND LINE_NBR = '" & strLineNumber & "'"
-                        Try
-                            rowsaffected = ORDBAccess.ExecNonQuery(strSQLstring, connectOR)
-                            If rowsaffected = 0 Then
-                                Return "Error updating PS_ISA_ORD_INTFC_L for order " & strIntfcreqid & " line - " & strLineNumber
-                            End If
-                        Catch OleDBExp As OleDbException
-                            Console.WriteLine("")
-                            Console.WriteLine("***OLEDB error - " & OleDBExp.ToString)
-                            Console.WriteLine("")
-                            connectOR.Close()
-                            Return "Update Cancel line error for ORDERNO  " & strIntfcreqid & " line - " & strLineNumber & " " & OleDBExp.ToString
-                        End Try
-                    Else
-                        'objStreamWriter.WriteLine("Cannot delete line with status = " & objIntfcLine.LineStatus & " for " & strIntfcreqid & " line - " & strLineNumber)
-                        m_logger.WriteWarningLog(rtn & " :: Cannot delete line with status = " & objIntfcLine.LineStatus & " for " & strIntfcreqid & " line - " & strLineNumber)
-                    End If
-                Else
-                    'objStreamWriter.WriteLine("  Line already exists for " & strIntfcreqid & " at line " & strLineNumber & vbCrLf & _
-                    m_logger.WriteWarningLog(rtn & " :: Line already exists for " & strIntfcreqid & " at line " & strLineNumber & vbCrLf & _
-                                        "reqbydate = " & dteReqByDate & vbCrLf & _
-                                        "qty = " & decQty & vbCrLf & _
-                                        "itemID = " & strItemID.ToUpper & vbCrLf & _
-                                        "shipto = " & strShipto & vbCrLf & _
-                                        "custID = " & strCustID & vbCrLf & _
-                                        "UOM = " & strUOM.ToUpper & vbCrLf & _
-                                        "MfgID =" & strMfgID.ToUpper & vbCrLf & _
-                                        "MfgFreeForm = " & strMfgFreeForm.ToUpper & vbCrLf & _
-                                        "price = " & decPrice & vbCrLf & _
-                                        "desc = " & strDescription.ToUpper & vbCrLf & _
-                                        "notes = " & strNotes.ToUpper & vbCrLf & _
-                                        "MfgItemID = " & strMfgPartNum & vbCrLf & _
-                                        "EmpID = " & strEmpID.ToUpper & vbCrLf & _
-                                        "chg Code = " & strChgCD & vbCrLf & _
-                                        "work order = " & strWorkOrder)
+    '        If Not Trim(strParentID) = "" Then
+    '            Try
+    '                connectOR.Close()
+    '            Catch ex As Exception
 
-                    bolWarning = True
-                End If
-            Else
-                Try
-                    connectOR.Close()
-                Catch ex As Exception
+    '            End Try
+    '            If strStatus = "C" Then
+    '                If objIntfcLine.LineStatus.IndexOfAny(searchStatus) >= 0 Then
+    '                    '// can ONLY cancel existing order line IF
+    '                    '//     1 - Submitted; 2 - Processing Order; Q - Waiting Quote; W - Waiting Order Approval
+    '                    '//     B - Waiting Budget Approval; C - Cancelled
+    '                    strSQLstring = "UPDATE PS_ISA_ORD_INTF_LN" & vbCrLf & _
+    '                    " SET ISA_LINE_STATUS = 'QTS'," & vbCrLf & _
+    '                    " QTY_REQ = " & decQty & vbCrLf & _
+    '                    " WHERE Order_no = '" & strParentID & "'" & vbCrLf & _
+    '                    " AND ISA_INTFC_LN = '" & strLineNumber & "'"
+    '                    Try
+    '                        rowsaffected = ORDBAccess.ExecNonQuery(strSQLstring, connectOR)
+    '                        If rowsaffected = 0 Then
+    '                            Return "Error updating PS_ISA_ORD_INTF_LN for order " & strIntfcreqid & " line - " & strLineNumber
+    '                        End If
+    '                    Catch OleDBExp As OleDbException
+    '                        Console.WriteLine("")
+    '                        Console.WriteLine("***OLEDB error - " & OleDBExp.ToString)
+    '                        Console.WriteLine("")
+    '                        connectOR.Close()
+    '                        Return "Update Cancel line error for ORDERNO  " & strIntfcreqid & " line - " & strLineNumber & " " & OleDBExp.ToString
+    '                    End Try
+    '                Else
+    '                    'objStreamWriter.WriteLine("Cannot delete line with status = " & objIntfcLine.LineStatus & " for " & strIntfcreqid & " line - " & strLineNumber)
+    '                    m_logger.WriteWarningLog(rtn & " :: Cannot delete line with status = " & objIntfcLine.LineStatus & " for " & strIntfcreqid & " line - " & strLineNumber)
+    '                End If
+    '            Else
+    '                'objStreamWriter.WriteLine("  Line already exists for " & strIntfcreqid & " at line " & strLineNumber & vbCrLf & _
+    '                m_logger.WriteWarningLog(rtn & " :: Line already exists for " & strIntfcreqid & " at line " & strLineNumber & vbCrLf & _
+    '                                    "reqbydate = " & dteReqByDate & vbCrLf & _
+    '                                    "qty = " & decQty & vbCrLf & _
+    '                                    "itemID = " & strItemID.ToUpper & vbCrLf & _
+    '                                    "shipto = " & strShipto & vbCrLf & _
+    '                                    "custID = " & strCustID & vbCrLf & _
+    '                                    "UOM = " & strUOM.ToUpper & vbCrLf & _
+    '                                    "MfgID =" & strMfgID.ToUpper & vbCrLf & _
+    '                                    "MfgFreeForm = " & strMfgFreeForm.ToUpper & vbCrLf & _
+    '                                    "price = " & decPrice & vbCrLf & _
+    '                                    "desc = " & strDescription.ToUpper & vbCrLf & _
+    '                                    "notes = " & strNotes.ToUpper & vbCrLf & _
+    '                                    "MfgItemID = " & strMfgPartNum & vbCrLf & _
+    '                                    "EmpID = " & strEmpID.ToUpper & vbCrLf & _
+    '                                    "chg Code = " & strChgCD & vbCrLf & _
+    '                                    "work order = " & strWorkOrder)
 
-                End Try
-                If strStatus = "C" Then
-                    'objStreamWriter.WriteLine("  Cancel Line does not exists for " & strIntfcreqid & " at line " & strLineNumber & vbCrLf & _
-                    m_logger.WriteWarningLog(rtn & " :: Cancel Line does not exists for " & strIntfcreqid & " at line " & strLineNumber & vbCrLf & _
-                                        "reqbydate = " & dteReqByDate & vbCrLf & _
-                                        "qty = " & decQty & vbCrLf & _
-                                        "itemID = " & strItemID.ToUpper & vbCrLf & _
-                                        "shipto = " & strShipto & vbCrLf & _
-                                        "custID = " & strCustID & vbCrLf & _
-                                        "UOM = " & strUOM.ToUpper & vbCrLf & _
-                                        "MfgID =" & strMfgID.ToUpper & vbCrLf & _
-                                        "MfgFreeForm = " & strMfgFreeForm.ToUpper & vbCrLf & _
-                                        "price = " & decPrice & vbCrLf & _
-                                        "desc = " & strDescription.ToUpper & vbCrLf & _
-                                        "notes = " & strNotes.ToUpper & vbCrLf & _
-                                        "MfgItemID = " & strMfgPartNum & vbCrLf & _
-                                        "EmpID = " & strEmpID.ToUpper & vbCrLf & _
-                                        "chg Code = " & strChgCD & vbCrLf & _
-                                        "work order = " & strWorkOrder)
+    '                bolWarning = True
+    '            End If
+    '        Else
+    '            Try
+    '                connectOR.Close()
+    '            Catch ex As Exception
 
-                    bolWarning = True
-                Else
-                    'objIntfcLine = New clsIntfcLine(strIntfcreqid, strBU, strLineNumber, connectOR)
-                    ' Dim objtest = New clsIntfcOrder(strIntfcreqid, strBU, connectOR)
-                    'dim fred as String = 
-                    strSQLstring = "Insert into PS_ISA_ORD_INTFC_L" & vbCrLf & _
-                    " (ISA_PARENT_IDENT," & vbCrLf & _
-                    " REQUESTOR_ID," & vbCrLf & _
-                    " LINE_NBR," & vbCrLf & _
-                    " ISA_REQUIRED_BY_DT," & vbCrLf & _
-                    " EXPECTED_DELIV_DT," & vbCrLf & _
-                    " QTY_REQ," & vbCrLf & _
-                    " QTY_SHIPPED," & vbCrLf & _
-                    " SHIP_FROM_BU," & vbCrLf & _
-                    " ITM_SETID," & vbCrLf & _
-                    " INV_ITEM_ID," & vbCrLf & _
-                    " VENDOR_SETID," & vbCrLf & _
-                    " VENDOR_ID," & vbCrLf & _
-                    " VNDR_LOC," & vbCrLf & _
-                    " ITM_ID_VNDR," & vbCrLf & _
-                    " VNDR_CATALOG_ID," & vbCrLf & _
-                    " SHIPTO_ID," & vbCrLf & _
-                    " SHIP_TO_CUST_ID," & vbCrLf & _
-                    " BUYER_ID," & vbCrLf & _
-                    " UNIT_OF_MEASURE," & vbCrLf & _
-                    " MFG_ID," & vbCrLf & _
-                    " ISA_MFG_FREEFORM," & vbCrLf & _
-                    " PRICE_PO_BSE," & vbCrLf & _
-                    " PRICE_PO," & vbCrLf & _
-                    " NET_UNIT_PRICE_BSE," & vbCrLf & _
-                    " NET_UNIT_PRICE," & vbCrLf & _
-                    " RFQ_IND," & vbCrLf & _
-                    " INSPECT_CD," & vbCrLf & _
-                    " INVENTORY_SRC_FLG," & vbCrLf & _
-                    " ROUTING_ID," & vbCrLf & _
-                    " ISA_TRACKING_ID," & vbCrLf & _
-                    " DESCR254," & vbCrLf & _
-                    " ISA_CUST_NOTES," & vbCrLf & _
-                    " MFG_ITM_ID," & vbCrLf & _
-                    " CUSTOMER_PO," & vbCrLf & _
-                    " CUSTOMER_PO_LINE," & vbCrLf & _
-                    " EMPLID," & vbCrLf & _
-                    " ISA_CUST_CHARGE_CD," & vbCrLf & _
-                    " ISA_WORK_ORDER_NO," & vbCrLf & _
-                    " ISA_MACHINE_NO," & vbCrLf & _
-                    " ISA_INTFC_LN_TYPE," & vbCrLf & _
-                    " ISA_ORDER_STATUS," & vbCrLf & _
-                    " ADD_DTTM," & vbCrLf & _
-                    " LASTUPDDTTM," & vbCrLf & _
-                    " PROCESS_INSTANCE," & vbCrLf & _
-                    " IN_PROCESS_FLG)" & vbCrLf & _
-                    " Values ('" & intParentID & "'," & vbCrLf & _
-                    " ' '," & vbCrLf & _
-                    " '" & strLineNumber & "'," & vbCrLf & _
-                    " TO_DATE('" & dteReqByDate & "', 'MM/DD/YYYY HH:MI:SS AM')," & vbCrLf & _
-                    " '', " & decQty & ", 0," & vbCrLf & _
-                    " ' ', 'MAIN1','" & strItemID.ToUpper & "'," & vbCrLf & _
-                    " 'MAIN1','here'," & vbCrLf & _
-                    " '0', 'here_two '," & vbCrLf & _
-                    " ' ','" & strShipto & "','" & strCustID & "'," & vbCrLf & _
-                    " ' ','" & strUOM.ToUpper & "','" & strMfgID.ToUpper & "','" & strMfgFreeForm.ToUpper & " '," & vbCrLf & _
-                    " 0,0," & vbCrLf & _
-                    " 0,'" & decPrice & "'," & vbCrLf & _
-                    " 'N','N','N',' ',' '," & vbCrLf & _
-                    " '" & strDescription.ToUpper & "','" & strNotes.ToUpper & "'," & vbCrLf & _
-                    " '" & strMfgPartNum & "'," & vbCrLf & _
-                    " ' ',' '," & vbCrLf & _
-                    " '" & strEmpID.ToUpper & "','" & strChgCD & "'," & vbCrLf & _
-                    " '" & strWorkOrder & "',' '," & vbCrLf & _
-                    " ' ','1'," & vbCrLf & _
-                    " TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')," & vbCrLf & _
-                    " TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')," & vbCrLf & _
-                    " 0,'N')" & vbCrLf
-                    Try
-                        rowsaffected = ORDBAccess.ExecNonQuery(strSQLstring, connectOR)
-                        If rowsaffected = 0 Then
-                            Return "Error inserting PS_ISA_ORD_INTFC_L for order " & strIntfcreqid & " line - " & strLineNumber
-                        End If
-                    Catch OleDBExp As OleDbException
-                        Console.WriteLine("")
-                        Console.WriteLine("***OLEDB error - " & OleDBExp.ToString)
-                        Console.WriteLine("")
-                        connectOR.Close()
-                        Return "Insert line error for ORDERNO  " & strIntfcreqid & " line - " & strLineNumber & " " & OleDBExp.ToString
-                    End Try
+    '            End Try
+    '            If strStatus = "C" Then
+    '                'objStreamWriter.WriteLine("  Cancel Line does not exists for " & strIntfcreqid & " at line " & strLineNumber & vbCrLf & _
+    '                m_logger.WriteWarningLog(rtn & " :: Cancel Line does not exists for " & strIntfcreqid & " at line " & strLineNumber & vbCrLf & _
+    '                                    "reqbydate = " & dteReqByDate & vbCrLf & _
+    '                                    "qty = " & decQty & vbCrLf & _
+    '                                    "itemID = " & strItemID.ToUpper & vbCrLf & _
+    '                                    "shipto = " & strShipto & vbCrLf & _
+    '                                    "custID = " & strCustID & vbCrLf & _
+    '                                    "UOM = " & strUOM.ToUpper & vbCrLf & _
+    '                                    "MfgID =" & strMfgID.ToUpper & vbCrLf & _
+    '                                    "MfgFreeForm = " & strMfgFreeForm.ToUpper & vbCrLf & _
+    '                                    "price = " & decPrice & vbCrLf & _
+    '                                    "desc = " & strDescription.ToUpper & vbCrLf & _
+    '                                    "notes = " & strNotes.ToUpper & vbCrLf & _
+    '                                    "MfgItemID = " & strMfgPartNum & vbCrLf & _
+    '                                    "EmpID = " & strEmpID.ToUpper & vbCrLf & _
+    '                                    "chg Code = " & strChgCD & vbCrLf & _
+    '                                    "work order = " & strWorkOrder)
 
-                End If
-            End If
-        Next
+    '                bolWarning = True
+    '            Else
+    '                'objIntfcLine = New clsIntfcLine(strIntfcreqid, strBU, strLineNumber, connectOR)
+    '                ' Dim objtest = New clsIntfcOrder(strIntfcreqid, strBU, connectOR)
+    '                'dim fred as String = 
+    '                strSQLstring = "Insert into PS_ISA_ORD_INTFC_L" & vbCrLf & _
+    '                " (ISA_PARENT_IDENT," & vbCrLf & _
+    '                " REQUESTOR_ID," & vbCrLf & _
+    '                " LINE_NBR," & vbCrLf & _
+    '                " ISA_REQUIRED_BY_DT," & vbCrLf & _
+    '                " EXPECTED_DELIV_DT," & vbCrLf & _
+    '                " QTY_REQ," & vbCrLf & _
+    '                " QTY_SHIPPED," & vbCrLf & _
+    '                " SHIP_FROM_BU," & vbCrLf & _
+    '                " ITM_SETID," & vbCrLf & _
+    '                " INV_ITEM_ID," & vbCrLf & _
+    '                " VENDOR_SETID," & vbCrLf & _
+    '                " VENDOR_ID," & vbCrLf & _
+    '                " VNDR_LOC," & vbCrLf & _
+    '                " ITM_ID_VNDR," & vbCrLf & _
+    '                " VNDR_CATALOG_ID," & vbCrLf & _
+    '                " SHIPTO_ID," & vbCrLf & _
+    '                " SHIP_TO_CUST_ID," & vbCrLf & _
+    '                " BUYER_ID," & vbCrLf & _
+    '                " UNIT_OF_MEASURE," & vbCrLf & _
+    '                " MFG_ID," & vbCrLf & _
+    '                " ISA_MFG_FREEFORM," & vbCrLf & _
+    '                " PRICE_PO_BSE," & vbCrLf & _
+    '                " PRICE_PO," & vbCrLf & _
+    '                " NET_UNIT_PRICE_BSE," & vbCrLf & _
+    '                " NET_UNIT_PRICE," & vbCrLf & _
+    '                " RFQ_IND," & vbCrLf & _
+    '                " INSPECT_CD," & vbCrLf & _
+    '                " INVENTORY_SRC_FLG," & vbCrLf & _
+    '                " ROUTING_ID," & vbCrLf & _
+    '                " ISA_TRACKING_ID," & vbCrLf & _
+    '                " DESCR254," & vbCrLf & _
+    '                " ISA_CUST_NOTES," & vbCrLf & _
+    '                " MFG_ITM_ID," & vbCrLf & _
+    '                " CUSTOMER_PO," & vbCrLf & _
+    '                " CUSTOMER_PO_LINE," & vbCrLf & _
+    '                " EMPLID," & vbCrLf & _
+    '                " ISA_CUST_CHARGE_CD," & vbCrLf & _
+    '                " ISA_WORK_ORDER_NO," & vbCrLf & _
+    '                " ISA_MACHINE_NO," & vbCrLf & _
+    '                " ISA_INTFC_LN_TYPE," & vbCrLf & _
+    '                " ISA_ORDER_STATUS," & vbCrLf & _
+    '                " ADD_DTTM," & vbCrLf & _
+    '                " LASTUPDDTTM," & vbCrLf & _
+    '                " PROCESS_INSTANCE," & vbCrLf & _
+    '                " IN_PROCESS_FLG)" & vbCrLf & _
+    '                " Values ('" & intParentID & "'," & vbCrLf & _
+    '                " ' '," & vbCrLf & _
+    '                " '" & strLineNumber & "'," & vbCrLf & _
+    '                " TO_DATE('" & dteReqByDate & "', 'MM/DD/YYYY HH:MI:SS AM')," & vbCrLf & _
+    '                " '', " & decQty & ", 0," & vbCrLf & _
+    '                " ' ', 'MAIN1','" & strItemID.ToUpper & "'," & vbCrLf & _
+    '                " 'MAIN1','here'," & vbCrLf & _
+    '                " '0', 'here_two '," & vbCrLf & _
+    '                " ' ','" & strShipto & "','" & strCustID & "'," & vbCrLf & _
+    '                " ' ','" & strUOM.ToUpper & "','" & strMfgID.ToUpper & "','" & strMfgFreeForm.ToUpper & " '," & vbCrLf & _
+    '                " 0,0," & vbCrLf & _
+    '                " 0,'" & decPrice & "'," & vbCrLf & _
+    '                " 'N','N','N',' ',' '," & vbCrLf & _
+    '                " '" & strDescription.ToUpper & "','" & strNotes.ToUpper & "'," & vbCrLf & _
+    '                " '" & strMfgPartNum & "'," & vbCrLf & _
+    '                " ' ',' '," & vbCrLf & _
+    '                " '" & strEmpID.ToUpper & "','" & strChgCD & "'," & vbCrLf & _
+    '                " '" & strWorkOrder & "',' '," & vbCrLf & _
+    '                " ' ','1'," & vbCrLf & _
+    '                " TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')," & vbCrLf & _
+    '                " TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')," & vbCrLf & _
+    '                " 0,'N')" & vbCrLf
+    '                Try
+    '                    rowsaffected = ORDBAccess.ExecNonQuery(strSQLstring, connectOR)
+    '                    If rowsaffected = 0 Then
+    '                        Return "Error inserting PS_ISA_ORD_INTFC_L for order " & strIntfcreqid & " line - " & strLineNumber
+    '                    End If
+    '                Catch OleDBExp As OleDbException
+    '                    Console.WriteLine("")
+    '                    Console.WriteLine("***OLEDB error - " & OleDBExp.ToString)
+    '                    Console.WriteLine("")
+    '                    connectOR.Close()
+    '                    Return "Insert line error for ORDERNO  " & strIntfcreqid & " line - " & strLineNumber & " " & OleDBExp.ToString
+    '                End Try
 
-    End Function
+    '            End If
+    '        End If
+    '    Next
 
-    Private Function updateIntfcHeader(ByVal ds As DataSet, _
-                                        ByVal strBU As String, _
-                                        ByVal strSitePrefix As String, _
-                                        ByVal strIntfcreqid As String) As String
+    'End Function
 
-        'Insert into the INTFC PRH and PRL tables
+    'Private Function updateIntfcHeader(ByVal ds As DataSet, _
+    '                                    ByVal strBU As String, _
+    '                                    ByVal strSitePrefix As String, _
+    '                                    ByVal strIntfcreqid As String) As String
 
-        Dim rtn As String = "intfcUpdate.updateIntfcHeader"
-        Dim strSQLstring As String
-        Dim rowsaffected As Integer
+    '    'Insert into the INTFC PRH and PRL tables
 
-        Dim strCustID As String
-        Dim strempID As String
-        Dim strPriority As String = " "
-        Dim strPriorityFlag As String = " "
-        If IsDBNull(ds.Tables(1).Rows(0).Item("EMPLID")) Then
-            strempID = "NOEMPID"
-        Else
-            'this may be pfd
-            strempID = ds.Tables(1).Rows(0).Item("EMPLID")
-            'pfd
-            If strempID.Length > 8 Then
-                strempID = strempID.Substring(0, 8)
-            End If
-           
-        End If
-        If IsDBNull(ds.Tables(1).Rows(0).Item("PRIORITY")) Then
-            strPriority = " "
-        Else
-            strPriority = getColumnValue(ds.Tables(1).Rows(0), "PRIORITY", 1)
-        End If
-        'if priority not = "Y" then check to see if this employee is always a priority
-        If Not strPriority = "Y" Then
-            strPriority = checkPriority(strempID)
-        End If
-        If strPriority = "Y" Then
-            strPriorityFlag = "Priority"
-        End If
+    '    Dim rtn As String = "intfcUpdate.updateIntfcHeader"
+    '    Dim strSQLstring As String
+    '    Dim rowsaffected As Integer
 
-        connectOR.Open()
-        Dim objEnterprise As New clsEnterprise(strBU, connectOR)
-        strCustID = objEnterprise.CustID
-        connectOR.Close()
-        If Trim(strCustID) = "" Then
-            Return "Cust_ID error"
-        End If
+    '    Dim strCustID As String
+    '    Dim strempID As String
+    '    Dim strPriority As String = " "
+    '    Dim strPriorityFlag As String = " "
+    '    If IsDBNull(ds.Tables(1).Rows(0).Item("EMPLID")) Then
+    '        strempID = "NOEMPID"
+    '    Else
+    '        'this may be pfd
+    '        strempID = ds.Tables(1).Rows(0).Item("EMPLID")
+    '        'pfd
+    '        If strempID.Length > 8 Then
+    '            strempID = strempID.Substring(0, 8)
+    '        End If
 
-        ' check to see order does already exist
-        Dim objIntfcOrder As New clsIntfcOrder(strIntfcreqid, strBU, connectOR)
+    '    End If
+    '    If IsDBNull(ds.Tables(1).Rows(0).Item("PRIORITY")) Then
+    '        strPriority = " "
+    '    Else
+    '        strPriority = getColumnValue(ds.Tables(1).Rows(0), "PRIORITY", 1)
+    '    End If
+    '    'if priority not = "Y" then check to see if this employee is always a priority
+    '    If Not strPriority = "Y" Then
+    '        strPriority = checkPriority(strempID)
+    '    End If
+    '    If strPriority = "Y" Then
+    '        strPriorityFlag = "Priority"
+    '    End If
 
-        If Not Trim(objIntfcOrder.OrderNo) = "" Then
-            '// order already exist for business unit
-            connectOR.Close()
-            strSQLstring = "UPDATE PS_ISA_ORD_INTFC_H" & vbCrLf & _
-                " SET ORDER_STATUS = ' '," & vbCrLf
-            If strPriority = "Y" Then
-                strSQLstring = strSQLstring & " PROJECT_ID = '" & strPriorityFlag & "'," & vbCrLf
-            End If
-            strSQLstring = strSQLstring & " LASTUPDDTTM = TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
-                " WHERE BUSINESS_UNIT_OM = '" & strBU & "'" & vbCrLf & _
-                " AND ORDER_NO = '" & strIntfcreqid & "'"
-        Else
-            '// order number not found for business unit
-            connectOR.Close()
-            strSQLstring = "Insert into PS_ISA_ORD_INTFC_H" & vbCrLf & _
-                    " (BUSINESS_UNIT_OM," & vbCrLf & _
-                    " ORDER_NO," & vbCrLf & _
-                    " CUST_ID," & vbCrLf & _
-                    " HOLD_STATUS," & vbCrLf & _
-                    " ORIGIN," & vbCrLf & _
-                    " OPRID_ENTERED_BY," & vbCrLf & _
-                    " OPRID_MODIFIED_BY," & vbCrLf & _
-                    " OPRID_APPROVED_BY," & vbCrLf & _
-                    " APPROVAL_DATE," & vbCrLf & _
-                    " PROCESS_INSTANCE," & vbCrLf & _
-                    " IN_PROCESS_FLG," & vbCrLf & _
-                    " PROJECT_ID," & vbCrLf & _
-                    " ADD_DTTM," & vbCrLf & _
-                    " LASTUPDDTTM," & vbCrLf & _
-                    " ORDER_STATUS)" & vbCrLf & _
-                    " Values ('" & strBU & "'," & vbCrLf & _
-                    " '" & strIntfcreqid.ToUpper & "','" & strCustID & "'," & vbCrLf & _
-                    " 'N', 'IOL'," & vbCrLf & _
-                    " '" & strempID.ToUpper & "'," & vbCrLf & _
-                    " '" & strempID.ToUpper & "'," & vbCrLf & _
-                    " ' '," & vbCrLf & _
-                    " TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')," & vbCrLf & _
-                    " 0, 'N', '" & strPriorityFlag & "'," & vbCrLf & _
-                    " TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')," & vbCrLf & _
-                    " TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')," & vbCrLf & _
-                    " ' ')" & vbCrLf
-        End If
+    '    connectOR.Open()
+    '    Dim objEnterprise As New clsEnterprise(strBU, connectOR)
+    '    strCustID = objEnterprise.CustID
+    '    connectOR.Close()
+    '    If Trim(strCustID) = "" Then
+    '        Return "Cust_ID error"
+    '    End If
 
-        Try
-            rowsaffected = ORDBAccess.ExecNonQuery(strSQLstring, connectOR)
-            If rowsaffected = 0 Then
-                Return "Error updating PS_ISA_ORD_INTFC_H for order " & strIntfcreqid
-            End If
-        Catch OleDBExp As OleDbException
-            Console.WriteLine("")
-            Console.WriteLine("***OLEDB error - " & OleDBExp.ToString)
-            Console.WriteLine("")
-            connectOR.Close()
-            Return "Insert error for ORDERNO  " & strIntfcreqid & " " & OleDBExp.ToString
-        End Try
+    '    ' check to see order does already exist
+    '    Dim objIntfcOrder As New clsIntfcOrder(strIntfcreqid, strBU, connectOR)
 
-    End Function
+    '    If Not Trim(objIntfcOrder.OrderNo) = "" Then
+    '        '// order already exist for business unit
+    '        connectOR.Close()
+    '        strSQLstring = "UPDATE PS_ISA_ORD_INTFC_H" & vbCrLf & _
+    '            " SET ORDER_STATUS = ' '," & vbCrLf
+    '        If strPriority = "Y" Then
+    '            strSQLstring = strSQLstring & " PROJECT_ID = '" & strPriorityFlag & "'," & vbCrLf
+    '        End If
+    '        strSQLstring = strSQLstring & " LASTUPDDTTM = TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
+    '            " WHERE BUSINESS_UNIT_OM = '" & strBU & "'" & vbCrLf & _
+    '            " AND ORDER_NO = '" & strIntfcreqid & "'"
+    '    Else
+    '        '// order number not found for business unit
+    '        connectOR.Close()
+    '        strSQLstring = "Insert into PS_ISA_ORD_INTFC_H" & vbCrLf & _
+    '                " (BUSINESS_UNIT_OM," & vbCrLf & _
+    '                " ORDER_NO," & vbCrLf & _
+    '                " CUST_ID," & vbCrLf & _
+    '                " HOLD_STATUS," & vbCrLf & _
+    '                " ORIGIN," & vbCrLf & _
+    '                " OPRID_ENTERED_BY," & vbCrLf & _
+    '                " OPRID_MODIFIED_BY," & vbCrLf & _
+    '                " OPRID_APPROVED_BY," & vbCrLf & _
+    '                " APPROVAL_DATE," & vbCrLf & _
+    '                " PROCESS_INSTANCE," & vbCrLf & _
+    '                " IN_PROCESS_FLG," & vbCrLf & _
+    '                " PROJECT_ID," & vbCrLf & _
+    '                " ADD_DTTM," & vbCrLf & _
+    '                " LASTUPDDTTM," & vbCrLf & _
+    '                " ORDER_STATUS)" & vbCrLf & _
+    '                " Values ('" & strBU & "'," & vbCrLf & _
+    '                " '" & strIntfcreqid.ToUpper & "','" & strCustID & "'," & vbCrLf & _
+    '                " 'N', 'IOL'," & vbCrLf & _
+    '                " '" & strempID.ToUpper & "'," & vbCrLf & _
+    '                " '" & strempID.ToUpper & "'," & vbCrLf & _
+    '                " ' '," & vbCrLf & _
+    '                " TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')," & vbCrLf & _
+    '                " 0, 'N', '" & strPriorityFlag & "'," & vbCrLf & _
+    '                " TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')," & vbCrLf & _
+    '                " TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')," & vbCrLf & _
+    '                " ' ')" & vbCrLf
+    '    End If
+
+    '    Try
+    '        rowsaffected = ORDBAccess.ExecNonQuery(strSQLstring, connectOR)
+    '        If rowsaffected = 0 Then
+    '            Return "Error updating PS_ISA_ORD_INTFC_H for order " & strIntfcreqid
+    '        End If
+    '    Catch OleDBExp As OleDbException
+    '        Console.WriteLine("")
+    '        Console.WriteLine("***OLEDB error - " & OleDBExp.ToString)
+    '        Console.WriteLine("")
+    '        connectOR.Close()
+    '        Return "Insert error for ORDERNO  " & strIntfcreqid & " " & OleDBExp.ToString
+    '    End Try
+
+    'End Function
 
     Private Function updateIntfcHeader(ByVal strBU As String, ByVal strIntfcreqid As String, ByVal strStatus As String) As String
 

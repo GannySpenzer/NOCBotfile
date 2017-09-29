@@ -559,10 +559,21 @@ Public Class orderProcessor
                                                 End Try
                                             Case "SHIPTO_ID"
                                                 Try
-                                                    lne.ShipToId = (lneElem.InnerText.Trim)
-                                                   
+                                                    If lne.ReferenceNo.Length > 0 Then
+                                                        connectOR.Open()
+                                                        Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
+                                                        lne.ShipToId = objquoteRn.SHIPTO_ID
+                                                        If Trim(lne.ShipToId) = "" Then
+                                                            lne.ShipToId = (lneElem.InnerText.Trim)
+                                                        Else
+                                                            lne.ShipToId = stringEncoder.escapeString(lne.ShipToId)
+                                                        End If
+                                                    Else
+                                                        lne.ShipToId = (lneElem.InnerText.Trim)
+                                                    End If
+
                                                 Catch ex As Exception
-                                                    lne.ShipToId = " "
+                                                    lne.ShipToId = (lneElem.InnerText.Trim)
                                                 End Try
 
                                             Case "LINE_NBR"
@@ -625,17 +636,20 @@ Public Class orderProcessor
                                                 lne.ManufacturerId = (lneElem.InnerText.Trim)
                                                 Try
                                                     If lne.ReferenceNo.Length > 0 Then
-                                                        'NEED NEW CODE - NO Quote tables anymore
 
-                                                        'connectOR.Open()
-                                                        'Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
-                                                        ''stringEncoder.escapeString(lneElem.InnerText.Trim)
-                                                        'lne.ManufacturerId = objquoteRn.MFG_ID
-                                                        'lne.ManufacturerId = stringEncoder.escapeString(lne.ManufacturerId)
+                                                        connectOR.Open()
+                                                        Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
+                                                        'stringEncoder.escapeString(lneElem.InnerText.Trim)
+                                                        lne.ManufacturerId = objquoteRn.MFG_ID
+                                                        If Trim(lne.ManufacturerId) = "" Then
+                                                            lne.ManufacturerId = (lneElem.InnerText.Trim)
+                                                        Else
+                                                            lne.ManufacturerId = stringEncoder.escapeString(lne.ManufacturerId)
+                                                        End If
 
                                                     End If
                                                 Catch ex As Exception
-                                                    lne.ManufacturerId = " "
+                                                    lne.ManufacturerId = (lneElem.InnerText.Trim)
                                                 End Try
 
 
@@ -643,16 +657,19 @@ Public Class orderProcessor
                                                 lne.ManufacturerItemId = (lneElem.InnerText.Trim)
                                                 Try
                                                     If lne.ReferenceNo.Length > 0 Then
-                                                        'NEED NEW CODE - NO Quote tables anymore
 
-                                                        'connectOR.Open()
-                                                        'Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
-                                                        'lne.ManufacturerItemId = objquoteRn.MFG_ITM_ID
-                                                        'lne.ManufacturerItemId = stringEncoder.escapeString(lne.ManufacturerItemId)
+                                                        connectOR.Open()
+                                                        Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
+                                                        lne.ManufacturerItemId = objquoteRn.MFG_ITM_ID
+                                                        If Trim(lne.ManufacturerItemId) = "" Then
+                                                            lne.ManufacturerItemId = (lneElem.InnerText.Trim)
+                                                        Else
+                                                            lne.ManufacturerItemId = stringEncoder.escapeString(lne.ManufacturerItemId)
+                                                        End If
 
                                                     End If
                                                 Catch ex As Exception
-                                                    lne.ManufacturerItemId = " "
+                                                    lne.ManufacturerItemId = (lneElem.InnerText.Trim)
                                                 End Try
 
                                                 'Case "VNDR_CATALOG_ID"
@@ -673,31 +690,35 @@ Public Class orderProcessor
                                                 Try
                                                     lne.ITM_ID_VNDR = (lneElem.InnerText.Trim)
                                                     If lne.ReferenceNo.Length > 0 Then
-                                                        'NEED NEW CODE - NO Quote tables anymore
 
-                                                        'connectOR.Open()
-                                                        'Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
-                                                        'lne.ITM_ID_VNDR = objquoteRn.ITM_ID_VNDR
-                                                        'lne.Location = objquoteRn.VNDR_LOC
+                                                        connectOR.Open()
+                                                        Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
+                                                        lne.ITM_ID_VNDR = objquoteRn.ITM_ID_VNDR
+                                                        lne.Location = objquoteRn.VNDR_LOC
+                                                        If Trim(lne.ITM_ID_VNDR) = "" Then
+                                                            lne.ITM_ID_VNDR = (lneElem.InnerText.Trim)
+                                                        End If
                                                         
                                                     End If
                                                 Catch ex As Exception
-                                                    lne.ITM_ID_VNDR = " "
+                                                    lne.ITM_ID_VNDR = (lneElem.InnerText.Trim)
                                                 End Try
-                                                'Try
-                                                '    lne.ManufacturerItemId = lneElem.InnerText.Trim
-                                                'Catch ex As Exception
-                                                'End Try
 
                                             Case "QTY"
                                                 Dim strrefno As String = " "
                                                 lne.Quantity = CDbl(lneElem.InnerText.Trim)
                                                 If lne.ReferenceNo.Length > 0 Then
-                                                    'NEED NEW CODE - NO Quote tables anymore
+                                                    Try
 
-                                                    'connectOR.Open()
-                                                    'Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
-                                                    'lne.Quantity = objquoteRn.QTY_REQ
+                                                        connectOR.Open()
+                                                        Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
+                                                        lne.Quantity = objquoteRn.QTY_REQ
+                                                        If Trim(lne.Quantity) = "" Then
+                                                            lne.Quantity = (lneElem.InnerText.Trim)
+                                                        End If
+                                                    Catch ex As Exception
+                                                        lne.Quantity = (lneElem.InnerText.Trim)
+                                                    End Try
                                                     
                                                 End If
                                                 'see if this xml has a reference number
@@ -708,11 +729,17 @@ Public Class orderProcessor
 
                                                 lne.Vendor_id = (lneElem.InnerText.Trim)
                                                 If lne.ReferenceNo.Length > 0 Then
-                                                    'NEED NEW CODE - NO Quote tables anymore
+                                                    Try
 
-                                                    'connectOR.Open()
-                                                    'Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
-                                                    'lne.Vendor_id = objquoteRn.Vendor_ID
+                                                        connectOR.Open()
+                                                        Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
+                                                        lne.Vendor_id = objquoteRn.Vendor_ID
+                                                        If Trim(lne.Vendor_id) = "" Then
+                                                            lne.Vendor_id = (lneElem.InnerText.Trim)
+                                                        End If
+                                                    Catch ex As Exception
+                                                        lne.Vendor_id = (lneElem.InnerText.Trim)
+                                                    End Try
                                                     
                                                 End If
                                                 'see if this xml has a reference number
@@ -726,11 +753,19 @@ Public Class orderProcessor
                                                 '
                                                 lne.DueDate = (lneElem.InnerText.Trim)
                                                 If lne.ReferenceNo.Length > 0 Then
-                                                    'NEED NEW CODE - NO Quote tables anymore
+                                                    Try
 
-                                                    'connectOR.Open()
-                                                    'Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
-                                                    'lne.DueDate = CDate(objquoteRn.ISA_REQUIRED_BY_DT)
+                                                        connectOR.Open()
+                                                        Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
+
+                                                        If Trim(objquoteRn.ISA_REQUIRED_BY_DT) <> "" Then
+                                                            If IsDate(objquoteRn.ISA_REQUIRED_BY_DT) Then
+                                                                lne.DueDate = CDate(objquoteRn.ISA_REQUIRED_BY_DT)
+                                                            End If
+                                                        End If
+                                                    Catch ex As Exception
+                                                        lne.DueDate = (lneElem.InnerText.Trim)
+                                                    End Try
                                                     
                                                 End If
 
@@ -752,55 +787,54 @@ Public Class orderProcessor
                                                 End If
 
                                             Case "NET_UNIT_PRICE"
-                                                
+
+                                                lne.NetUnitPrice = CDbl(lneElem.InnerText.Trim)
+                                                lne.NetPOPrice = CDbl(lneElem.InnerText.Trim)
                                                 Dim strrefno As String = " "
-                                                'If lne.ReferenceNo.Length > 0 Then
-                                                '    Try
-                                                '        connectOR.Open()
+                                                If lne.ReferenceNo.Length > 0 Then
+                                                    Try
+                                                        connectOR.Open()
 
-                                                '        Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
-                                                '        lne.NetUnitPrice = CDbl(objquoteRn.NET_UNIT_PRICE)
-                                                '        lne.NetPOPrice = CDbl(objquoteRn.Net_PRICE_PO)
-                                                '        'put POprice in here
+                                                        Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
 
-                                                '        ' connectOR.Close()
-                                                '    Catch ex As Exception
-
-                                                '    End Try
-                                                'Else
-                                                Try
-                                                    lne.NetUnitPrice = CDbl(lneElem.InnerText.Trim)
-                                                    lne.NetPOPrice = CDbl(lneElem.InnerText.Trim)
-                                                Catch ex As Exception
-
-                                                End Try
-
-                                                'End If
+                                                        If Trim(objquoteRn.NET_UNIT_PRICE) <> "" Then
+                                                            If IsNumeric(objquoteRn.NET_UNIT_PRICE) Then
+                                                                lne.NetUnitPrice = CDbl(objquoteRn.NET_UNIT_PRICE)
+                                                            End If
+                                                        End If
+                                                        If Trim(objquoteRn.Net_PRICE_PO) <> "" Then
+                                                            If IsNumeric(objquoteRn.Net_PRICE_PO) Then
+                                                                lne.NetPOPrice = CDbl(objquoteRn.Net_PRICE_PO)
+                                                            End If
+                                                        End If
+                                                    Catch ex As Exception
+                                                        lne.NetUnitPrice = CDbl(lneElem.InnerText.Trim)
+                                                        lne.NetPOPrice = CDbl(lneElem.InnerText.Trim)
+                                                    End Try
+                                               
+                                                End If
                                             Case "EXTENDED_AMT"
-                                                
-                                                'If lne.ReferenceNo.Length > 0 Then
-                                                '    Try
+
+                                                lne.ExtendedAmount = CDbl(lneElem.InnerText.Trim)
+                                                If lne.ReferenceNo.Length > 0 Then
+                                                    Try
 
 
-                                                '        connectOR.Open()
+                                                        connectOR.Open()
 
 
-                                                '        Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
-                                                '        lne.ExtendedAmount = CDbl(objquoteRn.NET_UNIT_PRICE)
-                                                '        lne.NetUnitPrice = CDbl(objquoteRn.NET_UNIT_PRICE)
-                                                '        lne.NetPOPrice = CDbl(objquoteRn.Net_PRICE_PO)
-                                                '        '  connectOR.Close()
-                                                '    Catch ex As Exception
+                                                        Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
 
-                                                '    End Try
-                                                'Else
-                                                Try
-                                                    lne.ExtendedAmount = CDbl(lneElem.InnerText.Trim)
-                                                Catch ex As Exception
+                                                        If Trim(objquoteRn.NET_UNIT_PRICE) <> "" Then
+                                                            If IsNumeric(objquoteRn.NET_UNIT_PRICE) Then
+                                                                lne.ExtendedAmount = CDbl(objquoteRn.NET_UNIT_PRICE)
+                                                            End If
+                                                        End If
+                                                        
+                                                    Catch ex As Exception
 
-                                                End Try
-
-                                                'End If
+                                                    End Try
+                                                End If
 
                                             Case "ISA_WORK_ORDER_NO"
                                                 Try
@@ -1127,6 +1161,8 @@ Public Class orderProcessor
                                     ", PS_ISA_ORD_INTF_LN B " & vbCrLf & _
                                     "WHERE A.BUSINESS_UNIT_OM = '" & bu & "' " & vbCrLf & _
                                     "  AND A.ORDER_NO IN (" & sOrderList & ") " & vbCrLf & _
+                                    "  AND A.ORIGIN = 'IOL' " & vbCrLf & _
+                                    "  AND A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM " & vbCrLf & _
                                     "  AND A.ORDER_NO = B.ORDER_NO " & vbCrLf & _
                                     "ORDER BY A.BUSINESS_UNIT_OM, A.ORDER_NO, B.ISA_INTFC_LN" & vbCrLf & _
                                     ""
@@ -1430,19 +1466,18 @@ Public Class orderProcessor
             mfgPartNo = stringEncoder.formStringForSQL(mfgPartNo, 35)
         End If
 
-        ' store the LOCATION in the NOTES field along with the suggested cost
-        Dim notes As String = ""
-        Dim strordstat As String = " "
-        'strordstat = 
+        '' store the LOCATION in the NOTES field along with the suggested cost
+        'Dim notes As String = " "
+        
 
-        notes = orderReqLine.Location.Trim.ToUpper
-        If (orderReqLine.Cost > 0) Then
-            notes &= " SUGGESTED COST - " & orderReqLine.Cost.ToString
-        End If
-        notes = CStr(IIf(notes.Trim.Length = 0, " ", notes.Trim))
-        If (notes.Trim.Length > 0) Then
-            notes = stringEncoder.formStringForSQL(notes, 254)
-        End If
+        'notes = orderReqLine.Location.Trim.ToUpper
+        'If (orderReqLine.Cost > 0) Then
+        '    notes &= " SUGGESTED COST - " & orderReqLine.Cost.ToString
+        'End If
+        'notes = CStr(IIf(notes.Trim.Length = 0, " ", notes.Trim))
+        'If (notes.Trim.Length > 0) Then
+        '    notes = stringEncoder.formStringForSQL(notes, 254)
+        'End If
 
         Dim empId As String = CStr(IIf(orderReqLine.EmployeeId.Trim.Length = 0, " ", orderReqLine.EmployeeId.Trim.ToUpper))
         If (empId.Trim.Length > 0) Then
@@ -1492,10 +1527,10 @@ Public Class orderProcessor
         If (shipto.Trim.Length > 0) Then
             shipto = stringEncoder.formStringForSQL(shipto, 10)
         End If
-        Dim strVenloc As String = CStr(IIf(orderReqLine.Location.Trim.Length = 0, " ", orderReqLine.Location.Trim.ToUpper))
-        If (strVenloc.Trim.Length > 0) Then
-            strVenloc = stringEncoder.formStringForSQL(strVenloc, 10)
-        End If
+        'Dim strVenloc As String = CStr(IIf(orderReqLine.Location.Trim.Length = 0, " ", orderReqLine.Location.Trim.ToUpper))
+        'If (strVenloc.Trim.Length > 0) Then
+        '    strVenloc = stringEncoder.formStringForSQL(strVenloc, 10)
+        'End If
 
 
 

@@ -18,17 +18,18 @@ Public Class clsIntfcLine
 
         Dim strSQLstring As String
 
-        strSQLstring = "SELECT B.ISA_PARENT_IDENT, B.ISA_ORDER_STATUS" & vbCrLf & _
-                        " FROM PS_ISA_ORD_INTFC_H A, PS_ISA_ORD_INTFC_L B" & vbCrLf & _
+        strSQLstring = "SELECT B.ORDER_NO, B.ISA_LINE_STATUS" & vbCrLf & _
+                        " FROM PS_ISA_ORD_INTF_HD A, PS_ISA_ORD_INTF_LN B" & vbCrLf & _
                         " WHERE A.BUSINESS_UNIT_OM = '" & strBU & "'" & vbCrLf & _
                         " AND A.ORDER_NO = '" & strIntfcreqid & "'" & vbCrLf & _
-                        " AND A.ISA_IDENTIFIER = B.ISA_PARENT_IDENT" & vbCrLf & _
-                        " AND B.LINE_NBR = '" & strLine & "'"
+                        " AND A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf & _
+                        " AND A.ORDER_NO = B.ORDER_NO" & vbCrLf & _
+                        " AND B.ISA_INTFC_LN = '" & strLine & "'"
 
         Dim objReaderReq As OleDbDataReader = ORDBAccess.GetReader(strSQLstring, connectOR)
         If objReaderReq.Read() Then
-            strParentID = objReaderReq.Item("ISA_PARENT_IDENT")
-            strLineStatus = objReaderReq.Item("ISA_ORDER_STATUS")
+            strParentID = objReaderReq.Item("ORDER_NO")
+            strLineStatus = objReaderReq.Item("ISA_LINE_STATUS")
         End If
 
     End Sub

@@ -117,29 +117,29 @@ Public Class clsQuote
         Dim strSQLstring As String
         strSQLstring = "Select " & vbCrLf & _
                                                        " H.Order_no, " & vbCrLf & _
-                                                       " L.LIne_NBR," & vbCrLf & _
-                                                       " H.ISA_IDENTIFIER, " & vbCrLf & _
-                                                       " L.ISA_PARENT_IDENT," & vbCrLf & _
-                                                       " L.NET_UNIT_PRICE," & vbCrLf & _
+                                                       " L.ISA_INTFC_LN AS LIne_NBR," & vbCrLf & _
+                                                       " H.Order_no AS ISA_IDENTIFIER, " & vbCrLf & _
+                                                       " L.Order_no AS ISA_PARENT_IDENT," & vbCrLf & _
+                                                       " L.ISA_SELL_PRICE AS NET_UNIT_PRICE," & vbCrLf & _
                                                        " L.ISA_REQUIRED_BY_DT," & vbCrLf & _
-                                                       " L.PRICE_PO," & vbCrLf & _
+                                                       " L.PRICE_VNDR AS PRICE_PO," & vbCrLf & _
                                                        " L.Vendor_ID, " & vbCrLf & _
                                                        " L.ITM_ID_VNDR, " & vbCrLf & _
-                                                       " L.VNDR_LOC," & vbCrLf & _
-                                                       " L.PRICE_PO," & vbCrLf & _
-                                                       " L.VNDR_CATALOG_ID," & vbCrLf & _
+                                                       " '1' AS VNDR_LOC," & vbCrLf & _
+                                                       " ' ' AS VNDR_CATALOG_ID," & vbCrLf & _
                                                        " L.SHIPTO_ID," & vbCrLf & _
                                                        " L.MFG_ID," & vbCrLf & _
                                                        " L.MFG_ITM_ID," & vbCrLf & _
-                                                       " L.QTY_REQ," & vbCrLf & _
+                                                       " L.QTY_REQUESTED AS QTY_REQ," & vbCrLf & _
                                                        " L.ISA_WORK_ORDER_NO," & vbCrLf & _
-                                                       " L.ISA_ORDER_STATUS," & vbCrLf & _
-                                                       " L.ISA_FLG_PUNCHOUT" & vbCrLf & _
-                                                      "  from SYSADM.PS_ISA_QUOTE_L L ," & vbCrLf & _
-                                                      "  SYSADM.PS_ISA_QUOTE_H H " & vbCrLf & _
+                                                       " L.ISA_LINE_STATUS AS ISA_ORDER_STATUS," & vbCrLf & _
+                                                       " ' ' AS ISA_FLG_PUNCHOUT" & vbCrLf & _
+                                                      "  from SYSADM8.PS_ISA_ORD_INTF_LN L ," & vbCrLf & _
+                                                      "  SYSADM8.PS_ISA_ORD_INTF_HD H " & vbCrLf & _
                                                       "  where H.order_no ='" & strorderno & "'" & vbCrLf & _
-                                                      "  and l.line_NBR='" & strlineno & "'" & vbCrLf & _
-                                                      "  and h.isa_identifier = l.isa_parent_ident"
+                                                      "  and l.ISA_INTFC_LN='" & strlineno & "'" & vbCrLf & _
+                                                      "  and h.BUSINESS_UNIT_OM = l.BUSINESS_UNIT_OM" & vbCrLf & _
+                                                      "  and h.order_no = l.order_no"
 
         Dim command1 As OleDbCommand
         command1 = New OleDbCommand(strSQLstring, connectOR)

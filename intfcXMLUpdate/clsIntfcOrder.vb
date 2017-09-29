@@ -13,7 +13,7 @@ Public Class clsIntfcOrder
         Dim strSQLstring As String
 
         strSQLstring = "SELECT A.ORDER_NO" & vbCrLf & _
-                        " FROM PS_ISA_ORD_INTFC_H A" & vbCrLf & _
+                        " FROM PS_ISA_ORD_INTF_HD A" & vbCrLf & _
                         " WHERE A.BUSINESS_UNIT_OM = '" & strBU & "'" & vbCrLf & _
                         " AND A.ORDER_NO = '" & strIntfcreqid & "'"
 
