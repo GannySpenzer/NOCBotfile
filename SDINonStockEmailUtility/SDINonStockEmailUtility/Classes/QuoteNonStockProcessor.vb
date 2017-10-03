@@ -618,7 +618,7 @@ Public Class QuoteNonStockProcessor
                             SendMessages(itmQuoted)
                             iCnt += 1
                             If iCnt = 10 Then
-                                Exit For
+                                'Exit For
                             End If
                         Else
                             PriceUpdate(itmQuoted.OrderID)
@@ -885,24 +885,7 @@ Public Class QuoteNonStockProcessor
         Dim connection As OleDbConnection = New OleDbConnection(connectionString)
 
         Try
-            'Dim cSQL As String = _
-            '"SELECT A.BUSINESS_UNIT AS BUSINESS_UNIT, A.REQ_ID AS REQ_ID, " & _
-            '       "A1.LINE_NBR AS LINE_NBR, A1.SOLD_TO_CUST_ID AS SOLD_TO_CUST_ID, " & _
-            '       "A2.ISA_EMPLOYEE_EMAIL AS ISA_EMPLOYEE_EMAIL, A2.ISA_EMPLOYEE_NAME AS ISA_EMPLOYEE_NAME, " & _
-            '       "A3.ISA_NONSKREQ_EMAIL AS ISA_NONSKREQ_EMAIL, " & _
-            '       "A4.OPRID_ENTERED_BY AS ISA_EMPLOYEE_ID, A4.BUSINESS_UNIT_OM AS BUSINESS_UNIT_OM, " & _
-            '       "A4.OPRID_MODIFIED_BY AS OPRID_MODIFIED_BY " & _
-            '"FROM PS_REQ_HDR A, PS_REQ_LINE A1, PS_ISA_USERS_TBL A2, PS_ISA_ENTERPRISE A3, PS_ISA_ORD_INTFC_H A4 " & _
-            '"WHERE (LPAD(A.BUSINESS_UNIT,5,' ') || LPAD(A.REQ_ID,10,' ')) NOT IN " & _
-            '      "(SELECT (LPAD(B.BUSINESS_UNIT,5,' ') || LPAD(B.REQ_ID,10,' ')) AS myKEY " & _
-            '      " FROM PS_ISA_REQ_EML_LOG B) " & _
-            '      "AND A1.BUSINESS_UNIT(+) = A.BUSINESS_UNIT AND A1.REQ_ID(+) = A.REQ_ID " & _
-            '      "AND A3.CUST_ID(+) = A1.SOLD_TO_CUST_ID " & _
-            '      "AND A4.ORDER_NO(+) = A.REQ_ID AND (A4.ORIGIN = 'IOL' OR A4.ORIGIN = 'MOB') " & _
-            '      "AND A4.BUSINESS_UNIT_OM = A2.BUSINESS_UNIT(+) " & _
-            '      "AND A4.OPRID_ENTERED_BY = A2.ISA_EMPLOYEE_ID(+) " & _
-            '      "AND A.REQ_STATUS = 'Q' " & _
-            '      "ORDER BY A1.BUSINESS_UNIT, A1.REQ_ID, A1.LINE_NBR " ISA_PRICE_BLOCK
+          
             Dim cSQL As String = "" & _
                                  "SELECT " & vbCrLf & _
                                  " A.BUSINESS_UNIT AS BUSINESS_UNIT" & vbCrLf & _
@@ -1756,10 +1739,11 @@ Public Class QuoteNonStockProcessor
                 Select Case strDBase
                     Case "STAR", "PLGR", "RPTG"
                         eml.Subject = " TEST SDIX92 - " & eml.Subject
-                        eml.To = "webdev@sdi.com"
+                        eml.To = "webdev@sdi.com;Benjamin.Heinzerling@sdi.com"
                     Case Else
 
                 End Select
+
                 ' send this email
                 Try
 
@@ -2096,61 +2080,38 @@ Public Class QuoteNonStockProcessor
             Dim ordBu As String = String.Empty
             Dim rowsaffected As Integer = 0
             Dim OrcRdr As OleDb.OleDbDataReader = Nothing
-            Dim ordStsL As String = "W"
-            strSelectQuery = "select OPRID_ENTERED_BY, BUSINESS_UNIT_OM,ISA_IDENTIFIER from ps_isa_ord_intfc_h where ORDER_NO = '" & orderid & "'"
-            'strSelectQuery = "select OPRID_ENTERED_BY from ps_isa_ord_intfc_h where ORDER_NO = 'A660000880'"
-            OrcRdr = GetReader(strSelectQuery)
-            If OrcRdr.HasRows Then
-                OrcRdr.Read()
-                oprEnteredBy = CType(OrcRdr("OPRID_ENTERED_BY"), String).Trim()
-                ordBu = CType(OrcRdr("BUSINESS_UNIT_OM"), String).Trim()
-                ordIdent = CType(OrcRdr("ISA_IDENTIFIER"), String).Trim()
-            End If
+            Dim ordStsL As String = "QTW"
 
-
-            strSelectQuery = "Select isa_order_status,ISA_IDENTIFIER FROM PS_ISA_ORD_INTFC_L WHERE ISA_PARENT_IDENT='" & ordIdent & "'"
+            strSelectQuery = "Select BUSINESS_UNIT_OM, ISA_LINE_STATUS, OPRID_ENTERED_BY, ORDER_NO FROM SYSADM8.PS_ISA_ORD_INTF_LN WHERE ORDER_NO='" & orderid & "'"
 
             OrcRdr = GetReader(strSelectQuery)
             If OrcRdr.HasRows Then
                 While OrcRdr.Read()
-                    If OrcRdr.GetString(0).Trim().ToUpper() = "Q" Then
-                        strUpdateQuery = " UPDATE PS_ISA_ORD_INTFC_L" & vbCrLf & _
-                                         " SET ISA_ORDER_STATUS = '" & ordStsL & "'" & vbCrLf & _
-                                         " WHERE ISA_IDENTIFIER = '" & OrcRdr.GetValue(1) & "'"
+                    ordBu = CType(OrcRdr("BUSINESS_UNIT_OM"), String).Trim()
+                    oprEnteredBy = CType(OrcRdr("OPRID_ENTERED_BY"), String).Trim()
+                    If OrcRdr("ISA_LINE_STATUS").Trim().ToUpper() = "QTS" Then  '  If OrcRdr.GetString(0).Trim().ToUpper() = "QTS" Then
+                        strUpdateQuery = " UPDATE SYSADM8.PS_ISA_ORD_INTF_LN" & vbCrLf & _
+                                         " SET ISA_LINE_STATUS = '" & ordStsL & "'" & vbCrLf & _
+                                         " WHERE ORDER_NO = '" & orderid & "'"
                         rowsaffected = ExecNonQuery(strUpdateQuery)
-                        SDIAuditInsert("PS_ISA_ORD_INTFC_L", orderid, "ISA_ORDER_STATUS", ordStsL, ordBu)
+                        SDIAuditInsert("PS_ISA_ORD_INTF_LN", orderid, "ISA_LINE_STATUS", ordStsL, ordBu)
                     End If
                 End While
             End If
 
-            strUpdateQuery = "UPDATE PS_ISA_ORD_INTFC_H" & vbCrLf & _
-                        " SET OPRID_APPROVED_BY = '" & oprEnteredBy & "'," & vbCrLf & _
-                        " ORDER_STATUS = '" & ordSts & "'" & vbCrLf & _
+            strUpdateQuery = "UPDATE SYSADM8.PS_ISA_ORD_INTF_HD" & vbCrLf & _
+                        " SET ORDER_STATUS = '" & ordSts & "'" & vbCrLf & _
                         " WHERE ORDER_NO = '" & orderid & "'"
 
             rowsaffected = ExecNonQuery(strUpdateQuery)
 
-            SDIAuditInsert("PS_ISA_ORD_INTFC_H", orderid, "OPRID_APPROVED_BY", oprEnteredBy, ordBu)
-            SDIAuditInsert("PS_ISA_ORD_INTFC_H", orderid, "ORDER_STATUS", ordSts, ordBu)
-
-            'strSelectQuery = "select ISA_IDENTIFIER from ps_isa_ord_intfc_h where ORDER_NO = '" & orderid & "'"
-            'OrcRdr = GetReader(strSelectQuery)
-            'If OrcRdr.HasRows Then
-            '    OrcRdr.Read()
-            '    ordIdent = CType(OrcRdr("ISA_IDENTIFIER"), String).Trim()
-            'End If
-
-            'strUpdateQuery = "UPDATE PS_ISA_ORD_INTFC_L" & vbCrLf & _
-            '            " SET ISA_ORDER_STATUS = '" & ordSts & "'" & vbCrLf & _
-            '            " WHERE ISA_PARENT_IDENT = '" & ordIdent & "'"
-            'rowsaffected = ExecNonQuery(strUpdateQuery)
-
-            'SDIAuditInsert("PS_ISA_ORD_INTFC_L", orderid, "ISA_ORDER_STATUS", ordSts, ordBu)
+            SDIAuditInsert("PS_ISA_ORD_INTF_LN", orderid, "OPRID_APPROVED_BY", oprEnteredBy, ordBu)
+            SDIAuditInsert("PS_ISA_ORD_INTF_HD", orderid, "ORDER_STATUS", ordSts, ordBu)
 
             SDIApprovalHistoryInsert(ordBu, orderid, oprEnteredBy)
 
         Catch ex As Exception
-            SendLogger("Error in Quoted Non Stock Email Utility", ex, "ERROR")
+            SendLogger("Error in Quoted Non Stock Email Utility, PriceUpdate", ex, "ERROR")
         End Try
     End Sub
 
@@ -2449,8 +2410,8 @@ Public Class QuoteNonStockProcessor
     End Function
 
     Public Shared Sub buildNotifyApprover(ByVal itmQuoted As QuotedNStkItem)
-        Dim strSQLString As String
-        Dim strappName As String
+        Dim strSQLString As String = ""
+        Dim strappName As String = ""
 
         Dim strreqID As String = itmQuoted.OrderID
         Dim strBU As String = itmQuoted.BusinessUnitID
@@ -2490,19 +2451,9 @@ Public Class QuoteNonStockProcessor
             Exit Sub
         End If
         Dim Ident As String = String.Empty
-        Dim strHldSts As String = String.Empty
-        strSQLString = "Select Isa_Identifier,HOLD_STATUS from PS_ISA_ORD_INTFC_H where Order_No='" & itmQuoted.OrderID & "' "
-        dtrAppReader = GetReader(strSQLString)
-        If dtrAppReader.HasRows() = True Then
-            dtrAppReader.Read()
-            Ident = dtrAppReader.Item("Isa_Identifier")
-            strHldSts = dtrAppReader.Item("HOLD_STATUS")
-        Else
-            dtrAppReader.Close()
-            Exit Sub
-        End If
-
-        strSQLString = "Select INV_ITEM_ID from PS_ISA_ORD_INTFC_L WHERE ISA_PARENT_IDENT='" & Ident & "' "
+        Dim strHldSts As String = " "  '  String.Empty
+        
+        strSQLString = "Select INV_ITEM_ID from SYSADM8.PS_ISA_ORD_INTF_LN WHERE Order_No='" & itmQuoted.OrderID & "' "
         dtrAppReader = GetReader(strSQLString)
         If dtrAppReader.HasRows() = True Then
             dtrAppReader.Read()
@@ -2552,8 +2503,8 @@ Public Class QuoteNonStockProcessor
         'strhref = "http://" & ConfigurationManager.AppSettings("WebAppName") & "approveorder.aspx?fer=" & streOrdnum & "&op=" & streApper & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
         'strhrefAlt = "http://" & ConfigurationManager.AppSettings("WebAppName") & "approveorder.aspx?fer=" & streOrdnum & "&op=" & streApperAlt & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
 
-        strhref = GetURL() & "approveorder.aspx?fer=" & streOrdnum & "&op=" & streApper & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
-        strhrefAlt = GetURL() & "approveorder.aspx?fer=" & streOrdnum & "&op=" & streApperAlt & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
+        strhref = GetURL() & "NeedApprove.aspx?fer=" & streOrdnum & "&op=" & streApper & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
+        strhrefAlt = GetURL() & "NeedApprove.aspx?fer=" & streOrdnum & "&op=" & streApperAlt & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
 
         If String.Equals(strAppAltUserid.Trim(), strAppUserid.Trim()) Then
             NotifyApprover(strAppUserid, strappName, strreqID, itmQuoted.WorkOrderNumber, stritemid, dataGridHTML, strhref, strHldSts, itmQuoted.BusinessUnitOM)
@@ -2588,12 +2539,6 @@ Public Class QuoteNonStockProcessor
             AppMail = dtrAppReader.Item("ISA_EMPLOYEE_EMAIL")
         End If
 
-        If strHldSts.ToUpper = "B" Then
-            strbodyhead = "<table width='100%'><tbody><tr><td><img src='https://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></td><td width='100%'><br /><br /><br /><br /><br /><br /><center><span style='font-family: Arial; font-size: x-large; text-align: center;'>SDI Marketplace</span></center><center><span style='text-align: center; margin: 0px auto;'>SDiExchange - Request for Budget Approval</span></center></td></tr></tbody></table>" & vbCrLf
-            strbodyhead = strbodyhead & "<HR width='100%' SIZE='1'>" & vbCrLf
-            strbodyhead = strbodyhead & "&nbsp;" & vbCrLf
-            strbodyhead = strbodyhead & "&nbsp;" & vbCrLf
-        End If
         strbodyhead = "<table width='100%'><tbody><tr><td><img src='https://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></td><td width='100%'><br /><br /><br /><br /><br /><br /><center><span style='font-family: Arial; font-size: x-large; text-align: center;'>SDI Marketplace</span></center><center><span style='text-align: center; margin: 0px auto;'>SDiExchange - Request for Approval</span></center></td></tr></tbody></table>" & vbCrLf
         strbodyhead = strbodyhead & "<HR width='100%' SIZE='1'>" & vbCrLf
         strbodyhead = strbodyhead & "&nbsp;" & vbCrLf
@@ -2613,15 +2558,13 @@ Public Class QuoteNonStockProcessor
         strbodydetl = strbodydetl & "&nbsp;</p>"
         strbodydetl = strbodydetl & "<p style='text-indent:.5in'>The above referenced order has been "
         strbodydetl = strbodydetl & "requested by <b>" & strappName & "</b> "
-        If strHldSts.ToUpper = "B" Then
-            strbodydetl = strbodydetl & "and has exceeded the charge code budget limit.  Click the link below or select the ""Approve Budget"" "
+        
+        If IsAscend(BU) Then
+            strbodydetl = strbodydetl & "and needs your approval.  Click the link below or select the ""Approve Quotes (Ascend)"" "
         Else
-            If IsAscend(BU) Then
-                strbodydetl = strbodydetl & "and needs your approval.  Click the link below or select the ""Approve Quotes (Ascend)"" "
-            Else
-                strbodydetl = strbodydetl & "and needs your approval.  Click the link below or select the ""Approve Orders"" "
-            End If
+            strbodydetl = strbodydetl & "and needs your approval.  Click the link below or select the ""Approve Orders"" "
         End If
+
         strbodydetl = strbodydetl & "menu option in SDiExchange to approve or reject the order.<br>"
         strbodydetl = strbodydetl & "&nbsp;<br>"
 
@@ -2641,22 +2584,13 @@ Public Class QuoteNonStockProcessor
         strbodydetl = strbodydetl & "<img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & vbCrLf
 
         MailBody = strbodyhead & strbodydetl
-        'MailSub = "SDiExchange - Order Number " & strreqID & " needs approval"
-        If strHldSts.ToUpper = "B" Then
-            MailSub = "SDiExchange - Order Number " & strreqID & " needs budget approval"
-        Else
-            MailSub = "SDiExchange - Order Number " & strreqID & " needs approval"
-        End If
+
+        
+        MailSub = "SDiExchange - Order Number " & strreqID & " needs approval"
+
         MailTo = AppMail
 
-        'Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
-        'Dim MailAttachmentName As String()
-        'Dim MailAttachmentbytes As New List(Of Byte())()
-
-        'SDIEmailService.EmailUtilityServices("MailandStore", MailFrom, MailTo, MailSub, String.Empty, "WebDev@sdi.com", MailBody, "NotifyApprover", MailAttachmentName, MailAttachmentbytes.ToArray())
         SendLogger(MailSub, MailBody, "NotifyApprover", "MailandStore", MailTo, String.Empty, "WebDev@sdi.com")
-
-        'UpdEmailOut.UpdEmailOut.UpdEmailOut(MailSub, "SDIExchADMIN@sdi.com", MailTo, "", "WebDev@sdi.com", "N", MailBody, m_CN)
 
     End Sub
 

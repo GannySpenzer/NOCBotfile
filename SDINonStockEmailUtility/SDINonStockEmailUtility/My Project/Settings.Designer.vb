@@ -65,21 +65,21 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=S"& _ 
-            "TAR")>  _
-        Public ReadOnly Property oraCNString1() As String
-            Get
-                Return CType(Me("oraCNString1"),String)
-            End Get
-        End Property
-        
-        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
-         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.SpecialSettingAttribute(Global.System.Configuration.SpecialSetting.WebServiceUrl),  _
          Global.System.Configuration.DefaultSettingValueAttribute("http://SDIXBATCH:8011/EmailSvcProd/EmailServices.asmx")>  _
         Public ReadOnly Property SDINonStockEmailUtility_SDiEmailUtilityService_EmailServices() As String
             Get
                 Return CType(Me("SDINonStockEmailUtility_SDiEmailUtilityService_EmailServices"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=P"& _ 
+            "LGR")>  _
+        Public ReadOnly Property oraCNString1() As String
+            Get
+                Return CType(Me("oraCNString1"),String)
             End Get
         End Property
     End Class
