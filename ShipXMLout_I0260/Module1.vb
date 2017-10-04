@@ -16,8 +16,8 @@ Module Module1
     Private m_logger As ApplicationLogger = Nothing
 
     Private Const oraCN_default_provider As String = "Provider=OraOLEDB.Oracle.1;"
-    Private Const oraCN_default_creden As String = "User ID=einternet;Password=einternet;"
-    Private Const oraCN_default_DB As String = "Data Source=RPTG;"
+    Private Const oraCN_default_creden As String = "User ID=sdiexchange;Password=sd1exchange;"
+    Private Const oraCN_default_DB As String = "Data Source=PLGR"
 
     Private Const orderType_FAB As String = "FAB"
     Private Const nstkContainerIdSuffix As String = "NSTK"
@@ -174,344 +174,13 @@ Module Module1
     End Function
 
 #Region " (old) buildPickingXMLOut() function "
-    ''Private Function buildPickingXMLOut() As Boolean
-
-    ''    Dim rtn As String = "Module1.buildPickingXMLOut"
-
-    ''    Dim ds As New DataSet
-    ''    Dim bolerror As Boolean = False
-    ''    Dim strSQLstring As String = "" & _
-    ''                    "SELECT A.SHIP_CNTR_ID, B.ORDER_NO " & vbCrLf & _
-    ''                    "FROM " & vbCrLf & _
-    ''                    " PS_ISA_PICKING_CNT A " & vbCrLf & _
-    ''                    ",PS_ISA_PICKING_INT B " & vbCrLf & _
-    ''                    "WHERE A.BUSINESS_UNIT = B.BUSINESS_UNIT " & vbCrLf & _
-    ''                    "  AND A.DEMAND_SOURCE = B.DEMAND_SOURCE " & vbCrLf & _
-    ''                    "  AND A.SOURCE_BUS_UNIT = B.SOURCE_BUS_UNIT " & vbCrLf & _
-    ''                    "  AND A.ORDER_NO = B.ORDER_NO " & vbCrLf & _
-    ''                    "  AND A.ORDER_INT_LINE_NO = B.ORDER_INT_LINE_NO " & vbCrLf & _
-    ''                    "  AND A.SCHED_LINE_NO = B.SCHED_LINE_NO " & vbCrLf & _
-    ''                    "  AND A.INV_ITEM_ID = B.INV_ITEM_ID " & vbCrLf & _
-    ''                    "  AND A.DEMAND_LINE_NO = B.DEMAND_LINE_NO " & vbCrLf & _
-    ''                    "  AND A.SEQ_NBR = B.SEQ_NBR " & vbCrLf & _
-    ''                    "  AND A.RECEIVER_ID = B.RECEIVER_ID " & vbCrLf & _
-    ''                    "  AND A.RECV_LN_NBR = B.RECV_LN_NBR " & vbCrLf & _
-    ''                    "  AND A.DEMAND_SOURCE = 'OM' " & vbCrLf & _
-    ''                    "  AND A.SOURCE_BUS_UNIT LIKE '%260' " & vbCrLf & _
-    ''                    "  AND B.SHIP_DTTM IS NOT NULL " & vbCrLf & _
-    ''                    "  AND B.SHIP_DTTM > TO_DATE(SUBSTR('2009-12-31-23.59.00.000000', 0, 19),'YYYY-MM-DD-HH24.MI.SS') " & vbCrLf & _
-    ''                    "  AND NOT EXISTS ( " & vbCrLf & _
-    ''                    "                   SELECT C.SHIP_CNTR_ID " & vbCrLf & _
-    ''                    "                   FROM PS_ISA_PICKING_SHP C " & vbCrLf & _
-    ''                    "                   WHERE C.SHIP_CNTR_ID = A.SHIP_CNTR_ID " & vbCrLf & _
-    ''                    "                 ) " & vbCrLf & _
-    ''                    "GROUP BY A.SHIP_CNTR_ID, B.ORDER_NO " & vbCrLf & _
-    ''                    ""
-
-    ''    m_logger.WriteVerboseLog(rtn & " :: executing : " & vbCrLf & strSQLstring)
-    ''    Try
-    ''        ds = ORDBAccess.GetAdapter(strSQLstring, connectOR)
-    ''        m_logger.WriteVerboseLog(rtn & " :: executed with " & ds.Tables(0).Rows.Count.ToString & " record(s) returned.")
-    ''    Catch OleDBExp As OleDbException
-    ''        Console.WriteLine("")
-    ''        Console.WriteLine("***OLEDB error - " & OleDBExp.ToString)
-    ''        Console.WriteLine("")
-    ''        connectOR.Close()
-    ''        m_logger.WriteErrorLog(rtn & " :: Error - error reading transaction FROM PS_ISA_PICKING_CNT A, PS_ISA_PICKING_INT B")
-    ''        Return True
-    ''    End Try
-
-    ''    If ds.Tables(0).Rows.Count = 0 Then
-    ''        m_logger.WriteWarningLog(rtn & " :: Warning - no containers to process at this time.")
-    ''        Return True
-    ''    End If
-
-    ''    Dim I As Integer
-    ''    Dim strContainerID As String
-    ''    Dim rowsaffected As Integer
-    ''    Dim dteJulian As Integer
-    ''    Dim dteStart As Date = "01/01/1900"
-
-    ''    dteJulian = DateDiff(DateInterval.Day, dteStart, Now())
-
-    ''    Dim runDT As DateTime = Now
-    ''    ''Dim strXMLPath As String = rootDir & "\XMLOUT\DOE" & Convert.ToString(dteJulian) & Now.Hour.ToString("D2") & Now.Minute.ToString("D2") & Now.Second.ToString("D2") & ".xml"
-    ''    'Dim strXMLPath As String = rootDir & "\XMLOUT\DOE" & runDT.ToString(Format:="MMddyy_HHmmss") & ".XML"
-    ''    Dim strXMLPath As String = rootDir & "\XMLOUT\DOE" & runDT.ToString(Format:="MMddyy_HHmmss") & ".txt"
-    ''    'Dim objXMLWriter As XmlTextWriter = Nothing
-    ''    Dim objXMLWriter As StreamWriter = Nothing
-
-    ''    Try
-    ''        'objXMLWriter = New XmlTextWriter(strXMLPath, System.Text.Encoding.UTF8)
-    ''        objXMLWriter = New StreamWriter(Path:=strXMLPath, append:=True)
-    ''        m_logger.WriteInformationLog(rtn & " :: Writing to file: " & strXMLPath)
-    ''    Catch objError As Exception
-    ''        m_logger.WriteErrorLog(rtn & " :: Error while accessing document " & strXMLPath & " -> [" & objError.Message & "]")
-    ''        Return True
-    ''    End Try
-
-    ''    ' consolidate container info per MR
-    ''    Dim arr As New ArrayList
-    ''    If ds.Tables(0).Rows.Count > 0 Then
-    ''        Dim currOrder As orderShipmentInfo = Nothing
-    ''        Dim currCntr As containerInfo = Nothing
-    ''        Dim orderNo As String = ""
-    ''        For Each row As DataRow In ds.Tables(0).Rows
-    ''            ' retrieve container Id
-    ''            strContainerID = ""
-    ''            Try
-    ''                strContainerID = CStr(row.Item("SHIP_CNTR_ID"))
-    ''                m_logger.WriteVerboseLog(rtn & " :: processing " & strContainerID & " information.")
-    ''            Catch ex As Exception
-    ''            End Try
-
-    ''            ' retrieve order number
-    ''            orderNo = ""
-    ''            Try
-    ''                orderNo = CStr(row.Item("ORDER_NO"))
-    ''            Catch ex As Exception
-    ''            End Try
-
-    ''            ' get order/shipping info
-    ''            Dim objShippingCnt As New clsShippingData(strContainerID, connectOR, orderNo)
-    ''            If Trim(objShippingCnt.OrderNo) = "" Then
-    ''                m_logger.WriteErrorLog(rtn & " :: Error - container record not found for - " & strContainerID)
-    ''                bolerror = True
-    ''            End If
-
-    ''            currOrder = New orderShipmentInfo
-    ''            currOrder.OrderNo = orderNo
-    ''            currOrder.Shipper = "MoveWay"
-
-    ''            currCntr = New containerInfo(currOrder, strContainerID, objShippingCnt.WorkOrderNo)
-    ''            currCntr.ShipDateTime = objShippingCnt.PackDTTM
-
-    ''            currOrder.Containers.Add(currCntr)
-
-    ''            ' check/add
-    ''            'if not (objshippingcnt is nothing
-    ''            If currOrder.OrderNo.Length > 0 And _
-    ''               currCntr.ContainerId.Length > 0 And _
-    ''               currCntr.ShipDateTime.Length > 0 And _
-    ''               IsDate(currCntr.ShipDateTime) Then
-    ''                Dim bIsFound As Boolean = False
-    ''                For Each o As orderShipmentInfo In arr
-    ''                    If o.Id = currOrder.Id Then
-    ''                        Dim cntr As containerInfo = o.GetContainer(currCntr)
-    ''                        If (cntr Is Nothing) Then
-    ''                            ' add the container
-    ''                            currCntr.Parent = o
-    ''                            o.Containers.Add(currCntr)
-    ''                        Else
-    ''                            ' update container info
-    ''                            If cntr.ShipDateTime.Length = 0 Then
-    ''                                cntr.ShipDateTime = currCntr.ShipDateTime
-    ''                                cntr.WorkOrderNo = currCntr.WorkOrderNo
-    ''                            Else
-    ''                                If CDate(cntr.ShipDateTime) < CDate(currCntr.ShipDateTime) Then
-    ''                                    cntr.ShipDateTime = currCntr.ShipDateTime
-    ''                                    cntr.WorkOrderNo = currCntr.WorkOrderNo
-    ''                                End If
-    ''                            End If
-    ''                        End If
-    ''                        bIsFound = True
-    ''                        Exit For
-    ''                    End If
-    ''                Next
-    ''                If Not bIsFound Then
-    ''                    arr.Add(currOrder)
-    ''                End If
-    ''            End If
-    ''        Next
-    ''    End If
-
-
-
-
-    ''    'objXMLWriter.Formatting = Formatting.Indented
-    ''    'objXMLWriter.Indentation = 3
-    ''    'objXMLWriter.WriteStartDocument(standalone:=True)
-    ''    ''objXMLWriter.WriteStartElement("diffgr:diffgram xmlns:msdata=""urn:schemas-microsoft-com:xml-msdata"" xmlns:diffgr=""urn:schemas-microsoft-com:xml-diffgram-v1""")
-    ''    'objXMLWriter.WriteStartElement("diffgr:diffgram")
-    ''    'objXMLWriter.WriteAttributeString(localName:="xmlns:msdata", value:="urn:schemas-microsoft-com:xml-msdata")
-    ''    'objXMLWriter.WriteAttributeString(localName:="xmlns:diffgr", value:="urn:schemas-microsoft-com:xml-diffgram-v1")
-    ''    ''objXMLWriter.WriteComment("Created on " & Now())
-    ''    'objXMLWriter.WriteStartElement("NewDataSet")
-
-    ''    'objXMLWriter.Flush()
-
-    ''    Dim flushCtr As Integer = 0
-
-    ''    If arr.Count > 0 Then
-    ''        Dim currOrder As orderShipmentInfo = Nothing
-    ''        'For I = 0 To ds.Tables(0).Rows.Count - 1
-    ''        For I = 0 To arr.Count - 1
-    ''            currorder = CType(arr(I), orderShipmentInfo)
-
-    ''            ''strContainerID = ds.Tables(0).Rows(I).Item("SHIP_CNTR_ID")
-    ''            ''m_logger.WriteVerboseLog(rtn & " :: processing " & strContainerID & " information.")
-
-    ''            ''Dim objShippingCnt As New clsShippingData(strContainerID, connectOR)
-    ''            ''If Trim(objShippingCnt.OrderNo) = "" Then
-    ''            ''    m_logger.WriteErrorLog(rtn & " :: Error - container record not found for " & strContainerID)
-    ''            ''    bolerror = True
-    ''            ''End If
-
-    ''            'objXMLWriter.WriteStartElement("JOB")
-    ''            'objXMLWriter.WriteAttributeString(localName:="diffgr:id", value:="JOB" & (I + 1).ToString)
-    ''            'objXMLWriter.WriteAttributeString(localName:="msdata:rowOrder", value:=(I + 1).ToString)
-
-    ''            Dim dte As String = ""
-    ''            Dim tme As String = ""
-    ''            'If objShippingCnt.PackDTTM.Trim.Length > 0 Then
-    ''            '    Try
-    ''            '        dte = CDate(objShippingCnt.PackDTTM.Trim).ToString("yyyy-MM-dd")
-    ''            '    Catch ex As Exception
-    ''            '    End Try
-    ''            '    Try
-    ''            '        tme = CDate(objShippingCnt.PackDTTM.Trim).ToString("HH:mm:ss")
-    ''            '    Catch ex As Exception
-    ''            '    End Try
-    ''            'End If
-    ''            If currorder.ShipDateTime.Length > 0 Then
-    ''                Try
-    ''                    dte = CDate(currorder.ShipDateTime.Trim).ToString("yyyy-MM-dd")
-    ''                Catch ex As Exception
-    ''                End Try
-    ''                Try
-    ''                    tme = CDate(currorder.ShipDateTime.Trim).ToString("HH:mm:ss")
-    ''                Catch ex As Exception
-    ''                End Try
-    ''            End If
-
-    ''            Dim workOrderNos As String = ""
-    ''            If currorder.Containers.Count > 0 Then
-    ''                For Each c As containerInfo In currorder.Containers
-    ''                    If workOrderNos.IndexOf(c.WorkOrderNo) = -1 Then
-    ''                        workOrderNos &= c.WorkOrderNo.Trim & ","
-    ''                        ' just get the first one
-    ''                        Exit For
-    ''                    End If
-    ''                Next
-    ''                If workOrderNos.Length > 0 Then
-    ''                    workOrderNos = workOrderNos.TrimEnd(","c)
-    ''                End If
-    ''            End If
-
-    ''            'objXMLWriter.WriteElementString("BUDGET", currorder.OrderNo)
-    ''            ''objXMLWriter.WriteElementString("TICKETNO", strContainerID)
-    ''            'objXMLWriter.WriteElementString("TICKETNO", currorder.Containers.Count.ToString)
-    ''            'objXMLWriter.WriteElementString("WORKORDER", workOrderNos)
-    ''            'objXMLWriter.WriteElementString("CDATE", dte)
-    ''            'objXMLWriter.WriteElementString("CTIME", tme)
-    ''            'objXMLWriter.WriteElementString("POD", currorder.Shipper)
-
-    ''            'objXMLWriter.WriteEndElement()
-
-    ''            Dim xOrderNo As String = (Space(10) & currorder.OrderNo.Trim)
-    ''            xOrderNo = xOrderNo.Substring(xOrderNo.Length - 10, 10)
-    ''            Dim xContainerId As String = (Space(3) & currorder.Containers.Count.ToString(Format:="000"))
-    ''            xContainerId = xContainerId.Substring(xContainerId.Length - 3, 3)
-    ''            Dim xWO As String = (Space(20) & workOrderNos)
-    ''            xWO = xWO.Substring(xWO.Length - 20, 20)
-    ''            Dim xDte As String = (Space(10) & dte)
-    ''            xDte = xDte.Substring(xDte.Length - 10, 10)
-    ''            Dim xTme As String = (Space(8) & tme)
-    ''            xTme = xTme.Substring(xTme.Length - 8, 8)
-    ''            Dim xShipr As String = (Space(10) & currorder.Shipper)
-    ''            xShipr = xShipr.Substring(xShipr.Length - 10, 10)
-
-    ''            Dim s3 As String = "" & _
-    ''                               xOrderNo & _
-    ''                               xContainerId & _
-    ''                               xWO & _
-    ''                               xDte & _
-    ''                               xTme & _
-    ''                               xShipr & _
-    ''                               ""
-    ''            objXMLWriter.WriteLine(s3)
-
-    ''            If currorder.Containers.Count > 0 Then
-    ''                For Each c As containerInfo In currorder.Containers
-    ''                    strSQLstring = "INSERT INTO PS_ISA_PICKING_SHP" & vbCrLf & _
-    ''                                " (SHIP_CNTR_ID," & vbCrLf & _
-    ''                                " ISA_XML_DATE," & vbCrLf & _
-    ''                                " ISA_XML_TIME," & vbCrLf & _
-    ''                                " ISA_TICKETNO," & vbCrLf & _
-    ''                                " ISA_BUDGET," & vbCrLf & _
-    ''                                " ISA_WORKORDER," & vbCrLf & _
-    ''                                " ISA_CDATE," & vbCrLf & _
-    ''                                " ISA_CTIME," & vbCrLf & _
-    ''                                " ISA_POD," & vbCrLf & _
-    ''                                " LASTUPDDTTM)" & vbCrLf & _
-    ''                                " VALUES " & vbCrLf & _
-    ''                                " ('" & c.ContainerId & "'," & vbCrLf & _
-    ''                                " TO_DATE('" & Now.Date & "', 'MM/DD/YYYY')," & vbCrLf & _
-    ''                                " '" & Now.ToLongTimeString & "'," & vbCrLf & _
-    ''                                " ' '," & vbCrLf & _
-    ''                                " ' '," & vbCrLf & _
-    ''                                " ' '," & vbCrLf & _
-    ''                                " ''," & vbCrLf & _
-    ''                                " ' '," & vbCrLf & _
-    ''                                " ' '," & vbCrLf & _
-    ''                                " TO_DATE('" & Now & "', 'MM/DD/YYYY HH:MI:SS AM'))" & _
-    ''                                ""
-    ''                    Try
-    ''                        Dim Command = New OleDbCommand(strSQLstring, connectOR)
-    ''                        m_logger.WriteVerboseLog(rtn & " :: command object created.")
-    ''                        connectOR.Open()
-    ''                        m_logger.WriteVerboseLog(rtn & " :: connection opened.")
-    ''                        m_logger.WriteVerboseLog(rtn & " :: executing : " & strSQLstring)
-    ''                        rowsaffected = Command.ExecuteNonQuery()
-    ''                        m_logger.WriteVerboseLog(rtn & " :: executed with " & rowsaffected.ToString & " record(s) affected.")
-    ''                        connectOR.Close()
-    ''                        m_logger.WriteVerboseLog(rtn & " :: connection closed.")
-    ''                    Catch OleDBExp As OleDbException
-    ''                        Console.WriteLine("")
-    ''                        Console.WriteLine("***OLEDB error - " & OleDBExp.ToString)
-    ''                        Console.WriteLine("")
-    ''                        connectOR.Close()
-    ''                        'objStreamWriter.WriteLine("  Error - Insert error for container " & strContainerID & " " & OleDBExp.ToString)
-    ''                        m_logger.WriteErrorLog(rtn & " :: Error - Insert error for container " & strContainerID & " " & OleDBExp.ToString)
-    ''                        bolerror = True
-    ''                    End Try
-    ''                Next
-    ''            End If
-
-    ''            ' hard write every 5 records
-    ''            If flushCtr > 4 Then
-    ''                objXMLWriter.Flush()
-    ''            Else
-    ''                flushCtr += 1
-    ''            End If
-    ''        Next
-    ''    End If
-
-    ''    'objXMLWriter.WriteEndElement()
-    ''    'objXMLWriter.WriteEndElement()
-    ''    objXMLWriter.Flush()
-    ''    objXMLWriter.Close()
-
-    ''    ' why???
-    ''    Dim strXMLResult As String
-    ''    Dim objSR As StreamReader = File.OpenText(strXMLPath)
-    ''    strXMLResult = objSR.ReadToEnd()
-    ''    objSR.Close()
-    ''    objSR = Nothing
-
-    ''    If bolerror = True Then
-    ''        Return True
-    ''    Else
-    ''        Return False
-    ''    End If
-    ''End Function
+   
 #End Region
 
     Private Function buildPickingXMLOut() As Boolean
 
         Dim rtn As String = "Module1.buildPickingXMLOut"
 
-        'Dim ds As New DataSet
         Dim bolerror As Boolean = False
 
         Dim sql As String = "" & _
@@ -528,32 +197,15 @@ Module Module1
 ",MAX(A.SHIP_DTTM) AS SHIP_DTTM " & vbCrLf & _
 ",(" & vbCrLf & _
 "  SELECT B11.ISA_WORK_ORDER_NO" & vbCrLf & _
-"  FROM PS_ISA_ORD_INTFC_H A11 " & vbCrLf & _
-"  ,PS_ISA_ORD_INTFC_L B11 " & vbCrLf & _
-"  ,PS_ISA_ORD_INTFC_O C11 " & vbCrLf & _
-"  WHERE A11.ISA_IDENTIFIER = B11.ISA_PARENT_IDENT " & vbCrLf & _
-"    AND A11.ORDER_NO = C11.ORDER_NO " & vbCrLf & _
-"    AND B11.LINE_NBR = C11.INTFC_LINE_NUM " & vbCrLf & _
-"    AND A11.ORDER_NO = A.ORDER_NO " & vbCrLf & _
-"    AND C11.ORDER_INT_LINE_NO = A.ORDER_INT_LINE_NO " & vbCrLf & _
-"    AND B11.LINE_NBR < 100 " & vbCrLf & _
-"    AND B11.ISA_WORK_ORDER_NO <> ' ' " & vbCrLf & _
-"    AND ROWNUM < 2 " & vbCrLf & _
-"  GROUP BY B11.ISA_WORK_ORDER_NO " & vbCrLf & _
+"  FROM PS_ISA_ORD_INTF_LN B11 " & vbCrLf & _
+"  WHERE B11.ORDER_NO = A.ORDER_NO " & vbCrLf & _
+"  AND B11.ISA_INTFC_LN = A.ORDER_INT_LINE_NO " & vbCrLf & _
 " ) AS ISA_WORK_ORDER_NO " & vbCrLf & _
 ",(" & vbCrLf & _
 "  SELECT B22.ISA_MACHINE_NO " & vbCrLf & _
-"  FROM PS_ISA_ORD_INTFC_H A22 " & vbCrLf & _
-"  ,PS_ISA_ORD_INTFC_L B22 " & vbCrLf & _
-"  ,PS_ISA_ORD_INTFC_O C22 " & vbCrLf & _
-"  WHERE A22.ISA_IDENTIFIER = B22.ISA_PARENT_IDENT " & vbCrLf & _
-"    AND A22.ORDER_NO = C22.ORDER_NO " & vbCrLf & _
-"    AND B22.LINE_NBR = C22.INTFC_LINE_NUM " & vbCrLf & _
-"    AND A22.ORDER_NO = A.ORDER_NO " & vbCrLf & _
-"    AND C22.ORDER_INT_LINE_NO = A.ORDER_INT_LINE_NO " & vbCrLf & _
-"    AND B22.LINE_NBR < 100 " & vbCrLf & _
-"    AND ROWNUM < 2 " & vbCrLf & _
-"  GROUP BY B22.ISA_MACHINE_NO " & vbCrLf & _
+"  FROM PS_ISA_ORD_INTF_LN B22 " & vbCrLf & _
+"  WHERE B22.ORDER_NO = A.ORDER_NO " & vbCrLf & _
+"  AND B22.ISA_INTFC_LN = A.ORDER_INT_LINE_NO " & vbCrLf & _
 " ) AS ISA_MACHINE_NO " & vbCrLf & _
 "FROM PS_ISA_PICKING_INT A " & vbCrLf & _
 ",( " & vbCrLf & _
@@ -687,7 +339,7 @@ Module Module1
                     currOrder = New orderShipmentInfo
                     currOrder.DemandSource = demandSrc
                     currOrder.OrderNo = orderNo
-                    currOrder.Shipper = "MoveWay"
+                    currOrder.Shipper = "Deluxe"
                     currOrder.IsFABOrder = (machineNo = orderType_FAB)
                     arr.Orders.Add(currOrder)
                 End If
@@ -1155,7 +807,7 @@ Module Module1
                                     "   ,H1.REQ_ID" & vbCrLf & _
                                     "   ,H1.REQ_LINE_NBR" & vbCrLf & _
                                     "   ,SUM(H1.QTY_PO) AS QTY_PO" & vbCrLf & _
-                                    "   ,SUM(NVL(H2.QTY_LN_ACCPT_VUOM,0)) AS QTY_LN_ACCPT_VUOM" & vbCrLf & _
+                                    "   ,SUM(NVL(H2.QTY_SH_ACCPT_VUOM,0)) AS QTY_LN_ACCPT_VUOM" & vbCrLf & _
                                     "   ,MAX(H3.RECEIPT_DT) AS RECEIPT_DT" & vbCrLf & _
                                     "   ,(" & vbCrLf & _
                                     "     SELECT H11.LOCATION" & vbCrLf & _
@@ -1168,7 +820,7 @@ Module Module1
                                     "     GROUP BY H11.LOCATION " & vbCrLf & _
                                     "    ) AS SHIPTO_ID" & vbCrLf & _
                                     "   FROM PS_PO_LINE_DISTRIB H1" & vbCrLf & _
-                                    "   ,PS_RECV_LN H2" & vbCrLf & _
+                                    "   ,PS_RECV_LN_SHIP H2" & vbCrLf & _
                                     "   ,PS_RECV_HDR H3" & vbCrLf & _
                                     "   WHERE H1.BUSINESS_UNIT = 'ISA00'" & vbCrLf & _
                                     "     AND H1.REQ_ID = '" & ord.OrderNo & "' " & vbCrLf & _
@@ -1187,7 +839,7 @@ Module Module1
                                     "   ,H1.REQ_ID" & vbCrLf & _
                                     "   ,H1.REQ_LINE_NBR" & vbCrLf & _
                                     "  ) H" & vbCrLf & _
-                                    " ,PS_ISA_ORD_INTFC_H I " & vbCrLf & _
+                                    " ,PS_ISA_ORD_INTF_HD I " & vbCrLf & _
                                     " WHERE A.BUSINESS_UNIT = 'ISA00' " & vbCrLf & _
                                     "   AND A.REQ_ID = '" & ord.OrderNo & "' " & vbCrLf & _
                                     "   AND A.BUSINESS_UNIT = B.BUSINESS_UNIT " & vbCrLf & _
@@ -1282,7 +934,7 @@ Module Module1
                             currOrder = New orderShipmentInfo
                             currOrder.DemandSource = demandSrc
                             currOrder.OrderNo = orderNo
-                            currOrder.Shipper = "MoveWay"
+                            currOrder.Shipper = "Deluxe"
                             currOrder.IsFABOrder = (machineNo = orderType_FAB)
                             nstkBatch.Orders.Add(currOrder)
                         End If
@@ -1341,7 +993,7 @@ Module Module1
                                           ByVal dtEnd As DateTime, _
                                           ByVal oraCN As OleDbConnection) As ArrayList
         Dim rtn As String = "Module1.getShippedNSTKOrders"
-        Const ordStatusLog_SHIPPED As String = "6"
+        Const ordStatusLog_SHIPPED As String = "DLF"  '  "6"  ' for Line: "DLF"
         Dim arr As New ArrayList
 
         Dim sql As String = "" & vbCrLf & _
@@ -1351,7 +1003,7 @@ Module Module1
                             "FROM PS_ISAORDSTATUSLOG A" & vbCrLf & _
                             "WHERE (A.DTTM_STAMP BETWEEN TO_DATE('" & dtStart.ToString("MM/dd/yyyy HH:mm:ss") & "','MM/DD/YYYY HH24:MI:SS') AND TO_DATE('" & dtEnd.ToString("MM/dd/yyyy HH:mm:ss") & "','MM/DD/YYYY HH24:MI:SS')) " & vbCrLf & _
                             "  AND A.BUSINESS_UNIT_OM = '" & bu & "' " & vbCrLf & _
-                            "  AND A.ISA_ORDER_STATUS = '" & ordStatusLog_SHIPPED & "' " & vbCrLf & _
+                            "  AND A.ISA_LINE_STATUS = '" & ordStatusLog_SHIPPED & "' " & vbCrLf & _
                             "  AND NOT EXISTS (" & vbCrLf & _
                             "                  SELECT 'X'" & vbCrLf & _
                             "  		           FROM PS_ORD_HEADER B" & vbCrLf & _
@@ -1365,8 +1017,8 @@ Module Module1
                             "                    AND C.REQ_ID = A.ORDER_NO" & vbCrLf & _
                             "                    AND C.DISTRIB_LN_STATUS <> 'X'" & vbCrLf & _
                             "                    AND C.QTY_PO > (" & vbCrLf & _
-                            "                                    SELECT SUM(NVL(E.QTY_LN_ACCPT_VUOM,0)) AS QTY_LN_ACCPT_VUOM" & vbCrLf & _
-                            "                                    FROM PS_RECV_LN E" & vbCrLf & _
+                            "                                    SELECT SUM(NVL(E.QTY_SH_ACCPT_VUOM,0)) AS QTY_LN_ACCPT_VUOM" & vbCrLf & _
+                            "                                    FROM PS_RECV_LN_SHIP E" & vbCrLf & _
                             "                                    WHERE C.BUSINESS_UNIT = E.BUSINESS_UNIT_PO" & vbCrLf & _
                             "                                      AND C.PO_ID         = E.PO_ID" & vbCrLf & _
                             "                                      AND C.LINE_NBR      = E.LINE_NBR" & vbCrLf & _

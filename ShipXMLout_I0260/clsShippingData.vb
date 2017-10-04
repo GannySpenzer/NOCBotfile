@@ -96,77 +96,12 @@ Public Class clsShippingData
                    ByVal connector As OleDbConnection, _
                    Optional ByVal orderNo As String = "")
         Dim strSQLstring As String
-        '' revert back to 08/07/2006 version of this SQL statement
-        ''   which works. The change on 10/29/2007 is to getting an Oracle error
-        '' 20080507 - erwin
-        ''strSQLstring = "SELECT A.ORDER_NO, A.SHIP_CNTR_ID," & vbCrLf & _
-        ''            " TO_CHAR(B.ISA_PACK_DTTM,'YYYY-MM-DD-HH24.MI.SS') as PACK_DTTM," & vbCrLf & _
-        ''            " SUM(B.QTY_PICKED) as QTY_PICKED," & vbCrLf & _
-        ''            " D.SHIPTO_ID, D.EMPLID, E.DESCR, E.ADDRESS1, E.ADDRESS2, E.ADDRESS3," & vbCrLf & _
-        ''            " E.ADDRESS4, E.CITY, E.STATE, E.POSTAL, F.ISA_WORK_ORDER_NO" & vbCrLf & _
-        ''            " FROM PS_ISA_PICKING_CNT A, PS_ISA_PICKING_INT B," & vbCrLf & _
-        ''            " PS_ISA_ORD_INTFC_H C, PS_ISA_ORD_INTFC_L D," & vbCrLf & _
-        ''            " PS_LOCATION_TBL E, PS_ORD_LINE F" & vbCrLf & _
-        ''            " WHERE A.SHIP_CNTR_ID = '" & strContainerID & "'" & vbCrLf & _
-        ''            " AND  ROWNUM = '1'" & vbCrLf & _
-        ''            " AND A.BUSINESS_UNIT = B.BUSINESS_UNIT" & vbCrLf & _
-        ''            " AND A.DEMAND_SOURCE = B.DEMAND_SOURCE" & vbCrLf & _
-        ''            " AND A.SOURCE_BUS_UNIT = B.SOURCE_BUS_UNIT" & vbCrLf & _
-        ''            " AND A.ORDER_NO = B.ORDER_NO" & vbCrLf & _
-        ''            " AND A.ORDER_INT_LINE_NO = B.ORDER_INT_LINE_NO" & vbCrLf & _
-        ''            " AND A.SCHED_LINE_NO = B.SCHED_LINE_NO" & vbCrLf & _
-        ''            " AND A.INV_ITEM_ID = B.INV_ITEM_ID" & vbCrLf & _
-        ''            " AND A.DEMAND_LINE_NO = B.DEMAND_LINE_NO" & vbCrLf & _
-        ''            " AND A.SEQ_NBR = B.SEQ_NBR" & vbCrLf & _
-        ''            " AND A.RECEIVER_ID = B.RECEIVER_ID" & vbCrLf & _
-        ''            " AND A.RECV_LN_NBR = B.RECV_LN_NBR" & vbCrLf & _
-        ''            " AND A.ORDER_NO = C.ORDER_NO" & vbCrLf & _
-        ''            " AND C.ISA_IDENTIFIER = D.ISA_PARENT_IDENT" & vbCrLf & _
-        ''            " AND D.SHIPTO_ID = E.LOCATION" & vbCrLf & _
-        ''            " AND E.EFFDT =" & vbCrLf & _
-        ''            " (SELECT MAX(E_ED.EFFDT) FROM PS_LOCATION_TBL E_ED" & vbCrLf & _
-        ''            " WHERE E.SETID = E_ED.SETID" & vbCrLf & _
-        ''            " AND E.LOCATION = E_ED.LOCATION" & vbCrLf & _
-        ''            " AND E_ED.EFFDT <= SYSDATE)" & vbCrLf & _
-        ''            " AND E.EFF_STATUS = 'A'" & vbCrLf & _
-        ''            " AND B.ORDER_NO = F.ORDER_NO" & vbCrLf & _
-        ''            " AND B.ORDER_INT_LINE_NO = F.ORDER_INT_LINE_NO" & vbCrLf
-        'strSQLstring = "SELECT A.ORDER_NO, A.SHIP_CNTR_ID," & vbCrLf & _
-        '            " TO_CHAR(B.ISA_PACK_DTTM,'YYYY-MM-DD-HH24.MI.SS') as PACK_DTTM," & vbCrLf & _
-        '            " D.SHIPTO_ID, D.EMPLID, E.DESCR, E.ADDRESS1, E.ADDRESS2, E.ADDRESS3," & vbCrLf & _
-        '            " E.ADDRESS4, E.CITY, E.STATE, E.POSTAL, F.ISA_WORK_ORDER_NO" & vbCrLf & _
-        '            " FROM PS_ISA_PICKING_CNT A, PS_ISA_PICKING_INT B," & vbCrLf & _
-        '            " PS_ISA_ORD_INTFC_H C, PS_ISA_ORD_INTFC_L D," & vbCrLf & _
-        '            " PS_LOCATION_TBL E, PS_ORD_LINE F" & vbCrLf & _
-        '            " WHERE A.SHIP_CNTR_ID = '" & strContainerID & "'" & vbCrLf & _
-        '            " AND  ROWNUM = '1'" & vbCrLf & _
-        '            " AND A.BUSINESS_UNIT = B.BUSINESS_UNIT" & vbCrLf & _
-        '            " AND A.DEMAND_SOURCE = B.DEMAND_SOURCE" & vbCrLf & _
-        '            " AND A.SOURCE_BUS_UNIT = B.SOURCE_BUS_UNIT" & vbCrLf & _
-        '            " AND A.ORDER_NO = B.ORDER_NO" & vbCrLf & _
-        '            " AND A.ORDER_INT_LINE_NO = B.ORDER_INT_LINE_NO" & vbCrLf & _
-        '            " AND A.SCHED_LINE_NO = B.SCHED_LINE_NO" & vbCrLf & _
-        '            " AND A.INV_ITEM_ID = B.INV_ITEM_ID" & vbCrLf & _
-        '            " AND A.DEMAND_LINE_NO = B.DEMAND_LINE_NO" & vbCrLf & _
-        '            " AND A.SEQ_NBR = B.SEQ_NBR" & vbCrLf & _
-        '            " AND A.RECEIVER_ID = B.RECEIVER_ID" & vbCrLf & _
-        '            " AND A.RECV_LN_NBR = B.RECV_LN_NBR" & vbCrLf & _
-        '            " AND A.ORDER_NO = C.ORDER_NO" & vbCrLf & _
-        '            " AND C.ISA_IDENTIFIER = D.ISA_PARENT_IDENT" & vbCrLf & _
-        '            " AND D.SHIPTO_ID = E.LOCATION" & vbCrLf & _
-        '            " AND E.EFFDT =" & vbCrLf & _
-        '            " (SELECT MAX(E_ED.EFFDT) FROM PS_LOCATION_TBL E_ED" & vbCrLf & _
-        '            " WHERE E.SETID = E_ED.SETID" & vbCrLf & _
-        '            " AND E.LOCATION = E_ED.LOCATION" & vbCrLf & _
-        '            " AND E_ED.EFFDT <= SYSDATE)" & vbCrLf & _
-        '            " AND E.EFF_STATUS = 'A'" & vbCrLf & _
-        '            " AND B.ORDER_NO = F.ORDER_NO" & vbCrLf & _
-        '            " AND B.ORDER_INT_LINE_NO = F.ORDER_INT_LINE_NO" & vbCrLf
+
         strSQLstring = "" & _
                        "SELECT " & vbCrLf & _
                        " PICK.ORDER_NO, PICK.SHIP_CNTR_ID, " & vbCrLf & _
                        " PICK.SHIP_DTTM, " & vbCrLf & _
-                       " D.SHIPTO_ID, D.EMPLID, D.ISA_WORK_ORDER_NO " & vbCrLf & _
+                       " D.SHIPTO_ID, D.ISA_EMPLOYEE_ID AS EMPLID, D.ISA_WORK_ORDER_NO " & vbCrLf & _
                        "FROM " & vbCrLf & _
                        " ( " & vbCrLf & _
                        "   SELECT " & vbCrLf & _
@@ -197,11 +132,12 @@ Public Class clsShippingData
                        "   ,INT.ORDER_INT_LINE_NO " & vbCrLf & _
                        "   ,CNT.SHIP_CNTR_ID " & vbCrLf & _
                        " ) PICK," & vbCrLf & _
-                       " PS_ISA_ORD_INTFC_H C " & vbCrLf & _
-                       ",PS_ISA_ORD_INTFC_L D " & vbCrLf & _
+                       " PS_ISA_ORD_INTF_HD C " & vbCrLf & _
+                       ",PS_ISA_ORD_INTF_LN D " & vbCrLf & _
                        "WHERE PICK.ORDER_NO = C.ORDER_NO " & vbCrLf & _
-                       "  AND PICK.ORDER_INT_LINE_NO = D.LINE_NBR " & vbCrLf & _
-                       "  AND C.ISA_IDENTIFIER = D.ISA_PARENT_IDENT " & vbCrLf & _
+                       "  AND PICK.ORDER_INT_LINE_NO = D.ISA_INTFC_LN " & vbCrLf & _
+                       "  AND C.BUSINESS_UNIT_OM = D.BUSINESS_UNIT_OM " & vbCrLf & _
+                       "  AND C.ORDER_NO = D.ORDER_NO " & vbCrLf & _
                        ""
         If orderNo.Length > 0 Then
             strSQLstring &= "" & _
