@@ -18,8 +18,8 @@ Public Class PODueDTChangeEmail
     End Enum
 
     Private Const oraCN_default_provider As String = "Provider=OraOLEDB.Oracle.1;"
-    Private Const oraCN_default_creden As String = "User ID=einternet;Password=einternet;"
-    Private Const oraCN_default_DB As String = "Data Source=STAR"
+    Private Const oraCN_default_creden As String = "User ID=sdiexchange;Password=sd1exchange;"
+    Private Const oraCN_default_DB As String = "Data Source=PLGR"
 
     Private m_xmlConfig As XmlDocument
     Private m_configFile As String = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly.GetModules()(0).FullyQualifiedName) & "\PODueDTChangeEmail.exe.config"
@@ -1289,7 +1289,7 @@ Public Class PODueDTChangeEmail
         Dim fromAddress As System.Net.Mail.MailAddress
 
 
-        sEmailBody = "<HTML><HEAD><META name=GENERATOR content=""MSHTML 8.00.6001.18876""><img src='https://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></HEAD>" & _
+        sEmailBody = "<HTML><HEAD><META name=GENERATOR content=""MSHTML 8.00.6001.18876""><span style=""background-color: black;""><img src='https://www.sdiexchange.com/images/SDNewLogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></span></HEAD>" & _
                              "<BODY><CENTER><SPAN style=""WIDTH: 256px; FONT-FAMILY: Arial; FONT-SIZE: x-large"">SDI Marketplace</SPAN></CENTER>" & _
                              "<CENTER><SPAN>SDiExchange -<B> Order Due Date Change</B></SPAN></CENTER>&nbsp;" & _
                               "&nbsp; <DIV><P>Hello SDI Site Rep,<BR></DIV><BR>There has been a Due Date change for Order Number: <B> " & myReq.ReqId.ToString & _
@@ -1321,7 +1321,13 @@ Public Class PODueDTChangeEmail
 
             sEmailTo = GetPOEmailAddress(myReq.BusinessUnit, myReq.EmployeeId)
 
-            If sEmailTo <> "" Then
+            ''for testing
+            'If Trim(sEmailTo) = "" Then
+
+            '    sEmailTo = "webdev@sdi.com;Benjamin.Heinzerling@sdi.com"
+            'End If
+
+            If Trim(sEmailTo) <> "" Then
                 If sEmailTo = "NONE" Then
                     logger.WriteVerboseLog("Email not sent due to lack of email addresses. Order Number: " & myReq.ReqId.ToString & ".")
                     logger.WriteVerboseLog("Item will be marked sent for   " & myReq.BusinessUnit.ToString() & "  " & myReq.EmployeeId & ".")
@@ -1346,13 +1352,27 @@ Public Class PODueDTChangeEmail
 
                     eml.From = fromAddress
 
+                    Dim sCNString As String = cn.ConnectionString
+                    Dim strDBase As String = "PLGR"
+                    If Len(sCNString) > 4 Then
+                        strDBase = UCase(Right(sCNString, 4))
+                    End If
+
+                    Select Case strDBase
+                        Case "STAR", "PLGR", "RPTG"
+                            eml.Subject = " TEST SDIX92 - " & eml.Subject
+                            eml.To.Add("webdev@sdi.com,Benjamin.Heinzerling@sdi.com")
+                            sEmailTo = "webdev@sdi.com;Benjamin.Heinzerling@sdi.com"
+                        Case Else
+
+                    End Select
+
                     eml.IsBodyHtml = True
                     eml.Body = sEmailBody
-                    
+
                     logger.WriteInformationLog("Sending email to " & eml.To.ToString)
 
                     Try
-                        'UpdEmailOut.UpdEmailOut.UpdEmailOut(eml.Subject, "service.notification@sdi.com", sEmailTo, "", "webdev@sdi.com", "N", sEmailBody, cn)
 
                         SendLogger(eml.Subject, sEmailBody, "PODUEDATECHGEMAIL", "Mail", sEmailTo, "", "webdev@sdi.com")
 
@@ -1451,11 +1471,15 @@ Public Class PODueDTChangeEmail
             strBu3 = ""
         End Try
 
+        If Trim(myEmployeeID) = "" Then
+            Return ""
+        End If
+
         Try
             logger.WriteVerboseLog("GetPOEmailAddress(" & myBusinessUnit & "  " & myEmployeeID & ")")
             sSQL = "" & _
     "                  SELECT DISTINCT E.BUSINESS_UNIT as BUSINESS_UNIT, E.ISA_EMPLOYEE_ID as ISA_EMPLOYEE_ID, E.ISA_EMPLOYEE_EMAIL as ISA_EMPLOYEE_EMAIL  "    '  & _
-            sSQL = sSQL & "                     FROM sysadm8.PS_ISA_USERS_TBL E "   '   & _
+            sSQL = sSQL & "                     FROM PS_ISA_USERS_TBL E "   '   & _
             If Trim(strBu3) <> "" Then
                 strBu3 = Trim(strBu3)
 
@@ -1699,10 +1723,10 @@ Public Class PODueDTChangeEmail
             ",A.LINE_NBR " & vbCrLf & _
             ",A.SCHED_NBR " & vbCrLf & _
             ",A.BUSINESS_UNIT_IN " & vbCrLf & _
-            ",l.business_unit_in as bu_nstk " & vbCrLf & _
+            ",LB.business_unit_in as bu_nstk " & vbCrLf & _
             ",LB.REQ_ID  AS ORDER_NO  " & vbCrLf & _
             ",LB.req_line_nbr AS ORDER_INT_LINE_NO " & vbCrLf & _
-            ",rl.isa_employee_id " & vbCrLf & _
+            ",LB.EMPLID AS isa_employee_id " & vbCrLf & _
             ",L.MFG_ID ,L.MFG_ITM_ID " & vbCrLf & _
             ",l.DESCR254_MIXED " & vbCrLf & _
             ",MAX(trunc(A.ORIG_PROM_DT)) AS ORIG_PROMISE_DT " & vbCrLf & _
@@ -1730,7 +1754,7 @@ Public Class PODueDTChangeEmail
             "  AND l.unit_of_measure <> 'DO' " & vbCrLf & _
             "  AND A.CANCEL_STATUS <> 'X' " & vbCrLf & _
             "  AND L.CANCEL_STATUS <> 'X' " & vbCrLf & _
-            "  AND TRIM(rl.isa_employee_id) IS NOT NULL "
+            "  AND TRIM(LB.EMPLID) IS NOT NULL "
             '"  AND A.BUSINESS_UNIT_IN <> ' ' " & vbCrLf & _
             '"  AND B.BUSINESS_UNIT = 'ISA00' " & vbCrLf & _
             '"  AND B.PO_ID = '0001989271' "
@@ -1761,7 +1785,7 @@ Public Class PODueDTChangeEmail
             "                    AND DTMON.SCHED_NBR = A.SCHED_NBR " & vbCrLf & _
             "                    AND (DTMON.NOTIFY_DTTM IS NOT NULL  and trunc(A.DUE_DT) = trunc(dtmon.due_dt)) " & vbCrLf & _
                         "                 ) " & vbCrLf & _
-                        " and not exists (Select 'X' FROM SYSADM8.PS_RECV_LN RCV WHERE A.BUSINESS_UNIT = RCV.BUSINESS_UNIT " & vbCrLf & _
+                        " and not exists (Select 'X' FROM SYSADM8.PS_RECV_LN_SHIP RCV WHERE A.BUSINESS_UNIT = RCV.BUSINESS_UNIT " & vbCrLf & _
                                           "AND A.PO_ID = RCV.PO_ID  AND A.LINE_NBR = RCV.LINE_NBR ) " & vbCrLf & _
             "GROUP BY " & vbCrLf & _
             " B.BUSINESS_UNIT " & vbCrLf & _
@@ -1770,10 +1794,10 @@ Public Class PODueDTChangeEmail
             ",A.LINE_NBR " & vbCrLf & _
             ",A.SCHED_NBR " & vbCrLf & _
             ",A.BUSINESS_UNIT_IN " & vbCrLf & _
-            ", l.business_unit_in " & vbCrLf & _
+            ", LB.business_unit_in " & vbCrLf & _
             ",A.ORDER_NO " & vbCrLf & _
             ",A.ORDER_INT_LINE_NO " & vbCrLf & _
-            ",LB.REQ_ID    ,LB.req_line_nbr ,rl.isa_employee_id " & _
+            ",LB.REQ_ID    ,LB.req_line_nbr ,LB.EMPLID " & _
             ",L.MFG_ID ,L.MFG_ITM_ID " & vbCrLf & _
             ",l.DESCR254_MIXED " & vbCrLf & _
             "ORDER BY B.BUSINESS_UNIT, B.PO_ID, A.LINE_NBR, A.SCHED_NBR " & vbCrLf & _

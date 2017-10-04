@@ -90,18 +90,6 @@ Public Class ReqDueDateChange
                             sTempEmployeeEmail = ""
                             sTempSchedNbr = ""
 
-                            'Debug.Print(rdr.Item("business_unit_om").ToString)
-                            'Debug.Print(rdr.Item("ORDER_NO").ToString)
-                            'Debug.Print(rdr.Item("LINE_NBR").ToString)
-                            'Debug.Print(rdr.Item("req_status").ToString)
-                            'Debug.Print(rdr.Item("inv_item_id").ToString)
-                            'Debug.Print(rdr.Item("descr254").ToString)
-                            'Debug.Print(rdr.Item("EXPECTED_DELIV_DT").ToString)
-                            'Debug.Print(rdr.Item("DUE_DT").ToString)
-                            'Debug.Print(rdr.Item("isa_employee_id").ToString)
-                            'Debug.Print(rdr.Item("ISA_EMPLOYEE_NAME").ToString)
-                            'Debug.Print(rdr.Item("ISA_EMPLOYEE_EMAIL").ToString)
-
                             sTempBu = rdr.Item("business_unit_om").ToString
                             sTempOrderNo = rdr.Item("ORDER_NO").ToString
                             sTempLineNbr = rdr.Item("LINE_NBR").ToString
@@ -264,35 +252,36 @@ Public Class ReqDueDateChange
     Public Function CreateSelect() As String
         Dim sSql As String = ""
 
-        sSql = "select intfc_h.business_unit_om, intfc_h.ORDER_NO, intfc_l.LINE_NBR, req_hdr.req_status, " & _
-                       "intfc_l.inv_item_id, intfc_l.descr254, trunc(intfc_l.EXPECTED_DELIV_DT) as EXPECTED_DELIV_DT, " & _
-                       "req_line.sched_nbr, trunc(req_line.DUE_DT) as DUE_DT, REQ_L.isa_employee_id, E.ISA_EMPLOYEE_NAME, E.ISA_EMPLOYEE_EMAIL " & _
-                 "from sysadm8.ps_isa_ord_intfc_h intfc_h, " & _
-                      "sysadm8.ps_isa_ord_intfc_l intfc_l, " & _
+        sSql = "select intfc_h.business_unit_om, intfc_h.ORDER_NO, intfc_l.ISA_INTFC_LN AS LINE_NBR, req_hdr.req_status, " & _
+                       "intfc_l.inv_item_id, intfc_l.descr254, trunc(intfc_l.EXPECTED_DATE) as EXPECTED_DELIV_DT, " & _
+                       "req_line.sched_nbr, trunc(req_line.DUE_DT) as DUE_DT, intfc_l.isa_employee_id, E.ISA_EMPLOYEE_NAME, E.ISA_EMPLOYEE_EMAIL " & _
+                 "from sysadm8.ps_isa_ord_intf_hD intfc_h, " & _
+                      "sysadm8.ps_isa_ord_intf_lN intfc_l, " & _
                       "SYSADM8.PS_REQ_LINE_SHIP req_line, " & _
                       "sysadm8.ps_req_line req_l, " & _
                       "sysadm8.ps_req_hdr req_hdr, " & _
-                      "sysadm8.PS_ISA_USERS_TBL E " & _
-                  "where intfc_h.isa_identifier = intfc_l.isa_parent_ident " & _
+                      "PS_ISA_USERS_TBL E " & _
+                  "where intfc_h.business_unit_om = intfc_l.business_unit_om " & _
+                    "and intfc_h.order_no = intfc_l.order_no " & _
                     "and intfc_h.order_no = req_HDR.req_id " & _
-                    "and intfc_h.order_no = req_line.req_id  " & _
-                    "and intfc_l.line_nbr = req_line.line_nbr " & _
+                    "and intfc_l.order_no = req_line.req_id  " & _
+                    "and intfc_l.ISA_INTFC_LN = req_line.line_nbr " & _
                     "and req_line.req_id = req_l.req_id " & _
                     "and req_line.line_nbr = req_l.line_nbr " & _
-                    "AND UPPER(REQ_L.ISA_EMPLOYEE_ID) = UPPER(E.ISA_EMPLOYEE_ID(+)) " & _
+                    "AND UPPER(intfc_l.ISA_EMPLOYEE_ID) = UPPER(E.ISA_EMPLOYEE_ID(+)) " & _
                     "and req_hdr.req_status not in ('X', 'C') " & _
-                    "AND intfc_l.EXPECTED_DELIV_DT <> req_line.DUE_DT " & _
+                    "AND intfc_l.EXPECTED_DATE <> req_line.DUE_DT " & _
                     "and req_l.source_status = 'A' " & _
                     " AND NOT EXISTS ( " & vbCrLf & _
                     "                  SELECT 'X' " & vbCrLf & _
                     "                    FROM SYSADM8.PS_ISA_PODUEDTMON DTMON " & vbCrLf & _
                     "                   WHERE DTMON.BUSINESS_UNIT = intfc_h.Business_unit_om  " & vbCrLf & _
                     "                     AND DTMON.PO_ID = intfc_h.ORDER_NO " & vbCrLf & _
-                    "                     AND DTMON.LINE_NBR = intfc_l.LINE_NBR " & vbCrLf & _
+                    "                     AND DTMON.LINE_NBR = intfc_l.ISA_INTFC_LN " & vbCrLf & _
                     "                     AND DTMON.SCHED_NBR = req_line.SCHED_NBR " & vbCrLf & _
                     "                     AND (DTMON.NOTIFY_DTTM IS NOT NULL  and trunc(req_line.DUE_DT) = trunc(dtmon.due_dt)) " & vbCrLf & _
                     "                 ) " & _
-                    "order by intfc_h.business_unit_om, intfc_h.order_no, REQ_L.ISA_EMPLOYEE_ID, intfc_l.line_nbr"
+                    "order by intfc_h.business_unit_om, intfc_h.order_no, intfc_l.ISA_EMPLOYEE_ID, intfc_l.ISA_INTFC_LN"
 
 
         Return sSql
