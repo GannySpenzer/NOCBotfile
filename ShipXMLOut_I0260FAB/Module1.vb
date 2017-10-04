@@ -10,8 +10,8 @@ Module Module1
     Private m_logger As ApplicationLogger = Nothing
 
     Private Const oraCN_default_provider As String = "Provider=OraOLEDB.Oracle.1;"
-    Private Const oraCN_default_creden As String = "User ID=einternet;Password=einternet;"
-    Private Const oraCN_default_DB As String = "Data Source=PROD;"
+    Private Const oraCN_default_creden As String = "User ID=sdiexchange;Password=sd1exchange;"
+    Private Const oraCN_default_DB As String = "Data Source=PLGR;"
 
     Private Const orderType_FAB As String = "FAB"
 
@@ -181,30 +181,26 @@ Module Module1
 ",MAX(A.ENDDTTM) AS PICKED_DTTM " & vbCrLf & _
 ",(" & vbCrLf & _
 "  SELECT B11.ISA_WORK_ORDER_NO" & vbCrLf & _
-"  FROM PS_ISA_ORD_INTFC_H A11 " & vbCrLf & _
-"  ,PS_ISA_ORD_INTFC_L B11 " & vbCrLf & _
-"  ,PS_ISA_ORD_INTFC_O C11 " & vbCrLf & _
-"  WHERE A11.ISA_IDENTIFIER = B11.ISA_PARENT_IDENT " & vbCrLf & _
-"    AND A11.ORDER_NO = C11.ORDER_NO " & vbCrLf & _
-"    AND B11.LINE_NBR = C11.INTFC_LINE_NUM " & vbCrLf & _
+"  FROM PS_ISA_ORD_INTF_HD A11 " & vbCrLf & _
+"  ,PS_ISA_ORD_INTF_LN B11 " & vbCrLf & _
+"  WHERE A11.BUSINESS_UNIT_OM = B11.BUSINESS_UNIT_OM " & vbCrLf & _
+"  AND A11.ORDER_NO = B11.ORDER_NO " & vbCrLf & _
 "    AND A11.ORDER_NO = A.ORDER_NO " & vbCrLf & _
-"    AND C11.ORDER_INT_LINE_NO = A.ORDER_INT_LINE_NO " & vbCrLf & _
-"    AND B11.LINE_NBR < 100 " & vbCrLf & _
+"    AND B11.ISA_INTFC_LN = A.ORDER_INT_LINE_NO " & vbCrLf & _
+"    AND B11.ISA_INTFC_LN < 100 " & vbCrLf & _
 "    AND B11.ISA_WORK_ORDER_NO <> ' ' " & vbCrLf & _
 "    AND ROWNUM < 2 " & vbCrLf & _
 "  GROUP BY B11.ISA_WORK_ORDER_NO " & vbCrLf & _
 " ) AS ISA_WORK_ORDER_NO " & vbCrLf & _
 ",(" & vbCrLf & _
 "  SELECT B22.ISA_MACHINE_NO " & vbCrLf & _
-"  FROM PS_ISA_ORD_INTFC_H A22 " & vbCrLf & _
-"  ,PS_ISA_ORD_INTFC_L B22 " & vbCrLf & _
-"  ,PS_ISA_ORD_INTFC_O C22 " & vbCrLf & _
-"  WHERE A22.ISA_IDENTIFIER = B22.ISA_PARENT_IDENT " & vbCrLf & _
-"    AND A22.ORDER_NO = C22.ORDER_NO " & vbCrLf & _
-"    AND B22.LINE_NBR = C22.INTFC_LINE_NUM " & vbCrLf & _
+"  FROM PS_ISA_ORD_INTF_HD A22 " & vbCrLf & _
+"  ,PS_ISA_ORD_INTF_LN B22 " & vbCrLf & _
+"  WHERE A22.BUSINESS_UNIT_OM = B22.BUSINESS_UNIT_OM " & vbCrLf & _
+"  AND A22.ORDER_NO = B22.ORDER_NO " & vbCrLf & _
 "    AND A22.ORDER_NO = A.ORDER_NO " & vbCrLf & _
-"    AND C22.ORDER_INT_LINE_NO = A.ORDER_INT_LINE_NO " & vbCrLf & _
-"    AND B22.LINE_NBR < 100 " & vbCrLf & _
+"    AND B22.ISA_INTFC_LN = A.ORDER_INT_LINE_NO " & vbCrLf & _
+"    AND B22.ISA_INTFC_LN < 100 " & vbCrLf & _
 "    AND ROWNUM < 2 " & vbCrLf & _
 "  GROUP BY B22.ISA_MACHINE_NO " & vbCrLf & _
 " ) AS ISA_MACHINE_NO " & vbCrLf & _
@@ -340,7 +336,7 @@ Module Module1
                     currOrder = New orderShipmentInfo
                     currOrder.DemandSource = demandSrc
                     currOrder.OrderNo = orderNo
-                    currOrder.Shipper = "MoveWay"
+                    currOrder.Shipper = "Deluxe"  '   "MoveWay"
                     currOrder.IsFABOrder = (machineNo = orderType_FAB)
                     arr.Orders.Add(currOrder)
                 End If
