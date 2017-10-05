@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="NYCQuotedNSTKEmail_SDiEmailUtilityService_EmailServices" Type="(Web Service URL)" Scope="Application">
-      <Value Profile="(Default)">http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx</Value>
+      <Value Profile="(Default)">http://SDIXBATCH:8011/EmailSvcProd/EmailServices.asmx</Value>
     </Setting>
   </Settings>
 </SettingsFile>

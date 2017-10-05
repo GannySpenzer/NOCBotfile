@@ -13,8 +13,8 @@ Public Class QuoteNonStockProcessor
                                              "in SDiExchange to approve or decline the order." & _
                                              "<br></p>Sincerely,</p>" & _
                                              "<p>SDI Customer Care</p>"
-    'Private Const QUOTED_STATUS As String = "W"
-    Private Const QUOTED_STATUS As String = "Q"
+
+    Private Const QUOTED_STATUS As String = "QTS"
 
     Private m_CN As OleDbConnection
     Private m_cEncryptionKey As String
@@ -121,24 +121,24 @@ Public Class QuoteNonStockProcessor
     '
     Public Function Evaluate() As Boolean
         Dim cHdr As String = m_sCommonMsgText & "Evaluate: "
+        Dim rdr As OleDbDataReader = Nothing
         Try
             'm_eventLogger.WriteEntry("evaluating busines rule(s) ...", EventLogEntryType.Information)
             Logger.WriteInformationLog(cHdr & "evaluating busines rule(s) ...")
             
             Dim cSQL As String = "" & _
                                  "SELECT COUNT(1) AS RECCOUNT " & vbCrLf & _
-                                 "FROM PS_ISA_QUICK_REQ_H A " & vbCrLf & _
+                                 "FROM SYSADM8.PS_ISA_ORD_INTF_LN A " & vbCrLf & _
                                  "WHERE NOT EXISTS (" & vbCrLf & _
                                  "                  SELECT 'X'" & vbCrLf & _
                                  "                  FROM PS_ISA_REQ_EML_LOG B" & vbCrLf & _
                                  "                  WHERE B.BUSINESS_UNIT = A.BUSINESS_UNIT_OM" & vbCrLf & _
-                                 "                    AND B.REQ_ID = A.REQ_ID" & vbCrLf & _
+                                 "                    AND B.REQ_ID = A.ORDER_NO" & vbCrLf & _
                                  "                 )" & vbCrLf & _
-                                 "  AND A.REQ_STATUS = '" & QUOTED_STATUS & "'" & vbCrLf & _
+                                 "  AND A.ISA_LINE_STATUS = '" & QUOTED_STATUS & "'" & vbCrLf & _
                                  ""
 
             Dim nRecs As Integer = 0
-            Dim rdr As OleDbDataReader
             Dim cmd As OleDbCommand = m_CN.CreateCommand
 
             With cmd
@@ -150,11 +150,15 @@ Public Class QuoteNonStockProcessor
 
             rdr = cmd.ExecuteReader
 
-            If rdr.HasRows Then
-                If rdr.Read Then
-                    nRecs = CType(rdr.Item(0), Integer)
+            Try
+                If rdr.HasRows Then
+                    If rdr.Read Then
+                        nRecs = CType(rdr.Item(0), Integer)
+                    End If
                 End If
-            End If
+            Catch ex As Exception
+                nRecs = 0
+            End Try
 
             rdr.Close()
 
@@ -166,6 +170,13 @@ Public Class QuoteNonStockProcessor
             Return (nRecs > 0)
 
         Catch ex As Exception
+            Try
+
+                rdr.Close()
+                m_CN.Close()
+            Catch exErr As Exception
+
+            End Try
             'm_eventLogger.WriteEntry(ex.ToString, EventLogEntryType.Error)
             Logger.WriteErrorLog(cHdr & " Error :: " & ex.Message)
             Return False
@@ -187,6 +198,8 @@ Public Class QuoteNonStockProcessor
 
             If GetQuotedItems() > 0 Then
                 SendMessages()
+            Else
+                Logger.WriteVerboseLog(cHdr & "No Orders were found. Nothing was processed by NYC Quote Non Stock Email Utility. ")
             End If
 
             m_CN.Close()
@@ -252,7 +265,7 @@ Public Class QuoteNonStockProcessor
                                  "  AND HDR.REQ_ID = LNE.REQ_ID" & vbCrLf & _
                                  "  AND LNE.EMPLID = USERS.ISA_EMPLOYEE_ID (+)" & vbCrLf & _
                                  "  AND ('I0' || SUBSTR(HDR.BUSINESS_UNIT_OM,3,3)) = ENT.ISA_BUSINESS_UNIT (+) " & vbCrLf & _
-                                 "  AND HDR.REQ_STATUS = '" & QUOTED_STATUS & "' " & vbCrLf & _
+                                 "  AND LNE.ISA_QUOTE_STATUS = '" & QUOTED_STATUS & "' " & vbCrLf & _
                                  "  AND NOT EXISTS (" & vbCrLf & _
                                  "                  SELECT 'X'" & vbCrLf & _
                                  "                  FROM PS_ISA_REQ_EML_LOG LOG" & vbCrLf & _
@@ -492,14 +505,21 @@ Public Class QuoteNonStockProcessor
                     ' add the order ID on the subject line of this email
                     If itmQuoted.OrderID.Length > 0 Then eml.Subject &= " - " & itmQuoted.OrderID
 
+                    Dim sCNString As String = m_CN.ConnectionString
+                    Dim strDBase As String = "STAR"
+                    If Len(sCNString) > 4 Then
+                        strDBase = UCase(Right(sCNString, 4))
+                    End If
+
+                    Select Case strDBase
+                        Case "STAR", "PLGR", "RPTG"
+                            eml.Subject = " TEST SDIX92 - " & eml.Subject
+                            eml.To = "webdev@sdi.com;Benjamin.Heinzerling@sdi.com"
+                        Case Else
+
+                    End Select
                     ' build body of this email message
-                    'vbCrLf & _
-                    '"FROM=" & itmQuoted.FROM & "<br>" & vbCrLf & _
-                    '"default FROM=" & m_defaultFROM & "<br>" & vbCrLf & _
-                    '"TO=" & itmQuoted.TO & "<br>" & vbCrLf & _
-                    '"BCC=" & itmQuoted.BCC & "<br>" & vbCrLf & _
-                    '"key=" & m_cEncryptionKey & "<br>" & vbCrLf & _
-                    '"URL=" & m_cURL & "<br>" & vbCrLf & _
+                    
                     eml.Body = "<HTML>" & _
                                     "<HEAD></HEAD>" & _
                                     "<BODY>" & _
@@ -524,9 +544,8 @@ Public Class QuoteNonStockProcessor
                     eml.BodyFormat = Web.Mail.MailFormat.Html
 
                     '' send this email
-                    'System.Web.Mail.SmtpMail.Send(message:=eml)
-
-                    SendLogger(eml.Subject, eml.Body, "NYCQUOTEDNSTKEMAILNOTIF", "Mail", eml.To, "", "webdev@sdi.com")
+                    
+                    SendLogger(eml.Subject, eml.Body, "NYCQTDNSTKEMLNOTIF", "Mail", eml.To, "", "webdev@sdi.com")
 
 
                     ' build insert SQL command
