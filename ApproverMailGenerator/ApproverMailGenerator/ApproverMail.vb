@@ -19,7 +19,7 @@ Module ApproverMail
     Private ReadOnly Key As Byte() = {18, 19, 6, 24, 37, 22, 4, 22, 17, 7, 11, 9, 13, 12, 6, 23}
     Private ReadOnly IV As Byte() = {14, 2, 15, 7, 5, 9, 12, 8, 4, 47, 16, 12, 1, 32, 29, 18}
     Sub Main()
-
+        GenerateApproverMail()
     End Sub
 
     Private Sub GenerateApproverMail()
