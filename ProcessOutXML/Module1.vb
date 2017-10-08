@@ -276,7 +276,7 @@ Module Module1
 
         ''Dim strURL As String = "http://200.61.48.171/webtier/receivexml.jsp"
 
-        Dim strURL As String = m_url_archibus_uncc_edu
+        Dim strURL As String = m_url_archibus_uncc_edu  '  "http://152.15.171.107/webtier/receivexml.jsp"  '  m_url_archibus_uncc_edu
         Dim Response_Doc As String
 
         m_logger.WriteVerboseLog(rtn & " : started sending file (if any) ...")
@@ -393,26 +393,23 @@ Module Module1
         Dim I As Integer = 0
         Dim MSG_LOG As String = " "
 
-        ''Wenjia's Unix server..... you may want to check with hime if htere was a problem with the database and the xml's are not goiung out to UNCC
+        ''Wenjia's Unix server..... you may want to check with hime if there was a problem with the database and the xml's are not goiung out to UNCC
         'Dim dirInfo3 As DirectoryInfo = New DirectoryInfo("\\Instprd2\PSSHARE\efi\I0256\outbound\IOH")
         'Dim dirInfo4 As DirectoryInfo = New DirectoryInfo("\\Instprd2\PSSHARE\efi\I0256\outbound\ITM")
         'Dim dirInfo5 As DirectoryInfo = New DirectoryInfo("\\Instprd2\PSSHARE\efi\I0256\outbound\REQCST")
 
         m_logger.WriteVerboseLog(rtn & " : looking at source folder for XML files (ie., IOH, ITM, REQCST) ...")
 
-        'Dim dirInfo3 As DirectoryInfo = New DirectoryInfo(m_unixServer_IOH)
         Dim dirInfo3 As DirectoryInfo = Nothing
         Try
             dirInfo3 = New DirectoryInfo(m_unixServer_IOH)
         Catch ex As Exception
         End Try
-        'Dim dirInfo4 As DirectoryInfo = New DirectoryInfo(m_unixServer_ITM)
         Dim dirInfo4 As DirectoryInfo = Nothing
         Try
             dirInfo4 = New DirectoryInfo(m_unixServer_ITM)
         Catch ex As Exception
         End Try
-        'Dim dirInfo5 As DirectoryInfo = New DirectoryInfo(m_unixServer_REQCST)
         Dim dirInfo5 As DirectoryInfo = Nothing
         Try
             dirInfo5 = New DirectoryInfo(m_unixServer_REQCST)
@@ -423,7 +420,6 @@ Module Module1
 
         Dim strFiles As String = "*.XML"
 
-        'Dim aFiles3 As FileInfo() = dirInfo3.GetFiles(strFiles)
         Dim aFiles3 As FileInfo() = Nothing
         If Not (dirInfo3 Is Nothing) Then
             Try
@@ -431,7 +427,6 @@ Module Module1
             Catch ex As Exception
             End Try
         End If
-        'Dim aFiles4 As FileInfo() = dirInfo4.GetFiles(strFiles)
         Dim aFiles4 As FileInfo() = Nothing
         If Not (dirInfo4 Is Nothing) Then
             Try
@@ -439,7 +434,6 @@ Module Module1
             Catch ex As Exception
             End Try
         End If
-        'Dim aFiles5 As FileInfo() = dirInfo5.GetFiles(strFiles)
         Dim aFiles5 As FileInfo() = Nothing
         If Not (dirInfo5 Is Nothing) Then
             Try
