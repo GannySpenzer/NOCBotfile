@@ -45,13 +45,14 @@ Public Class ORDBData
 
     Public Shared Function GetAdapterSpc(ByVal p_strQuery As String) As DataSet
         Dim connection As OleDbConnection = New OleDbConnection(DbUrl)
+        Dim UserdataSet As System.Data.DataSet = New System.Data.DataSet
         Try
             Dim Command As OleDbCommand = New OleDbCommand(p_strQuery, connection)
             Command.CommandTimeout = 120
             connection.Open()
             Dim dataAdapter As OleDbDataAdapter = _
                     New OleDbDataAdapter(Command)
-            Dim UserdataSet As System.Data.DataSet = New System.Data.DataSet
+
             dataAdapter.Fill(UserdataSet)
             Try
                 dataAdapter.Dispose()
@@ -66,7 +67,6 @@ Public Class ORDBData
                 connection.Close()
             Catch ex As Exception
             End Try
-            Return UserdataSet
         Catch objException As Exception
             Try
                 connection.Dispose()
@@ -74,6 +74,7 @@ Public Class ORDBData
             Catch ex As Exception
             End Try
         End Try
+        Return UserdataSet
     End Function
 
     Public Shared ReadOnly Property DbUrl() As String

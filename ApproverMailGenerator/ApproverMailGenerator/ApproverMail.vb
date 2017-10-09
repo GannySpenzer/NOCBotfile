@@ -23,30 +23,48 @@ Module ApproverMail
     End Sub
 
     Private Sub GenerateApproverMail()
+        Dim strError As String = ""
         Try
             Dim ApprDT As DataTable = GetApproverMailList()
-            For Each row As DataRow In ApprDT.Rows
+            Try
                 Dim strreqID As String = ""
-                Dim strAgent As String = ""
+                Dim strUserId As String = ""
                 Dim strBU As String = ""
-                Dim oApprovalResults As New ApprovalResults
-                CheckSTKLimits(strBU, strAgent, strreqID, "", "B")
-                If oApprovalResults.IsMoreApproversNeeded Then
-                    If oApprovalResults.OrderExceededLimit Then
-                        buildNotifyApprover(strreqID, strAgent, strBU, oApprovalResults.NextOrderApprover, oApprovalResults.NewOrderHeaderStatus)
+                If Not ApprDT Is Nothing Then
+                    If ApprDT.Rows.Count > 0 Then
+                        For Each row As DataRow In ApprDT.Rows
+                            'ORDER_NO,BUSINESS_UNIT_OM,ISA_USER4,ISA_EMPLOYEE_ID
+                            strreqID = row("ORDER_NO").ToString()
+                            strUserId = row("ISA_EMPLOYEE_ID").ToString()
+                            strBU = row("BUSINESS_UNIT_OM").ToString()
+                            Dim oApprovalResults As New ApprovalResults
+                            CheckSTKLimits(strBU, strUserId, strreqID, "", "W")
+                            If oApprovalResults.IsMoreApproversNeeded Then
+                                If oApprovalResults.OrderExceededLimit Then
+                                    buildNotifyApprover(strreqID, strUserId, strBU, oApprovalResults.NextOrderApprover, oApprovalResults.NewOrderHeaderStatus)
+                                Else
+                                    UpdateOrderStatus(strBU, strreqID)
+                                    'ElseIf oApprovalResults.IsAnyChargeCodeExceededLimit Then
+                                    '    For I = 0 To oApprovalResults.BudgetChargeCodesCount - 1
+                                    '        If oApprovalResults.BudgetExceededLimit(I) Then
+                                    '            buildNotifyApprover(strreqID, strAgent, strBU, oApprovalResults.NextBudgetApprover(I), oApprovalResults.NewBudgetHeaderStatus(I))
+                                    '        End If
+                                    '    Next
+                                End If
+                            End If
+                        Next
                     Else
-                        UpdateOrderStatus(strBU, strreqID)
-                        'ElseIf oApprovalResults.IsAnyChargeCodeExceededLimit Then
-                        '    For I = 0 To oApprovalResults.BudgetChargeCodesCount - 1
-                        '        If oApprovalResults.BudgetExceededLimit(I) Then
-                        '            buildNotifyApprover(strreqID, strAgent, strBU, oApprovalResults.NextBudgetApprover(I), oApprovalResults.NewBudgetHeaderStatus(I))
-                        '        End If
-                        '    Next
+                        ' no orders to approve
                     End If
+                Else
+                    ' no orders to approve
                 End If
-            Next
-        Catch ex As Exception
+            Catch ex As Exception
+                ' error trying to approve
+            End Try
 
+        Catch ex As Exception
+            ' error trying to approve
         End Try
     End Sub
 
@@ -65,14 +83,25 @@ Module ApproverMail
     'End Function
 
     Private Function GetApproverMailList() As DataTable
-        Dim dt As DataTable
+        Dim dt As DataTable = Nothing
         Try
-            Dim StrAppr As String = "SELECT DISTINCT ORDER_NO,BUSINESS_UNIT_OM,ISA_USER4 FROM SYSADM8.PS_ISA_ORD_INTF_LN WHERE ISA_LINE_STATUS='QTW' AND OPRID_ENTERED_BY = OPRID_APPROVED_BY AND  " & vbCrLf & _
+            Dim StrAppr As String = "SELECT DISTINCT ORDER_NO,BUSINESS_UNIT_OM,ISA_USER4,ISA_EMPLOYEE_ID FROM SYSADM8.PS_ISA_ORD_INTF_LN WHERE ISA_LINE_STATUS='QTW' AND ISA_EMPLOYEE_ID = OPRID_APPROVED_BY AND  " & vbCrLf & _
                 " BUSINESS_UNIT_OM IN (SELECT ISA_BUSINESS_UNIT FROM SYSADM8.PS_ISA_ENTERPRISE WHERE UPPER(ISA_BYP_RQSTR_APPR)='Y')"
             Dim ds As DataSet = ORDBData.GetAdapterSpc(StrAppr)
-            dt = ds.Tables(0)
+            If Not ds Is Nothing Then
+                If ds.Tables.Count > 0 Then
+                    dt = ds.Tables(0)
+                Else
+                    dt = Nothing
+                End If
+
+            Else
+                dt = Nothing
+            End If
+
             Return dt
         Catch ex As Exception
+            Return Nothing
         End Try
     End Function
 
@@ -171,7 +200,7 @@ Module ApproverMail
         Dim SWstk As New StringWriter(SBstk)
         Dim htmlTWstk As New HtmlTextWriter(SWstk)
         Dim dataGridHTML As String
-        Dim itemsid As Integer
+        'Dim itemsid As Integer
 
         dtgcart = New DataGrid
 
@@ -216,7 +245,7 @@ Module ApproverMail
         Dim strhref As String
         Dim stritemid As String
 
-        strhref = ConfigurationSettings.AppSettings("SiteURL11") & "approveorder.aspx?fer=" & streOrdnum & "&op=" & streApper & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
+        strhref = ConfigurationSettings.AppSettings("SiteURL11") & "NeedApprove.aspx?fer=" & streOrdnum & "&op=" & streApper & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
         Dim StrResult As String = String.Empty
 
         Dim Mailer As MailMessage = New MailMessage
@@ -505,7 +534,7 @@ Module ApproverMail
         Dim myConnection As OleDbConnection
         Dim myCommand As OleDbCommand
         Dim myParameter As OleDbParameter
-        Dim arrParamsOut As ArrayList
+        'Dim arrParamsOut As ArrayList
         Dim arrParamsAll As ArrayList
         Dim arrAppChgCds As ArrayList
         arrParamsAll = New ArrayList
