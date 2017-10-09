@@ -181,4 +181,22 @@ Public Class ORDBData
 
         Return rowsAffected
     End Function
+
+    Public Shared Function ExecuteNonQuery(ByRef trnsactSession As OleDbTransaction, ByRef connection As OleDbConnection, _
+                                           strSQLstring As String, ByRef rowsaffected As Integer, ByRef exError As Exception) As Boolean
+        Dim bSuccessful As Boolean = False
+
+        Try
+            Dim cmd As OleDbCommand = New OleDbCommand(strSQLstring, connection)
+            cmd.CommandTimeout = 120
+            cmd.Transaction = trnsactSession
+            rowsaffected = cmd.ExecuteNonQuery()
+            bSuccessful = True
+        Catch ex As Exception
+            bSuccessful = False
+            exError = ex
+        End Try
+
+        Return bSuccessful
+    End Function
 End Class
