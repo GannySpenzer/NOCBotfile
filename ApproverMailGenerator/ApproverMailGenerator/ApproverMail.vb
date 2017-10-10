@@ -675,6 +675,10 @@ Module ApproverMail
     'End Sub
 
     Public Class OrderApprovals
+
+        Private Shared m_bGotSchema As Boolean = False
+        Private Shared m_dtSchema As DataTable
+
         Public Shared Function SetInitialOrderStatus(strBU As String, sApproverID As String, strReqID As String, _
             ByRef oApprovalResults As ApprovalResults) As Boolean
 
@@ -852,6 +856,180 @@ Module ApproverMail
             Return bAddSuccess
         End Function
 
+        Private Shared Function GetInsertCommand(sSourceProgram As String, sFunctionDesc As String, sTableName As String, _
+                                           sOprID As String, sBU As String, sColumnChg As String, sOldValue As String, _
+                                           sNewValue As String, sKey01 As String, sKey02 As String, sKey03 As String, _
+                                           sUDF1 As String, sUDF2 As String, sUDF3 As String, ByRef strSQLstring As String, _
+                                           ByRef sErrorDetails As String) As Boolean
+            Dim bGotCommand As Boolean = False
+            Dim sServer As String = ""
+            m_bGotSchema = False
+
+            Try
+                ' We are going to truncate instead of return an error. We don't
+                ' want to abort the primary function (interunit receipts, etc) 
+                ' just for an audit record.
+
+                Dim currentApp As HttpApplication = HttpContext.Current.ApplicationInstance
+                sServer = currentApp.Session("WEBSITEID")
+
+                If TruncateData(sSourceProgram, sFunctionDesc, sTableName, sOprID, sBU, sColumnChg, sOldValue, _
+                                                 sNewValue, sKey01, sKey02, sKey03, sUDF1, sUDF2, sUDF3, sServer, sErrorDetails) Then
+
+                    'Yury Ticket 117944 20170609
+                    'strSQLstring = "INSERT INTO SYSADM8.ps_isa_SDIXaudit " & vbCrLf & _
+                    strSQLstring = "INSERT INTO SDIX_audit " & vbCrLf & _
+                    " ( " & vbCrLf & _
+                    " descr, rcdsrc, table_name " & vbCrLf & _
+                    ", key_01, key_02, key_03 " & vbCrLf & _
+                    ", columnchg, newvalue, oldvalue " & vbCrLf & _
+                    ", oprid, server_name " & vbCrLf & _
+                    ", dt_timestamp " & vbCrLf & _
+                    ", business_unit, isa_udf1, isa_udf2, isa_udf3 " & vbCrLf & _
+                    " ) " & vbCrLf & _
+                    " VALUES (" & vbCrLf & _
+                    " '" & sFunctionDesc & "', '" & sSourceProgram & "', '" & sTableName & "' " & vbCrLf & _
+                    ", '" & sKey01 & "', '" & sKey02 & "', '" & sKey03 & "' " & vbCrLf & _
+                    ", '" & sColumnChg & "', '" & sNewValue & "', '" & sOldValue & "' " & vbCrLf & _
+                    ", '" & sOprID & "', '" & sServer & "' " & vbCrLf & _
+                    ", TO_DATE('" & Now.ToString("MM/dd/yyyy HH:mm:ss") & "', 'MM/DD/YYYY HH24:MI:SS') " & vbCrLf & _
+                    ", '" & sBU & "', '" & sUDF1 & "', '" & sUDF2 & "', '" & sUDF3 & "' " & vbCrLf & _
+                    " )"
+
+                    strSQLstring = strSQLstring.Replace(", ''", ", ' '") ' make sure nulls aren't written to table
+
+                    bGotCommand = True
+                End If
+            Catch ex As Exception
+                bGotCommand = False
+                sErrorDetails = GetExceptionDetails(ex, strSQLstring)
+            End Try
+
+            Return bGotCommand
+        End Function
+
+        Private Shared Function TruncateData(ByRef sSourceProgram As String, ByRef sFunctionDesc As String, ByRef sTableName As String, _
+                                            ByRef sOprID As String, ByRef sBU As String, ByRef sColumnChg As String, _
+                                            ByRef sOldValue As String, ByRef sNewValue As String, ByRef sKey01 As String, _
+                                            ByRef sKey02 As String, ByRef sKey03 As String, ByRef sUDF1 As String, _
+                                            ByRef sUDF2 As String, ByRef sUDF3 As String, ByRef sServerName As String,
+                                            ByRef sErrorDetails As String) As Boolean
+            Dim bSuccess As Boolean = False
+
+            Try
+                If GetSchema(sErrorDetails) Then
+                    If m_dtSchema IsNot Nothing Then
+                        If m_dtSchema.Rows.Count > 0 Then
+                            For Each dr As DataRow In m_dtSchema.Rows
+                                Dim sColumnName As String = dr.Item("COLUMN_NAME").ToString.ToUpper
+                                Dim sMaxLength As String = dr.Item("CHARACTER_MAXIMUM_LENGTH").ToString
+                                If sMaxLength <> "" Then
+                                    Dim iMaxLength As Integer = CType(dr.Item("CHARACTER_MAXIMUM_LENGTH").ToString, Integer)
+
+                                    Select Case sColumnName
+                                        Case "DESCR"
+                                            TruncateField(sFunctionDesc, iMaxLength)
+                                        Case "RCDSRC"
+                                            TruncateField(sSourceProgram, iMaxLength)
+                                        Case "TABLE_NAME"
+                                            TruncateField(sTableName, iMaxLength)
+                                        Case "KEY_01"
+                                            TruncateField(sKey01, iMaxLength)
+                                        Case "KEY_02"
+                                            TruncateField(sKey02, iMaxLength)
+                                        Case "KEY_03"
+                                            TruncateField(sKey03, iMaxLength)
+                                        Case "COLUMNCHG"
+                                            TruncateField(sColumnChg, iMaxLength)
+                                        Case "NEWVALUE"
+                                            TruncateField(sNewValue, iMaxLength)
+                                        Case "OLDVALUE"
+                                            TruncateField(sOldValue, iMaxLength)
+                                        Case "OPRID"
+                                            TruncateField(sOprID, iMaxLength)
+                                        Case "SERVER_NAME"
+                                            TruncateField(sServerName, iMaxLength)
+                                        Case "BUSINESS_UNIT"
+                                            TruncateField(sBU, iMaxLength)
+                                        Case "ISA_UDF1"
+                                            TruncateField(sUDF1, iMaxLength)
+                                        Case "ISA_UDF2"
+                                            TruncateField(sUDF2, iMaxLength)
+                                        Case "ISA_UDF3"
+                                            TruncateField(sUDF3, iMaxLength)
+                                    End Select
+                                End If
+                            Next
+                        End If
+                    End If
+
+                    bSuccess = True
+                End If
+
+            Catch ex As Exception
+                sErrorDetails = GetExceptionDetails(ex)
+            End Try
+
+            Return bSuccess
+        End Function
+
+        Private Shared Sub TruncateField(ByRef sData As String, iMaxLength As Integer)
+            If sData.Length > iMaxLength Then
+                sData = sData.Substring(0, iMaxLength)
+            End If
+        End Sub
+
+        Private Shared Function GetSchema(ByRef sErrorDetails As String) As Boolean
+            Dim bSuccess As Boolean = False
+
+            Try
+                If m_bGotSchema Then
+                    bSuccess = True
+                Else
+                    Dim restrictions(3) As String
+                    'restrictions(2) = UCase("ps_isa_SDIXaudit")   'Yury Ticket 117944 20170609
+                    restrictions(2) = UCase("SDIX_audit")          'Yury Ticket 117944 20170609
+                    Dim connection As OleDbConnection = New OleDbConnection(DbUrl)
+                    connection.Open()
+                    m_dtSchema = connection.GetSchema("Columns", restrictions)
+                    connection.Close()
+                    m_bGotSchema = True
+                    bSuccess = True
+                End If
+            Catch ex As Exception
+                sErrorDetails = GetExceptionDetails(ex)
+            End Try
+
+            Return bSuccess
+        End Function
+
+        Private Shared Function GetExceptionDetails(ex As Exception, Optional strSQLstring As String = "") As String
+            Dim sErrorDetails As String
+            Dim currentApp As HttpApplication = HttpContext.Current.ApplicationInstance
+
+            sErrorDetails = "ex.Message=" & ex.Message & vbCrLf & _
+                "; USERID=" & currentApp.Session("USERID").ToString & vbCrLf & _
+                "; BU=" & currentApp.Session("BUSUNIT").ToString
+            If strSQLstring.Trim.Length > 0 Then
+                sErrorDetails &= "; strSQLstring=" & strSQLstring
+            End If
+            sErrorDetails &= "; ex.StackTrace=" & ex.StackTrace
+
+            Return sErrorDetails
+        End Function
+
+        Private Shared Function GetErrorDetails(sFunction As String, rowsaffected As Integer, strSQLstring As String) As String
+            Dim sErrorDetails As String
+            Dim currentApp As HttpApplication = HttpContext.Current.ApplicationInstance
+
+            sErrorDetails = sFunction & vbCrLf & _
+                "; rowsaffected=" & rowsaffected.ToString & vbCrLf & _
+                "; USERID=" & currentApp.Session("USERID").ToString & vbCrLf & _
+                "; BU=" & currentApp.Session("BUSUNIT").ToString & vbCrLf & _
+                "; strSQLstring=" & strSQLstring
+
+            Return sErrorDetails
+        End Function
 
         Public Shared Function GetFullyApprovedStatus(ByVal strBu As String) As String
 
