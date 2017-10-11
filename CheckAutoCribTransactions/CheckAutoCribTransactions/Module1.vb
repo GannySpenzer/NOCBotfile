@@ -16,7 +16,7 @@ Module Module1
     Dim objStreamWriter As StreamWriter
     Dim rootDir As String = "C:\Program Files (x86)\SDI\CheckAutoCribTrans"
     Dim logpath As String = "C:\Program Files (x86)\SDI\CheckAutoCribTrans\LOGS\CheckAutoCribTransOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=STAR")
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=PROD")
     'ISA_EMAIL_ID                              NOT NULL NUMBER(38)
     'DATETIME_ADDED                                     DATE
     'EMAIL_SUBJECT_LONG                        NOT NULL VARCHAR2(80)
@@ -34,13 +34,6 @@ Module Module1
 
         Console.WriteLine("Started to check Auto Crib Transactions ")
         Console.WriteLine("")
-
-        'If Dir(rootDir, FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir)
-        'End If
-        'If Dir(rootDir & "\LOGS", FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir & "\LOGS")
-        'End If
 
         objStreamWriter = File.CreateText(logpath)
         objStreamWriter.WriteLine("Started to check Auto Crib Transactions " & Now())
@@ -67,7 +60,7 @@ Module Module1
 
         Dim strSQLstring As String
         ' selct all customers with AutoCrib installed
-        strSQLstring = "select * from ps_isa_enterprise where isa_autocrib_db > ' '"
+        strSQLstring = "select * from ps_isa_enterprise where isa_autocrib_db > ' ' AND LENGTH(isa_autocrib_db) > 3"
 
         Dim cnString As String = ""
         Try
@@ -417,11 +410,9 @@ Module Module1
     Private Sub SendEmail1(ByVal mailer As System.Web.Mail.MailMessage)
 
         Try
-            'SendLogger(eml.Subject, eml.Body, "QUOTEAPPROVAL", "Mail", eml.To, eml.Cc, eml.Bcc)
+
             SendLogger(mailer.Subject, mailer.Body, "CHECKAUTOCRIBTRANS", "Mail", mailer.To, "", mailer.Bcc, mailer.From)
 
-            '' old code
-            'UpdEmailOut.UpdEmailOut.UpdEmailOut(mailer.Subject, mailer.From, mailer.To, "", "", "N", mailer.Body, connectOR)
         Catch ex As Exception
 
         End Try
