@@ -348,108 +348,27 @@ Public Class QuoteNonStockProcessor
                     dr("Item ID") = CType(dataRowMain("INV_ITEM_ID"), String).Trim()
                     dr("Description") = CType(dataRowMain("DESCR254"), String).Trim()
 
-                    If CType(dataRowMain("INV_ITEM_ID"), String).Trim().Contains("NONCAT") Then
+                    Try
+                        dr("Manuf.") = CType(dataRowMain("ISA_MFG_FREEFORM"), String).Trim()
+                    Catch ex As Exception
+                        dr("Manuf.") = " "
+                    End Try
+                    Try
+                        dr("Manuf. Partnum") = CType(dataRowMain("MFG_ITM_ID"), String).Trim()
+                    Catch ex As Exception
+                        dr("Manuf. Partnum") = " "
+                    End Try
+                    Try
+                        dr("Item ID") = CType(dataRowMain("INV_ITEM_ID"), String).Trim()
+                    Catch ex As Exception
+                        dr("Item ID") = " "
+                    End Try
 
-                        Try
-                            dr("Manuf.") = CType(dataRowMain("ISA_MFG_FREEFORM"), String).Trim()
-                        Catch ex As Exception
-                            dr("Manuf.") = " "
-                        End Try
-                        Try
-                            dr("Manuf. Partnum") = CType(dataRowMain("MFG_ITM_ID"), String).Trim()
-                        Catch ex As Exception
-                            dr("Manuf. Partnum") = " "
-                        End Try
-                        Try
-                            dr("Item ID") = CType(dataRowMain("INV_ITEM_ID"), String).Trim()
-                        Catch ex As Exception
-                            dr("Item ID") = " "
-                        End Try
-                        ''If CType(dataRowMain("VNDR_CATALOG_ID"), String).Trim() <> "" Then
-                        ''    Try
-                        ''        If CType(dataRowMain("VNDR_CATALOG_ID"), String).Trim() > "0" Then
-                        ''            'If Session("ITEMMODE") = "4" Or Session("ITEMMODE") = "6" Then
-                        ''            '    dr("Bin Location") = getBinLoc(CType(SqlRdr("customerItemID"), String).Trim())
-                        ''            'Else
-                        ''            '    dr("Bin Location") = getBinLoc(Session("SITEPREFIX") & CType(SqlRdr("customerItemID"), String).Trim())
-                        ''            'End If
-                        ''            dr("Bin Location") = getBinLoc(CType(dataRowMain("VNDR_CATALOG_ID"), String).Trim())
-                        ''        Else
-                        ''            dr("Bin Location") = " "
-                        ''        End If
-                        ''    Catch ex As Exception
-                        ''        dr("Bin Location") = " "
-                        ''    End Try
-                        ''Else
-                        ''    dr("Bin Location") = " "
-                        ''End If
-                        Try
-                            dr("UOM") = CType(dataRowMain("UNIT_OF_MEASURE"), String).Trim()
-                        Catch ex As Exception
-                            dr("UOM") = "EA"
-                        End Try
-                    Else
-                        Dim invItemId As String = String.Empty
-                        invItemId = CType(dataRowMain("INV_ITEM_ID"), String).Trim()
-                        If invItemId.Length > 0 Then
-                            invItemId = invItemId.Substring(3)
-                        End If
-
-                        strSqlSelectQuery = "SELECT productviewid FROM [dbo].[ProductViews]" & _
-                                            "WHERE productviewname LIKE '" & ordBU & "%'"
-                        SqlRdr = GetSQLReaderDazzle(strSqlSelectQuery)
-                        If SqlRdr.HasRows Then
-                            SqlRdr.Read()
-                            strProdVwId = CType(SqlRdr("productviewid"), String).Trim()
-                        End If
-
-                        strSqlSelectQuery = "Select CAP.customerItemID, CAP.ItemID, CAP.productViewID, SDIT.manufacturername, SDIT.manufacturerpartnumber, SDIT.shippableunitofmeasure " & _
-                                                "FROM ClassAvailableProducts CAP " & _
-                                                "inner join ScottsdaleItemTable SDIT " & _
-                                                "on (CAP.itemID = SDIT.itemID  AND SDIT.classID = CAP.classID) " & _
-                                                "where CAP.customerItemID = '" & invItemId & "' and CAP.productViewID = '" & strProdVwId & "'"
-
-                        SqlRdr = GetSQLReaderDazzle(strSqlSelectQuery)
-                        If SqlRdr.HasRows Then
-                            SqlRdr.Read()
-                            Try
-                                dr("Manuf.") = CType(SqlRdr("manufacturername"), String).Trim()
-                            Catch ex As Exception
-                                dr("Manuf.") = " "
-                            End Try
-                            Try
-                                dr("Manuf. Partnum") = CType(SqlRdr("manufacturerpartnumber"), String).Trim()
-                            Catch ex As Exception
-                                dr("Manuf. Partnum") = " "
-                            End Try
-                            Try
-                                dr("Item ID") = CType(SqlRdr("ItemID"), String).Trim()
-                            Catch ex As Exception
-                                dr("Item ID") = " "
-                            End Try
-
-                            ''If CType(SqlRdr("customerItemID"), String).Trim() <> "" Then
-                            ''    Try
-                            ''        If CType(SqlRdr("customerItemID"), String).Trim() > "0" Then
-                            ''            dr("Bin Location") = getBinLoc(CType(SqlRdr("customerItemID"), String).Trim())
-                            ''        Else
-                            ''            dr("Bin Location") = " "
-                            ''        End If
-                            ''    Catch ex As Exception
-                            ''        dr("Bin Location") = " "
-                            ''    End Try
-                            ''Else
-                            ''    dr("Bin Location") = " "
-                            ''End If
-                            Try
-                                dr("UOM") = CType(SqlRdr("shippableunitofmeasure"), String).Trim()
-                            Catch ex As Exception
-                                dr("UOM") = "EA"
-                            End Try
-                        End If
-
-                    End If
-
+                    Try
+                        dr("UOM") = CType(dataRowMain("UNIT_OF_MEASURE"), String).Trim()
+                    Catch ex As Exception
+                        dr("UOM") = "EA"
+                    End Try
 
                     Try
                         strQty = CType(dataRowMain("QTY_REQUESTED"), String).Trim()
@@ -489,74 +408,58 @@ Public Class QuoteNonStockProcessor
                         dr("Ext. Price") = ExtPrice.ToString("f")
                     End If
 
-
-                    'dr("Item Chg Code") = CType(dataRowMain("ISA_CUST_CHARGE_CD"), String).Trim()
                     dr("LN") = CType(dataRowMain("ISA_INTFC_LN"), String).Trim()
 
-                    'dr("RFQ") = String.Empty
-                    'dr("Requestor Name") = String.Empty
-                    'dr("Machine Num") = String.Empty
-                    'dr("Tax Exempt") = String.Empty
-                    'dr("LPP") = String.Empty
-                    'dr("PO") = String.Empty
-                    'Try
-                    '    dr("SerialID") = String.Empty
-                    'Catch ex As Exception
-                    '    dr("SerialID") = " "
-                    'End Try
+                    'Dim strCplusItemid As String = String.Empty
+                    'If IsDBNull(dr("Manuf.")) And Not String.IsNullOrEmpty(dr("Item ID").ToString()) Then
+                    '    Try
+                    '        Dim strSQLString As String = "SELECT A.ISA_CP_PROD_ID" & vbCrLf & _
+                    '                                     " FROM PS_ISA_CP_JUNCTION A" & vbCrLf & _
+                    '                                     " WHERE A.INV_ITEM_ID = '" & dr("Item ID") & "'"
+                    '        Dim OrcRdr1 As OleDb.OleDbDataReader = GetReader(strSQLString)
+                    '        If OrcRdr1.HasRows Then
+                    '            Try
+                    '                OrcRdr1.Read()
+                    '                strCplusItemid = OrcRdr1.GetString(0)
+                    '            Catch ex As Exception
+                    '                strCplusItemid = ""
+                    '            End Try
+                    '        End If
+                    '    Catch ex As Exception
+                    '        strCplusItemid = ""
+                    '    End Try
+                    '    If strCplusItemid.Trim.Length > 0 Then
+                    '        If Convert.ToInt32(strCplusItemid) > 0 Then
+                    '            Dim strSQLstring As String
+                    '            strSQLstring = "SELECT ScottsDaleItemTable.manufacturerPartNumber," & vbCrLf & _
+                    '                            " ScottsDaleItemTable.manufacturerName," & vbCrLf & _
+                    '                            " ScottsDaleItemTable.shippableUnitOfMeasure," & vbCrLf & _
+                    '                            " classes.classname" & vbCrLf & _
+                    '                            " FROM ScottsDaleItemTable, classes" & vbCrLf & _
+                    '                            " WHERE ScottsDaleItemTable.ItemID = " & strCplusItemid.Trim() & vbCrLf & _
+                    '                            " AND ScottsDaleItemTable.classid = classes.classid"
+                    '            SqlRdr = GetSQLReaderDazzle(strSQLstring)
+                    '            If SqlRdr.Read() Then
+                    '                If IsDBNull(SqlRdr.Item("manufacturerName")) Then
+                    '                    dr("Manuf.") = " "
+                    '                Else
+                    '                    dr("Manuf.") = SqlRdr.Item("manufacturerName")
+                    '                End If
 
-                    ' New Code here 
-
-                    Dim strCplusItemid As String = String.Empty
-                    If IsDBNull(dr("Manuf.")) And Not String.IsNullOrEmpty(dr("Item ID").ToString()) Then
-                        Try
-                            Dim strSQLString As String = "SELECT A.ISA_CP_PROD_ID" & vbCrLf & _
-                                                         " FROM PS_ISA_CP_JUNCTION A" & vbCrLf & _
-                                                         " WHERE A.INV_ITEM_ID = '" & dr("Item ID") & "'"
-                            Dim OrcRdr1 As OleDb.OleDbDataReader = GetReader(strSQLString)
-                            If OrcRdr1.HasRows Then
-                                Try
-                                    OrcRdr1.Read()
-                                    strCplusItemid = OrcRdr1.GetString(0)
-                                Catch ex As Exception
-                                    strCplusItemid = ""
-                                End Try
-                            End If
-                        Catch ex As Exception
-                            strCplusItemid = ""
-                        End Try
-                        If strCplusItemid.Trim.Length > 0 Then
-                            If Convert.ToInt32(strCplusItemid) > 0 Then
-                                Dim strSQLstring As String
-                                strSQLstring = "SELECT ScottsDaleItemTable.manufacturerPartNumber," & vbCrLf & _
-                                                " ScottsDaleItemTable.manufacturerName," & vbCrLf & _
-                                                " ScottsDaleItemTable.shippableUnitOfMeasure," & vbCrLf & _
-                                                " classes.classname" & vbCrLf & _
-                                                " FROM ScottsDaleItemTable, classes" & vbCrLf & _
-                                                " WHERE ScottsDaleItemTable.ItemID = " & strCplusItemid.Trim() & vbCrLf & _
-                                                " AND ScottsDaleItemTable.classid = classes.classid"
-                                SqlRdr = GetSQLReaderDazzle(strSQLstring)
-                                If SqlRdr.Read() Then
-                                    If IsDBNull(SqlRdr.Item("manufacturerName")) Then
-                                        dr("Manuf.") = " "
-                                    Else
-                                        dr("Manuf.") = SqlRdr.Item("manufacturerName")
-                                    End If
-
-                                    If IsDBNull(SqlRdr.Item("manufacturerPartNumber")) Then
-                                        dr("Manuf. Partnum") = " "
-                                    Else
-                                        dr("Manuf. Partnum") = SqlRdr.Item("manufacturerPartNumber")
-                                    End If
-                                    If IsDBNull(SqlRdr.Item("shippableUnitOfMeasure")) Then
-                                        dr("UOM") = " "
-                                    Else
-                                        dr("UOM") = SqlRdr.Item("shippableUnitOfMeasure")
-                                    End If
-                                End If
-                            End If
-                        End If
-                    End If
+                    '                If IsDBNull(SqlRdr.Item("manufacturerPartNumber")) Then
+                    '                    dr("Manuf. Partnum") = " "
+                    '                Else
+                    '                    dr("Manuf. Partnum") = SqlRdr.Item("manufacturerPartNumber")
+                    '                End If
+                    '                If IsDBNull(SqlRdr.Item("shippableUnitOfMeasure")) Then
+                    '                    dr("UOM") = " "
+                    '                Else
+                    '                    dr("UOM") = SqlRdr.Item("shippableUnitOfMeasure")
+                    '                End If
+                    '            End If
+                    '        End If
+                    '    End If
+                    'End If
 
                     dstcart.Rows.Add(dr)
                 Next
