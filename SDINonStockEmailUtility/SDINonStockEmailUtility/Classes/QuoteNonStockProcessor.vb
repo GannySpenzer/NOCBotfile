@@ -310,17 +310,17 @@ Public Class QuoteNonStockProcessor
         Dim strProdVwId As String = String.Empty
         Dim SqlRdr1 As SqlDataReader = Nothing
         Try
-            strOraSelectQuery = "select * from PS_ISA_ORD_INTFC_H where ORDER_NO = '" & ordNumber & "'"
-            'strOraSelectQuery = "select * from PS_ISA_ORD_INTFC_H where ORDER_NO = 'M220016429'" 
-            'strOraSelectQuery = "select * from PS_ISA_ORD_INTFC_H where ORDER_NO = 'M220016427'"
-            OrcRdr = GetReader(strOraSelectQuery)
-            If OrcRdr.HasRows Then
-                OrcRdr.Read()
-                ordIdentifier = CType(OrcRdr("ISA_IDENTIFIER"), String).Trim()
-                ordBU = CType(OrcRdr("BUSINESS_UNIT_OM"), String).Trim()
-            End If
+            'strOraSelectQuery = "select * from SYSADM8.PS_ISA_ORD_INTF_HD where ORDER_NO = '" & ordNumber & "'"
+            ''strOraSelectQuery = "select * from PS_ISA_ORD_INTFC_H where ORDER_NO = 'M220016429'" 
+            ''strOraSelectQuery = "select * from PS_ISA_ORD_INTFC_H where ORDER_NO = 'M220016427'"
+            'OrcRdr = GetReader(strOraSelectQuery)
+            'If OrcRdr.HasRows Then
+            '    OrcRdr.Read()
+            '    ordIdentifier = CType(OrcRdr("ISA_IDENTIFIER"), String).Trim()
+            '    ordBU = CType(OrcRdr("BUSINESS_UNIT_OM"), String).Trim()
+            'End If
 
-            strOraSelectQuery = "select * from PS_ISA_ORD_INTFC_L where ISA_PARENT_IDENT = '" & ordIdentifier & "'"
+            strOraSelectQuery = "select * from SYSADM8.PS_ISA_ORD_INTF_LN where ORDER_NO = '" & ordNumber & "'"
             dsOrdLnItems = GetAdapter(strOraSelectQuery)
 
             If dsOrdLnItems.Tables(0).Rows.Count > 0 Then
@@ -345,10 +345,10 @@ Public Class QuoteNonStockProcessor
                     intMy21 = intMy21 + 1  ' end code to get work order id
 
                     dr = dstcart.NewRow()
-                    dr("Item ID") = CType(dataRowMain("VNDR_CATALOG_ID"), String).Trim()
+                    dr("Item ID") = CType(dataRowMain("INV_ITEM_ID"), String).Trim()
                     dr("Description") = CType(dataRowMain("DESCR254"), String).Trim()
 
-                    If CType(dataRowMain("VNDR_CATALOG_ID"), String).Trim().Contains("NONCAT") Then
+                    If CType(dataRowMain("INV_ITEM_ID"), String).Trim().Contains("NONCAT") Then
 
                         Try
                             dr("Manuf.") = CType(dataRowMain("ISA_MFG_FREEFORM"), String).Trim()
@@ -361,7 +361,7 @@ Public Class QuoteNonStockProcessor
                             dr("Manuf. Partnum") = " "
                         End Try
                         Try
-                            dr("Item ID") = CType(dataRowMain("VNDR_CATALOG_ID"), String).Trim()
+                            dr("Item ID") = CType(dataRowMain("INV_ITEM_ID"), String).Trim()
                         Catch ex As Exception
                             dr("Item ID") = " "
                         End Try
@@ -452,10 +452,10 @@ Public Class QuoteNonStockProcessor
 
 
                     Try
-                        strQty = CType(dataRowMain("QTY_REQ"), String).Trim()
+                        strQty = CType(dataRowMain("QTY_REQUESTED"), String).Trim()
                         strQty = strQty.Remove(strQty.Length - 2)
                         dr("QTY") = strQty
-                        If IsDBNull(CType(dataRowMain("QTY_REQ"), String).Trim()) Or CType(dataRowMain("QTY_REQ"), String).Trim() = " " Then
+                        If IsDBNull(CType(dataRowMain("QTY_REQUESTED"), String).Trim()) Or CType(dataRowMain("QTY_REQUESTED"), String).Trim() = " " Then
                             strQty = "0"
                             'Else
                             '    strQty = CType(dataRowMain("QTY_REQ"), String).Trim()
@@ -466,7 +466,7 @@ Public Class QuoteNonStockProcessor
                     End Try
                     strPrice = "0.00"
                     Try
-                        strPrice = CDec(CType(dataRowMain("NET_UNIT_PRICE"), String).Trim()).ToString()
+                        strPrice = CDec(CType(dataRowMain("ISA_SELL_PRICE"), String).Trim()).ToString()
                         strPrice = strPrice.Remove(strPrice.Length - 2)
                         If strPrice Is Nothing Then
                             strPrice = "0.00"
@@ -491,7 +491,7 @@ Public Class QuoteNonStockProcessor
 
 
                     'dr("Item Chg Code") = CType(dataRowMain("ISA_CUST_CHARGE_CD"), String).Trim()
-                    dr("LN") = CType(dataRowMain("LINE_NBR"), String).Trim()
+                    dr("LN") = CType(dataRowMain("ISA_INTFC_LN"), String).Trim()
 
                     'dr("RFQ") = String.Empty
                     'dr("Requestor Name") = String.Empty
@@ -1739,7 +1739,7 @@ Public Class QuoteNonStockProcessor
                 Select Case strDBase
                     Case "STAR", "PLGR", "RPTG"
                         eml.Subject = " TEST SDIX92 - " & eml.Subject
-                        eml.To = "webdev@sdi.com;Benjamin.Heinzerling@sdi.com"
+                        eml.To = "webdev@sdi.com;Benjamin.Heinzerling@sdi.com;SDIportalsupport@avasoft.biz"
                     Case Else
 
                 End Select
