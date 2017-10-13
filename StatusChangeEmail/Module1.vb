@@ -60,6 +60,9 @@ Module Module1
         Dim I As Integer
         Dim bolErrorSomeWhere As Boolean
 
+        Dim connectionString As String = ConfigurationManager.AppSettings("OLEDBconString")
+        connectOR = New OleDbConnection(connectionString)
+
         ' check stock
         For I = 0 To dsRows.Tables(0).Rows.Count - 1
             If dsRows.Tables(0).Rows(I).Item("SITESTK") = "Y" Then
@@ -98,6 +101,13 @@ Module Module1
 
         bolErrorSomeWhere = buildNotifyReceiver("7")
         bolErrorSomeWhere = buildNotifyReceiver("R")
+
+        Try
+            connectOR.Close()
+        Catch ex As Exception
+
+        End Try
+
         Return bolErrorSomeWhere
 
     End Function
@@ -115,23 +125,6 @@ Module Module1
         Dim strSiteBU As String
         Dim strSQLstring As String
         Dim Command As OleDbCommand
-
-        'strSQLstring = "SELECT A.BUSINESS_UNIT" & vbCrLf & _
-        '        " FROM PS_PO_LOADER_DFL A" & vbCrLf & _
-        '        " WHERE A.LOADER_BU = '" & strBU & "'" & vbCrLf
-
-        'objStreamWriter.WriteLine("  CheckNonStock (1): " & strSQLstring)
-
-        'Command = New OleDbCommand(strSQLstring, connectOR)
-        'connectOR.Open()
-        'Try
-        '    strSiteBU = Command.ExecuteScalar
-        '    connectOR.Close()
-        'Catch ex As Exception
-        '    objStreamWriter.WriteLine("  StatChg Email NSTK send select siteBU for " & strBU)
-        '    connectOR.Close()
-        '    Return True
-        'End Try
 
         strSQLstring = "SELECT /*+ USE_NL(A B C D E) */ A.ORDER_NO, B.ISA_INTFC_LN AS LINE_NBR, E.RECEIVER_ID," & vbCrLf & _
                 " E.RECV_LN_NBR, A.BUSINESS_UNIT_OM, B.ISA_EMPLOYEE_ID AS EMPLID, E.DESCR254_MIXED, A.Origin" & vbCrLf & _
@@ -171,7 +164,11 @@ Module Module1
         objStreamWriter.WriteLine("  CheckNonStock (2): " & strSQLstring)
 
         Command = New OleDbCommand(strSQLstring, connectOR)
-        connectOR.Open()
+        If connectOR.State = ConnectionState.Open Then
+            'do nothing
+        Else
+            connectOR.Open()
+        End If
         Dim dataAdapter As OleDbDataAdapter = _
                     New OleDbDataAdapter(Command)
         Dim ds As System.Data.DataSet = New System.Data.DataSet
@@ -186,7 +183,11 @@ Module Module1
         ' don't process UNCC status change emails - done in another program UNCCSTATUSCHANGEEMAIL
         If ds.Tables(0).Rows.Count = 0 Or strBU = "I0256" Then
             objStreamWriter.WriteLine("  StatChg Email NSTK send select orders = 0 for" & strBU)
-            connectOR.Close()
+            Try
+                connectOR.Close()
+            Catch ex As Exception
+
+            End Try
             Return False
         End If
 
@@ -241,7 +242,11 @@ Module Module1
         Next
         objStreamWriter.WriteLine("  StatChg Email NSTK send select orders = " & ds.Tables(0).Rows.Count & " for" & strBU)
 
-        connectOR.Close()
+        Try
+            connectOR.Close()
+        Catch ex As Exception
+
+        End Try
 
 
     End Function
@@ -285,7 +290,12 @@ Module Module1
         objStreamWriter.WriteLine("  CheckStock: " & strSQLstring)
 
         Dim Command As OleDbCommand = New OleDbCommand(strSQLstring, connectOR)
-        connectOR.Open()
+        If connectOR.State = ConnectionState.Open Then
+            'do nothing
+        Else
+            connectOR.Open()
+        End If
+
         Dim dataAdapter As OleDbDataAdapter = _
                     New OleDbDataAdapter(Command)
         Dim ds As System.Data.DataSet = New System.Data.DataSet
@@ -300,7 +310,12 @@ Module Module1
 
         If ds.Tables(0).Rows.Count = 0 Then
             objStreamWriter.WriteLine("  StatChg Email send select orders = 0 for" & strbu)
-            connectOR.Close()
+            Try
+                connectOR.Close()
+            Catch ex As Exception
+
+            End Try
+
             Return False
         End If
 
@@ -357,7 +372,11 @@ Module Module1
         Next
 
         objStreamWriter.WriteLine("  StatChg Email STK send select orders = " & ds.Tables(0).Rows.Count & " for" & strbu)
-        connectOR.Close()
+        Try
+            connectOR.Close()
+        Catch ex As Exception
+
+        End Try
 
     End Function
 
@@ -403,7 +422,11 @@ Module Module1
                 " "
 
         Dim Command = New OleDbCommand(strSQLString, connectOR)
-        connectOR.Open()
+        If connectOR.State = ConnectionState.Open Then
+            'do nothing
+        Else
+            connectOR.Open()
+        End If
         Dim dataAdapter As OleDbDataAdapter = _
                     New OleDbDataAdapter(Command)
         Dim ds As System.Data.DataSet = New System.Data.DataSet
@@ -467,12 +490,12 @@ Module Module1
                 'End If
 
                 If I = ds.Tables(0).Rows.Count - 1 Then
-                    'sendCustEmail(dsEmail, _
-                    '    strOrderNo, _
-                    '    ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
-                    '    ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
-                    '    strEmailTo, _
-                    '    strBu, ds.Tables(0).Rows(I).Item("Origin"))
+                    sendCustEmail(dsEmail, _
+                        strOrderNo, _
+                        ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
+                        ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
+                        strEmailTo, _
+                        strBu, ds.Tables(0).Rows(I).Item("Origin"))
 
                     dsEmail.Clear()
                     If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
@@ -487,12 +510,12 @@ Module Module1
                    & ds.Tables(0).Rows(I + 1).Item("ORDER_NO") <> _
                    ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM") _
                    & ds.Tables(0).Rows(I).Item("ORDER_NO") Then
-                    'sendCustEmail(dsEmail, _
-                    '    strOrderNo, _
-                    '    ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
-                    '    ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
-                    '    strEmailTo, _
-                    '    strBu, ds.Tables(0).Rows(I).Item("Origin"))
+                    sendCustEmail(dsEmail, _
+                        strOrderNo, _
+                        ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
+                        ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
+                        strEmailTo, _
+                        strBu, ds.Tables(0).Rows(I).Item("Origin"))
                     dsEmail.Clear()
                     If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
                         connectOR.Close()
@@ -504,11 +527,24 @@ Module Module1
                 End If
                 strPreOrderno = ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM") _
                    & ds.Tables(0).Rows(I).Item("ORDER_NO")
+                Try
+                    connectOR.Close()
+                Catch ex As Exception
+
+                End Try
             Next
             objStreamWriter.WriteLine("  StatChg Build Notify Non STK, total orders = " & ds.Tables(0).Rows.Count)
-            connectOR.Close()
-        End If
+            Try
+                connectOR.Close()
+            Catch ex As Exception
 
+            End Try
+        End If
+        Try
+            connectOR.Close()
+        Catch ex As Exception
+
+        End Try
     End Function
 
     Private Function buildNotifySTKReady() As Boolean
@@ -552,7 +588,11 @@ Module Module1
                 " AND B.QTY_PICKED > 0" & vbCrLf
 
         Dim Command As OleDbCommand = New OleDbCommand(strSQLString, connectOR)
-        connectOR.Open()
+        If connectOR.State = ConnectionState.Open Then
+            'do nothing
+        Else
+            connectOR.Open()
+        End If
         Dim dataAdapter As OleDbDataAdapter = _
                     New OleDbDataAdapter(Command)
         Dim ds As System.Data.DataSet = New System.Data.DataSet
@@ -633,13 +673,13 @@ Module Module1
                 'End If
 
                 If I = ds.Tables(0).Rows.Count - 1 Then
-                    'sendCustEmail(dsEmail, _
-                    '    strOrderNo, _
-                    '    ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
-                    '    ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
-                    '    strEmailTo, _
-                    '    strBu, _
-                    '    ds.Tables(0).Rows(I).Item("Origin"))
+                    sendCustEmail(dsEmail, _
+                        strOrderNo, _
+                        ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
+                        ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
+                        strEmailTo, _
+                        strBu, _
+                        ds.Tables(0).Rows(I).Item("Origin"))
                     dsEmail.Clear()
                     If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
                         connectOR.Close()
@@ -653,13 +693,13 @@ Module Module1
                    & ds.Tables(0).Rows(I + 1).Item("ORDER_NO") <> _
                    ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM") _
                    & ds.Tables(0).Rows(I).Item("ORDER_NO") Then
-                    'sendCustEmail(dsEmail, _
-                    '    strOrderNo, _
-                    '    ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
-                    '    ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
-                    '    strEmailTo, _
-                    '    strBu, _
-                    '    ds.Tables(0).Rows(I).Item("Origin"))
+                    sendCustEmail(dsEmail, _
+                        strOrderNo, _
+                        ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
+                        ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
+                        strEmailTo, _
+                        strBu, _
+                        ds.Tables(0).Rows(I).Item("Origin"))
                     dsEmail.Clear()
                     If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
                         connectOR.Close()
@@ -671,6 +711,11 @@ Module Module1
                     'buildNotifySTKReady = updateSendEmailTbl(ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM"), _
                     '                       ds.Tables(0).Rows(I).Item("ORDER_NO"), _
                     '                       ds.Tables(0).Rows(I).Item("ISA_ORDER_STATUS"))
+                    Try
+                        connectOR.Close()
+                    Catch ex As Exception
+
+                    End Try
                 End If
                 strPreOrderno = ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM") _
                    & ds.Tables(0).Rows(I).Item("ORDER_NO")
@@ -680,7 +725,11 @@ Module Module1
                 connectOR.Close()
             End If
         End If
+        Try
+            connectOR.Close()
+        Catch ex As Exception
 
+        End Try
     End Function
 
     Private Function getQtyOrdered(ByVal strOrderNo As String, _
@@ -953,7 +1002,11 @@ Module Module1
 
             Dim command As OleDbCommand
             command = New OleDbCommand(strSQLstring, connectOR)
-            connectOR.Open()
+            If connectOR.State = ConnectionState.Open Then
+                'do nothing
+            Else
+                connectOR.Open()
+            End If
             dr = command.ExecuteReader
             Try
 
@@ -994,7 +1047,11 @@ Module Module1
         '    'dteStartDate = dteStartDate.AddHours(-15)
         'End If
 
-        connectOR.Close()
+        Try
+            connectOR.Close()
+        Catch ex As Exception
+
+        End Try
 
         Dim ds As New DataSet
         Dim bolerror1 As Boolean
@@ -1020,7 +1077,7 @@ Module Module1
         '    ' add Ascend e-mail field
         '    strSQLstring += " AB.EMAIL_ADDRESS AS ASCEND_EMAIL_ADDRESS," & vbCrLf
         'End If
-        strSQLstring += "  G.ISA_LINE_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','1','NEW','2','DSP','3','PKA','4','DLP','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','9') AS OLD_ORDER_STATUS," & vbCrLf & _
+        strSQLstring += "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','1','NEW','2','DSP','3','ORD','3','RSV','3','PKA','4','PKP','4','DLP','5','RCP','5','RCF','5','PKQ','5','DLO','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','1') AS OLD_ORDER_STATUS," & vbCrLf & _
                  " (SELECT E.XLATLONGNAME" & vbCrLf & _
                                 " FROM XLATTABLE E" & vbCrLf & _
                                 " WHERE E.EFFDT =" & vbCrLf & _
@@ -1089,13 +1146,22 @@ Module Module1
 
         If IsDBNull(ds.Tables(0).Rows.Count) Or (ds.Tables(0).Rows.Count) = 0 Then
             objStreamWriter.WriteLine("     Warning - no status changes to process at this time for All Statuses")
+            Try
+                connectOR.Close()
+            Catch ex As Exception
+
+            End Try
             Return False
         End If
 
         Dim rowsaffected As Integer
         Dim tmpOrderNo As String
 
-        connectOR.Open()
+        If connectOR.State = ConnectionState.Open Then
+            'do nothing
+        Else
+            connectOR.Open()
+        End If
         Dim strPreOrderno As String
         Dim I As Integer
         Dim X As Integer
@@ -1133,7 +1199,7 @@ Module Module1
             Dim Command As OleDbCommand
 
             strSQLstring = "SELECT A.BUSINESS_UNIT" & vbCrLf & _
-                    " FROM PS_PO_LOADER_DFL A" & vbCrLf & _
+                    " FROM PS_REQ_LOADER_DFL A" & vbCrLf & _
                     " WHERE A.LOADER_BU = '" & strBU & "'" & vbCrLf
 
             objStreamWriter.WriteLine("  CheckAllStatus_7 (3): " & strSQLstring)
@@ -1178,7 +1244,12 @@ Module Module1
             If ds.Tables(0).Rows(I).Item("Origin") = "MIS" And strBU = "I0206" Then
                 strdescription = "PICKED"
             Else
-                strdescription = ds.Tables(0).Rows(I).Item("ORDER_STATUS_DESC")
+                Try
+                    strdescription = ds.Tables(0).Rows(I).Item("ORDER_STATUS_DESC")
+                Catch ex As Exception
+                    strdescription = "Err_line_" & I.ToString()
+                End Try
+
             End If
             strEmailTo = ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL")
 
@@ -1195,18 +1266,18 @@ Module Module1
             'Dim strEmail_test As String = String.Empty
             If I = ds.Tables(0).Rows.Count - 1 Then
 
-                'sendCustEmail1(dsEmail, _
-                'ds.Tables(0).Rows(I).Item("ORDER_NO"), _
-                'dteCompanyID, _
-                'dteCustID, _
-                'ds.Tables(0).Rows(I).Item("ISA_ORDER_STATUS"), _
-                'strdescription, _
-                'ds.Tables(0).Rows(I).Item("INV_ITEM_ID"), _
-                'ds.Tables(0).Rows(I).Item("LINE_NBR"), _
-                'ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
-                'ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
-                'strEmailTo, _
-                'ds.Tables(0).Rows(I).Item("Origin"))
+                sendCustEmail1(dsEmail, _
+                ds.Tables(0).Rows(I).Item("ORDER_NO"), _
+                dteCompanyID, _
+                dteCustID, _
+                ds.Tables(0).Rows(I).Item("ISA_ORDER_STATUS"), _
+                strdescription, _
+                ds.Tables(0).Rows(I).Item("INV_ITEM_ID"), _
+                ds.Tables(0).Rows(I).Item("LINE_NBR"), _
+                ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
+                ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
+                strEmailTo, _
+                ds.Tables(0).Rows(I).Item("Origin"))
 
                 dsEmail.Clear()
                 If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
@@ -1217,18 +1288,18 @@ Module Module1
                           ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM") _
                           & ds.Tables(0).Rows(I).Item("ORDER_NO") Then
 
-                ' sendCustEmail1(dsEmail, _
-                'ds.Tables(0).Rows(I).Item("ORDER_NO"), _
-                'dteCompanyID, _
-                'dteCustID, _
-                'ds.Tables(0).Rows(I).Item("ISA_ORDER_STATUS"), _
-                'strdescription, _
-                'ds.Tables(0).Rows(I).Item("INV_ITEM_ID"), _
-                'ds.Tables(0).Rows(I).Item("LINE_NBR"), _
-                'ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
-                'ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
-                'strEmailTo, _
-                'ds.Tables(0).Rows(I).Item("Origin"))
+                sendCustEmail1(dsEmail, _
+               ds.Tables(0).Rows(I).Item("ORDER_NO"), _
+               dteCompanyID, _
+               dteCustID, _
+               ds.Tables(0).Rows(I).Item("ISA_ORDER_STATUS"), _
+               strdescription, _
+               ds.Tables(0).Rows(I).Item("INV_ITEM_ID"), _
+               ds.Tables(0).Rows(I).Item("LINE_NBR"), _
+               ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
+               ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
+               strEmailTo, _
+               ds.Tables(0).Rows(I).Item("Origin"))
                
                 dsEmail.Clear()
 
@@ -1408,8 +1479,8 @@ Module Module1
         Mailer1.Subject = "SDiExchange - Order Status records for Order Number: " & strOrderNo
         Mailer1.BodyFormat = System.Web.Mail.MailFormat.Html
 
-        'UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer1.Subject, Mailer1.From, "sriram.s@avasoft.biz", "", Mailer1.Bcc, "N", Mailer1.Body, connectOR)
         SDIEmailService.EmailUtilityServices("MailandStore", Mailer1.From, Mailer1.To, Mailer1.Subject, String.Empty, "webdev@sdi.com", Mailer1.Body, "StatusChangeEmail1", MailAttachmentName, MailAttachmentbytes.ToArray())
+
     End Sub
 
     Private Function updateEnterprise(ByVal strBU As String, ByVal dteEndDate As DateTime) As Boolean
