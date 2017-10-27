@@ -20,7 +20,7 @@ Module module1
     Dim rootDir As String = "C:\INTFCXML"
     Dim logpath As String = "C:\INTFCXML\LOGS\UpdINTFCXMLIn" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
     Dim sErrLogPath As String = "C:\INTFCXML\LOGS\MyErredSQLs" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=PROD")
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=RPTG")
     Dim connectSQL As New SqlClient.SqlConnection("server=cplus_prod;uid=einternet;pwd=einternet;initial catalog='contentplus'")
     Dim strOverride As String
     Dim bolWarning As Boolean = False
@@ -886,8 +886,8 @@ Module module1
                     " '' AS ISA_CUST_NOTES, ' ' AS PROJECT_ID," & vbCrLf & _
                     " TO_CHAR(B.ISA_REQUIRED_BY_DT,'YYYY-MM-DD') as ReqByDate" & vbCrLf & _
                     " FROM PS_ISA_ORD_INTF_HD A, PS_ISA_ORD_INTF_LN B" & vbCrLf & _
-                    " WHERE A.ORDER_STATUS = 'S'" & vbCrLf & _
-                    " AND A.ORDER_NO = B.ORDER_NO" & vbCrLf & _
+                    " WHERE A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf & _
+                    " AND A.ORDER_NO = B.ORDER_NO AND A.BUSINESS_UNIT_OM = 'I0256' " & vbCrLf & _
                     " AND B.ISA_LINE_STATUS IN ('NEW','QTS')" & vbCrLf & _
                     " ORDER BY A.ORDER_NO, B.ISA_INTFC_LN"
 
@@ -1654,9 +1654,9 @@ Module module1
 
         Dim I As Integer
         Dim X As Integer
-        Dim strbodyhead As String
-        Dim strbodydetl As String
-        Dim strItemtype As String
+        Dim strbodyhead As String = ""
+        Dim strbodydetl As String = ""
+        Dim strItemtype As String = ""
         Dim intGridloop As Integer
         Dim decOrderTot As Decimal
         Dim dr As DataRow
@@ -1712,7 +1712,7 @@ Module module1
         strCustomerName = objEnterprise.CustomerName
         connectOR.Close()
 
-        Mailer.From = "SDIExchange@SDI.com"  '  "Insiteonline@SDI.com"
+        Mailer.From = "SDIExchange@SDI.com"
         Mailer.cc = ""
         Mailer.bcc = ""
         strbodyhead = strbodyhead & "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI Marketplace</span><center>" & vbCrLf
@@ -1862,7 +1862,7 @@ Module module1
 
             Mailer.To = objEnterprise.STKREQEmail
 
-            Mailer.Subject = " TEST SDIX 92 - IntfcXMLUpdate - Material Request - Stock"
+            Mailer.Subject = " IntfcXMLUpdate - Material Request - Stock"
             Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
 
             SendEmail1(Mailer)
@@ -1939,7 +1939,7 @@ Module module1
                 End If
             End If
 
-            Mailer.Subject = " TEST SDIX 92 - IntfcXMLUpdate - Material Request - Non-Stock "
+            Mailer.Subject = " IntfcXMLUpdate - Material Request - Non-Stock "
             Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
 
             SendEmail1(Mailer)
