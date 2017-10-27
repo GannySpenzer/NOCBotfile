@@ -1860,7 +1860,7 @@ Module module1
             'Mailer.body = Mailer.body + "<TR><TD Class='DetailRow' align='right'>Order Total&nbsp;&nbsp;&nbsp;" & decOrderTot & "&nbsp;&nbsp;&nbsp;</TD></TR>"
             Mailer.body = Mailer.body & "</TABLE>" & vbCrLf
 
-            Mailer.To = "webdev@sdi.com"  '  objEnterprise.STKREQEmail
+            Mailer.To = objEnterprise.STKREQEmail
 
             Mailer.Subject = " TEST SDIX 92 - IntfcXMLUpdate - Material Request - Stock"
             Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
@@ -1931,11 +1931,11 @@ Module module1
             Mailer.body = Mailer.body + "<TR><TD Class='DetailRow'>&nbsp;</TD></TR>"
             'Mailer.body = Mailer.body + "<TR><TD Class='DetailRow' align='right'>Order Total&nbsp;&nbsp;&nbsp;" & decOrderTot & "&nbsp;&nbsp;&nbsp;</TD></TR>"
             Mailer.body = Mailer.body & "</TABLE>" & vbCrLf
-            Mailer.To = "webdev@sdi.com"  '  objEnterprise.NONSKREQEmail
+            Mailer.To = objEnterprise.NONSKREQEmail
 
             If Convert.ToString(dsOrder.Tables(0).Rows(0).Item("PROJECT_ID")).Length > 7 Then
                 If Convert.ToString(dsOrder.Tables(0).Rows(0).Item("PROJECT_ID")).Substring(0, 8).ToUpper = "PRIORITY" Then
-                    Mailer.To = "webdev@sdi.com"  '  objEnterprise.SiteEmail
+                    Mailer.To = objEnterprise.SiteEmail
                 End If
             End If
 
