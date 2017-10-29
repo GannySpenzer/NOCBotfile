@@ -165,7 +165,7 @@ Module module1
         m_logger.WriteInformationLog(rtn & " :: Update of INTFC IN XML.")
 
         m_logger.WriteVerboseLog(rtn & " :: (Oracle)connection string : [" & connectOR.ConnectionString & "]")
-        m_logger.WriteVerboseLog(rtn & " :: (SQL Server)connection string : [" & connectSQL.ConnectionString & "]")
+        'm_logger.WriteVerboseLog(rtn & " :: (SQL Server)connection string : [" & connectSQL.ConnectionString & "]")
 
         '// ***
         '// This is the moving of files to the XMLIN folder ...
@@ -248,12 +248,7 @@ Module module1
         Catch ex As Exception
 
         End Try
-        'here is where we want to see if this req is in the quote table.
-        SendBuyerEmail()
-
-        'objStreamWriter.WriteLine("  End of INTFC IN XML " & Now())
-        'objStreamWriter.Flush()
-        'objStreamWriter.Close()
+        
         m_logger.WriteInformationLog(rtn & " :: End of INTFC IN XML.")
 
     End Sub
@@ -262,10 +257,11 @@ Module module1
 
         Dim rtn As String = "intfcUpdate.getINTFCXMLIn"
 
-        Console.WriteLine("Start Update of INTFC XML")
+        Console.WriteLine("Start Update of INTFC IN XML")
         Console.WriteLine("")
 
-        'Dim dirInfo As DirectoryInfo = New DirectoryInfo("c:\INTFC\XMLIN\")
+        m_logger.WriteInformationLog(rtn & " :: Start Update of INTFC XML ")
+
         Dim dirInfo As DirectoryInfo = New DirectoryInfo("C:\INTFCXML\XMLIN\")
         Dim strFiles As String = ""
         Dim sr As System.IO.StreamReader
@@ -285,133 +281,136 @@ Module module1
         Dim root As XmlElement
 
         Dim sXMLFilename As String = ""
+        Dim bAreThereNewOrders As Boolean = False
 
         Try
-            m_arrXMLErrFiles = ""
-            m_arrErrorsList = ""
-            For I = 0 To aFiles.Length - 1
-                sXMLFilename = aFiles(I).Name
-                bLineError = False
-                'objStreamWriter.WriteLine(" Start File " & aFiles(I).Name)
-                m_logger.WriteInformationLog(rtn & " :: Start File " & aFiles(I).Name)
-                sr = New System.IO.StreamReader(aFiles(I).FullName)
-                XMLContent = sr.ReadToEnd()
-                XMLContent = Replace(XMLContent, "&", "&amp;")
-                'here where we load the xml into memory
-                'XMLContent = Replace(XMLContent, "'", "&#39;")
-                'XMLContent = Replace(XMLContent, """", "&quot;")
-                sr.Close()
+            If aFiles.Length > 0 Then
+                m_arrXMLErrFiles = ""
+                m_arrErrorsList = ""
+                For I = 0 To aFiles.Length - 1
+                    sXMLFilename = aFiles(I).Name
+                    bLineError = False
 
-                Try
-                    xmlRequest.LoadXml(XMLContent)
-                Catch ex As Exception
-                    Console.WriteLine("")
-                    Console.WriteLine("***error - " & ex.ToString)
-                    Console.WriteLine("")
-                    'objStreamWriter.WriteLine("     Error " & ex.message.ToString & " in file " & aFiles(I).Name)
-                    m_logger.WriteErrorLog(rtn & " :: Error " & ex.Message.ToString & " in file " & aFiles(I).Name)
-                    strXMLError = ex.ToString
-                    bolError = True
-                    bLineError = True
+                    m_logger.WriteInformationLog(rtn & " :: Start File " & aFiles(I).Name)
+                    sr = New System.IO.StreamReader(aFiles(I).FullName)
+                    XMLContent = sr.ReadToEnd()
+                    XMLContent = Replace(XMLContent, "&", "&amp;")
+                    'here where we load the xml into memory
+                    'XMLContent = Replace(XMLContent, "'", "&#39;")
+                    'XMLContent = Replace(XMLContent, """", "&quot;")
+                    sr.Close()
+
                     Try
-                        File.Move(aFiles(I).FullName, "C:\INTFCXML\BadXML\" & aFiles(I).Name)
-                        File.Delete(aFiles(I).FullName)
-                    Catch ex24 As Exception
-                        'objStreamWriter.WriteLine("**")
-                        'objStreamWriter.WriteLine("     Error " & ex.Message & " in file " & aFiles(I).Name)
-                        'objStreamWriter.WriteLine("**")
-                        m_logger.WriteErrorLog(rtn & " :: ** ")
-                        m_logger.WriteErrorLog(rtn & " :: Error " & ex24.Message & " in file " & aFiles(I).Name)
-                        m_logger.WriteErrorLog(rtn & " :: ** ")
-                    End Try
-                End Try
-                If Trim(strXMLError) = "" Then
-                    root = xmlRequest.DocumentElement
-
-                    If root.FirstChild Is Nothing Then
-                        strXMLError = "empty UNCC in file"
-                    ElseIf root.LastChild.Name.ToUpper = "PS_ISA_ORD_INTFC_L" Or _
-                        root.LastChild.Name.ToUpper = "EMP_ROW" Then
-                        strXMLError = ""
-                    Else
-                        strXMLError = "Missing last INTFC_L Element"
-                    End If
-
-                    If Trim(strXMLError) = "" Then
-                        If root.LastChild.Name.ToUpper = "PS_ISA_ORD_INTFC_L" Then
-                            strXMLError = UpdIntfcTable(aFiles(I).FullName)
-                        ElseIf root.LastChild.Name.ToUpper = "EMP_ROW" Then
-                            strXMLError = UpdEmpTable(aFiles(I).FullName)
-                        End If
-                    End If
-
-                    If Trim(strXMLError) = "" Or _
-                        Trim(strXMLError) = "Invalid Status" Then
-                        Try
-                            File.Move(aFiles(I).FullName, "C:\INTFCXML\XMLINProcessed\" & aFiles(I).Name)
-                            If Trim(strXMLError) = "Invalid Status" Then
-                                'objStreamWriter.WriteLine(" not status I or C in File " & aFiles(I).Name)
-                                m_logger.WriteInformationLog(rtn & " :: not status I or C in File " & aFiles(I).Name)
-                            End If
-                            'objStreamWriter.WriteLine(" End - File " & aFiles(I).Name & " has been moved")
-                            m_logger.WriteInformationLog(rtn & " :: End - File " & aFiles(I).Name & " has been moved")
-                        Catch ex As Exception
-                            'objStreamWriter.WriteLine("     Error " & ex.Message.ToString & " in file " & aFiles(I).Name)
-                            m_logger.WriteErrorLog(rtn & " :: Error " & ex.Message.ToString & " in file " & aFiles(I).Name)
-                        End Try
-                        File.Delete(aFiles(I).FullName)
-                    Else
-                        'objStreamWriter.WriteLine("**")
-                        'objStreamWriter.WriteLine("     Error " & strXMLError & " in file " & aFiles(I).Name)
-                        'objStreamWriter.WriteLine("**")
-                        m_logger.WriteErrorLog(rtn & " :: ** ")
-                        m_logger.WriteErrorLog(rtn & " :: Error " & strXMLError & " in file " & aFiles(I).Name)
-                        m_logger.WriteErrorLog(rtn & " :: ** ")
+                        xmlRequest.LoadXml(XMLContent)
+                    Catch ex As Exception
+                        Console.WriteLine("")
+                        Console.WriteLine("***error - " & ex.ToString)
+                        Console.WriteLine("")
+                        m_logger.WriteErrorLog(rtn & " :: Error " & ex.Message.ToString & " in file " & aFiles(I).Name)
+                        strXMLError = ex.ToString
                         bolError = True
                         bLineError = True
                         Try
                             File.Move(aFiles(I).FullName, "C:\INTFCXML\BadXML\" & aFiles(I).Name)
                             File.Delete(aFiles(I).FullName)
-                        Catch ex As Exception
-                            'objStreamWriter.WriteLine("**")
-                            'objStreamWriter.WriteLine("     Error " & ex.Message & " in file " & aFiles(I).Name)
-                            'objStreamWriter.WriteLine("**")
+                        Catch ex24 As Exception
+
                             m_logger.WriteErrorLog(rtn & " :: ** ")
-                            m_logger.WriteErrorLog(rtn & " :: Error " & ex.Message & " in file " & aFiles(I).Name)
+                            m_logger.WriteErrorLog(rtn & " :: Error " & ex24.Message & " in file " & aFiles(I).Name)
                             m_logger.WriteErrorLog(rtn & " :: ** ")
                         End Try
-                    End If
+                    End Try
+                    If Trim(strXMLError) = "" Then
+                        root = xmlRequest.DocumentElement
 
-                End If
-
-                ' if there's an error, capture the filename of the XML and corresponding error message
-                If (Trim(strXMLError) <> "") Or bLineError Then  '  If (Trim(strXMLError) <> "") Or bolError Then
-                    'm_arrErrXMLs.Add(sXMLFilename)
-                    If Trim(m_arrXMLErrFiles) = "" Then
-                        m_arrXMLErrFiles = sXMLFilename
-                    Else
-                        m_arrXMLErrFiles &= "," & sXMLFilename
-                    End If
-                    If Trim(strXMLError) <> "" Then
-                        If Len(strXMLError) > 250 Then
-                            strXMLError = Microsoft.VisualBasic.Left(strXMLError, 250)
-                        End If
-                        If Trim(m_arrErrorsList) = "" Then
-                            m_arrErrorsList = strXMLError
+                        If root.FirstChild Is Nothing Then
+                            strXMLError = "empty UNCC in file"
+                        ElseIf root.LastChild.Name.ToUpper = "PS_ISA_ORD_INTFC_L" Or _
+                            root.LastChild.Name.ToUpper = "EMP_ROW" Then
+                            strXMLError = ""
                         Else
-                            m_arrErrorsList &= "," & strXMLError
+                            strXMLError = "Missing last INTFC_L Element"
                         End If
-                    Else
-                        If Trim(m_arrErrorsList) = "" Then
-                            m_arrErrorsList = "No Error Description"
+
+                        If Trim(strXMLError) = "" Then
+                            If root.LastChild.Name.ToUpper = "PS_ISA_ORD_INTFC_L" Then
+                                bAreThereNewOrders = True
+                                strXMLError = UpdIntfcTable(aFiles(I).FullName)
+                            ElseIf root.LastChild.Name.ToUpper = "EMP_ROW" Then
+                                strXMLError = UpdEmpTable(aFiles(I).FullName)
+                            End If
+                        End If
+
+                        If Trim(strXMLError) = "" Or _
+                            Trim(strXMLError) = "Invalid Status" Then
+                            Try
+                                File.Move(aFiles(I).FullName, "C:\INTFCXML\XMLINProcessed\" & aFiles(I).Name)
+                                If Trim(strXMLError) = "Invalid Status" Then
+                                    'objStreamWriter.WriteLine(" not status I or C in File " & aFiles(I).Name)
+                                    m_logger.WriteInformationLog(rtn & " :: not status I or C in File " & aFiles(I).Name)
+                                End If
+                                'objStreamWriter.WriteLine(" End - File " & aFiles(I).Name & " has been moved")
+                                m_logger.WriteInformationLog(rtn & " :: End - File " & aFiles(I).Name & " has been moved")
+                            Catch ex As Exception
+                                'objStreamWriter.WriteLine("     Error " & ex.Message.ToString & " in file " & aFiles(I).Name)
+                                m_logger.WriteErrorLog(rtn & " :: Error " & ex.Message.ToString & " in file " & aFiles(I).Name)
+                            End Try
+                            File.Delete(aFiles(I).FullName)
                         Else
-                            m_arrErrorsList &= "," & "No Error Description"
+
+                            m_logger.WriteErrorLog(rtn & " :: ** ")
+                            m_logger.WriteErrorLog(rtn & " :: Error " & strXMLError & " in file " & aFiles(I).Name)
+                            m_logger.WriteErrorLog(rtn & " :: ** ")
+                            bolError = True
+                            bLineError = True
+                            Try
+                                File.Move(aFiles(I).FullName, "C:\INTFCXML\BadXML\" & aFiles(I).Name)
+                                File.Delete(aFiles(I).FullName)
+                            Catch ex As Exception
+                                
+                                m_logger.WriteErrorLog(rtn & " :: ** ")
+                                m_logger.WriteErrorLog(rtn & " :: Error " & ex.Message & " in file " & aFiles(I).Name)
+                                m_logger.WriteErrorLog(rtn & " :: ** ")
+                            End Try
+                        End If
+
+                    End If
+
+                    ' if there's an error, capture the filename of the XML and corresponding error message
+                    If (Trim(strXMLError) <> "") Or bLineError Then  '  If (Trim(strXMLError) <> "") Or bolError Then
+                        'm_arrErrXMLs.Add(sXMLFilename)
+                        If Trim(m_arrXMLErrFiles) = "" Then
+                            m_arrXMLErrFiles = sXMLFilename
+                        Else
+                            m_arrXMLErrFiles &= "," & sXMLFilename
+                        End If
+                        If Trim(strXMLError) <> "" Then
+                            If Len(strXMLError) > 250 Then
+                                strXMLError = Microsoft.VisualBasic.Left(strXMLError, 250)
+                            End If
+                            If Trim(m_arrErrorsList) = "" Then
+                                m_arrErrorsList = strXMLError
+                            Else
+                                m_arrErrorsList &= "," & strXMLError
+                            End If
+                        Else
+                            If Trim(m_arrErrorsList) = "" Then
+                                m_arrErrorsList = "No Error Description"
+                            Else
+                                m_arrErrorsList &= "," & "No Error Description"
+                            End If
                         End If
                     End If
-                End If
 
-                strXMLError = ""
-            Next
+                    strXMLError = ""
+                Next
+
+            End If  '  If aFiles.Length > 0 Then
+            
+            If bAreThereNewOrders Then
+                SendBuyerEmail()
+            End If
+
         Catch ex As Exception
             'strXMLError = ex.ToString
             'bolError = True
@@ -441,9 +440,7 @@ Module module1
                 File.Move(aFiles(I).FullName, "C:\INTFCXML\BadXML\" & aFiles(I).Name)
                 File.Delete(aFiles(I).FullName)
             Catch ex32 As Exception
-                'objStreamWriter.WriteLine("**")
-                'objStreamWriter.WriteLine("     Error " & ex.Message & " in file " & aFiles(I).Name)
-                'objStreamWriter.WriteLine("**")
+
                 m_logger.WriteErrorLog(rtn & " :: ** ")
                 m_logger.WriteErrorLog(rtn & " :: Error " & ex32.Message & " in file " & aFiles(I).Name)
                 m_logger.WriteErrorLog(rtn & " :: ** ")
@@ -874,6 +871,12 @@ Module module1
 
     Private Sub SendBuyerEmail()
 
+        Dim rtn As String = "intfcUpdate.SendBuyerEmail"
+
+        Console.WriteLine("Start Sending Buyer Email(s)")
+        Console.WriteLine("")
+
+        m_logger.WriteInformationLog(rtn & " :: Start Sending Buyer Email(s) ")  '   & 
         Dim strSQLstring As String = ""
         strSQLstring = "SELECT A.BILL_TO_CUST_ID AS CUST_ID, A.ORDER_NO, B.OPRID_ENTERED_BY," & vbCrLf & _
                     " TO_CHAR(A.ADD_DTTM,'YYYY-MM-DD-HH24.MI.SS') as HdrAddDate," & vbCrLf & _
@@ -883,7 +886,7 @@ Module module1
                     " B.DESCR254, B.MFG_ITM_ID, B.ISA_EMPLOYEE_ID AS EMPLID," & vbCrLf & _
                     " B.ISA_WORK_ORDER_NO," & vbCrLf & _
                     " TO_CHAR(B.ADD_DTTM,'YYYY-MM-DD-HH24.MI.SS') as LnAddDate," & vbCrLf & _
-                    " '' AS ISA_CUST_NOTES, ' ' AS PROJECT_ID," & vbCrLf & _
+                    " ' ' AS ISA_CUST_NOTES, B.ISA_PRIORITY_FLAG AS PROJECT_ID," & vbCrLf & _
                     " TO_CHAR(B.ISA_REQUIRED_BY_DT,'YYYY-MM-DD') as ReqByDate" & vbCrLf & _
                     " FROM PS_ISA_ORD_INTF_HD A, PS_ISA_ORD_INTF_LN B" & vbCrLf & _
                     " WHERE A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf & _
@@ -895,9 +898,12 @@ Module module1
 
         If Not ds Is Nothing Then
             If ds.Tables(0).Rows.Count = 0 Then
+
+                m_logger.WriteInformationLog(rtn & " :: No Buyer Email(s) info found")
                 Exit Sub
             End If
         Else
+            m_logger.WriteInformationLog(rtn & " :: No Buyer Email(s)  info found")
             Exit Sub
         End If
 
@@ -906,17 +912,22 @@ Module module1
         Dim dsOrder As DataSet
         dsOrder = ds.Copy
         dsOrder.Tables(0).Clear()
+        Dim iSent As Integer = 0
         For I = 0 To ds.Tables(0).Rows.Count - 1
             If ds.Tables(0).Rows(I).Item("ORDER_NO") <> strPrevOrderNo Then
                 buildBuyerConfirmation(dsOrder)
                 dsOrder.Tables(0).Clear()
+                iSent = iSent + 1
             End If
             dsOrder.Tables(0).ImportRow(ds.Tables(0).Rows(I))
             strPrevOrderNo = ds.Tables(0).Rows(I).Item("ORDER_NO")
             If I = ds.Tables(0).Rows.Count - 1 Then
                 buildBuyerConfirmation(dsOrder)
+                iSent = iSent + 1
             End If
         Next
+
+        m_logger.WriteInformationLog(rtn & " :: " & iSent.ToString() & " Buyer Email(s) were sent")
 
     End Sub
 
@@ -979,29 +990,6 @@ Module module1
         email.BodyFormat = System.Web.Mail.MailFormat.Html
         'myEmail.IsBodyHtml = True
 
-        '' old code
-        'email.Body = "<html><body><table><tr><td>UNCCXMLIn has completed with "
-        'If bolWarning = True Then
-        '    email.Body = email.Body & "warnings,"
-        '    email.Subject = "UNCC XML Warning"
-        'Else
-        '    email.Body = email.Body & "errors,"
-        '    email.Subject = "UNCC XML In Error"
-        'End If
-
-        'email.Body = email.Body & " review log.</td></tr>"
-        ''email.Body = email.Body & "<tr><td></td><a href='\\BDougherty_XP-l\logs'>\\BDougherty_XP-l\logs\</a></tr></table></body></html>"
-
-        ''Send the email and handle any error that occurs
-        'Try
-        '    UpdEmailOut.UpdEmailOut.UpdEmailOut(email.Subject, email.From, email.To, "", "", "Y", email.Body, connectOR)
-        'Catch ex As Exception
-        '    'objStreamWriter.WriteLine("     Error - the email was not sent")
-        '    m_logger.WriteErrorLog(rtn & " :: Error - the email was not sent.")
-        '    m_logger.WriteErrorLog(rtn & " :: " & ex.ToString)
-        'End Try
-
-        'new Erwin code
         email.BodyFormat = System.Web.Mail.MailFormat.Html
 
         email.Body = ""
@@ -1021,7 +1009,7 @@ Module module1
         Dim sInfoErr As String = ""
         Try
 
-            sInfoErr &= " XML file name(s) are below.</td></tr>"   '  " review log.</td></tr></table>"
+            sInfoErr &= " XML file name(s) are below.</td></tr>"
             If Not m_arrXMLErrFiles Is Nothing Then
                 If Trim(m_arrXMLErrFiles) <> "" Then
                     Dim arrErrFiles1() As String = Split(m_arrXMLErrFiles, ",")
@@ -1044,18 +1032,6 @@ Module module1
         email.Body &= "&nbsp;<br>Sincerely,<br>&nbsp;<br>SDI Customer Care<br>&nbsp;<br></p></div><BR>"
         email.Body &= "<br />"
 
-
-        'email.Body = email.Body & "<tr><td></td><a href='\\BDougherty_XP-l\logs'>\\BDougherty_XP-l\logs\</a></tr></table></body></html>"
-
-        ''Send the email and handle any error that occurs
-        'Try
-        '    UpdEmailOut.UpdEmailOut.UpdEmailOut(email.Subject, email.From, email.To, "", "", "Y", email.Body, connectOR)
-        'Catch ex As Exception
-        '    'objStreamWriter.WriteLine("     Error - the email was not sent")
-        '    m_logger.WriteErrorLog(rtn & " :: Error - the email was not sent.")
-        '    m_logger.WriteErrorLog(rtn & " :: " & ex.ToString)
-        'End Try
-
         Dim sApp As String = "" & _
                              System.Reflection.Assembly.GetExecutingAssembly.GetModules()(0).Name & _
                              " v" & System.Reflection.Assembly.GetExecutingAssembly.GetName.Version.ToString & _
@@ -1076,13 +1052,13 @@ Module module1
 
         '' VR 12/18/2014 Commenting out code below - per Mike Randall: do not send this log file to customer because it is not
         ''               formatted for customer to clearly understand what is the problem with erred XML file
-        ' VR 12/29/2014 Attaching Error specific log file
-        Try
-            email.Attachments.Add(New System.Web.Mail.MailAttachment(filename:=sErrLogPath))
-        Catch ex As Exception
-        End Try
+        '' VR 12/29/2014 Attaching Error specific log file
+        'Try
+        '    email.Attachments.Add(New System.Web.Mail.MailAttachment(filename:=sErrLogPath))
+        'Catch ex As Exception
+        'End Try
 
-        Dim int1 As Integer = 0
+        'Dim int1 As Integer = 0
         'If Not (m_arrErrXMLs Is Nothing) Then
         '    If (m_arrErrXMLs.Count > 0) Then
         '        m_logger.WriteInformationLog(rtn & " :: erronuous xml file count = " & m_arrErrXMLs.Count.ToString)
@@ -1120,7 +1096,7 @@ Module module1
             
             SendEmail1(email)
             bSend = True
-        Catch ex As Exception    ' this is crashing because 'ex' is Nothing
+        Catch ex As Exception
 
         End Try
 
@@ -1133,8 +1109,6 @@ Module module1
         Dim bSent As Boolean = False
         Try
             
-            'UpdEmailOut.UpdEmailOut.UpdEmailOut(mailer.Subject, mailer.From, mailer.To, mailer.Cc, mailer.Bcc, "N", mailer.Body, connectOR)
-
             SendLogger(mailer.Subject, mailer.Body, "INTFCXMLUPDATE", "Mail", mailer.To, mailer.Cc, mailer.Bcc)
 
             bSent = True
@@ -1673,21 +1647,21 @@ Module module1
         Dim dtgcart As WebControls.DataGrid
         Dim dstcart1 As New DataTable
 
-        Dim strDescr1 As String
-        Dim strDescr2 As String
-        Dim strDescr3 As String
-        Dim strDescr4 As String
-        Dim strCustName As String
-        Dim strCustEmail As String
-        Dim strCustPhone As String
+        Dim strDescr1 As String = ""
+        Dim strDescr2 As String = ""
+        Dim strDescr3 As String = ""
+        Dim strDescr4 As String = ""
+        Dim strCustName As String = ""
+        Dim strCustEmail As String = ""
+        Dim strCustPhone As String = ""
         Dim strrefno As String = " "
-        'connectOR.Open()
-        'Dim objUserTbl As clsUserTbl
-        'objUserTbl = New clsUserTbl(dsOrder.Tables(0).Rows(0).Item("EMPLID"), strBU, connectOR)
-        'strCustName = objUserTbl.EmployeeName
-        'strCustEmail = objUserTbl.EmployeeEmail
-        'strCustPhone = objUserTbl.PhoneNum
-        'connectOR.Close()
+        connectOR.Open()
+        Dim objUserTbl As clsUserTbl
+        objUserTbl = New clsUserTbl(dsOrder.Tables(0).Rows(0).Item("EMPLID"), strBU, connectOR)
+        strCustName = objUserTbl.EmployeeName
+        strCustEmail = objUserTbl.EmployeeEmail
+        strCustPhone = objUserTbl.PhoneNum
+        connectOR.Close()
         '' see if there is a order_number (reference number) in the quote table.... if so it is a punchin record
         'connectOR.Open()
         'Dim objRefNo As clsQuote
@@ -1861,8 +1835,19 @@ Module module1
             Mailer.body = Mailer.body & "</TABLE>" & vbCrLf
 
             Mailer.To = objEnterprise.STKREQEmail
-
             Mailer.Subject = " IntfcXMLUpdate - Material Request - Stock"
+
+            'check is development databases
+            If connectOR.DataSource.ToUpper = "RPTG" Or _
+            connectOR.DataSource.ToUpper = "DEVL" Or _
+            connectOR.DataSource.ToUpper = "STAR" Or _
+            connectOR.DataSource.ToUpper = "PLGR" Then
+
+                Mailer.To = "webdev@sdi.com"
+                Mailer.Subject = " <<TEST>> IntfcXMLUpdate - Material Request - Stock"
+
+            End If
+
             Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
 
             SendEmail1(Mailer)
@@ -1933,13 +1918,25 @@ Module module1
             Mailer.body = Mailer.body & "</TABLE>" & vbCrLf
             Mailer.To = objEnterprise.NONSKREQEmail
 
-            If Convert.ToString(dsOrder.Tables(0).Rows(0).Item("PROJECT_ID")).Length > 7 Then
-                If Convert.ToString(dsOrder.Tables(0).Rows(0).Item("PROJECT_ID")).Substring(0, 8).ToUpper = "PRIORITY" Then
+            If Trim(dsOrder.Tables(0).Rows(0).Item("PROJECT_ID")) > "" Then
+                If Trim(dsOrder.Tables(0).Rows(0).Item("PROJECT_ID")) = "R" Then
                     Mailer.To = objEnterprise.SiteEmail
                 End If
             End If
 
             Mailer.Subject = " IntfcXMLUpdate - Material Request - Non-Stock "
+
+            'check is development databases
+            If connectOR.DataSource.ToUpper = "RPTG" Or _
+            connectOR.DataSource.ToUpper = "DEVL" Or _
+            connectOR.DataSource.ToUpper = "STAR" Or _
+            connectOR.DataSource.ToUpper = "PLGR" Then
+
+                Mailer.To = "webdev@sdi.com"
+                Mailer.Subject = " <<TEST>> IntfcXMLUpdate - Material Request - Stock"
+
+            End If
+
             Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
 
             SendEmail1(Mailer)
