@@ -19,7 +19,7 @@ Public Class PODueDTChangeEmail
 
     Private Const oraCN_default_provider As String = "Provider=OraOLEDB.Oracle.1;"
     Private Const oraCN_default_creden As String = "User ID=sdiexchange;Password=sd1exchange;"
-    Private Const oraCN_default_DB As String = "Data Source=PLGR"
+    Private Const oraCN_default_DB As String = "Data Source=RPTG"
 
     Private m_xmlConfig As XmlDocument
     Private m_configFile As String = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly.GetModules()(0).FullyQualifiedName) & "\PODueDTChangeEmail.exe.config"
@@ -113,7 +113,6 @@ Public Class PODueDTChangeEmail
                 logger.WriteVerboseLog(cHdr & "Successful connection to " & cn.ConnectionString)
 
                 If bResult Then
-                    'Debug.Print(clsReqDateChange.ReqCollection.Count.ToString)
                     logger.WriteVerboseLog(cHdr & "Processing Req Due Date Changes Succeeded. Count: " & clsReqDateChange.ReqCollection.Count.ToString)
                     For Each tempReq As REQ In clsReqDateChange.ReqCollection
                         'send each req to class for email and update poduedtmon
@@ -131,7 +130,7 @@ Public Class PODueDTChangeEmail
                     logger.WriteVerboseLog(cHdr & "Processing Reqs Due Date Changes EMAIL Complete")
 
                 Else
-                    logger.WriteErrorLog(cHdr & "Processing Req Due Date Changes FAILED")
+                    logger.WriteErrorLog(cHdr & "Processing Req Due Date Changes either FAILED 0r there no rows to process")
 
                 End If
 
@@ -139,7 +138,7 @@ Public Class PODueDTChangeEmail
                 ' not done yet
 
                 'process reqs first
-                logger.WriteVerboseLog(cHdr & "Processing Req Due Date Changes")
+                logger.WriteVerboseLog(cHdr & "Processing PO Due Date Changes")
 
                 Dim arr As New ArrayList
                 '-- get available PO to check
@@ -1359,10 +1358,10 @@ Public Class PODueDTChangeEmail
                     End If
 
                     Select Case strDBase
-                        Case "STAR", "PLGR", "RPTG"
+                        Case "STAR", "PLGR", "RPTG", "DEVL"
                             eml.Subject = " TEST SDIX92 - " & eml.Subject
-                            eml.To.Add("webdev@sdi.com,Benjamin.Heinzerling@sdi.com")
-                            sEmailTo = "webdev@sdi.com;Benjamin.Heinzerling@sdi.com"
+                            eml.To.Add("webdev@sdi.com")
+                            sEmailTo = "webdev@sdi.com"
                         Case Else
 
                     End Select
@@ -1405,7 +1404,7 @@ Public Class PODueDTChangeEmail
             logger.WriteVerboseLog(" SEND USER EMAIL?  GETTING INFO FOR BUS UNIT: " & myBusinessUnit & " USER: " & myUserID)
             sSQL = "" & _
     "                  select isa_employee_id, isa_iol_op_value " & vbCrLf & _
-    "                    from sysadm8.ps_isa_users_privs " & vbCrLf & _
+    "                    from ps_isa_users_privs " & vbCrLf & _
     "                   where ISA_IOL_OP_NAME='EMLPODUEDT' and ISA_IOL_OP_TYPE='IOL' " & vbCrLf & _
     "                            AND BUSINESS_UNIT='" & myBusinessUnit & "' AND upper(isa_employee_id)= upper('" & myUserID & "')"
 

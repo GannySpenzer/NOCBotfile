@@ -67,7 +67,6 @@ Public Class ReqDueDateChange
         cmd.CommandType = CommandType.Text
 
         Try
-            'Logger.WriteErrorLog(cHdr & "Executing SQL statement for REQs")
             Logger.WriteVerboseLog(cHdr & "Trying to execute SQL statement for REQs")
             If m_cn.State = ConnectionState.Open Then
                 Dim rdr As OleDbDataReader = cmd.ExecuteReader()

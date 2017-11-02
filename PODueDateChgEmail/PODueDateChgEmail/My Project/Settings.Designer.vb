@@ -66,7 +66,7 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("Data Source=PLGR")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("Data Source=RPTG")>  _
         Public ReadOnly Property default_DB() As String
             Get
                 Return CType(Me("default_DB"),String)
