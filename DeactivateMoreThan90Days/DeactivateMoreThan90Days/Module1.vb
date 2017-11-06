@@ -17,7 +17,7 @@ Module Module1
     Dim rootDir As String = "C:\Program Files (x86)\SDI\DeactivateNotActive90Days"
     Dim logpath As String = "C:\Program Files (x86)\SDI\DeactivateNotActive90Days\Logs\DeactivNotActive90Days" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
 
-    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=DEVL")
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=RPTG")
 
     Sub Main()
 

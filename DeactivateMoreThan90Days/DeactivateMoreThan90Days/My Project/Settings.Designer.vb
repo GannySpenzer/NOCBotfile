@@ -111,15 +111,6 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=RPTG")>  _
-        Public ReadOnly Property oraCNString1() As String
-            Get
-                Return CType(Me("oraCNString1"),String)
-            End Get
-        End Property
-        
-        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
-         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.DefaultSettingValueAttribute("C:\Program Files (x86)\SDI\DeactivateNotActive90Days")>  _
         Public ReadOnly Property rootDir() As String
             Get
@@ -138,8 +129,18 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("(Test) Your SDiExchange Account has been deactivated due to more than 90 days ina"& _ 
-            "ctivity")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=P"& _ 
+            "ROD")>  _
+        Public ReadOnly Property oraCNString1() As String
+            Get
+                Return CType(Me("oraCNString1"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute(" Your SDiExchange Account has been deactivated due to more than 90 days inactivit"& _ 
+            "y")>  _
         Public ReadOnly Property onError_emailSubject() As String
             Get
                 Return CType(Me("onError_emailSubject"),String)
