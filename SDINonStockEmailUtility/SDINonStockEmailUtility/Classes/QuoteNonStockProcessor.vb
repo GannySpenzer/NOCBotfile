@@ -799,10 +799,10 @@ Public Class QuoteNonStockProcessor
                                  ",A2.ISA_EMPLOYEE_NAME AS ISA_EMPLOYEE_NAME" & vbCrLf & _
                                  ",A2.ISA_PRICE_BLOCK AS ISA_PRICE_BLOCK" & vbCrLf & _
                                  ",A3.ISA_NONSKREQ_EMAIL AS ISA_NONSKREQ_EMAIL" & vbCrLf & _
-                                 ",L.OPRID_ENTERED_BY AS ISA_EMPLOYEE_ID" & vbCrLf & _
+                                 ",L.ISA_EMPLOYEE_ID AS ISA_EMPLOYEE_ID" & vbCrLf & _
                                  ",A4.BUSINESS_UNIT_OM AS BUSINESS_UNIT_OM" & vbCrLf & _
                                  ",L.PROJECT_ID,A4.ORIGIN" & vbCrLf & _
-                                 ",L.OPRID_MODIFIED_BY AS OPRID_MODIFIED_BY " & vbCrLf & _
+                                 ",L.OPRID_MODIFIED_BY AS OPRID_MODIFIED_BY, L.ISA_WORK_ORDER_NO AS WORK_ORDER_ID " & vbCrLf & _
                                  "FROM " & vbCrLf & _
                                  " PS_REQ_HDR A" & vbCrLf & _
                                  ",SYSADM8.PS_ROLEXLATOPR B" & vbCrLf & _
@@ -821,7 +821,7 @@ Public Class QuoteNonStockProcessor
                                  "  AND A.REQ_ID = L.ORDER_NO" & vbCrLf & _
                                  "  AND A4.ORIGIN IN ('IOL','MOB','RFQ','IAP','PCH')" & vbCrLf & _
                                  "  AND L.BUSINESS_UNIT_OM = A2.BUSINESS_UNIT (+)" & vbCrLf & _
-                                 "  AND L.OPRID_ENTERED_BY = A2.ISA_EMPLOYEE_ID (+) " & vbCrLf & _
+                                 "  AND L.ISA_EMPLOYEE_ID = A2.ISA_EMPLOYEE_ID (+) " & vbCrLf & _
                                  "  AND 'MAIN1' = A3.SETID (+)" & vbCrLf & _
                                  "  AND A4.BILL_TO_CUST_ID = A3.CUST_ID (+)" & vbCrLf & _
                                  "  AND L.ISA_LINE_STATUS = 'QTS' " & vbCrLf & _
@@ -999,7 +999,16 @@ Public Class QuoteNonStockProcessor
                     End If
 
                     If (boItem.OrderOrigin = "RFQ") Then
-                       
+
+                        workOrderNo = " "
+                        Try
+                            If Not (rdr("WORK_ORDER_ID") Is System.DBNull.Value) Then
+                                workOrderNo = CStr(rdr("WORK_ORDER_ID")).Trim
+                            End If
+                        Catch ex As Exception
+                            workOrderNo = " "
+                        End Try
+                        
                         '' VR 11/20/2014 New code based on using new header table SYSADM.PS_ISA_INTFC_H_SUP
                         'If Not (rdr("WORK_ORDER_ID") Is System.DBNull.Value) Then
                         '    workOrderNo = CStr(rdr("WORK_ORDER_ID")).Trim
@@ -1007,7 +1016,6 @@ Public Class QuoteNonStockProcessor
                         'If Not (rdr("EMAIL_ADDRESS") Is System.DBNull.Value) Then
                         '    rfqEmailRecipient = CStr(rdr("EMAIL_ADDRESS")).Trim
                         'End If
-                        workOrderNo = " "
                         rfqEmailRecipient = " "
                         If Not (rdr("ISA_EMPLOYEE_EMAIL") Is System.DBNull.Value) Then
                             
@@ -2023,7 +2031,7 @@ Public Class QuoteNonStockProcessor
             Dim strInsertQuery As String = String.Empty
             Dim rowsaffected As Integer = 0
 
-            strInsertQuery = "INSERT INTO sysadm8.ps_isa_SDIXaudit " & vbCrLf & _
+            strInsertQuery = "INSERT INTO ps_isa_SDIXaudit " & vbCrLf & _
                 " ( " & vbCrLf & _
                 " descr, rcdsrc, table_name " & vbCrLf & _
                 ", key_01, key_02, key_03 " & vbCrLf & _
