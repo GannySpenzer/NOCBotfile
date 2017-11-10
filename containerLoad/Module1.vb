@@ -19,11 +19,11 @@ Module Module1
     Dim objStreamWriter As StreamWriter
     Dim rootDir As String = "C:\ContainerLoad"
     Dim logpath As String = "C:\ContainerLoad\LOGS\ContainerLoad" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=PLGR")
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=PLGR")
 
     Sub Main()
 
-        Dim cnStringORA As String = "Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=PLGR"
+        Dim cnStringORA As String = "Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=PLGR"
         Try
             cnStringORA = My.Settings("oraCNString1").ToString.Trim
         Catch ex As Exception
