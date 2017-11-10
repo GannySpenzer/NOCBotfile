@@ -140,7 +140,7 @@ Module Module1
         Dim Command As OleDbCommand
 
         strSQLstring = "SELECT A.BUSINESS_UNIT" & vbCrLf & _
-                " FROM PS_PO_LOADER_DFL A" & vbCrLf & _
+                " FROM PS_REQ_LOADER_DFL A" & vbCrLf & _
                 " WHERE A.LOADER_BU = 'I0256'" & vbCrLf
 
         Command = New OleDbCommand(strSQLstring, connectOR)
@@ -400,7 +400,7 @@ Module Module1
                 " WHERE A.EMAIL_DATETIME Is NULL" & vbCrLf & _
                 " AND A.ISA_LINE_STATUS = 'RET'" & vbCrLf & _
                 " AND (SELECT DFL.BUSINESS_UNIT" & vbCrLf & _
-                " FROM PS_PO_LOADER_DFL DFL" & vbCrLf & _
+                " FROM PS_REQ_LOADER_DFL DFL" & vbCrLf & _
                 " WHERE DFL.LOADER_BU = A.BUSINESS_UNIT_OM" & vbCrLf & _
                 " AND ROWNUM = '1') = B.BUSINESS_UNIT" & vbCrLf & _
                 " AND A.RECEIVER_ID = B.RECEIVER_ID" & vbCrLf & _
@@ -448,11 +448,11 @@ Module Module1
                 'take this code down below so u can have multiple Order num's per email.
 
                 If I = ds.Tables(0).Rows.Count - 1 Then
-                    'sendCustEmail(dsEmail, _
-                    '    ds.Tables(0).Rows(I).Item("ORDER_NO"), _
-                    '    ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
-                    '    ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
-                    '    ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
+                    sendCustEmail(dsEmail, _
+                        ds.Tables(0).Rows(I).Item("ORDER_NO"), _
+                        ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
+                        ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
+                        ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
 
                     dsEmail.Clear()
                     If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
@@ -467,11 +467,11 @@ Module Module1
                    & ds.Tables(0).Rows(I + 1).Item("ORDER_NO") <> _
                    ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM") _
                    & ds.Tables(0).Rows(I).Item("ORDER_NO") Then
-                    'sendCustEmail(dsEmail, _
-                    '    ds.Tables(0).Rows(I).Item("ORDER_NO"), _
-                    '    ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
-                    '    ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
-                    '    ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
+                    sendCustEmail(dsEmail, _
+                        ds.Tables(0).Rows(I).Item("ORDER_NO"), _
+                        ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
+                        ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
+                        ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
                     dsEmail.Clear()
                     If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
                         connectOR.Close()
@@ -484,7 +484,13 @@ Module Module1
                 strPreOrderno = ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM") _
                    & ds.Tables(0).Rows(I).Item("ORDER_NO")
             Next
-            connectOR.Close()
+            objStreamWriter.WriteLine("  StatChg Email Build Notify Non STK. Total: " & ds.Tables(0).Rows.Count & " for I0256")
+            Try
+                connectOR.Close()
+            Catch ex As Exception
+
+            End Try
+
         End If
 
     End Function
@@ -576,11 +582,11 @@ Module Module1
                 End If
                 dsEmail.Rows.Add(dr)
                 If I = ds.Tables(0).Rows.Count - 1 Then
-                    'sendCustEmail(dsEmail, _
-                    '    ds.Tables(0).Rows(I).Item("ORDER_NO"), _
-                    '    ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
-                    '    ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
-                    '    ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
+                    sendCustEmail(dsEmail, _
+                        ds.Tables(0).Rows(I).Item("ORDER_NO"), _
+                        ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
+                        ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
+                        ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
                     dsEmail.Clear()
                     If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
                         connectOR.Close()
@@ -594,11 +600,11 @@ Module Module1
                    & ds.Tables(0).Rows(I + 1).Item("ORDER_NO") <> _
                    ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM") _
                    & ds.Tables(0).Rows(I).Item("ORDER_NO") Then
-                    'sendCustEmail(dsEmail, _
-                    '    ds.Tables(0).Rows(I).Item("ORDER_NO"), _
-                    '    ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
-                    '    ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
-                    '    ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
+                    sendCustEmail(dsEmail, _
+                        ds.Tables(0).Rows(I).Item("ORDER_NO"), _
+                        ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
+                        ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
+                        ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
                     dsEmail.Clear()
                     If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
                         connectOR.Close()
@@ -612,6 +618,7 @@ Module Module1
                 strPreOrderno = ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM") _
                    & ds.Tables(0).Rows(I).Item("ORDER_NO")
             Next
+            objStreamWriter.WriteLine("  StatChg Email Build Notify STK. Total: " & ds.Tables(0).Rows.Count & " for I0256")
             If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
                 connectOR.Close()
             End If
@@ -740,11 +747,13 @@ Module Module1
             connectOR.DataSource.ToUpper = "STAR" Or _
             connectOR.DataSource.ToUpper = "PLGR" Then
             Mailer.To = "WEBDEV@sdi.com"
+            Mailer.Subject = " <<TEST>> SDiExchange - Order Status " & strOrderNo & " is ready for pickup"
         Else
             Mailer.To = strPurchaserEmail
+            Mailer.Subject = "SDiExchange - Order Status " & strOrderNo & " is ready for pickup"
         End If
 
-        Mailer.Subject = "SDiExchange - Order Status " & strOrderNo & " is ready for pickup"
+        'Mailer.Subject = "SDiExchange - Order Status " & strOrderNo & " is ready for pickup"
         Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
         
         'UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer.Subject, Mailer.From, Mailer.To, "", "", "N", Mailer.Body, connectOR)
@@ -909,7 +918,7 @@ Module Module1
         strSQLstring = "SELECT * FROM (SELECT A.BUSINESS_UNIT_OM, G.BUSINESS_UNIT_OM AS G_BUS_UNIT, D.BUSINESS_UNIT, D.ISA_EMPLOYEE_ID, A.ORDER_NO, B.ISA_INTFC_LN AS line_nbr," & vbCrLf & _
                  " B.ISA_EMPLOYEE_ID AS EMPLID, B.ISA_LINE_STATUS as ORDER_TYPE," & vbCrLf & _
                  " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, " & vbCrLf & _
-                 " G.ISA_LINE_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','1','NEW','2','DSP','3','PKA','4','DLP','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','9') AS OLD_ORDER_STATUS," & vbCrLf & _
+                 " G.ISA_LINE_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','1','NEW','2','DSP','3','ORD','3','RSV','3','PKA','4','PKP','4','DLP','5','RCP','5','RCF','5','PKQ','5','DLO','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','1') AS OLD_ORDER_STATUS," & vbCrLf & _
                  " (SELECT E.XLATLONGNAME" & vbCrLf & _
                                 " FROM XLATTABLE E" & vbCrLf & _
                                 " WHERE E.EFFDT =" & vbCrLf & _
@@ -1006,17 +1015,17 @@ Module Module1
             If I = ds.Tables(0).Rows.Count - 1 Then
 
                 strEmail_test = ";vitaly.rovensky@sdi.com"
-                'sendCustEmail1(dsEmail, _
-                'ds.Tables(0).Rows(I).Item("ORDER_NO"), _
-                'dteCompanyID, _
-                'dteCustID, _
-                'ds.Tables(0).Rows(I).Item("ISA_ORDER_STATUS"), _
-                'ds.Tables(0).Rows(I).Item("ORDER_STATUS_DESC"), _
-                ' ds.Tables(0).Rows(I).Item("INV_ITEM_ID"), _
-                'ds.Tables(0).Rows(I).Item("LINE_NBR"), _
-                ' ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
-                'ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
-                'ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
+                sendCustEmail1(dsEmail, _
+                ds.Tables(0).Rows(I).Item("ORDER_NO"), _
+                dteCompanyID, _
+                dteCustID, _
+                ds.Tables(0).Rows(I).Item("ORDER_TYPE"), _
+                ds.Tables(0).Rows(I).Item("ORDER_STATUS_DESC"), _
+                 ds.Tables(0).Rows(I).Item("INV_ITEM_ID"), _
+                ds.Tables(0).Rows(I).Item("LINE_NBR"), _
+                 ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
+                ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
+                ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
 
                 dsEmail.Clear()
                 If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
@@ -1027,17 +1036,17 @@ Module Module1
                           ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM") _
                           & ds.Tables(0).Rows(I).Item("ORDER_NO") Then
 
-                ' sendCustEmail1(dsEmail, _
-                'ds.Tables(0).Rows(I).Item("ORDER_NO"), _
-                'dteCompanyID, _
-                'dteCustID, _
-                'ds.Tables(0).Rows(I).Item("ISA_ORDER_STATUS"), _
-                'ds.Tables(0).Rows(I).Item("ORDER_STATUS_DESC"), _
-                'ds.Tables(0).Rows(I).Item("INV_ITEM_ID"), _
-                'ds.Tables(0).Rows(I).Item("LINE_NBR"), _
-                ' ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
-                ' ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
-                'ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
+                sendCustEmail1(dsEmail, _
+               ds.Tables(0).Rows(I).Item("ORDER_NO"), _
+               dteCompanyID, _
+               dteCustID, _
+               ds.Tables(0).Rows(I).Item("ORDER_TYPE"), _
+               ds.Tables(0).Rows(I).Item("ORDER_STATUS_DESC"), _
+               ds.Tables(0).Rows(I).Item("INV_ITEM_ID"), _
+               ds.Tables(0).Rows(I).Item("LINE_NBR"), _
+                ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
+                ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
+               ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL"))
                 
                 dsEmail.Clear()
 
@@ -1142,12 +1151,14 @@ Module Module1
             connectOR.DataSource.ToUpper = "PLGR" Then
 
             Mailer1.To = "webdev@sdi.com"
+            Mailer1.Subject = " <<TEST>> SDiExchange - Order Status records for ORDER NUMBER: " & strOrderNo
         Else
 
             Mailer1.To = strEmail
+            Mailer1.Subject = "SDiExchange - Order Status records for ORDER NUMBER: " & strOrderNo
         End If
 
-        Mailer1.Subject = "SDiExchange - Order Status records for ORDER NUMBER: " & strOrderNo
+        'Mailer1.Subject = "SDiExchange - Order Status records for ORDER NUMBER: " & strOrderNo
         Mailer1.BodyFormat = System.Web.Mail.MailFormat.Html
         
         'UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer.Subject, Mailer.From, Mailer.To, "", "", "N", Mailer.Body, connectOR)
