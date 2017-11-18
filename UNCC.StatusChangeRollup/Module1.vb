@@ -63,25 +63,6 @@ Module Module1
         End If
         '   END : 3/19/2014 erwin
 
-        'If Dir(rootDir, FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir)
-        'End If
-        'If Dir(rootDir & "\LOGS", FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir & "\LOGS")
-        'End If
-        'If Dir(rootDir & "\XMLIN", FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir & "\XMLIN")
-        'End If
-        'If Dir(rootDir & "\XMLOUT", FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir & "\XMLOUT")
-        'End If
-        'If Dir(rootDir & "\XMLINProcessed", FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir & "\XMLINProcessed")
-        'End If
-        'If Dir(rootDir & "\XMLOUTProcessed", FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir & "\XMLOUTProcessed")
-        'End If
-
         ' default log level
         Dim logLevel As System.Diagnostics.TraceLevel = TraceLevel.Verbose
 
@@ -196,7 +177,7 @@ Module Module1
             Catch ex As Exception
 
             End Try
-            'objStreamWriter.WriteLine("     Error - error reading end date FROM PS_ISAORDSTATUSLOG A")
+
             m_logger.WriteErrorLog(rtn & " :: Error - error reading end date FROM PS_ISAORDSTATUSLOG A")
             Return True
         End Try
@@ -215,9 +196,12 @@ Module Module1
                        ",A.ORDER_NO" & vbCrLf & _
                        ",A.ISA_INTFC_LN AS LINE_NBR" & vbCrLf & _
                        ",TO_CHAR(A.DTTM_STAMP, 'MM/DD/YYYY HH24:MI:SS') AS DTTM_STAMP" & vbCrLf & _
-                       " ,A.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(A.ISA_LINE_STATUS,'CRE','1','NEW','2','DSP','3','PKA','4','DLP','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','9') AS OLD_ORDER_STATUS" & vbCrLf & _
-                       "FROM PS_ISAORDSTATUSLOG A" & vbCrLf & _
+                       " ,A.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(A.ISA_LINE_STATUS,'CRE','1','NEW','2','DSP','3','ORD','3','RSV','3','PKA','4','PKP','4','DLP','5','RCP','5','RCF','6','PKQ','5','DLO','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','1') AS OLD_ORDER_STATUS" & vbCrLf & _
+                       "FROM PS_ISAORDSTATUSLOG A, SYSADM8.PS_ISA_ORD_INTF_HD B" & vbCrLf & _
                        "WHERE A.BUSINESS_UNIT_OM = 'I0256'" & vbCrLf & _
+                            " AND B.ORIGIN = 'IOL'" & vbCrLf & _
+                            " AND A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf & _
+                            " AND A.ORDER_NO = B.ORDER_NO " & vbCrLf & _
                        "  AND TRUNC(A.DTTM_STAMP) >= (TRUNC(SYSDATE) -1)" & vbCrLf & _
                        "  AND A.DTTM_STAMP = (" & vbCrLf & _
                        "                      SELECT MAX(A1.DTTM_STAMP)" & vbCrLf & _
