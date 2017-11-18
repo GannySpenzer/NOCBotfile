@@ -197,7 +197,7 @@ Module Module1
         Dim bolerror As Boolean
         strSQLstring = "SELECT A.ORDER_NO, A.ISA_INTFC_LN AS LINE_NBR," & vbCrLf & _
                             " TO_CHAR(A.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP" & vbCrLf & _
-                            " ,A.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(A.ISA_LINE_STATUS,'CRE','1','NEW','2','DSP','3','ORD','3','RSV','3','PKA','4','PKP','4','DLP','5','RCP','5','RCF','5','PKQ','5','DLO','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','1') AS OLD_ORDER_STATUS" & vbCrLf & _
+                            " ,A.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(A.ISA_LINE_STATUS,'CRE','1','NEW','2','DSP','3','ORD','3','RSV','3','PKA','4','PKP','4','DLP','5','RCP','5','RCF','6','PKQ','5','DLO','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','1') AS OLD_ORDER_STATUS" & vbCrLf & _
                             " FROM PS_ISAORDSTATUSLOG A, SYSADM8.PS_ISA_ORD_INTF_HD B" & vbCrLf & _
                             " WHERE A.BUSINESS_UNIT_OM = 'I0256'" & vbCrLf & _
                             " AND B.ORIGIN = 'IOL'" & vbCrLf & _
