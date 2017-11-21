@@ -5,7 +5,6 @@ Module SDINonStockEmailUtility
     Dim connectionString As String = ConfigurationManager.AppSettings("OLEDBconString")
     Sub Main()
         Try
-
             Dim objQNStkProcessor = New QuoteNonStockProcessor(connectionString)
             objQNStkProcessor.Execute()
         Catch ex As Exception

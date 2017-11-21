@@ -159,7 +159,9 @@
     <Import Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes\clsUserTbl.vb" />
     <Compile Include="Classes\Encryption64.vb" />
+    <Compile Include="Classes\ORDBData.vb" />
     <Compile Include="Classes\QuotedNStkItem.vb" />
     <Compile Include="Classes\QuotedNStkItemCollection.vb" />
     <Compile Include="Classes\QuoteNonStockProcessor.vb" />

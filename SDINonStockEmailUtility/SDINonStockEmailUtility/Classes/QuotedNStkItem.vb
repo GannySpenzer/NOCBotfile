@@ -31,6 +31,7 @@ Public Class QuotedNStkItem
     '
     ' for backup recipient(s)
     '
+    Private m_ApprovalLimit As Decimal = 0
     Private m_arrEmpIDs As New ArrayList
 
 
@@ -211,6 +212,15 @@ Public Class QuotedNStkItem
         End Get
         Set(ByVal value As String)
             m_priceblock = value
+        End Set
+    End Property
+
+    Public Property ApprovalLimit() As Decimal
+        Get
+            Return m_ApprovalLimit
+        End Get
+        Set(value As Decimal)
+            m_ApprovalLimit = value
         End Set
     End Property
 
