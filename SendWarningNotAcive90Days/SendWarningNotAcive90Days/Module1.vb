@@ -17,7 +17,7 @@ Module Module1
     Dim rootDir As String = "C:\Program Files (x86)\SDI\WarningNotActive90Days"
     Dim logpath As String = "C:\Program Files (x86)\SDI\WarningNotActive90Days\Logs\WarningNotActive90Days" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
 
-    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=DEVL")
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=DEVL")
 
     Sub Main()
 
@@ -162,6 +162,9 @@ Module Module1
                                 m_logger.WriteVerboseLog(rtn & " :: Email WAS NOT sent to: " & strEmailAddress & " ; Account ID: " & strAccount & " ; User Name: " & strUserName)
                             Else
                                 bSend = True
+                                'If intX > 5 Then
+                                '    SendEmail(strEmailAddress, strAccount, bSend)
+                                'End If
                                 SendEmail(strEmailAddress, strAccount, bSend)
                                 If bSend Then
                                     m_logger.WriteVerboseLog(rtn & " :: Email sent to: " & strEmailAddress & " ; Account ID: " & strAccount & " ; User Name: " & strUserName)
