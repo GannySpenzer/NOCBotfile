@@ -526,17 +526,17 @@ Public Class QuoteNonStockProcessor
                         SBord.Append(itmQuoted.OrderID + ",")
                         If itmQuoted.PriceBlockFlag = "N" Then
                             Dim TtlPrice As Decimal = GetPrice(itmQuoted.OrderID)
-                            If TtlPrice > itmQuoted.ApprovalLimit Then
+                            If TtlPrice >= itmQuoted.ApprovalLimit Then
                                 SendMessages(itmQuoted)
                             Else
                                 Dim oApprovalDetails As ApprovalDetails = New ApprovalDetails(itmQuoted.BusinessUnitOM, itmQuoted.EmployeeID, itmQuoted.EmployeeID, itmQuoted.OrderID)
                                 Dim strAppMessage() As String
-                                If OrderApprovals.ApproveQuote(oApprovalDetails, strAppMessage) Then
+                                If OrderApprovals.ApproveQuote(oApprovalDetails, strAppMessage, itmQuoted.LineStatus) Then
 
                                 End If
                             End If
                         Else
-                            PriceUpdate(itmQuoted.OrderID)
+                            PriceUpdate(itmQuoted.OrderID, itmQuoted.LineStatus)
                             UpdateReqEmailLog(itmQuoted)
                             buildNotifyApprover(itmQuoted)
                         End If
@@ -815,6 +815,7 @@ Public Class QuoteNonStockProcessor
                                  ",A4.BUSINESS_UNIT_OM AS BUSINESS_UNIT_OM" & vbCrLf & _
                                  ",L.PROJECT_ID,A4.ORIGIN" & vbCrLf & _
                                  ",L.OPRID_MODIFIED_BY AS OPRID_MODIFIED_BY, L.ISA_WORK_ORDER_NO AS WORK_ORDER_ID , A3.APPRVALTHRESHOLD AS APPROVAL_LIMIT " & vbCrLf & _
+                                 ",A3.ISA_CUSTINT_APPRVL " & vbCrLf & _
                                  "FROM " & vbCrLf & _
                                  " PS_REQ_HDR A" & vbCrLf & _
                                  ",SYSADM8.PS_ROLEXLATOPR B" & vbCrLf & _
@@ -1175,6 +1176,14 @@ Public Class QuoteNonStockProcessor
                         boItem.ApprovalLimit = CDec(rdr("APPROVAL_LIMIT"))
                     Else
                         boItem.ApprovalLimit = 0
+                    End If
+
+                    If Not (rdr("ISA_CUSTINT_APPRVL") Is System.DBNull.Value) Then
+                        If CType(rdr("ISA_CUSTINT_APPRVL"), String).Trim.ToUpper = "Y" Then
+                            boItem.LineStatus = "QTC"
+                        Else
+                            boItem.LineStatus = "QTA"
+                        End If
                     End If
 
                     ' put back the item into our collection object
@@ -2003,7 +2012,7 @@ Public Class QuoteNonStockProcessor
         End Try
     End Sub
 
-    Public Sub PriceUpdate(ByVal orderid As String)
+    Public Sub PriceUpdate(ByVal orderid As String, ByVal Linestatus As String)
         Try
             Dim strUpdateQuery As String = String.Empty
             Dim strSelectQuery As String = String.Empty
@@ -2024,7 +2033,7 @@ Public Class QuoteNonStockProcessor
                     oprEnteredBy = CType(OrcRdr("OPRID_ENTERED_BY"), String).Trim()
                     If OrcRdr("ISA_LINE_STATUS").Trim().ToUpper() = "QTS" Then  '  If OrcRdr.GetString(0).Trim().ToUpper() = "QTS" Then
                         strUpdateQuery = " UPDATE SYSADM8.PS_ISA_ORD_INTF_LN" & vbCrLf & _
-                                         " SET ISA_LINE_STATUS = '" & ordStsL & "'" & vbCrLf & _
+                                         " SET ISA_LINE_STATUS = '" & Linestatus & "'" & vbCrLf & _
                                          " WHERE ORDER_NO = '" & orderid & "'"
                         rowsaffected = ExecNonQuery(strUpdateQuery)
                         SDIAuditInsert("PS_ISA_ORD_INTF_LN", orderid, "ISA_LINE_STATUS", ordStsL, ordBu)
@@ -2639,7 +2648,7 @@ Public Class OrderApprovals
 
     'Approval process start hear
 
-    Public Shared Function ApproveQuote(oApprovalDetails As ApprovalDetails, ByRef strAppMessage() As String) As Boolean
+    Public Shared Function ApproveQuote(oApprovalDetails As ApprovalDetails, ByRef strAppMessage() As String, ByVal LineStatus As String) As Boolean
         Dim bSuccessful As Boolean = False
 
         Dim trnsactSession As OleDbTransaction = Nothing
@@ -2659,7 +2668,7 @@ Public Class OrderApprovals
                         Dim oLineDetails As ApprovalDetails.OrderLineDetails
                         oLineDetails = CType(oApprovalDetails.LineDetails(I), ApprovalDetails.OrderLineDetails)
 
-                        If Not UpdateLineItem_ApproveOrderPrepQty(trnsactSession, connection, oApprovalDetails, oLineDetails) Then
+                        If Not UpdateLineItem_ApproveOrderPrepQty(trnsactSession, connection, oApprovalDetails, oLineDetails, LineStatus) Then
                             bUpdateError = True
                         End If
 
@@ -2679,12 +2688,12 @@ Public Class OrderApprovals
 
                     If Not bUpdateError Then
                         Dim oApprovalResults As ApprovalResults
-                        If CheckLimits(trnsactSession, connection, oApprovalDetails, oApprovalResults) Then
+                        If CheckLimits(trnsactSession, connection, oApprovalDetails, oApprovalResults, LineStatus) Then
                             If RecordApprovalHistory(trnsactSession, connection, oApprovalDetails, ApprovalHistory.ApprHistStatus.Pending, ApprovalHistory.ApprHistType.QuoteApproval) Then
                                 Dim bError As Boolean = False
                                 If Not oApprovalResults.IsMoreApproversNeeded Then
                                     If Not UpdateOrderStatus_FullyApprove(trnsactSession, connection, oApprovalDetails, _
-                                        ApprovalHistory.ApprHistType.QuoteApproval) Then
+                                        ApprovalHistory.ApprHistType.QuoteApproval, LineStatus) Then
                                         bError = True
                                     End If
                                 End If
@@ -2818,7 +2827,7 @@ Public Class OrderApprovals
     End Function
 
     Private Shared Function UpdateLineItem_ApproveOrderPrepQty(ByRef trnsactSession As OleDbTransaction, ByRef connection As OleDbConnection, _
-       oApprovalDetails As ApprovalDetails, oLineDetails As ApprovalDetails.OrderLineDetails) As Boolean
+       oApprovalDetails As ApprovalDetails, oLineDetails As ApprovalDetails.OrderLineDetails, ByVal Linestatus As String) As Boolean
 
         Const cCaller As String = "OrderApprovals.UpdateLineItem_ApproveOrderPrepQty"
 
@@ -2834,7 +2843,7 @@ Public Class OrderApprovals
             If oLineDetails.DeleteItem Then
                 strSQLstring &= ", ISA_LINE_STATUS = '" & m_cDeletedLine & "' " & vbCrLf
             Else
-                strSQLstring &= ", ISA_LINE_STATUS = 'QTW' " & vbCrLf 'Yury 20170920
+                strSQLstring &= ", ISA_LINE_STATUS = '" & Linestatus & "' " & vbCrLf 'Yury 20170920
             End If
 
             Dim sWorkOrder As String = oApprovalDetails.WorkOrder.Replace("'", "''")
@@ -2886,6 +2895,7 @@ Public Class OrderApprovals
 
         Return bSuccessful
     End Function
+
 
     Private Shared Function UpdateVndrUOMPr(trnsactSession As OleDbTransaction, connection As OleDbConnection, _
                                oApprovalDetails As ApprovalDetails, oLineDetails As ApprovalDetails.OrderLineDetails) As Boolean
@@ -3018,12 +3028,12 @@ Public Class OrderApprovals
     End Function
 
     Private Shared Function UpdateOrderStatus_FullyApprove(ByRef trnsactSession As OleDbTransaction, ByRef connection As OleDbConnection, _
-    oApprovalDetails As ApprovalDetails, eApprType As ApprovalHistory.ApprHistType) As Boolean
+    oApprovalDetails As ApprovalDetails, eApprType As ApprovalHistory.ApprHistType, ByVal Linestatus As String) As Boolean
 
         Dim bSuccess As Boolean = False
 
         'If UpdateLineItem_FullyApproved(trnsactSession, connection, oApprovalDetails, eApprType) Then
-        If UpdateHeader_FullyApproved(trnsactSession, connection, oApprovalDetails, eApprType) Then
+        If UpdateHeader_FullyApproved(trnsactSession, connection, oApprovalDetails, eApprType, Linestatus) Then
             bSuccess = True
         End If
         'End If
@@ -3032,7 +3042,7 @@ Public Class OrderApprovals
     End Function
 
     Private Shared Function UpdateHeader_FullyApproved(ByRef trnsactSession As OleDbTransaction, ByRef connection As OleDbConnection, _
-           ByVal oApprovalDetails As ApprovalDetails, eApprType As ApprovalHistory.ApprHistType) As Boolean
+           ByVal oApprovalDetails As ApprovalDetails, eApprType As ApprovalHistory.ApprHistType, ByVal Linestatus As String) As Boolean
 
         Const cCaller As String = "OrderApprovals.UpdateHeader_FullyApproved"
 
@@ -3070,7 +3080,7 @@ Public Class OrderApprovals
                    " SET " & vbCrLf & _
                    " OPRID_APPROVED_BY = '" & oApprovalDetails.ApproverID & "' " & vbCrLf & _
                    ", APPROVAL_DTTM = TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
-                   ", ISA_LINE_STATUS = '" & sNewLineStatus & "' " & vbCrLf & _
+                   ", ISA_LINE_STATUS = '" & Linestatus & "' " & vbCrLf & _
                    " WHERE BUSINESS_UNIT_OM = '" & oApprovalDetails.BU & "' " & vbCrLf & _
                    " AND ORDER_NO = '" & oApprovalDetails.ReqID & "'"
 
@@ -3634,7 +3644,7 @@ Public Class OrderApprovals
             DbUrl.Substring(DbUrl.Length - 4).ToUpper = "RPTG" Or _
             DbUrl.Substring(DbUrl.Length - 4).ToUpper = "DEVL" Then
 
-            Mailer.To = "webdev@sdi.com"
+            Mailer.To = "webdev@sdi.com;SDIportalsupport@avasoft.com"
         Else
             Mailer.To = strappEmail
         End If
@@ -4135,11 +4145,11 @@ Public Class OrderApprovals
     End Function
 
     Public Shared Function CheckLimits(ByRef trnsactSession As OleDbTransaction, ByRef connection As OleDbConnection, _
-       oApprovalDetails As ApprovalDetails, ByRef oApprovalResults As ApprovalResults) As Boolean
+       oApprovalDetails As ApprovalDetails, ByRef oApprovalResults As ApprovalResults, ByVal LineStatus As String) As Boolean
 
         Dim bSuccess As Boolean = False
 
-        If CheckLimitsOrder(trnsactSession, connection, oApprovalDetails, oApprovalResults, IsAEES(oApprovalDetails.BU)) Then
+        If CheckLimitsOrder(trnsactSession, connection, oApprovalDetails, oApprovalResults, IsAEES(oApprovalDetails.BU), LineStatus) Then
 
             bSuccess = True
         Else
@@ -4150,7 +4160,7 @@ Public Class OrderApprovals
     End Function
 
     Private Shared Function CheckLimitsOrder(ByRef trnsactSession As OleDbTransaction, ByRef connection As OleDbConnection, _
-        ByRef oApprovalDetails As ApprovalDetails, ByRef oApprovalResults As ApprovalResults, Optional ByVal bIsMultiCurrency As Boolean = False) As Boolean
+        ByRef oApprovalDetails As ApprovalDetails, ByRef oApprovalResults As ApprovalResults, Optional ByVal bIsMultiCurrency As Boolean = False, Optional ByVal LineStatus As String = "") As Boolean
 
         Dim bSuccessful As Boolean = False
 
@@ -4161,7 +4171,7 @@ Public Class OrderApprovals
                 Const cPriorDaysAgo As Integer = 0 ' prior days (in number) ago
                 bSuccessful = MultiCurrencyOrder.CustEmp(trnsactSession, connection, oApprovalDetails, _
                     sdiMultiCurrency.getSiteCurrency(oApprovalDetails.BU).Id, _
-                    cPriorDaysAgo, oApprovalResults)
+                    cPriorDaysAgo, oApprovalResults, LineStatus)
             Else
                 bSuccessful = SingleCurrencyOrder.CustEmp(trnsactSession, connection, oApprovalDetails, oApprovalResults)
             End If
@@ -4180,7 +4190,7 @@ Public Class OrderApprovals
 
         Public Shared Function CustEmp(trnsactSession As OleDbTransaction, connection As OleDbConnection, _
            oApprovalDetails As ApprovalDetails, sBaseCurrCd As String, iExDaysAgo As Integer, _
-           oApprovalResults As ApprovalResults) As Boolean
+           oApprovalResults As ApprovalResults, ByVal LineStatus As String) As Boolean
 
             Dim bSuccessful As Boolean = True ' Processing is successful by default
             Dim sOrdApprType As String = "O"
@@ -4256,7 +4266,7 @@ Public Class OrderApprovals
                                         oApprovalResults.OrderExceededLimit = True
 
                                         'If UpdateLineItem_ApproveOrder(trnsactSession, connection, oApprovalDetails) Then
-                                        If Not UpdateHeader_ApproveOrder(trnsactSession, connection, oApprovalDetails, oApprovalResults) Then
+                                        If Not UpdateHeader_ApproveOrder(trnsactSession, connection, oApprovalDetails, oApprovalResults, LineStatus) Then
                                             bSuccessful = False
                                         End If
                                         'Else
@@ -4282,7 +4292,7 @@ Public Class OrderApprovals
         End Function
 
         Private Shared Function UpdateHeader_ApproveOrder(trnsactSession As OleDbTransaction, connection As OleDbConnection, _
-          ByVal oApprovalDetails As ApprovalDetails, ByRef oApprovalResults As ApprovalResults) As Boolean
+          ByVal oApprovalDetails As ApprovalDetails, ByRef oApprovalResults As ApprovalResults, ByVal Linestatus As String) As Boolean
 
             Const cNewHeaderStatus As String = "QTW"
             Const cCaller As String = "MultiCurrencyOrder.UpdateHeader_ApproveOrder"
@@ -4323,7 +4333,7 @@ Public Class OrderApprovals
                     " SET " & vbCrLf & _
                     " OPRID_APPROVED_BY = '" & oApprovalDetails.ApproverID & "' " & vbCrLf & _
                     ", APPROVAL_DTTM = TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
-                    ", ISA_LINE_STATUS = '" & cNewLineStatus & "' " & vbCrLf & _
+                    ", ISA_LINE_STATUS = '" & Linestatus & "' " & vbCrLf & _
                     " WHERE BUSINESS_UNIT_OM = '" & oApprovalDetails.BU & "' " & vbCrLf & _
                     " AND ORDER_NO = '" & oApprovalDetails.ReqID & "'"
 
@@ -7369,13 +7379,13 @@ Public Class ApprovalHistory
 
 
     Public Shared Function RecordApprovalType(trnsactSession As OleDbTransaction, connection As OleDbConnection, _
-                                             apprStatus As ApprHistStatus, apprType As ApprHistType, _
-                                             oApprovalDetails As ApprovalDetails, ByRef sErrorDetails As String) As Boolean
+                                              apprStatus As ApprHistStatus, apprType As ApprHistType, _
+                                              oApprovalDetails As ApprovalDetails, ByRef sErrorDetails As String) As Boolean
 
         Const cMethodName As String = "ApprovalHistory.RecordApprovalType"
 
         Dim bSuccess As Boolean = False
-        Dim strSQLstring As String
+        Dim strSQLstring As String = ""
         Dim rowsaffected As Integer
         Dim exError As Exception
 
@@ -7383,18 +7393,26 @@ Public Class ApprovalHistory
         Dim sApprovalStatus As String = GetApprovalStatus(apprStatus)
 
         Try
-            strSQLstring = GetApprHistInsertSQL(oApprovalDetails.BU, oApprovalDetails.ReqID, oApprovalDetails.EnteredByID, _
-                                                oApprovalDetails.ApproverID, sApprovalStatus, sApprovalTypeCode)
-            If ExecuteNonQuery(trnsactSession, connection, strSQLstring, rowsaffected, exError) Then
-                If rowsaffected = 0 Then
-                    bSuccess = False
-                    sErrorDetails = cMethodName & ": rowsaffected=" & rowsaffected.ToString & " strSQLstring=" & strSQLstring
+            Dim I As Integer = 0
+            While I < oApprovalDetails.LineDetails.Count
+                Dim oLineDetails As ApprovalDetails.OrderLineDetails
+                oLineDetails = CType(oApprovalDetails.LineDetails(I), ApprovalDetails.OrderLineDetails)
+                strSQLstring = GetApprHistInsertSQL(oApprovalDetails.BU, oApprovalDetails.ReqID, oApprovalDetails.EnteredByID, _
+                                                oApprovalDetails.ApproverID, sApprovalStatus, sApprovalTypeCode, oLineDetails.LineNbr)
+                If ExecuteNonQuery(trnsactSession, connection, strSQLstring, rowsaffected, exError) Then
+                    If rowsaffected = 0 Then
+                        bSuccess = False
+                        sErrorDetails = cMethodName & ": rowsaffected=" & rowsaffected.ToString & " strSQLstring=" & strSQLstring
+                    Else
+                        bSuccess = True
+                    End If
                 Else
-                    bSuccess = True
+                    bSuccess = False
+                    sErrorDetails = cMethodName & ": strSQLstring=" & strSQLstring & " ex.Message=" & exError.Message & " ex.StackTrace=" & exError.StackTrace
                 End If
-            Else
-                sErrorDetails = cMethodName & ": strSQLstring=" & strSQLstring & " ex.Message=" & exError.Message & " ex.StackTrace=" & exError.StackTrace
-            End If
+                I = I + 1
+            End While
+
         Catch ex As Exception
             bSuccess = False
             sErrorDetails = cMethodName & ": strSQLstring=" & strSQLstring & " ex.Message=" & ex.Message & " ex.StackTrace=" & ex.StackTrace
@@ -7436,26 +7454,26 @@ Public Class ApprovalHistory
 
     Private Shared Function GetApprHistInsertSQL(sBU As String, sOrderNo As String, sEnteredBy As String, _
                                                  sApprovedBy As String, sApprovalStatus As String, _
-                                                 sApprovalTypeCode As String) As String
+                                                 sApprovalTypeCode As String, Optional ByVal sLineNbr As Integer = 0) As String
         Dim strSQLstring As String
         Try
-            strSQLstring = "INSERT INTO SDIX_APPR_PATH" & vbCrLf & _
-                    " (BUSINESS_UNIT_OM, ORDER_NO," & vbCrLf & _
-                    " SEQ_NBR," & vbCrLf & _
-                    " OPRID_ENTERED_BY, OPRID_APPROVED_BY," & vbCrLf & _
-                    " APPR_STATUS, ISA_APPR_TYPE," & vbCrLf & _
-                    "  ADD_DTTM, LASTUPDDTTM)" & vbCrLf & _
-                    " VALUES" & vbCrLf & _
-                    " ('" & sBU & "', '" & sOrderNo & "'," & vbCrLf & _
-                    " (select (DECODE(max(B.SEQ_NBR),null,0,max(B.SEQ_NBR)) + 1)" & vbCrLf & _
-                    " FROM SDIX_APPR_PATH B" & vbCrLf & _
-                    " WHERE B.BUSINESS_UNIT_OM = '" & sBU & "'" & vbCrLf & _
-                    " AND B.ORDER_NO = '" & sOrderNo & "')," & vbCrLf & _
-                    " '" & sEnteredBy & "','" & sApprovedBy & "'," & vbCrLf & _
-                    " '" & sApprovalStatus & "', '" & sApprovalTypeCode & "'," & vbCrLf & _
-                    " TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')," & vbCrLf & _
-                    " TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM'))" & vbCrLf
-
+            '  If sLineNbr = 0 Then
+            strSQLstring = " INSERT INTO SDIX_APPR_PATH" & vbCrLf & _
+            " (BUSINESS_UNIT_OM, ORDER_NO," & vbCrLf & _
+            " SEQ_NBR," & vbCrLf & _
+            " OPRID_ENTERED_BY, OPRID_APPROVED_BY," & vbCrLf & _
+            " APPR_STATUS, ISA_APPR_TYPE," & vbCrLf & _
+            "  ADD_DTTM, LASTUPDDTTM,ISA_LINE_NO)" & vbCrLf & _
+            " VALUES" & vbCrLf & _
+            " ('" & sBU & "', '" & sOrderNo & "'," & vbCrLf & _
+            " (select (DECODE(max(B.SEQ_NBR),null,0,max(B.SEQ_NBR)) + 1)" & vbCrLf & _
+            " FROM SDIX_APPR_PATH B" & vbCrLf & _
+            " WHERE B.BUSINESS_UNIT_OM = '" & sBU & "'" & vbCrLf & _
+            " AND B.ORDER_NO = '" & sOrderNo & "')," & vbCrLf & _
+            " '" & sEnteredBy & "','" & sApprovedBy & "'," & vbCrLf & _
+            " '" & sApprovalStatus & "', '" & sApprovalTypeCode & "'," & vbCrLf & _
+            " TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')," & vbCrLf & _
+            " TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')," & sLineNbr & ")" & vbCrLf
         Catch ex As Exception
         End Try
 

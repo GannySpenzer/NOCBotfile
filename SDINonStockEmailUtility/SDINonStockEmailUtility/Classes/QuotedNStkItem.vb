@@ -24,6 +24,7 @@ Public Class QuotedNStkItem
     Private m_orderOrigin As String = ""
 
     Private m_priceblock As String = ""
+    Private m_LineStatus As String = ""
 
     ' VR 11/20/2014 Adding new members to display in E-mail
     Private m_Buyer_Id As String = ""
@@ -41,6 +42,14 @@ Public Class QuotedNStkItem
         End Get
         Set(ByVal Value As String)
             m_sID = Value
+        End Set
+    End Property
+    Public Property LineStatus() As String
+        Get
+            Return m_LineStatus
+        End Get
+        Set(value As String)
+            m_LineStatus = value
         End Set
     End Property
 
