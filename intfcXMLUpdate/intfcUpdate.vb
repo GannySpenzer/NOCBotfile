@@ -891,7 +891,7 @@ Module module1
                     " FROM PS_ISA_ORD_INTF_HD A, PS_ISA_ORD_INTF_LN B" & vbCrLf & _
                     " WHERE A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf & _
                     " AND A.ORDER_NO = B.ORDER_NO AND A.BUSINESS_UNIT_OM = 'I0256' " & vbCrLf & _
-                    " AND B.ISA_LINE_STATUS IN ('NEW','QTS')" & vbCrLf & _
+                    " AND B.ISA_LINE_STATUS = 'NEW' " & vbCrLf & _
                     " ORDER BY A.ORDER_NO, B.ISA_INTFC_LN"
 
         Dim ds As DataSet = ORDBAccess.GetAdapter(strSQLstring, connectOR)
