@@ -524,19 +524,43 @@ Public Class QuoteNonStockProcessor
                     '  iCnt = 0
                     For Each itmQuoted As QuotedNStkItem In m_colMsgs
                         SBord.Append(itmQuoted.OrderID + ",")
+                        Dim TtlPrice As Decimal = GetPrice(itmQuoted.OrderID)
                         If itmQuoted.PriceBlockFlag = "N" Then
-                            Dim TtlPrice As Decimal = GetPrice(itmQuoted.OrderID)
-                            If TtlPrice >= itmQuoted.ApprovalLimit Then
+                            If TtlPrice > itmQuoted.ApprovalLimit Then
                                 SendMessages(itmQuoted)
                             Else
-                                Dim oApprovalDetails As ApprovalDetails = New ApprovalDetails(itmQuoted.BusinessUnitOM, itmQuoted.EmployeeID, itmQuoted.EmployeeID, itmQuoted.OrderID)
-                                Dim strAppMessage() As String
-                                If OrderApprovals.ApproveQuote(oApprovalDetails, strAppMessage, itmQuoted.LineStatus) Then
+                                ' set line status to QTC or QTA (itmQuoted.LineStatus) and add Audit record
+                                Dim strUpdateLineStatusFinal As String = ""
+                                strUpdateLineStatusFinal = "UPDATE SYSADM8.PS_ISA_ORD_INTF_LN SET ISA_LINE_STATUS = '" & itmQuoted.LineStatus & "', OPRID_APPROVED_BY = 'SDIX', APPROVAL_DTTM = SYSDATE " & vbCrLf & _
+                                    "WHERE BUSINESS_UNIT_OM = '" & itmQuoted.BusinessUnitOM & "' AND ORDER_NO = '" & itmQuoted.OrderID & "' " & vbCrLf & _
+                                    "AND ISA_LINE_STATUS = 'QTS'"
 
-                                End If
+                                Dim iRowsAffctd As Integer = 0
+                                Try
+                                    iRowsAffctd = ORDBData.ExecNonQuery(strUpdateLineStatusFinal, False)
+
+                                    If iRowsAffctd > 0 Then
+                                        SDIAuditInsert("PS_ISA_ORD_INTF_LN", itmQuoted.OrderID, "ISA_LINE_STATUS", itmQuoted.LineStatus, itmQuoted.BusinessUnitOM)
+
+                                    Else
+                                    End If
+                                    
+                                Catch ex As Exception
+
+                                End Try
+                                
+                                'Dim oApprovalDetails As ApprovalDetails = New ApprovalDetails(itmQuoted.BusinessUnitOM, itmQuoted.EmployeeID, itmQuoted.EmployeeID, itmQuoted.OrderID)
+                                'Dim strAppMessage() As String
+                                'If OrderApprovals.ApproveQuote(oApprovalDetails, strAppMessage, itmQuoted.LineStatus) Then
+
+                                'End If
                             End If
                         Else
-                            PriceUpdate(itmQuoted.OrderID, itmQuoted.LineStatus)
+                            If TtlPrice > itmQuoted.ApprovalLimit Then
+                                PriceUpdate(itmQuoted.OrderID, "QTW")
+                            Else
+                                PriceUpdate(itmQuoted.OrderID, itmQuoted.LineStatus)
+                            End If
                             UpdateReqEmailLog(itmQuoted)
                             buildNotifyApprover(itmQuoted)
                         End If
@@ -717,17 +741,13 @@ Public Class QuoteNonStockProcessor
             Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
             Dim MailAttachmentName As String()
             Dim MailAttachmentbytes As New List(Of Byte())()
-            Dim objException As String
-            Dim objExceptionTrace As String
-
-            'EmailTo = "vitaly.rovensky@sdi.com"
 
             If DbUrl.Substring(DbUrl.Length - 4).ToUpper = "STAR" Or _
                 DbUrl.Substring(DbUrl.Length - 4).ToUpper = "RPTG" Or _
                 DbUrl.Substring(DbUrl.Length - 4).ToUpper = "DEVL" Then
                 EmailTo = "webdev@sdi.com;SDIportalsupport@avasoft.biz"
             End If
-            EmailTo = "SDIportalsupport@avasoft.biz"
+            EmailTo = "webdev@sdi.com"
             SDIEmailService.EmailUtilityServices(MailType, "SDIExchADMIN@sdi.com", EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
 
             'UpdEmailOut.UpdEmailOut.UpdEmailOut(subject, "SDIExchADMIN@sdi.com", EmailTo, "", EmailBcc, "N", body, m_CN)
@@ -757,8 +777,6 @@ Public Class QuoteNonStockProcessor
             SDIEmailService.EmailUtilityServices("Mail", "SDIExchADMIN@sdi.com", "WebDev@sdi.com", subject, String.Empty, String.Empty, objException & objExceptionTrace & Query & ConStr, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
 
             'Dim strBody As String = objException & objExceptionTrace & Query & ConStr
-
-            'UpdEmailOut.UpdEmailOut.UpdEmailOut(subject, "SDIExchADMIN@sdi.com", "WebDev@sdi.com", "", "", "N", strBody, m_CN)
 
         Catch ex As Exception
 
@@ -1678,7 +1696,7 @@ Public Class QuoteNonStockProcessor
                 End If
 
                 Select Case strDBase
-                    Case "STAR", "PLGR", "RPTG"
+                    Case "STAR", "PLGR", "RPTG", "DEVL"
                         eml.Subject = " TEST SDIX92 - " & eml.Subject
                         eml.To = "webdev@sdi.com;Benjamin.Heinzerling@sdi.com;SDIportalsupport@avasoft.biz"
                         eml.Cc = "webdev@sdi.com;Benjamin.Heinzerling@sdi.com;SDIportalsupport@avasoft.biz"
@@ -1989,6 +2007,9 @@ Public Class QuoteNonStockProcessor
                 msg = ""
             End If
 
+            If Trim(eml.To) = "" Then
+                eml.To = "WEBDEV@SDI.COM"
+            End If
             ' insert the body of the message and send the message
             eml.Body = "" & _
                        "[ IMPORTANT ]" & vbCrLf & _
@@ -1997,7 +2018,7 @@ Public Class QuoteNonStockProcessor
                        ""
 
             eml.Priority = Web.Mail.MailPriority.High
-            'System.Web.Mail.SmtpMail.Send(message:=eml)
+
             SendLogger(eml.Subject, eml.Body, "ALERTMESSAGE", "Mail", eml.To, eml.Cc, "WebDev@sdi.com")
             ' clean up
             eml = Nothing
@@ -2036,7 +2057,7 @@ Public Class QuoteNonStockProcessor
                                          " SET ISA_LINE_STATUS = '" & Linestatus & "'" & vbCrLf & _
                                          " WHERE ORDER_NO = '" & orderid & "'"
                         rowsaffected = ExecNonQuery(strUpdateQuery)
-                        SDIAuditInsert("PS_ISA_ORD_INTF_LN", orderid, "ISA_LINE_STATUS", ordStsL, ordBu)
+                        SDIAuditInsert("PS_ISA_ORD_INTF_LN", orderid, "ISA_LINE_STATUS", Linestatus, ordBu)
                     End If
                 End While
             End If
@@ -2595,7 +2616,7 @@ Public Class QuoteNonStockProcessor
             Else
                 ItmPrice = ApplyMarkup(decVndPrc, StrItemTyp, strStockTyp, StrBU)
             End If
-            If GetPrice = 0 Then
+            If ItmPrice = 0 Then
                 ItmPrice = decNetPrice
             End If
 
