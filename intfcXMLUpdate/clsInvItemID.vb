@@ -54,6 +54,7 @@ Public Class clsInvItemID
             strMFGITMID = objReader.Item("MFG_ITM_ID")
             strDESCR = objReader.Item("DESCR")
         End If
+        objReader.Close()
 
     End Sub
 

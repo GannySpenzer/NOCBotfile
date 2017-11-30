@@ -21,6 +21,7 @@ Public Class clsIntfcOrder
         If objReaderReq.Read() Then
             strOrderNo = objReaderReq.Item("ORDER_NO")
         End If
+        objReaderReq.Close()
 
     End Sub
 

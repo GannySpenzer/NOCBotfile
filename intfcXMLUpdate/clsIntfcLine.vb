@@ -31,6 +31,7 @@ Public Class clsIntfcLine
             strParentID = objReaderReq.Item("ORDER_NO")
             strLineStatus = objReaderReq.Item("ISA_LINE_STATUS")
         End If
+        objReaderReq.Close()
 
     End Sub
 

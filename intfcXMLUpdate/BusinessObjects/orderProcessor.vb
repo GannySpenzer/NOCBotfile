@@ -1563,6 +1563,26 @@ Public Class orderProcessor
         'ISA_STOP_NBR,BUYER_ID,SERIAL_ID,USER_CHAR1,USER_CHAR2,USER_CHAR3,USER_DATE1,USER_DATE2,USER_AMT1,USER_AMT2,
         'USER_DTTM1,USER1,ISA_USER1,ISA_USER2,ISA_USER3,ISA_USER4,ISA_USER5,ERROR_FLAG
 
+        Dim strNetUnitPrice As String = orderReqLine.NetUnitPrice.ToString
+        Dim strSDIXPrice As String = "0"
+        If Trim(itemId) <> "" Then
+            itemId = Trim(itemId)
+            Try
+                strSDIXPrice = GetSDIXPrice(itemId)
+                If Trim(strSDIXPrice) <> "" Then
+                    If Trim(strSDIXPrice) <> "0" Then
+                        strSDIXPrice = Trim(strSDIXPrice)
+                        If IsNumeric(strSDIXPrice) Then
+                            strNetUnitPrice = strSDIXPrice
+                        End If
+                    End If
+                End If
+            Catch ex As Exception
+
+            End Try
+
+        End If  '   If Trim(itemId) <> "" Then
+
         Dim StrDueDate As String = dtRequired.ToString
 
         sql = "INSERT INTO SYSADM8.PS_ISA_ORD_INTF_LN (BUSINESS_UNIT_OM,ORDER_NO,ISA_INTFC_LN,BUSINESS_UNIT_IN,BUSINESS_UNIT_PO," & _
@@ -1586,7 +1606,7 @@ Public Class orderProcessor
 
         sql = sql & "VALUES ('I0256','" & orderReq.OrderNo_SDI.ToString & "','" & orderReqLine.OrderLineNo.ToString & "',' ',' '," & _
             "' ',0,'" & customerId & "',' ','MAIN1'," & _
-            "'" & itemId & "',' ',0,' ',' ','" & orderReqLine.NetPOPrice.ToString & "','" & orderReqLine.NetUnitPrice.ToString & "'," & _
+            "'" & itemId & "',' ',0,' ',' ','" & orderReqLine.NetPOPrice.ToString & "','" & strNetUnitPrice & "'," & _
             "'" & uom & "'," & orderReqLine.Quantity.ToString & ",0,'" & strlineordstat & "',' ',' ',' '," & _
             "' ','" & empId & "', '" & orderReqLine.PriorityCode & "',' ',0,'MAIN1','" & strVendid & "'," & _
             "'" & strItmIDVndr & "','" & mfgId & "','" & mfgFreeForm & "','" & mfgPartNo & "',' ','N','" & itemDesc & "',' '," & _
@@ -1703,4 +1723,23 @@ Public Class orderProcessor
         Return sql
     End Function
 
+    Private Function GetSDIXPrice(ByVal strInvItemId As String) As String
+
+        Dim cnORA As New OleDbConnection(Me.oleConnectionString)
+        Dim strPrice As String = "0"
+        Dim strSQLstring As String = ""
+        strSQLstring = "SELECT PRICE FROM SYSADM8.PS_ISA_SDIEX_PRICE WHERE INV_ITEM_ID = '" & strInvItemId & "'"
+
+        Try
+            strPrice = ORDBAccess.GetScalar(strSQLstring, cnORA)
+            If Trim(strPrice) = "" Then
+                strPrice = "0"
+            End If
+        Catch ex As Exception
+            strPrice = "0"
+        End Try
+
+        Return strPrice
+
+    End Function
 End Class

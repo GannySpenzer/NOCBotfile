@@ -848,8 +848,8 @@ Module module1
     Private Function GetSitePrefix1(ByVal sBU As String) As String
 
         Dim rtn As String = "intfcUpdate.GetSitePrefix1"
-        Dim strSitePrefix
-        Dim strSQLString = "SELECT ISA_SITE_CODE" & vbCrLf & _
+        Dim strSitePrefix As String = ""
+        Dim strSQLString As String = "SELECT ISA_SITE_CODE" & vbCrLf & _
             " FROM PS_BUS_UNIT_TBL_OM" & vbCrLf & _
             " WHERE BUSINESS_UNIT = '" & sBU & "'" & vbCrLf
         Try
