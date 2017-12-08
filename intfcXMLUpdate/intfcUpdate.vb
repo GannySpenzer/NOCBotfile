@@ -876,7 +876,7 @@ Module module1
         Console.WriteLine("Start Sending Buyer Email(s)")
         Console.WriteLine("")
 
-        m_logger.WriteInformationLog(rtn & " :: Start Sending Buyer Email(s) ")  '   & 
+        m_logger.WriteInformationLog(rtn & " :: Start Sending Buyer Email(s) ")
         Dim strSQLstring As String = ""
         strSQLstring = "SELECT A.BILL_TO_CUST_ID AS CUST_ID, A.ORDER_NO, B.OPRID_ENTERED_BY," & vbCrLf & _
                     " TO_CHAR(A.ADD_DTTM,'YYYY-MM-DD-HH24.MI.SS') as HdrAddDate," & vbCrLf & _
@@ -892,6 +892,13 @@ Module module1
                     " WHERE A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf & _
                     " AND A.ORDER_NO = B.ORDER_NO AND A.BUSINESS_UNIT_OM = 'I0256' " & vbCrLf & _
                     " AND B.ISA_LINE_STATUS = 'NEW' " & vbCrLf & _
+                                    "   AND NOT EXISTS (" & vbCrLf & _
+                                    "                   SELECT 'X'" & vbCrLf & _
+                                    "                   FROM PS_ISA_ORDSTAT_EML G" & vbCrLf & _
+                                    "                   WHERE A.BUSINESS_UNIT_OM = G.BUSINESS_UNIT_OM" & vbCrLf & _
+                                    "                     AND A.ORDER_NO = G.ORDER_NO" & vbCrLf & _
+                                    "                     AND G.ISA_LINE_STATUS = 'NEW'" & vbCrLf & _
+                                    "                  )" & vbCrLf & _
                     " ORDER BY A.ORDER_NO, B.ISA_INTFC_LN"
 
         Dim ds As DataSet = ORDBAccess.GetAdapter(strSQLstring, connectOR)
@@ -1933,7 +1940,7 @@ Module module1
             connectOR.DataSource.ToUpper = "PLGR" Then
 
                 Mailer.To = "webdev@sdi.com"
-                Mailer.Subject = " <<TEST>> IntfcXMLUpdate - Material Request - Stock"
+                Mailer.Subject = " <<TEST>> IntfcXMLUpdate - Material Request - Non-Stock"
 
             End If
 
@@ -1947,6 +1954,56 @@ Module module1
         End If
         connectOR.Close()
         Dim strIntfcError As String = updateIntfcHeader(strBU, dsOrder.Tables(0).Rows(0).Item("ORDER_NO"), "P")
+
+        'save record in PS_ISA_ORDSTAT_EML
+        flagOrderAsProcessed(dsOrder)
+
+    End Sub
+
+    Private Sub flagOrderAsProcessed(ByVal dsOrder As DataSet)
+
+        Dim I As Integer = 0
+        Dim strSQLstring As String = ""
+        Dim rowsaffected As Integer = 0
+
+        For I = 0 To dsOrder.Tables(0).Rows.Count - 1
+
+            strSQLstring = "" & _
+                                   "INSERT INTO PS_ISA_ORDSTAT_EML " & vbCrLf & _
+                                   "(" & vbCrLf & _
+                                   " BUSINESS_UNIT_OM" & vbCrLf & _
+                                   ",ORDER_NO " & vbCrLf & _
+                                   ",LINE_NBR " & vbCrLf & _
+                                   ",ORDER_INT_LINE_NO " & vbCrLf & _
+                                   ",DEMAND_LINE_NO " & vbCrLf & _
+                                   ",RECEIVER_ID " & vbCrLf & _
+                                   ",RECV_LN_NBR " & vbCrLf & _
+                                   ",EMPLID " & vbCrLf & _
+                                   ",ISA_LINE_STATUS " & vbCrLf & _
+                                   ",EMAIL_DATETIME " & vbCrLf & _
+                                   ")" & vbCrLf & _
+                                   "VALUES " & vbCrLf & _
+                                   "(" & vbCrLf & _
+                                   " 'I0256' " & vbCrLf & _
+                                   ",'" & dsOrder.Tables(0).Rows(I).Item("ORDER_NO") & "' " & vbCrLf & _
+                                   ",'" & dsOrder.Tables(0).Rows(I).Item("LINE_NBR") & "' " & vbCrLf & _
+                                   ",'" & dsOrder.Tables(0).Rows(I).Item("LINE_NBR") & "' " & vbCrLf & _
+                                   ",'" & dsOrder.Tables(0).Rows(I).Item("LINE_NBR") & "' " & vbCrLf & _
+                                   ",' ' " & vbCrLf & _
+                                   ",'0' " & vbCrLf & _
+                                   ",'" & dsOrder.Tables(0).Rows(I).Item("EMPLID") & "' " & vbCrLf & _
+                                   ",'NEW' " & vbCrLf & _
+                                   ",SYSDATE " & vbCrLf & _
+                                   ")" & vbCrLf & _
+                                   ""
+            Try
+                rowsaffected = ORDBAccess.ExecNonQuery(strSQLstring, connectOR)
+            Catch ex As Exception
+
+            End Try
+
+        Next
+
     End Sub
 
     Function getOrderNo(ByVal strDirFileName As String) As String
@@ -2041,27 +2098,27 @@ Module module1
         Return " "
     End Function
 
-    Private Sub checkLineStatus()
+    'Private Sub checkLineStatus()
 
-        Dim strSQLstring As String
-        Dim strIntfcError As String
-        Dim I As Integer
+    '    Dim strSQLstring As String
+    '    Dim strIntfcError As String
+    '    Dim I As Integer
 
-        strSQLstring = "SELECT A.ORDER_NO" & vbCrLf & _
-                    " FROM PS_ISA_ORD_INTF_HD A, PS_ISA_ORD_INTF_LN B" & vbCrLf & _
-                    " WHERE A.BUSINESS_UNIT_OM = 'I0256'" & vbCrLf & _
-                    " AND A.ORDER_STATUS = 'O'" & vbCrLf & _
-                    " AND A.ORDER_NO = B.ORDER_NO" & vbCrLf & _
-                    " AND B.ISA_LINE_STATUS = 'NEW'"
-        Dim ds As DataSet = ORDBAccess.GetAdapter(strSQLstring, connectOR)
-        If Not ds Is Nothing Then
-            If ds.Tables(0).Rows.Count > 0 Then
-                For I = 0 To ds.Tables(0).Rows.Count - 1
-                    strIntfcError = updateIntfcHeader("I0256", ds.Tables(0).Rows(I).Item("ORDER_NO"), "P")
-                Next
-            End If
-        End If
+    '    strSQLstring = "SELECT A.ORDER_NO" & vbCrLf & _
+    '                " FROM PS_ISA_ORD_INTF_HD A, PS_ISA_ORD_INTF_LN B" & vbCrLf & _
+    '                " WHERE A.BUSINESS_UNIT_OM = 'I0256'" & vbCrLf & _
+    '                " AND A.ORDER_STATUS = 'O'" & vbCrLf & _
+    '                " AND A.ORDER_NO = B.ORDER_NO" & vbCrLf & _
+    '                " AND B.ISA_LINE_STATUS = 'NEW'"
+    '    Dim ds As DataSet = ORDBAccess.GetAdapter(strSQLstring, connectOR)
+    '    If Not ds Is Nothing Then
+    '        If ds.Tables(0).Rows.Count > 0 Then
+    '            For I = 0 To ds.Tables(0).Rows.Count - 1
+    '                strIntfcError = updateIntfcHeader("I0256", ds.Tables(0).Rows(I).Item("ORDER_NO"), "P")
+    '            Next
+    '        End If
+    '    End If
 
-    End Sub
+    'End Sub
 
 End Module
