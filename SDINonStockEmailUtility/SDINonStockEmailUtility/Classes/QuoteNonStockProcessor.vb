@@ -526,41 +526,50 @@ Public Class QuoteNonStockProcessor
                         SBord.Append(itmQuoted.OrderID + ",")
                         Dim TtlPrice As Decimal = GetPrice(itmQuoted.OrderID)
                         If itmQuoted.PriceBlockFlag = "N" Then
-                            If TtlPrice > itmQuoted.ApprovalLimit Then
+                            If itmQuoted.ApprovalLimit > 0 Then
+                                If TtlPrice > itmQuoted.ApprovalLimit Then
+                                    SendMessages(itmQuoted)
+                                Else
+                                    ' set line status to QTC or QTA (itmQuoted.LineStatus) and add Audit record
+                                    Dim strUpdateLineStatusFinal As String = ""
+                                    strUpdateLineStatusFinal = "UPDATE SYSADM8.PS_ISA_ORD_INTF_LN SET ISA_LINE_STATUS = '" & itmQuoted.LineStatus & "', OPRID_APPROVED_BY = 'SDIX', APPROVAL_DTTM = SYSDATE " & vbCrLf & _
+                                        "WHERE BUSINESS_UNIT_OM = '" & itmQuoted.BusinessUnitOM & "' AND ORDER_NO = '" & itmQuoted.OrderID & "' " & vbCrLf & _
+                                        "AND ISA_LINE_STATUS = 'QTS'"
+
+                                    Dim iRowsAffctd As Integer = 0
+                                    Try
+                                        iRowsAffctd = ORDBData.ExecNonQuery(strUpdateLineStatusFinal, False)
+
+                                        If iRowsAffctd > 0 Then
+                                            SDIAuditInsert("PS_ISA_ORD_INTF_LN", itmQuoted.OrderID, "ISA_LINE_STATUS", itmQuoted.LineStatus, itmQuoted.BusinessUnitOM)
+
+                                        End If
+
+                                    Catch ex As Exception
+
+                                    End Try
+
+                                    'Dim oApprovalDetails As ApprovalDetails = New ApprovalDetails(itmQuoted.BusinessUnitOM, itmQuoted.EmployeeID, itmQuoted.EmployeeID, itmQuoted.OrderID)
+                                    'Dim strAppMessage() As String
+                                    'If OrderApprovals.ApproveQuote(oApprovalDetails, strAppMessage, itmQuoted.LineStatus) Then
+
+                                    'End If
+                                End If
+                            Else
                                 SendMessages(itmQuoted)
-                            Else
-                                ' set line status to QTC or QTA (itmQuoted.LineStatus) and add Audit record
-                                Dim strUpdateLineStatusFinal As String = ""
-                                strUpdateLineStatusFinal = "UPDATE SYSADM8.PS_ISA_ORD_INTF_LN SET ISA_LINE_STATUS = '" & itmQuoted.LineStatus & "', OPRID_APPROVED_BY = 'SDIX', APPROVAL_DTTM = SYSDATE " & vbCrLf & _
-                                    "WHERE BUSINESS_UNIT_OM = '" & itmQuoted.BusinessUnitOM & "' AND ORDER_NO = '" & itmQuoted.OrderID & "' " & vbCrLf & _
-                                    "AND ISA_LINE_STATUS = 'QTS'"
-
-                                Dim iRowsAffctd As Integer = 0
-                                Try
-                                    iRowsAffctd = ORDBData.ExecNonQuery(strUpdateLineStatusFinal, False)
-
-                                    If iRowsAffctd > 0 Then
-                                        SDIAuditInsert("PS_ISA_ORD_INTF_LN", itmQuoted.OrderID, "ISA_LINE_STATUS", itmQuoted.LineStatus, itmQuoted.BusinessUnitOM)
-
-                                    Else
-                                    End If
-
-                                Catch ex As Exception
-
-                                End Try
-
-                                'Dim oApprovalDetails As ApprovalDetails = New ApprovalDetails(itmQuoted.BusinessUnitOM, itmQuoted.EmployeeID, itmQuoted.EmployeeID, itmQuoted.OrderID)
-                                'Dim strAppMessage() As String
-                                'If OrderApprovals.ApproveQuote(oApprovalDetails, strAppMessage, itmQuoted.LineStatus) Then
-
-                                'End If
                             End If
+                            
                         Else
-                            If TtlPrice > itmQuoted.ApprovalLimit Then
-                                PriceUpdate(itmQuoted.OrderID, "QTW")
+                            If itmQuoted.ApprovalLimit > 0 Then
+                                If TtlPrice > itmQuoted.ApprovalLimit Then
+                                    PriceUpdate(itmQuoted.OrderID, "QTW")
+                                Else
+                                    PriceUpdate(itmQuoted.OrderID, itmQuoted.LineStatus) ' set to 'QTC' or 'QTA'
+                                End If
                             Else
-                                PriceUpdate(itmQuoted.OrderID, itmQuoted.LineStatus)
+                                PriceUpdate(itmQuoted.OrderID, "QTW")
                             End If
+                            
                             UpdateReqEmailLog(itmQuoted)
                             buildNotifyApprover(itmQuoted)
                         End If
@@ -2571,8 +2580,8 @@ Public Class QuoteNonStockProcessor
     End Function
 
     Public Function GetPrice(ByVal OrderID As String) As Decimal
-        Dim StrQry As String = "SELECT L.ISA_SELL_PRICE AS NET_UNIT_PRICE,R.PRICE_REQ,L.ISA_SELL_PRICE,L.BUSINESS_UNIT_OM,L.QTY_REQUESTED FROM " & vbCrLf & _
-            "SYSADM8.PS_ISA_ORD_INTF_LN L,SYSADM8.PS_REQ_LINE R WHERE L.ORDER_NO=R.REQ_ID AND L.ORDER_NO='" & OrderID & "'  AND L.VENDOR_ID = R.VENDOR_ID AND L.ITM_ID_VNDR = R.ITM_ID_VNDR AND L.INV_ITEM_ID=' '"
+        Dim StrQry As String = "SELECT L.ISA_SELL_PRICE,L.BUSINESS_UNIT_OM,L.QTY_REQUESTED FROM " & vbCrLf & _
+            "SYSADM8.PS_ISA_ORD_INTF_LN L WHERE L.ORDER_NO='" & OrderID & "' AND L.INV_ITEM_ID=' '"
 
         Dim ds As DataSet = ORDBData.GetAdapterSpc(StrQry)
         Dim i As Integer = 0
@@ -2587,39 +2596,50 @@ Public Class QuoteNonStockProcessor
             Dim QtrReq As Decimal = 0
             Dim ItmPrice As Decimal = 0
 
-            If Not IsDBNull(ds.Tables(0).Rows(i)("NET_UNIT_PRICE")) Then
-                decNetPrice = ds.Tables(0).Rows(i)("NET_UNIT_PRICE")
-            End If
+            'If Not IsDBNull(ds.Tables(0).Rows(i)("NET_UNIT_PRICE")) Then
+            '    decNetPrice = ds.Tables(0).Rows(i)("NET_UNIT_PRICE")
+            'End If
 
-            If Not IsDBNull(ds.Tables(0).Rows(i)("PRICE_REQ")) Then
-                decVndPrc = ds.Tables(0).Rows(i)("PRICE_REQ")
-            End If
-
-            If Not IsDBNull(ds.Tables(0).Rows(i)("ISA_SELL_PRICE")) Then
-                decSellPrc = ds.Tables(0).Rows(i)("ISA_SELL_PRICE")
-            End If
+            'If Not IsDBNull(ds.Tables(0).Rows(i)("PRICE_REQ")) Then
+            '    decVndPrc = ds.Tables(0).Rows(i)("PRICE_REQ")
+            'End If
 
             If Not IsDBNull(ds.Tables(0).Rows(i)("ISA_SELL_PRICE")) Then
-                decSellPrc = ds.Tables(0).Rows(i)("ISA_SELL_PRICE")
+                Try
+                    decSellPrc = CDec(ds.Tables(0).Rows(i)("ISA_SELL_PRICE"))
+                Catch ex As Exception
+                    decSellPrc = 0
+                End Try
+
             End If
 
-            If Not IsDBNull(ds.Tables(0).Rows(i)("BUSINESS_UNIT_OM")) Then
-                StrBU = ds.Tables(0).Rows(i)("BUSINESS_UNIT_OM")
-            End If
+            'If Not IsDBNull(ds.Tables(0).Rows(i)("ISA_SELL_PRICE")) Then
+            '    decSellPrc = ds.Tables(0).Rows(i)("ISA_SELL_PRICE")
+            'End If
+
+            'If Not IsDBNull(ds.Tables(0).Rows(i)("BUSINESS_UNIT_OM")) Then
+            '    StrBU = ds.Tables(0).Rows(i)("BUSINESS_UNIT_OM")
+            'End If
 
             If Not IsDBNull(ds.Tables(0).Rows(i)("QTY_REQUESTED")) Then
-                QtrReq = CDec(ds.Tables(0).Rows(i)("QTY_REQUESTED"))
+                Try
+                    QtrReq = CDec(ds.Tables(0).Rows(i)("QTY_REQUESTED"))
+                Catch ex As Exception
+                    QtrReq = 0
+                End Try
+
             End If
 
-            If decSellPrc > 0 Then
-                ItmPrice = decSellPrc
-            Else
-                ItmPrice = ApplyMarkup(decVndPrc, StrItemTyp, strStockTyp, StrBU)
-            End If
-            If ItmPrice = 0 Then
-                ItmPrice = decNetPrice
-            End If
+            'If decSellPrc > 0 Then
+            '    ItmPrice = decSellPrc
+            'Else
+            '    ItmPrice = ApplyMarkup(decVndPrc, StrItemTyp, strStockTyp, StrBU)
+            'End If
+            'If ItmPrice = 0 Then
+            '    ItmPrice = decNetPrice
+            'End If
 
+            ItmPrice = decSellPrc
             OrdTotal = OrdTotal + (ItmPrice * QtrReq)
 
             i = i + 1
