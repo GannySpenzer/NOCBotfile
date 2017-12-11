@@ -544,11 +544,11 @@ Public Class QuoteNonStockProcessor
 
                                     Else
                                     End If
-                                    
+
                                 Catch ex As Exception
 
                                 End Try
-                                
+
                                 'Dim oApprovalDetails As ApprovalDetails = New ApprovalDetails(itmQuoted.BusinessUnitOM, itmQuoted.EmployeeID, itmQuoted.EmployeeID, itmQuoted.OrderID)
                                 'Dim strAppMessage() As String
                                 'If OrderApprovals.ApproveQuote(oApprovalDetails, strAppMessage, itmQuoted.LineStatus) Then
@@ -2100,8 +2100,8 @@ Public Class QuoteNonStockProcessor
                 ", TO_DATE('" & Now.ToString("MM/dd/yyyy HH:mm:ss") & "', 'MM/DD/YYYY HH24:MI:SS') " & vbCrLf & _
                 ", '" & sBU & "', ' ', ' ', ' ' " & vbCrLf & _
                 " )"
-
-            rowsaffected = ExecNonQuery(strInsertQuery)
+            
+            rowsaffected = ORDBData.ExecNonQuery(strInsertQuery)
 
         Catch ex As Exception
 
