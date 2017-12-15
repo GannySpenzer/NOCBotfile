@@ -188,6 +188,7 @@ Public Class orderProcessor
 
             Try
 
+                Dim iCnt As Integer = 0
                 Dim sdiAssocOrder As order = Nothing
                 Dim cmd As OleDbCommand = Nothing
                 Dim i As Integer = -1
@@ -278,6 +279,7 @@ Public Class orderProcessor
                             m_logger.WriteInformationLog(msg:=rtn & "::   saved order line " & _
                                                          itm.OrderLineNo & " for " & _
                                                          itm.ParentOrder.OrderNo_SDI & " order request.")
+
                         Else
                             ' order/order line already EXISTS
                             ' ... WARNING that this order line was already existing for this order (group)
@@ -292,6 +294,21 @@ Public Class orderProcessor
                                                      itm.OrderLineNo.ToString & "/" & nLnId.ToString & " for " & _
                                                      itm.ParentOrder.OrderNo_SDI & " already exists and CANNOT BE ADDED.")
                         End If
+
+                        'set user activity for this employee: orderReqLine.EmployeeId.Trim.ToUpper
+                        Dim strEmplIdM1 As String = ""
+                        If iCnt = 0 Then
+                            Try
+                                If itm.EmployeeId.Trim.ToUpper <> "" Then
+                                    strEmplIdM1 = itm.EmployeeId.Trim.ToUpper
+                                    SetLastActivityDate(strEmplIdM1, "I0256", Me.oleConnectionString)
+                                End If
+                            Catch ex As Exception
+
+                            End Try
+                        End If
+                        
+                        iCnt = iCnt + 1
 
                     ElseIf itm.TargetOperation = orderLine.eTargetOperation.CancelOrderLine Then
 
@@ -383,6 +400,7 @@ Public Class orderProcessor
                         End If
 
                     End If
+
                 Next
 
                 trnsactSession.Commit()
@@ -424,6 +442,44 @@ Public Class orderProcessor
 
         Return bIsSaved
     End Function
+
+    Public Sub SetLastActivityDate(ByVal sUserID As String, ByVal sBU As String, ByVal strConnString As String, Optional ByVal bIsMultiSite As Boolean = False)
+        Dim strSQLstring As String = ""
+        Dim cmd As OleDbCommand = Nothing
+
+        If Not bIsMultiSite Then
+            strSQLstring = "UPDATE SDIX_USERS_TBL " & vbCrLf & _
+                " SET last_activity = TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
+                " WHERE isa_employee_id = '" & sUserID & "' " & vbCrLf & _
+                " AND business_unit = '" & sBU & "' "
+        Else
+            strSQLstring = "UPDATE SDIX_USERS_TBL " & vbCrLf & _
+            " SET last_activity = TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
+            " WHERE isa_employee_id = '" & sUserID & "' " & vbCrLf
+        End If
+
+        Dim rowsaffected As Integer = 0
+        Dim cnORA As New OleDbConnection(strConnString)
+
+        cnORA.Open()
+        Try
+            cmd = cnORA.CreateCommand
+            cmd.CommandText = strSQLstring
+            cmd.CommandType = CommandType.Text
+            rowsaffected = cmd.ExecuteNonQuery()
+
+            cnORA.Close()
+        Catch ex21 As Exception
+            Try
+                cnORA.Close()
+            Catch ex As Exception
+
+            End Try
+        End Try
+
+    End Sub
+
+
 
 #Region " IDisposable Implementation "
 
