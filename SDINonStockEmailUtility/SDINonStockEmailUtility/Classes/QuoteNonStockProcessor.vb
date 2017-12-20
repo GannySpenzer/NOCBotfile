@@ -1460,6 +1460,14 @@ Public Class QuoteNonStockProcessor
                 If itmQuoted.TO.Length > 0 Then
                     eml.To = itmQuoted.TO
                 End If
+                If Trim(eml.To) <> "" Then
+                    If Right(Trim(eml.To), 1) = ";" Then
+                        ' OK, do nothing
+                    Else
+                        eml.To = Trim(eml.To) & ";"
+                    End If
+                End If
+                
                 If m_extendedTO.Count > 0 Then
                     For Each sTo As String In m_extendedTO
                         If Utility.IsValidEmailAdd(sTo) Then
@@ -1680,6 +1688,13 @@ Public Class QuoteNonStockProcessor
                 '   the default "no valid recepient" recepient based off of our config file.
                 If Not (eml.To.Trim.Length > 0) Then
                     If m_defaultToRecepient.Count > 0 Then
+                        If Trim(eml.To) <> "" Then
+                            If Right(Trim(eml.To), 1) = ";" Then
+                                ' OK, do nothing
+                            Else
+                                eml.To = Trim(eml.To) & ";"
+                            End If
+                        End If
                         For Each sTo As String In m_defaultToRecepient
                             If Utility.IsValidEmailAdd(sTo) Then
                                 eml.To &= sTo & ";"
@@ -2184,6 +2199,13 @@ Public Class QuoteNonStockProcessor
             ' and add any defined TOs within the configuration file
             If itmQuoted.TO.Length > 0 Then
                 eml.To = itmQuoted.TO
+            End If
+            If Trim(eml.To) <> "" Then
+                If Right(Trim(eml.To), 1) = ";" Then
+                    ' OK, do nothing
+                Else
+                    eml.To = Trim(eml.To) & ";"
+                End If
             End If
             If m_extendedTO.Count > 0 Then
                 For Each sTo As String In m_extendedTO
