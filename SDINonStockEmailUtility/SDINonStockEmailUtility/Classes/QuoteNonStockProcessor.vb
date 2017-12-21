@@ -756,10 +756,8 @@ Public Class QuoteNonStockProcessor
                 DbUrl.Substring(DbUrl.Length - 4).ToUpper = "DEVL" Then
                 EmailTo = "webdev@sdi.com;SDIportalsupport@avasoft.biz"
             End If
-            EmailTo = "webdev@sdi.com"
-            SDIEmailService.EmailUtilityServices(MailType, "SDIExchADMIN@sdi.com", EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
 
-            'UpdEmailOut.UpdEmailOut.UpdEmailOut(subject, "SDIExchADMIN@sdi.com", EmailTo, "", EmailBcc, "N", body, m_CN)
+            SDIEmailService.EmailUtilityServices(MailType, "SDIExchADMIN@sdi.com", EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
 
         Catch ex As Exception
 
@@ -865,6 +863,7 @@ Public Class QuoteNonStockProcessor
                                  "  AND 'MAIN1' = A3.SETID (+)" & vbCrLf & _
                                  "  AND A4.BILL_TO_CUST_ID = A3.CUST_ID (+)" & vbCrLf & _
                                  "  AND L.ISA_LINE_STATUS = 'QTS' " & vbCrLf & _
+                                 "  AND A3.ISA_BYP_RQSTR_APPR <> 'Y' " & vbCrLf & _
                                  "  AND NOT EXISTS ( " & vbCrLf & _
                                  "                  SELECT 'X' " & vbCrLf & _
                                  "                  FROM SYSADM8.PS_NLINK_CUST_PLNT C " & vbCrLf & _
