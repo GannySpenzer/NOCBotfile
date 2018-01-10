@@ -29,7 +29,7 @@ Module Module1
     Dim logpath As String = "C:\Program Files\sdi\AmazonClient\AmazonLOGS\AmazonClientOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
     Dim filePath As String = "C:\Program Files\sdi\AmazonClient\AmazonXMLFiles\AmazonClientXMLOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".xml"
     Dim filePathResponse As String = "C:\Program Files\sdi\AmazonClient\AmazonXMLFiles\AmznClntXMLRspns" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".xml"
-    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=PROD")
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=PROD")
 
     Public Sub SendLogger(ByVal subject As String, ByVal body As String, ByVal messageType As String, ByVal MailType As String, ByVal EmailTo As String, ByVal EmailCc As String, ByVal EmailBcc As String)
         Try
@@ -539,7 +539,7 @@ Module Module1
                     objStreamWriter.WriteLine("Got VendorConfig " & Now())
 
                     'read view, get list of orders
-                    Dim strListOrders As String = "select distinct po_id from SYSADM.PS_ISA_PO_DISP_XML"  '  WHERE PO_ID = '0003672252'"
+                    Dim strListOrders As String = "select distinct po_id from SYSADM.PS_ISA_PO_DISP_XML WHERE PO_ID = '0003672255'"
 
                     Try
                         Dim Command As OleDbCommand = New OleDbCommand(strListOrders, connectOR)
