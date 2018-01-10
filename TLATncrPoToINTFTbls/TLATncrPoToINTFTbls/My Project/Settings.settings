@@ -26,5 +26,8 @@
     <Setting Name="oraCNString1" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=RPTG</Value>
     </Setting>
+    <Setting Name="TLATncrPoToINTFTbls_SDiEmailUtilityService_EmailServices" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
