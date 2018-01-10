@@ -81,9 +81,11 @@ Module Module1
 
     Sub Main()
 
+        'WARNING!!! This test project is configured right now to test KLATENCOR - VR 01/10/2018
+
         Dim strInput As String = ""  '  <?xml version=""1.0"" encoding=""UTF-8""?><!DOCTYPE cXML SYSTEM ""http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd""[]><cXML payloadID=""3/30/2015 11:56:16 AM 019768490@sdi.com"" xml:lang=""en-US"" timestamp=""3/30/2015 11:56:16 AM""><Header><From><Credential domain=""NetworkId""><Identity>SDIINC</Identity></Credential></From><To><Credential domain=""NetworkId""><Identity>Amazon</Identity></Credential></To><Sender><Credential domain=""DUNS""><Identity>SDIINC</Identity><SharedSecret>Y2XN7SefSxpPAoD5i6OtYix4w5TK402d</SharedSecret></Credential><UserAgent>Ariba Network 1.2</UserAgent></Sender></Header><Request><PunchOutSetupRequest operation=""create""><BuyerCookie>3xx1vu5dn5sttwrc2zqspprl</BuyerCookie><Extrinsic name=""UniqueName"">ROVENSKY,VITALY</Extrinsic><Extrinsic name=""UserEmail"">vitaly.rovensky@sdi.com</Extrinsic><Extrinsic name=""CostCenter"">I0256</Extrinsic><BrowserFormPost><URL>http://localhost/InsiteOnline/shopredirect.aspx?PUNOUT=YES</URL></BrowserFormPost><ShipTo><Address addressID=""L0256-01""><Name xml:lang=""en-US"">UNCC Facility Maint. Shop</Name><PostalAddress><DeliverTo>SDI c/o UNCC Facility Maint Shop</DeliverTo><Street>9201 University City Blvd.</Street><City>Charlotte</City><State>NC</State><PostalCode>28223</PostalCode><Country isoCountryCode=""US"">United States</Country></PostalAddress></Address></ShipTo></PunchOutSetupRequest></Request></cXML>"
         Dim strOutput As String = ""
-        Dim strWhatToTest As String = "AMAZON"  '  "AMAZON"  ' "NEW_AMAZON"  '    "CYTECMXM"  ' "AMAZON"  '
+        Dim strWhatToTest As String = "KLATENCOR"  '   "AMAZON"   ' "NEW_AMAZON"  '    "CYTECMXM" 
         Dim Response_Doc As String
         Dim msgEx As String = ""
         Dim strMsgVendConfig As String = ""
@@ -194,7 +196,7 @@ Module Module1
 
                 objStrmWrtrXMLRspns = File.CreateText(filePathResponse)
                 objStreamWriterXML = File.CreateText(filePath)
-                objStreamWriter = File.CreateText(logpath)
+                'objStreamWriter = File.CreateText(logpath)
                 objStreamWriter.WriteLine("Started CYTEC MXM Test " & Now())
 
                 'just define sInput for Send1 procedure
@@ -225,7 +227,7 @@ Module Module1
 
                 objStrmWrtrXMLRspns = File.CreateText(filePathResponse)
                 objStreamWriterXML = File.CreateText(filePath)
-                objStreamWriter = File.CreateText(logpath)
+                'objStreamWriter = File.CreateText(logpath)
                 objStreamWriter.WriteLine("Started NEW_AMAZON Test " & Now())
 
                 '' Ship Notice
@@ -272,6 +274,29 @@ Module Module1
                 'strInput += " <Header><From><Credential domain=""NetworkId""><Identity>SDIDirectOrdering2356630089</Identity></Credential></From><To><Credential "                'strInput += "domain=""NetworkId""><Identity>Amazon</Identity></Credential></To><Sender><Credential "                'strInput += "domain=""NetworkId""><Identity>SDIDirectOrdering2356630089</Identity><SharedSecret>6LhhKUA2D53IrSMYujgODVmJq6AgK5</SharedSecret></Credential></Sender></Header><Request "                'strInput += "deploymentMode=""production""><OrderRequest><OrderRequestHeader orderDate=""2015-12-07T09:30:06-0800"" orderID=""ASBCDE12345"" orderType=""regular"" orderVersion=""1"" "                'strInput += "type=""new""><ShipTo><Address isoCountryCode=""US""><Name xml:lang=""en-US"">Main Address</Name><PostalAddress name=""default""><DeliverTo>Mr. "                'strInput += "James</DeliverTo><Street>600 Street ABCD</Street><Street>Apt 12345</Street><City>Seattle</City><State>WA</State><PostalCode>98019</PostalCode><Country "                'strInput += "isoCountryCode=""US"">United States</Country></PostalAddress><Email name=""default"">michael.randall@isacs.com</Email><Phone "                'strInput += "name=""default""><TelephoneNumber><CountryCode "                'strInput += "isoCountryCode=""US"">1</CountryCode><AreaOrCityCode>111</AreaOrCityCode><Number>1111111</Number></TelephoneNumber></Phone></Address></ShipTo><Extrinsic "                'strInput += "name=""email"">michael.randall@isacs.com</Extrinsic></OrderRequestHeader><ItemOut quantity=""1"" "                'strInput += "lineNumber=""1""><ItemID><SupplierPartID>0314194878</SupplierPartID></ItemID><ItemDetail><UnitPrice><Money "                'strInput += "currency=""USD"">87.94</Money></UnitPrice><UnitOfMeasure>EA</UnitOfMeasure></ItemDetail></ItemOut></OrderRequest></Request> </cXML>"
 
                 'https://https.amazonsedi.com/c47fcf9d-286d-498a-ba9f-df390c2757a2
+
+            Case "KLATENCOR"
+                Console.WriteLine("Started to test KLATENCOR ")
+                Console.WriteLine("")
+
+                objStrmWrtrXMLRspns = File.CreateText(filePathResponse)
+                objStreamWriterXML = File.CreateText(filePath)
+                'objStreamWriter = File.CreateText(logpath)
+                objStreamWriter.WriteLine("Started KLATENCOR Test " & Now())
+
+                'just define sInput for Send1 procedure
+
+                strInput = ""
+
+                strInput = "<?xml version=""1.0"" encoding=""UTF-8""?>"
+                strInput &= "<cXML version=""1.2.011"" payloadID=""2017-12-1111:11:11.00505693074C1ED7B7D4E18A75C502BC"" timestamp=""2017-12-11T11:11:11"">"
+                strInput &= "<Header><From><Credential domain=""NetworkId""><Identity>kla-tencor</Identity></Credential></From>"
+                strInput &= "<To><Credential domain=""DUNS""><Identity>128293714</Identity></Credential></To>"
+                strInput &= "<Sender><Credential domain=""NetworkId""><Identity>kla-tencor</Identity><SharedSecret>nopassword</SharedSecret></Credential><UserAgent>ERP</UserAgent></Sender></Header>"
+                strInput &= "<Request deploymentMode=""production""><OrderRequest><OrderRequestHeader orderID=""0021018850"" orderDate=""20171211"" type=""new""><ShipTo><Address><Name>KLA-TENCOR</Name><PostalAddress><DeliverTo>J.K.LEONG</DeliverTo><Street>KLA -Tencor-J.K. Leong</Street><Street>5 Technology Drive</Street><City>Milpitas</City><State>CA</State><PostalCode>95035</PostalCode><Country isoCountryCode=""US""></Country></PostalAddress><Email>J.K.LEONG@kla-tencor.com</Email><Phone><TelephoneNumber><Number>999 999 9999</Number></TelephoneNumber></Phone></Address></ShipTo><BillTo><Address><Name xml:lang=""en"">KLA-Tencor Corporation</Name><PostalAddress><Street>Santa Clara, CA  95056-4970</Street><City>Santa Clara</City><State>CA</State><PostalCode>95056-4970</PostalCode><Country>United States</Country></PostalAddress></Address></BillTo></OrderRequestHeader><ItemOut quantity=""1.000"" lineNumber=""00010""><ItemID><SupplierPartID>1027111837003\1</SupplierPartID><SupplierPartAuxiliaryID>1027111837003\1</SupplierPartAuxiliaryID></ItemID><ItemDetail><UnitPrice><Money currency=""USD"">2552.16</Money></UnitPrice><Description xml:lang=""en""> Dell Mobile Precision Workstation</Description></ItemDetail></ItemOut></OrderRequest></Request></cXML>"
+
+                ' http://sdixbatch.sdi.com:8084/SDIWebSvcIn/KLATencor.aspx
+
 
             Case Else
                 Exit Sub
@@ -1117,7 +1142,10 @@ Module Module1
         Dim sHttpResponse As String = ""
         Dim httpSession As New easyHttp
 
-        httpSession.URL = strUrlToSend  '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"    '  strUrlToSend  '  
+        ' for KLA-Tencor: "http://sdixbatch.sdi.com:8084/SDIWebSvcIn/KLATencor.aspx"
+
+        ' httpSession.URL = strUrlToSend 
+        httpSession.URL = "http://sdixbatch.sdi.com:8084/SDIWebSvcIn/KLATencor.aspx"  ' strUrlToSend  '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"  
 
         '  "https://https.amazonsedi.com/c47fcf9d-286d-498a-ba9f-df390c2757a2"  '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"    '  "http://192.168.253.46:8011/sdiwebin/CytecMatMastIn.aspx"  '   "http://ims.sdi.com:8913/sdiwebinSvc/CytecNstkPoRecpts.aspx"   ' "http://ims.sdi.com:8913/sdiwebinSvc/CytecPurchReqs.aspx"    '  "http://ims.sdi.com:8913/sdiwebinSvc/CytecStkReservIn.aspx"    '  "http://ims.sdi.com:8913/sdiwebinSvc/CytecMatMastIn.aspx"    '  "http://localhost/SDIWebProcessors/CytecMatMastIn.aspx"    '    "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"  '    "http://localhost/SDIWebProcessors/XmlInSDI.aspx"   '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx" 
         '   "https://https.amazonsedi.com/073dbe31-c230-403f-990c-6f74eeed1510"  '    "https://www.amazon.com/eprocurement/punchout"  '    "https://supplydev.hajoca.com/hajomid/eclipse.ecl"
