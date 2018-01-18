@@ -110,15 +110,6 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("C:\inetpub\wwwroot\SDIWebIn\SDIWebProcessorsXMLFiles")>  _
-        Public ReadOnly Property inputDirectory() As String
-            Get
-                Return CType(Me("inputDirectory"),String)
-            End Get
-        End Property
-        
-        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
-         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.DefaultSettingValueAttribute("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=R"& _ 
             "PTG")>  _
         Public ReadOnly Property oraCNString1() As String
@@ -134,6 +125,42 @@ Namespace My
         Public ReadOnly Property TLATncrPoToINTFTbls_SDiEmailUtilityService_EmailServices() As String
             Get
                 Return CType(Me("TLATncrPoToINTFTbls_SDiEmailUtilityService_EmailServices"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("C:\KLATencorIn\XmlInSource")>  _
+        Public ReadOnly Property inputDirectory() As String
+            Get
+                Return CType(Me("inputDirectory"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("https://ora-linux-01.sdi.com/cimm2bcentral/productHunter/v3/515")>  _
+        Public ReadOnly Property UnlgPath() As String
+            Get
+                Return CType(Me("UnlgPath"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("cimm2bsdiclient")>  _
+        Public ReadOnly Property UnlgSrchUser() As String
+            Get
+                Return CType(Me("UnlgSrchUser"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("@c!mm@bsdicl!ent")>  _
+        Public ReadOnly Property UnlgSrchPswd() As String
+            Get
+                Return CType(Me("UnlgSrchPswd"),String)
             End Get
         End Property
     End Class
