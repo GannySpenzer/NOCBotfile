@@ -29,14 +29,8 @@
     <Setting Name="inputDirectory" Type="System.String" Scope="Application">
       <Value Profile="(Default)">C:\KLATencorIn\XmlInSource</Value>
     </Setting>
-    <Setting Name="UnlgPath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">https://ora-linux-01.sdi.com/cimm2bcentral/productHunter/v3/515</Value>
-    </Setting>
-    <Setting Name="UnlgSrchUser" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">cimm2bsdiclient</Value>
-    </Setting>
-    <Setting Name="UnlgSrchPswd" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">@c!mm@bsdicl!ent</Value>
+    <Setting Name="TaxExempt" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Y</Value>
     </Setting>
   </Settings>
 </SettingsFile>

@@ -139,28 +139,10 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("https://ora-linux-01.sdi.com/cimm2bcentral/productHunter/v3/515")>  _
-        Public ReadOnly Property UnlgPath() As String
+         Global.System.Configuration.DefaultSettingValueAttribute("Y")>  _
+        Public ReadOnly Property TaxExempt() As String
             Get
-                Return CType(Me("UnlgPath"),String)
-            End Get
-        End Property
-        
-        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
-         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("cimm2bsdiclient")>  _
-        Public ReadOnly Property UnlgSrchUser() As String
-            Get
-                Return CType(Me("UnlgSrchUser"),String)
-            End Get
-        End Property
-        
-        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
-         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("@c!mm@bsdicl!ent")>  _
-        Public ReadOnly Property UnlgSrchPswd() As String
-            Get
-                Return CType(Me("UnlgSrchPswd"),String)
+                Return CType(Me("TaxExempt"),String)
             End Get
         End Property
     End Class
