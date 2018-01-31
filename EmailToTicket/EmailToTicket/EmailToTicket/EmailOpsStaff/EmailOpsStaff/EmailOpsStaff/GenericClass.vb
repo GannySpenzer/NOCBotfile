@@ -15,7 +15,7 @@ Imports UpdEmailOut
  
 Public Class GenericClass
     Inherits ExchangeBaseClass
-    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=RPTG")
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=RPTG")
     Dim connectSQL As New SqlClient.SqlConnection("server=DAZZLE;uid=sa;pwd=sdiadmin;initial catalog='pubs'")
     'Dim connectSQL As New SqlClient.SqlConnection("server=192.168.253.16;uid=sa;pwd=sdiadmin;initial catalog='pubs'")
     Dim objStreamWriter As StreamWriter
@@ -171,7 +171,7 @@ Public Class GenericClass
                 Dim stremailSndr As String = " "
                 Dim returnValue As EmailMessage
                 iLine = 9
-                Dim Service As New ExchangeService(ExchangeVersion.Exchange2007_SP1)
+                Dim Service As New ExchangeService(ExchangeVersion.Exchange2010)
                 iLine = 10
                 Service.Credentials = New WebCredentials(UserName, Password)
                 iLine = 11

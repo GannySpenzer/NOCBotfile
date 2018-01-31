@@ -22,7 +22,7 @@ Public Class ExchangeBaseClass
     Private mSProcessedFolder As String
     Private m_sReviewedFolder As String
     Private m_ProcessedParentFolder As WellKnownFolderName
-    Private Service As New ExchangeService(ExchangeVersion.Exchange2007_SP1)
+    Private Service As New ExchangeService(ExchangeVersion.Exchange2010)
     Private m_mailbox As Mailbox
     Private m_fidSourceFolder As FolderId
     Private m_bProcessedFolderEnabled As Boolean
@@ -77,7 +77,7 @@ Public Class ExchangeBaseClass
 
         Dim bReturn As Boolean = True
 
-        Dim service As New ExchangeService(ExchangeVersion.Exchange2007_SP1)
+        Dim service As New ExchangeService(ExchangeVersion.Exchange2010)
         Dim mailBoxToProcess As New Mailbox(MailboxName)
         'zzzzzzzzzzz
         ' Dim mailmessage As New MessageBody(MessageBodyName)

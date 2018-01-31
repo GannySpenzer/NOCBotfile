@@ -214,7 +214,7 @@ Public Class UpdEmailOut
                     ByVal strTo As String, ByVal strCC As String, _
                     ByVal strBCC As String, ByVal strDflHead As String, _
                     ByVal strMessage As String)
-        Dim connection As OleDbConnection = New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=RPTG")
+        Dim connection As OleDbConnection = New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User Id=sdiexchange;Data Source=RPTG")
         UpdEmailOut(strSubject, strFrom, strTo, strCC, strBCC, strDflHead, strMessage, connection)
 
     End Sub

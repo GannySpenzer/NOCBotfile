@@ -91,6 +91,11 @@ Public Class clsUserTbl
         Dim iLine As Integer = 0
         bSuccess = True
 
+        Dim bIsEmail As Boolean = False
+        If Employee_name.Contains(".") And Employee_name.Contains("@") Then
+            bIsEmail = True
+        End If
+
         Try
 
             If Business_unit = " " Then
@@ -107,9 +112,13 @@ Public Class clsUserTbl
                                 " A.ISA_SDI_EMPLOYEE," & vbCrLf & _
                                 " A.Active_status," & vbCrLf & _
                                 " B.NAME1 " & vbCrLf & _
-                                " FROM PS_ISA_USERS_TBL A, ps_customer B , ps_isa_enterprise C, ps_isa_sdr_bu_loc D " & vbCrLf & _
-                                " WHERE upper(A.ISA_EMPLOYEE_name) like UPPER('" & Employee_name & "%')" & vbCrLf & _
-                                " and C.isa_business_unit = A.Business_unit " & vbCrLf & _
+                                " FROM PS_ISA_USERS_TBL A, ps_customer B , ps_isa_enterprise C, ps_isa_sdr_bu_loc D " & vbCrLf
+                If bIsEmail Then
+                    strSQLstring = strSQLstring & " WHERE upper(A.ISA_EMPLOYEE_EMAIL) like UPPER('" & Employee_name & "%')" & vbCrLf
+                Else
+                    strSQLstring = strSQLstring & " WHERE upper(A.ISA_EMPLOYEE_name) like UPPER('" & Employee_name & "%')" & vbCrLf
+                End If
+                strSQLstring = strSQLstring & " and C.isa_business_unit = A.Business_unit " & vbCrLf & _
                                 " AND A.active_status <> 'I'" & vbCrLf & _
                                 " AND C.CUST_id = B.CUST_ID" & vbCrLf & _
                                 " AND A.business_unit = D.isa_business_unit" & vbCrLf & _
@@ -126,14 +135,17 @@ Public Class clsUserTbl
                                 " A.ISA_EMPLOYEE_NAME," & vbCrLf & _
                                 " A.ISA_EMPLOYEE_EMAIL," & vbCrLf & _
                                 " A.PHONE_NUM, " & vbCrLf & _
-                                " A.Business_unit," & vbCrLf & _
                                 " A.ISA_EMPLOYEE_ID," & vbCrLf & _
                                 " A.ISA_SDI_EMPLOYEE," & vbCrLf & _
                                 " A.Active_status," & vbCrLf & _
                                 " B.NAME1 " & vbCrLf & _
-                                " FROM PS_ISA_USERS_TBL A, ps_customer B , ps_isa_enterprise C " & vbCrLf & _
-                                " WHERE upper(A.ISA_EMPLOYEE_name) like UPPER('" & Employee_name & "%')" & vbCrLf & _
-                                " and C.isa_business_unit = A.Business_unit " & vbCrLf & _
+                                " FROM PS_ISA_USERS_TBL A, ps_customer B , ps_isa_enterprise C " & vbCrLf
+                If bIsEmail Then
+                    strSQLstring = strSQLstring & " WHERE UPPER(A.ISA_EMPLOYEE_EMAIL) like UPPER('" & Employee_name & "%')" & vbCrLf
+                Else
+                    strSQLstring = strSQLstring & " WHERE UPPER(A.ISA_EMPLOYEE_name) like UPPER('" & Employee_name & "%')" & vbCrLf
+                End If
+                strSQLstring = strSQLstring & " and C.isa_business_unit = A.Business_unit " & vbCrLf & _
                                 " AND A.active_status <> 'I'" & vbCrLf & _
                                 " AND C.CUST_id = B.CUST_ID" & vbCrLf
                 iLine = 4
@@ -197,7 +209,7 @@ Public Class clsUserTbl
                     iLine = 107
                     Dim sEmailAddressOrig As String = sEmailAddress
                     iLine = 108
-                    If ds.Tables(0).Rows.Count = 1 Then
+                    If ds.Tables(0).Rows.Count = 1 Or bIsEmail Then
                         iLine = 109
                         bFound = True
                         iLine = 1090

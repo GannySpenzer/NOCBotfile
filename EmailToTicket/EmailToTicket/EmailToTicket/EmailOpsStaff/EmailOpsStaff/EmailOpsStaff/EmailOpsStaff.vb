@@ -7,7 +7,7 @@ Imports System.Text
 
 Module EmailOpsStaff
     Public ClsLogger As LoggerClass
-    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=EINTERNET;User ID=EINTERNET;Data Source=RPTG")
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=RPTG")
 
 
     Sub Main()
