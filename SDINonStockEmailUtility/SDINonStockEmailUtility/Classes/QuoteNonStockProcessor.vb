@@ -863,7 +863,6 @@ Public Class QuoteNonStockProcessor
                                  "  AND 'MAIN1' = A3.SETID (+)" & vbCrLf & _
                                  "  AND A4.BILL_TO_CUST_ID = A3.CUST_ID (+)" & vbCrLf & _
                                  "  AND L.ISA_LINE_STATUS = 'QTS' " & vbCrLf & _
-                                 "  AND A3.ISA_BYP_RQSTR_APPR <> 'Y' " & vbCrLf & _
                                  "  AND NOT EXISTS ( " & vbCrLf & _
                                  "                  SELECT 'X' " & vbCrLf & _
                                  "                  FROM SYSADM8.PS_NLINK_CUST_PLNT C " & vbCrLf & _
@@ -902,7 +901,7 @@ Public Class QuoteNonStockProcessor
                 Dim workOrderNo As String = ""
                 Dim rfqEmailRecipient As String = ""
 
-                Dim priceBlock As String = String.Empty
+                Dim priceBlock As String = "N"
 
                 Dim strBuyerDescr As String = ""
                 Dim strBuyerEmail As String = ""
@@ -969,11 +968,22 @@ Public Class QuoteNonStockProcessor
                     End If
 
                     'get price block flag value
-                    If rdr("ISA_PRICE_BLOCK") Is DBNull.Value Then
+                    Try
+                        If rdr("ISA_PRICE_BLOCK") Is DBNull.Value Then
+                            priceBlock = "N"
+                        Else
+                            priceBlock = Convert.ToString(rdr("ISA_PRICE_BLOCK"))
+                            If Trim(priceBlock) = "" Then
+                                priceBlock = "N"
+                            End If
+                        End If
+                    Catch ex As Exception
                         priceBlock = "N"
-                    Else
-                        priceBlock = Convert.ToString(rdr("ISA_PRICE_BLOCK"))
+                    End Try
+                    If Trim(priceBlock) = "" Then
+                        priceBlock = "N"
                     End If
+                    
                     boItem.PriceBlockFlag = priceBlock
                     'Session("PriceBlockFlag") = boItem.PriceBlockFlag
 
