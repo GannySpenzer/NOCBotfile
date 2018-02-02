@@ -107,12 +107,11 @@ Public Class clsUserTbl
                                 " A.ISA_EMPLOYEE_NAME," & vbCrLf & _
                                 " A.ISA_EMPLOYEE_EMAIL," & vbCrLf & _
                                 " A.PHONE_NUM, " & vbCrLf & _
-                                " A.Business_unit," & vbCrLf & _
                                 " A.ISA_EMPLOYEE_ID," & vbCrLf & _
                                 " A.ISA_SDI_EMPLOYEE," & vbCrLf & _
                                 " A.Active_status," & vbCrLf & _
                                 " B.NAME1 " & vbCrLf & _
-                                " FROM PS_ISA_USERS_TBL A, ps_customer B , ps_isa_enterprise C, ps_isa_sdr_bu_loc D " & vbCrLf
+                                " FROM PS_ISA_USERS_TBL A, ps_customer B , ps_isa_enterprise C " & vbCrLf
                 If bIsEmail Then
                     strSQLstring = strSQLstring & " WHERE upper(A.ISA_EMPLOYEE_EMAIL) like UPPER('" & Employee_name & "%')" & vbCrLf
                 Else
@@ -120,10 +119,7 @@ Public Class clsUserTbl
                 End If
                 strSQLstring = strSQLstring & " and C.isa_business_unit = A.Business_unit " & vbCrLf & _
                                 " AND A.active_status <> 'I'" & vbCrLf & _
-                                " AND C.CUST_id = B.CUST_ID" & vbCrLf & _
-                                " AND A.business_unit = D.isa_business_unit" & vbCrLf & _
-                                " AND D.bu_status = '1'" & vbCrLf & _
-                                " AND D.location = 'L' || SUBSTR(D.isa_business_unit,2) || '-01'"
+                                " AND C.CUST_id = B.CUST_ID" & vbCrLf 
 
                 iLine = 2
             Else
