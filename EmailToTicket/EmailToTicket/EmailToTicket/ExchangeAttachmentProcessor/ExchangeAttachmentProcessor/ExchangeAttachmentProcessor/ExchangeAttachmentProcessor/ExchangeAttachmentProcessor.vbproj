@@ -224,6 +224,7 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="references\EmailClass.dll" />
     <Content Include="references\Microsoft.Exchange.WebServices.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
