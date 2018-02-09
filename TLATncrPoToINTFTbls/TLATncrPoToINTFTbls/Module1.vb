@@ -250,15 +250,16 @@ Module Module1
                     'XMLContent = Replace(XMLContent, """", "&quot;")
                     sr.Close()
 
+                    Dim bErrorLoadXML As Boolean = False
                     Try
                         xmlRequest.LoadXml(XMLContent)
                     Catch exLoad As Exception
                         Console.WriteLine("")
                         Console.WriteLine("***error - " & exLoad.ToString)
                         Console.WriteLine("")
-                        myLoggr1.WriteErrorLog(rtn & " :: Error: " & exLoad.Message.ToString & " in file " & aFiles(I).Name)
-                        strXMLError = rtn & " :: Error: " & exLoad.ToString
-                        'bolError = True
+                        myLoggr1.WriteErrorLog(rtn & " :: Error loading XML: " & exLoad.Message.ToString & " in file " & aFiles(I).Name)
+                        strXMLError = rtn & " :: Error loading XML: " & exLoad.ToString
+                        bErrorLoadXML = True
                         bLineError = True
                         Try
                             File.Move(aFiles(I).FullName, "C:\KLATencorIn\BadXML\" & aFiles(I).Name)
@@ -681,7 +682,7 @@ Module Module1
                                                             '    strXMLError &= rtn & " :: Rollback. All lines in the current order are erred out"
                                                             'End If
                                                         End If  '  If Trim(strXMLError) = "" Then - for line Items
-                                                       
+
                                                         If Trim(strXMLError) = "" Then
                                                             'Commit transaction
                                                             trnsactSession.Commit()
@@ -697,7 +698,7 @@ Module Module1
                                                             'bolError = True
                                                             bLineError = True
                                                         End If
-                                                        
+
                                                     Catch exTrans As Exception
                                                         'rollback
                                                         strXMLError &= " Error creating INTF records. Rolling back for: " & aFiles(I).Name & ". Error: " & exTrans.Message()
@@ -708,7 +709,7 @@ Module Module1
                                                         bLineError = True
                                                         m_logger.WriteInformationLog(rtn & " :: Rollback. Error Description: " & strXMLError)
                                                     End Try
-                                                    
+
                                                 Else
                                                     strXMLError &= " Some or all line info is missing for this file: " & aFiles(I).Name
                                                     m_logger.WriteInformationLog(rtn & " :: Error Description: " & strXMLError)
@@ -754,10 +755,13 @@ Module Module1
                                 m_arrErrorsList &= "," & "Check Log for the Error Description"
                             End If
                         End If
-                        'move file to BadXML folder
-                        File.Copy(aFiles(I).FullName, "C:\KLATencorIn\BadXML\" & aFiles(I).Name, True)
-                        File.Delete(aFiles(I).FullName)
-                        m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & "C:\KLATencorIn\BadXML\" & aFiles(I).Name)
+                        'move file to BadXML folder - if not moved already
+                        If Not bErrorLoadXML Then
+                            File.Copy(aFiles(I).FullName, "C:\KLATencorIn\BadXML\" & aFiles(I).Name, True)
+                            File.Delete(aFiles(I).FullName)
+                            m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & "C:\KLATencorIn\BadXML\" & aFiles(I).Name)
+                        End If
+                        
                     Else
 
                         'move file to XMLInProcessed folder
@@ -772,7 +776,7 @@ Module Module1
                     End If
 
                 Next  '  For I = 0 To aFiles.Length - 1
-           
+
             End If  '  If aFiles.Length > 0 Then
         Catch ex As Exception
             strXMLError = ex.ToString()
@@ -1023,7 +1027,7 @@ Module Module1
             'm_logger.WriteVerboseLog(msg:=rtn & "::   executing : " & sql21)
             strOrderNo = cmd.ExecuteScalar
             cmd = Nothing
-            
+
             If strOrderNo = strreqid Then
                 bolOrderExist = True
             Else
@@ -1042,7 +1046,7 @@ Module Module1
             'm_logger.WriteVerboseLog(msg:=rtn & "::   executing : " & sql21)
             strOrdIntfcH = cmd.ExecuteScalar
             cmd = Nothing
-            
+
             If strOrdIntfcH = strreqid Then
                 bolOrdNoIntfcH = True
             Else
