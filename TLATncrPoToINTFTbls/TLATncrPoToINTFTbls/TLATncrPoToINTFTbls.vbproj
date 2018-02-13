@@ -146,6 +146,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>references\UpdEmailOut.dll</HintPath>
     </Reference>
+    <Reference Include="WinSCPnet, Version=1.4.1.7995, Culture=neutral, PublicKeyToken=2271ec4a3c56d0bf, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>references\WinSCPnet.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Import Include="Microsoft.VisualBasic" />
@@ -201,6 +205,8 @@
       <CustomToolNamespace>My</CustomToolNamespace>
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
+    <None Include="references\WinSCP.com" />
+    <None Include="references\WinSCP.map" />
     <None Include="Web References\SDiEmailUtilityService\EmailServices.wsdl" />
     <None Include="Web References\SDiEmailUtilityService\Reference.map">
       <Generator>MSDiscoCodeGenerator</Generator>
@@ -208,9 +214,12 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="references\DragExt64.dll" />
+    <Content Include="references\license.txt" />
     <Content Include="references\SDI.ApplicationLogger.dll" />
     <Content Include="references\SDI.UNCC.WorkOrderAdapter.dll" />
     <Content Include="references\UpdEmailOut.dll" />
+    <Content Include="references\WinSCPnet.dll" />
     <None Include="Web References\SDiEmailUtilityService\EmailServices.disco" />
   </ItemGroup>
   <ItemGroup>

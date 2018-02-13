@@ -12,6 +12,7 @@ Imports System.Security.Cryptography.X509Certificates
 Imports System.Net.Mail
 Imports SDI.ApplicationLogger
 Imports SDI.UNCC.WorkOrderAdapter
+Imports WinSCP
 
 Module Module1
 
@@ -810,6 +811,51 @@ Module Module1
         End Try
 
         Return bolError
+
+    End Function
+
+    Public Function SftpUpload() As Boolean
+        Dim rtn As String = "KLATencorFromPOToINTF.SftpUpload"
+        Dim bResult As Boolean = False
+
+        Dim sessionOptions As New SessionOptions
+        Dim transferOptions As New TransferOptions
+        Try
+            ' Setup session options
+            With sessionOptions
+                .Protocol = Protocol.Sftp
+                .HostName = "example.com"
+                .UserName = "user"
+                .Password = "mypassword"
+                .SshHostKeyFingerprint = "ssh-rsa 2048 xx:xx:xx:xx:xx:xx:xx:xx:..."
+            End With
+
+            Using session As New Session
+                ' Connect
+                session.Open(sessionOptions)
+
+                ' Upload files
+                transferOptions.TransferMode = TransferMode.Binary
+
+                Dim transferResult As TransferOperationResult
+                transferResult =
+                    session.PutFiles("d:\toupload\*", "/home/user/", False, transferOptions)
+
+                ' Throw on any error
+                transferResult.Check()
+
+                ' Log results
+                For Each transfer In transferResult.Transfers
+                    m_logger.WriteInformationLog(rtn & " :: " & "Upload of " & transfer.FileName & " succeeded")
+                Next
+            End Using
+
+            bResult = True
+        Catch ex As Exception
+            m_logger.WriteInformationLog(rtn & " :: " & "Error: " & ex.Message)
+            bResult = False
+        End Try
+        Return bResult
 
     End Function
 
