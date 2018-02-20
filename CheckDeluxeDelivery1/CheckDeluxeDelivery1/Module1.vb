@@ -58,44 +58,64 @@ Module Module1
         Try
 
             ' retrieve the source DB connection string to use
-            'If Not (m_xmlConfig("configuration")("sourceDB").Attributes("cnString").InnerText Is Nothing) Then
-            'cnString = m_xmlConfig("configuration")("sourceDB").Attributes("cnString").InnerText.Trim
-            'End If
+            If Not (m_xmlConfig("configuration")("sourceDB").Attributes("cnString").InnerText Is Nothing) Then
+                cnString = m_xmlConfig("configuration")("sourceDB").Attributes("cnString").InnerText.Trim
+            End If
         Catch ex As Exception
             cnString = ""
         End Try
+
 
         If Trim(cnString) <> "" Then
             connectOR.ConnectionString = cnString
         End If
         Dim Command As OleDbCommand = New OleDbCommand(strSQLstring, connectOR)
         connectOR.Open()
-        Dim dataAdapter As OleDbDataAdapter = _
-                    New OleDbDataAdapter(Command)
-        Dim ds As System.Data.DataSet = New System.Data.DataSet
-
+        Dim countDeluxe As Integer
         Try
-            dataAdapter.Fill(ds)
-            connectOR.Close()
+            countDeluxe = CInt(Command.ExecuteScalar)
         Catch ex As Exception
             objStreamWriter.WriteLine("error selecting from sdix_deluxe_delivered table")
             objStreamWriter.WriteLine("         " & ex.Message)
+        Finally
             connectOR.Close()
         End Try
 
-        objStreamWriter.WriteLine(ds.Tables(0).Rows.Count & " containers/rows processed in sdix_deluxe_delivered table on " & Now().ToString())
-        If ds.Tables(0).Rows.Count = 0 Then
+        objStreamWriter.WriteLine(countDeluxe.ToString & " containers/rows processed in sdix_deluxe_delivered table on " & Now().ToString())
+        If countDeluxe = 0 Then
             connectOR.Close()
             Return False
         Else
             Return True
         End If
 
+        'connectOR.Open()
+        'Dim dataAdapter As OleDbDataAdapter = _
+        '            New OleDbDataAdapter(Command)
+        'Dim ds As System.Data.DataSet = New System.Data.DataSet
+
+        'Try
+        '    dataAdapter.Fill(ds)
+        '    connectOR.Close()
+        'Catch ex As Exception
+        '    objStreamWriter.WriteLine("error selecting from sdix_deluxe_delivered table")
+        '    objStreamWriter.WriteLine("         " & ex.Message)
+        '    connectOR.Close()
+        'End Try
+
+        'objStreamWriter.WriteLine(ds.Tables(0).Rows.Count & " containers/rows processed in sdix_deluxe_delivered table on " & Now().ToString())
+        'If ds.Tables(0).Rows.Count = 0 Then
+        '    connectOR.Close()
+        '    Return False
+        'Else
+        '    Return True
+        'End If
+
     End Function
 
     'Private Function CheckAndSendCustEmail(ByVal dr As DataRow, Optional ByVal bDo As Boolean = False) As Boolean
     '    Dim bReslt As Boolean = False
-    '    '  ISA_COMPANY_ID " & dr.Item("ISA_COMPANY_ID") & "
+    '    '  ISA_COMPANY_ID " & dr.Item("ISA_COMPANY_ID") & "   My.Settings("oraCNString1").ToString.Trim
 
     '    Dim strSQLstring As String
     '    'Dim strFirstName As String
@@ -285,13 +305,20 @@ Module Module1
 
         Dim email As New MailMessage
         email.From = "TechSupport@sdi.com"
-        email.To = "michael.marrinan@sdi.com; rashmi.gupta@sdi.com; ron.fijalkowski@sdi.com; scott.doyle@sdi.com; wenjia.zhang@sdi.com; brian.akom@sdi.com"
+        'email.To = "michael.marrinan@sdi.com; rashmi.gupta@sdi.com; ron.fijalkowski@sdi.com; scott.doyle@sdi.com; wenjia.zhang@sdi.com; brian.akom@sdi.com"
+        Dim stest As String = My.Settings("EMailList").ToString.Trim
+        If connectOR.DataSource.ToUpper = "RPTG" Then
+            email.To = "webdev@sdi.com"
+        Else
+            email.To = My.Settings("EMailList").ToString.Trim
+        End If
 
         email.Subject = "Check Deluxe Delivery Warning - No Deluxe Delivery transactions on " & Now().ToShortDateString()
         email.Priority = MailPriority.High
         email.BodyFormat = MailFormat.Html
         email.Body = "<html><body><table><tr><td>No Deluxe Delivery transactions on " & Now().ToShortDateString() & ".  Check log.</td></tr>"
         email.Cc = "webdev@sdi.com"
+        email.Bcc = ""
 
         'Send the email and handle any error that occurs
         Try

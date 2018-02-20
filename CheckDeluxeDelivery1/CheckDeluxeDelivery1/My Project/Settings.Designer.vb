@@ -63,6 +63,16 @@ Namespace My
                 Return CType(Me("CheckDeluxeDelivery1_SDIEmailUtility_EmailServices"),String)
             End Get
         End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("michael.marrinan@sdi.com; rashmi.gupta@sdi.com; ron.fijalkowski@sdi.com; scott.do"& _ 
+            "yle@sdi.com; wenjia.zhang@sdi.com; brian.akom@sdi.com")>  _
+        Public ReadOnly Property EMailList() As String
+            Get
+                Return CType(Me("EMailList"),String)
+            End Get
+        End Property
     End Class
 End Namespace
 
