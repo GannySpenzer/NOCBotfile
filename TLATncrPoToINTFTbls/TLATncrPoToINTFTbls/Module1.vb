@@ -18,10 +18,14 @@ Module Module1
 
     Private m_logger As appLogger = Nothing
     Private myLoggr1 As appLogger = Nothing
+    'Private m_POConfirm_Logger As appLogger = Nothing
+    Private m_POConfirm_LoggerN1 As appLogger = Nothing
 
     Dim rootDir As String = "C:\KLATencorIn"
     Dim logpath As String = "C:\KLATencorIn\LOGS\KLATencorPOInToINTF" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
     Dim sErrLogPath As String = "C:\KLATencorIn\LOGS\MyErredSQLs" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+    Dim sPOConfirmPath As String = "C:\KLATencorIn\SFTP\POConfrm\POConfirm" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+    Dim sPoConfirmText As String = ""
     Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=RPTG")
     Dim connectSQL As New SqlClient.SqlConnection("server=cplus_prod;uid=einternet;pwd=einternet;initial catalog='contentplus'")
     Dim strOverride As String
@@ -72,6 +76,9 @@ Module Module1
             logpath = sLogPath & "\KLATencorPOInToINTF" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
         End If
 
+        'Call SftpUpload("C:\KLATencorIn\SFTP\KLA_TEST.txt")
+        'Exit Sub
+
         ' initialize logs
 
         myLoggr1 = New SDI.ApplicationLogger.appLogger(sErrLogPath, TraceLevel.Error)
@@ -83,6 +90,9 @@ Module Module1
                                      System.Reflection.Assembly.GetExecutingAssembly.GetModules()(0).FullyQualifiedName & _
                                      " Version: " & System.Reflection.Assembly.GetExecutingAssembly.GetName.Version.ToString & _
                                      "")
+
+        'm_POConfirm_Logger = New SDI.ApplicationLogger.appLogger(sPOConfirmPath, TraceLevel.Verbose)
+
         'process received info
         Call ProceesKLATencorPOInfo()
 
@@ -90,12 +100,23 @@ Module Module1
 
         ' destroy logger object
         Try
-            m_logger.Dispose()
             myLoggr1.Dispose()
+            'm_POConfirm_Logger.Dispose()
+        Catch ex As Exception
+        Finally
+            myLoggr1 = Nothing
+            'm_POConfirm_Logger = Nothing
+        End Try
+
+        'put m_POConfirm_Logger on sftp server - using sPOConfirmPath
+        Call SftpUpload(sPOConfirmPath)
+
+        ' destroy logger object
+        Try
+            m_logger.Dispose()
         Catch ex As Exception
         Finally
             m_logger = Nothing
-            myLoggr1 = Nothing
         End Try
 
     End Sub
@@ -255,9 +276,9 @@ Module Module1
                     Try
                         xmlRequest.LoadXml(XMLContent)
                     Catch exLoad As Exception
-                        Console.WriteLine("")
-                        Console.WriteLine("***error - " & exLoad.ToString)
-                        Console.WriteLine("")
+                        'Console.WriteLine("")
+                        'Console.WriteLine("***error - " & exLoad.ToString)
+                        'Console.WriteLine("")
                         myLoggr1.WriteErrorLog(rtn & " :: Error loading XML: " & exLoad.Message.ToString & " in file " & aFiles(I).Name)
                         strXMLError = rtn & " :: Error loading XML: " & exLoad.ToString
                         bErrorLoadXML = True
@@ -272,6 +293,7 @@ Module Module1
                         End Try
                     End Try
 
+                    Dim strReqId As String = ""
                     If Trim(strXMLError) = "" Then
 
                         root = xmlRequest.DocumentElement
@@ -358,6 +380,9 @@ Module Module1
                                                         For Each attrib As XmlAttribute In nodeOrdrRefr.Attributes()
                                                             If UCase(attrib.Name) = "ORDERID" Then
                                                                 strOrderNum = attrib.Value
+                                                                'm_POConfirm_Logger.WriteInformationLog("KLA-Tencor PO # : " & strOrderNum)
+                                                                sPoConfirmText &= "KLA-Tencor PO # : " & strOrderNum
+                                                                sPOConfirmPath = "C:\KLATencorIn\SFTP\POConfrm\PO_Confirm_For_" & strOrderNum  '  Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
                                                             End If
                                                         Next  '  For Each attrib As XmlAttribute In nodeOrdrRefr.Attributes()
                                                     End If
@@ -481,7 +506,7 @@ Module Module1
                                             'start creating Interface record
                                             m_logger.WriteInformationLog(rtn & " :: Start creating Interface records ")
                                             Dim strSqlString As String = ""
-                                            Dim strReqId As String = ""
+                                            strReqId = ""
                                            
                                             If Trim(strOrderNum) <> "" Then
                                                 If arrDescr.Length > 0 And arrUnitPrice.Length > 0 And arrCurrency.Length > 0 And arrSupplPartIDs.Length > 0 And arrAuxSupplPartIDs.Length > 0 And arrLineNums.Length > 0 And arrLineQtys.Length > 0 Then
@@ -642,7 +667,7 @@ Module Module1
 
                                                                 strSqlString = strSqlString & " VALUES ('I0515','" & strReqId & "'," & (iLn + 1) & ",' ',' ',' ',0,'90589',' ','MAIN1'," & _
                                                                 "'" & arrSupplPartIDs(iLn) & "',' ',0,' ',' ','" & arrUnitPrice(iLn) & "'," & strUnitPrice & "," & _
-                                                                "'" & strStdUom & "'," & arrLineQtys(iLn) & ",0,'NEW',' ','" & strTAX_EXEMPT & "',' '," & _
+                                                                "'" & strStdUom & "'," & arrLineQtys(iLn) & ",0,'RFQ',' ','" & strTAX_EXEMPT & "',' '," & _
                                                                 "' ','" & strDefaultEmpID & "', ' ',' ',0,'MAIN1','" & strVendorID & "'," & _
                                                                 "'" & strVendorITMID & "','" & strMfdID & "','" & strMfdName & "','" & strMfgPartNumber & "',' ','N','" & arrDescr(iLn) & "',' '," & _
                                                                 "' ',0,'" & strOrderNum & "','" & arrLineNums(iLn) & "',' ','" & strWorkOrder & "',' ','" & strMachineNo & "'," & _
@@ -769,6 +794,17 @@ Module Module1
                         File.Copy(aFiles(I).FullName, "C:\KLATencorIn\XMLINProcessed\" & aFiles(I).Name, True)
                         File.Delete(aFiles(I).FullName)
                         m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & "C:\KLATencorIn\XMLINProcessed\" & aFiles(I).Name)
+                        sPoConfirmText &= " is processed successfully. Interface Order Number: " & strReqId
+                        sPOConfirmPath &= "_is_Processed OK_" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"  '  C:\KLATencorIn\SFTP\POConfrm\POConfirmFor: " & strOrderNum  '  Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+                        m_POConfirm_LoggerN1 = New SDI.ApplicationLogger.appLogger(sPOConfirmPath, TraceLevel.Verbose)
+                        m_POConfirm_LoggerN1.WriteInformationLog(sPoConfirmText)
+                        Try
+                            m_POConfirm_LoggerN1.Dispose()
+                        Catch ex As Exception
+
+                        Finally
+                            m_POConfirm_LoggerN1 = Nothing
+                        End Try
 
                     End If
 
@@ -814,7 +850,7 @@ Module Module1
 
     End Function
 
-    Public Function SftpUpload() As Boolean
+    Public Function SftpUpload(ByVal strFullSourcePath As String) As Boolean
         Dim rtn As String = "KLATencorFromPOToINTF.SftpUpload"
         Dim bResult As Boolean = False
 
@@ -824,10 +860,10 @@ Module Module1
             ' Setup session options
             With sessionOptions
                 .Protocol = Protocol.Sftp
-                .HostName = "example.com"
-                .UserName = "user"
-                .Password = "mypassword"
-                .SshHostKeyFingerprint = "ssh-rsa 2048 xx:xx:xx:xx:xx:xx:xx:xx:..."
+                .HostName = "sftp.sdi.com"
+                .UserName = "klatencorsftp"
+                .Password = "TenC0rK1a"
+                .SshHostKeyFingerprint = "ssh-ed25519 256 88:0d:17:a6:ea:53:c7:e2:01:b8:12:f0:7a:61:ad:d1"  '  "ssh-rsa 2048 xx:xx:xx:xx:xx:xx:xx:xx:..."
             End With
 
             Using session As New Session
@@ -839,7 +875,7 @@ Module Module1
 
                 Dim transferResult As TransferOperationResult
                 transferResult =
-                    session.PutFiles("d:\toupload\*", "/home/user/", False, transferOptions)
+                    session.PutFiles(strFullSourcePath, "/KLA_PO_CONFIRM/", False, transferOptions)
 
                 ' Throw on any error
                 transferResult.Check()
@@ -1147,8 +1183,9 @@ Module Module1
             strEmailBcc = "webdev@sdi.com"
         End If
 
+        Dim strAddSDILogo As String = ""
         strEmailBody = ""
-        strEmailBody &= "<html><body><img src='https://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' />"
+        strAddSDILogo = "<html><body><img src='https://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' />"
         strEmailBody &= "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI, Inc</span></center><center><span >KLA-Tencor From PO To INTF Error</span></center>&nbsp;&nbsp;"
 
         strEmailBody &= "<table><tr><td>KLA-Tencor From PO To INTF tables has completed with "
@@ -1162,6 +1199,7 @@ Module Module1
 
         'VR 12/18/2014 Adding file names and error descriptions in message body
         Dim sInfoErr As String = ""
+        Dim strErrListForSFTP As String = ""
         Try
 
             sInfoErr &= " XML file name(s) are below.</td></tr>"
@@ -1172,6 +1210,7 @@ Module Module1
                     If arrErrFiles1.Length > 0 Then
                         For i1 As Integer = 0 To arrErrFiles1.Length - 1
                             sInfoErr &= "<tr><td>" & arrErrFiles1(i1) & "</td><td>&nbsp;&nbsp" & arrErrDescr2(i1) & "</td></tr>"
+                            strErrListForSFTP &= arrErrFiles1(i1) & " - " & arrErrDescr2(i1) & vbCrLf
                         Next
                     End If
                 End If
@@ -1201,10 +1240,32 @@ Module Module1
         Catch ex As Exception
         End Try
 
+        Dim strEmailBodyEnd As String = "</body></html>"
+        'Dim strMyPoConfrm As String = ""
+        'strMyPoConfrm = "<html><body>" & strEmailBody & strEmailBodyEnd
+
+        'm_POConfirm_Logger.WriteInformationLog(strMyPoConfrm)
+        sPoConfirmText &= vbCrLf & " KLA-Tencor From PO To INTF tables has completed with errors. " & vbCrLf & _
+            " XML file name(s) are below. " & vbCrLf & vbCrLf & _
+            strErrListForSFTP & vbCrLf & _
+            ""
+        sPOConfirmPath &= "_is_Failed_" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"  '  C:\KLATencorIn\SFTP\POConfrm\POConfirmFor: " & strOrderNum  '  Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+        m_POConfirm_LoggerN1 = New SDI.ApplicationLogger.appLogger(sPOConfirmPath, TraceLevel.Verbose)
+        m_POConfirm_LoggerN1.WriteInformationLog(sPoConfirmText)
+        Try
+            m_POConfirm_LoggerN1.Dispose()
+        Catch ex As Exception
+
+        Finally
+            m_POConfirm_LoggerN1 = Nothing
+        End Try
+
+        strEmailBody = strAddSDILogo & strEmailBody
         strEmailBody &= "" & _
                     "<HR width='100%' SIZE='1'>" & _
                     "<img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />"
         strEmailBody &= "<br><P><CENTER><SPAN style='FONT-SIZE: 12pt'><SPAN style='FONT-SIZE: 12pt'><FONT color=teal size=2>The information in this communication, including any attachments, is the property of SDI, Inc,&nbsp;</SPAN>is intended only for the addressee and may contain confidential, proprietary, and/or privileged material. Any review, retransmission, dissemination or other use of, or taking of any action in reliance upon, this information by persons or entities other than the intended recipient is prohibited. If you received this in error, please immediately contact the sender by replying to this email and delete the material from all computers.</FONT></SPAN></CENTER></P>"
+
         strEmailBody &= "</body></html>"
 
         If connectOR.DataSource.ToUpper.IndexOf("RPTG") > -1 Or _
