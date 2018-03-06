@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "AmazonDirectSend", "AmazonDirectSend\AmazonDirectSend.vbproj", "{34B52892-570D-409E-8AE6-E0569D7B1C72}"
+EndProject
+Global
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 2
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = http://vsfoundations:8080/tfs/insiteonline
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = AmazonDirectSend\\AmazonDirectSend.vbproj
+		SccProjectName1 = AmazonDirectSend
+		SccLocalPath1 = AmazonDirectSend
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{34B52892-570D-409E-8AE6-E0569D7B1C72}.Debug|x86.ActiveCfg = Debug|x86
+		{34B52892-570D-409E-8AE6-E0569D7B1C72}.Debug|x86.Build.0 = Debug|x86
+		{34B52892-570D-409E-8AE6-E0569D7B1C72}.Release|x86.ActiveCfg = Release|x86
+		{34B52892-570D-409E-8AE6-E0569D7B1C72}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
