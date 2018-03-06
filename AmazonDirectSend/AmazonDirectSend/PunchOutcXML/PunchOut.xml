@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xmlData version="2.0" logging="off">
+	<Catalog id="GRAYBAR.default" docType="cXML.dtd" docVersion="1.2.017" logging="error" sdiVendorId="0000004930">
+		<Identities>
+			<From domain="AribaNetworkId" userId="179225" />
+			<To domain="DUNS" userId="001903202" />
+			<Sender domain="DUNS" userId="179225sdi" userPw="sdi12345">
+				<UserAgentOverride>Ariba Network 1.2</UserAgentOverride>
+			</Sender>
+		</Identities>
+		<!-- <VendorURL>http://kwps10dx.graybar.com/webapp/wcs/stores/servlet/PunchOutSetup?storeId=10151&amp;catalogId=10001&amp;langId=-1</VendorURL> -->
+		<VendorURL>http://shop.graybar.com/webapp/wcs/stores/servlet/PunchOutSetup?catalogId=10001&amp;storeId=10151&amp;langId=-1</VendorURL>
+		<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+  <Catalog id="GRAYBAR.sdi_UofPenn" docType="cXML.dtd" docVersion="1.2.017" logging="error" sdiVendorId="0000004930">
+    <Identities>
+      <From domain="AribaNetworkId" userId="184103" />
+      <To domain="DUNS" userId="001903202" />
+      <Sender domain="DUNS" userId="184103sdi" userPw="sdi1234">
+        <UserAgentOverride>Ariba Network 1.2</UserAgentOverride>
+      </Sender>
+    </Identities>
+    <!-- <VendorURL>http://kwps10dx.graybar.com/webapp/wcs/stores/servlet/PunchOutSetup?storeId=10151&amp;catalogId=10001&amp;langId=-1</VendorURL> -->
+    <VendorURL>http://shop.graybar.com/webapp/wcs/stores/servlet/PunchOutSetup?catalogId=10001&amp;storeId=10151&amp;langId=-1</VendorURL>
+    <PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+  </Catalog>
+  <Catalog id="GRAYBAR.sdi_UNCC" docType="cXML.dtd" docVersion="1.2.017" logging="error" sdiVendorId="0000004930">
+    <Identities>
+      <From domain="AribaNetworkId" userId="219165" />
+      <To domain="DUNS" userId="001903202" />
+      <Sender domain="DUNS" userId="219165sdi" userPw="sdi1234">
+        <UserAgentOverride>Ariba Network 1.2</UserAgentOverride>
+      </Sender>
+    </Identities>
+    <!-- <VendorURL>http://kwps10dx.graybar.com/webapp/wcs/stores/servlet/PunchOutSetup?storeId=10151&amp;catalogId=10001&amp;langId=-1</VendorURL> -->
+    <VendorURL>http://shop.graybar.com/webapp/wcs/stores/servlet/PunchOutSetup?catalogId=10001&amp;storeId=10151&amp;langId=-1</VendorURL>
+    <PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+  </Catalog>
+  <Catalog id="GRAYBAR.sdi_nacco" docType="cXML.dtd" docVersion="1.2.017" logging="error" sdiVendorId="0000004930">
+    <Identities>
+      <From domain="AribaNetworkId" userId="215741" />
+      <To domain="DUNS" userId="001903202" />
+      <Sender domain="DUNS" userId="215741sdi" userPw="sdi1234">
+        <UserAgentOverride>Ariba Network 1.2</UserAgentOverride>
+      </Sender>
+    </Identities>
+    <!-- <VendorURL>http://kwps10dx.graybar.com/webapp/wcs/stores/servlet/PunchOutSetup?storeId=10151&amp;catalogId=10001&amp;langId=-1</VendorURL> -->
+    <VendorURL>http://shop.graybar.com/webapp/wcs/stores/servlet/PunchOutSetup?catalogId=10001&amp;storeId=10151&amp;langId=-1</VendorURL>
+    <PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+  </Catalog>
+  <Catalog id="GRAYBAR.sdi_cytec" docType="cXML.dtd" docVersion="1.2.017" logging="error" sdiVendorId="0000004930">
+    <Identities>
+      <From domain="AribaNetworkId" userId="524802" />
+      <To domain="DUNS" userId="001903202" />
+      <Sender domain="DUNS" userId="524802sdicy" userPw="cysdi524802">
+        <UserAgentOverride>Ariba Network 1.2</UserAgentOverride>
+      </Sender>
+    </Identities>
+    <!-- <VendorURL>http://kwps10dx.graybar.com/webapp/wcs/stores/servlet/PunchOutSetup?storeId=10151&amp;catalogId=10001&amp;langId=-1</VendorURL> -->
+    <VendorURL>http://shop.graybar.com/webapp/wcs/stores/servlet/PunchOutSetup?catalogId=10001&amp;storeId=10151&amp;langId=-1</VendorURL>
+    <PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+  </Catalog>
+  <Catalog id="GRAYBAR.sdi_nbty" docType="cXML.dtd" docVersion="1.2.017" logging="error" sdiVendorId="0000004930">
+    <Identities>
+      <From domain="AribaNetworkId" userId="508629" />
+      <To domain="DUNS" userId="001903202" />
+      <Sender domain="DUNS" userId="508629sdinb" userPw="nbsdi524802">
+        <UserAgentOverride>Ariba Network 1.2</UserAgentOverride>
+      </Sender>
+    </Identities>
+    <!-- <VendorURL>http://kwps10dx.graybar.com/webapp/wcs/stores/servlet/PunchOutSetup?storeId=10151&amp;catalogId=10001&amp;langId=-1</VendorURL> -->
+    <VendorURL>http://shop.graybar.com/webapp/wcs/stores/servlet/PunchOutSetup?catalogId=10001&amp;storeId=10151&amp;langId=-1</VendorURL>
+    <PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+  </Catalog>
+  <Catalog id="GRAYBAR.sdi_ascend" docType="cXML.dtd" docVersion="1.2.017" logging="error" sdiVendorId="0000004930">
+    <Identities>
+      <From domain="AribaNetworkId" userId="468890" />
+      <To domain="DUNS" userId="001903202" />
+      <Sender domain="DUNS" userId="468890ascend" userPw="ascend12345">
+        <UserAgentOverride>Ariba Network 1.2</UserAgentOverride>
+      </Sender>
+    </Identities>
+    <!-- <VendorURL>http://kwps10dx.graybar.com/webapp/wcs/stores/servlet/PunchOutSetup?storeId=10151&amp;catalogId=10001&amp;langId=-1</VendorURL> -->
+    <VendorURL>http://shop.graybar.com/webapp/wcs/stores/servlet/PunchOutSetup?catalogId=10001&amp;storeId=10151&amp;langId=-1</VendorURL>
+    <PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+  </Catalog>
+  <Catalog id="GRAYBAR.nyc" docType="cXML.dtd" docVersion="1.2.017" logging="error" sdiVendorId="0000004930">
+    <Identities>
+      <From domain="AribaNetworkId" userId="160513" />
+      <To domain="DUNS" userId="001903202" />
+      <Sender domain="DUNS" userId="160513sdi" userPw="sdi1234">
+        <UserAgentOverride>Ariba Network 1.2</UserAgentOverride>
+      </Sender>
+    </Identities>
+    <!-- <VendorURL>http://kwps10dx.graybar.com/webapp/wcs/stores/servlet/PunchOutSetup?storeId=10151&amp;catalogId=10001&amp;langId=-1</VendorURL> -->
+    <VendorURL>http://shop.graybar.com/webapp/wcs/stores/servlet/PunchOutSetup?catalogId=10001&amp;storeId=10151&amp;langId=-1</VendorURL>
+    <PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+  </Catalog>
+  <Catalog id="GRAYBAR.kelloggs" docType="cXML.dtd" docVersion="1.2.017" logging="error" sdiVendorId="0000004930">
+    <Identities>
+      <From domain="AribaNetworkId" userId="370939" />
+      <To domain="DUNS" userId="001903202" />
+      <Sender domain="DUNS" userId="370939sdi" userPw="sdi12345">
+        <UserAgentOverride>Ariba Network 1.2</UserAgentOverride>
+      </Sender>
+    </Identities>
+    <!-- <VendorURL>http://kwps10dx.graybar.com/webapp/wcs/stores/servlet/PunchOutSetup?storeId=10151&amp;catalogId=10001&amp;langId=-1</VendorURL> -->
+    <VendorURL>http://shop.graybar.com/webapp/wcs/stores/servlet/PunchOutSetup?catalogId=10001&amp;storeId=10151&amp;langId=-1</VendorURL>
+    <PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+  </Catalog>
+  <Catalog id="GRAYBAR.sdi_MillerCoors" docType="cXML.dtd" docVersion="1.2.017" logging="verbose" sdiVendorId="0000004930">
+    <Identities>
+      <From domain="AribaNetworkId" userId="436077" />
+      <To domain="DUNS" userId="001903202" />
+      <Sender domain="DUNS" userId="436077sdi" userPw="sdi12345">
+        <UserAgentOverride>Ariba Network 1.2</UserAgentOverride>
+      </Sender>
+    </Identities>
+    <VendorURL>http://shop.graybar.com/webapp/wcs/stores/servlet/PunchOutSetup?catalogId=10001&amp;storeId=10151&amp;langId=-1</VendorURL>
+    <PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+  </Catalog>
+	<Catalog id="MSCDIRECT" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000007789">
+		<Identities>
+			<From domain="SDI" userId="02245154" />
+			<To domain="MSCDIRECT" userId="02245154" />
+			<Sender domain="MSCDIRECT" userId="02245154" />
+		</Identities>
+		<VendorURL>https://xml1.mscdirect.com/cgi/aribain</VendorURL>
+	</Catalog>
+	<Catalog id="MOTION.default" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000007753">
+		<Identities>
+			<From domain="SDI" userId="053302709" />
+			<To domain="DUNS" userId="007960446" />
+			<Sender domain="SDI" userId="053302709" />
+		</Identities>
+		<VendorURL>http://www.motionmro.com/motion3/jsp/xml30/SDI.jsp</VendorURL>
+		<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+	<Catalog id="KAMAN.default" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000006316">
+		<Identities>
+			<From domain="DUNS" userId="049624117" />
+			<To domain="DUNS" userId="077316412" />
+			<Sender domain="DUNS" userId="049624117" userPw="kaman1direct">
+				<UserAgentOverride>Ariba Network 1.2</UserAgentOverride>
+			</Sender>
+			<httpHeaderCredential domain="" userId="049624117" userPw="miller" />
+		</Identities>
+		<VendorURL>https://b2b.kamandirect.com:443/invoke/wm.tn/receive</VendorURL>
+		<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+	<Catalog id="ONESOURCE" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000023493">
+		<Identities>
+			<From domain="SDI" userId="SDI-Punchout" />
+			<To domain="ONESOURCE" userId="SDI-Punchout" />
+			<Sender domain="ONESOURCE" userId="SDI-Punchout" />
+		</Identities>
+		<VendorURL>https://one.eplusonline.com/procurement/cXmlPunchoutRequest.aspx</VendorURL>
+	</Catalog>
+	<Catalog id="SDI" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000044457">
+		<Identities>
+			<From domain="SDI" userId="90052" />
+			<To domain="SDI" userId="90052" />
+			<Sender domain="SDI" userId="90052" />
+		</Identities>
+		<VendorURL>http://cptest.sdi.com/ISOLPunchin/punchinlaunch.aspx</VendorURL>
+	</Catalog>
+	<Catalog id="GRAINGER.default" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000011943">
+		<Identities>
+			<From domain="DUNS" userId="049624117" />
+			<To domain="DUNS" userId="Grainger" />
+			<Sender domain="DUNS" userId="049624117" userPw="049624117-T"></Sender>
+		</Identities>
+		<VendorURL>https://b2bconnect.grainger.com:443/invoke/wm.b2b.cxml/receiveCXML</VendorURL>
+		<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+	<Catalog id="GRAINGER.SDI_aladdin" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000011943">
+			<Identities>
+				<From domain="DUNS" userId="049624117" />
+				<To domain="DUNS" userId="Grainger" />
+				<Sender domain="DUNS" userId="049624117" userPw="aladdinnashville"></Sender>
+			</Identities>
+			<VendorURL>https://b2bconnect.grainger.com:443/invoke/wm.b2b.cxml/receiveCXML</VendorURL>
+			<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+	<Catalog id="GRAINGER.SDI_ascend" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000011943">
+				<Identities>
+					<From domain="DUNS" userId="049624117" />
+					<To domain="DUNS" userId="Grainger" />
+					<Sender domain="DUNS" userId="049624117" userPw="ascend"></Sender>
+				</Identities>
+				<VendorURL>https://b2bconnect.grainger.com:443/invoke/wm.b2b.cxml/receiveCXML</VendorURL>
+				<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+	<Catalog id="GRAINGER.SDI_brooks" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000011943">
+					<Identities>
+						<From domain="DUNS" userId="049624117" />
+						<To domain="DUNS" userId="Grainger" />
+						<Sender domain="DUNS" userId="049624117" userPw="brooks"></Sender>
+					</Identities>
+					<VendorURL>https://b2bconnect.grainger.com:443/invoke/wm.b2b.cxml/receiveCXML</VendorURL>
+					<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+	<Catalog id="GRAINGER.SDI_cytec" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000011943">
+						<Identities>
+							<From domain="DUNS" userId="049624117" />
+							<To domain="DUNS" userId="Grainger" />
+							<Sender domain="DUNS" userId="049624117" userPw="cytec"></Sender>
+						</Identities>
+						<VendorURL>https://b2bconnect.grainger.com:443/invoke/wm.b2b.cxml/receiveCXML</VendorURL>
+						<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+	<Catalog id="GRAINGER.SDI_diageo" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000011943">
+						<Identities>
+							<From domain="DUNS" userId="049624117" />
+							<To domain="DUNS" userId="Grainger" />
+							<Sender domain="DUNS" userId="049624117" userPw="diageo"></Sender>
+						</Identities>
+						<VendorURL>https://b2bconnect.grainger.com:443/invoke/wm.b2b.cxml/receiveCXML</VendorURL>
+						<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+	<Catalog id="GRAINGER.SDI_hershey" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000011943">
+							<Identities>
+								<From domain="DUNS" userId="049624117" />
+								<To domain="DUNS" userId="Grainger" />
+								<Sender domain="DUNS" userId="049624117" userPw="hershey"></Sender>
+							</Identities>
+							<VendorURL>https://b2bconnect.grainger.com:443/invoke/wm.b2b.cxml/receiveCXML</VendorURL>
+							<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+	<Catalog id="GRAINGER.SDI_honeywell" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000011943">
+								<Identities>
+									<From domain="DUNS" userId="049624117" />
+									<To domain="DUNS" userId="Grainger" />
+									<Sender domain="DUNS" userId="049624117" userPw="honeywell"></Sender>
+								</Identities>
+								<VendorURL>https://b2bconnect.grainger.com:443/invoke/wm.b2b.cxml/receiveCXML</VendorURL>
+								<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+	<Catalog id="GRAINGER.SDI_knolleast" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000011943">
+									<Identities>
+										<From domain="DUNS" userId="049624117" />
+										<To domain="DUNS" userId="Grainger" />
+										<Sender domain="DUNS" userId="049624117" userPw="knolleast"></Sender>
+									</Identities>
+									<VendorURL>https://b2bconnect.grainger.com:443/invoke/wm.b2b.cxml/receiveCXML</VendorURL>
+									<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+	<Catalog id="GRAINGER.SDI_lennox" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000011943">
+										<Identities>
+											<From domain="DUNS" userId="049624117" />
+											<To domain="DUNS" userId="Grainger" />
+											<Sender domain="DUNS" userId="049624117" userPw="lennox"></Sender>
+										</Identities>
+										<VendorURL>https://b2bconnect.grainger.com:443/invoke/wm.b2b.cxml/receiveCXML</VendorURL>
+										<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+	<Catalog id="GRAINGER.SDI_nycdoe" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000011943">
+											<Identities>
+												<From domain="DUNS" userId="049624117" />
+												<To domain="DUNS" userId="Grainger" />
+												<Sender domain="DUNS" userId="049624117" userPw="nycdoe"></Sender>
+											</Identities>
+											<VendorURL>https://b2bconnect.grainger.com:443/invoke/wm.b2b.cxml/receiveCXML</VendorURL>
+											<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+	<Catalog id="GRAINGER.SDI_safeway" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000011943">
+												<Identities>
+													<From domain="DUNS" userId="049624117" />
+													<To domain="DUNS" userId="Grainger" />
+													<Sender domain="DUNS" userId="049624117" userPw="safeway"></Sender>
+												</Identities>
+												<VendorURL>https://b2bconnect.grainger.com:443/invoke/wm.b2b.cxml/receiveCXML</VendorURL>
+												<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+	<Catalog id="GRAINGER.SDI_sandeninternational" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000011943">
+													<Identities>
+														<From domain="DUNS" userId="049624117" />
+														<To domain="DUNS" userId="Grainger" />
+														<Sender domain="DUNS" userId="049624117" userPw="sandeninternational"></Sender>
+													</Identities>
+													<VendorURL>https://b2bconnect.grainger.com:443/invoke/wm.b2b.cxml/receiveCXML</VendorURL>
+													<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+	<Catalog id="GRAINGER.SDI_siemens" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000011943">
+														<Identities>
+															<From domain="DUNS" userId="049624117" />
+															<To domain="DUNS" userId="Grainger" />
+															<Sender domain="DUNS" userId="049624117" userPw="siemens"></Sender>
+														</Identities>
+														<VendorURL>https://b2bconnect.grainger.com:443/invoke/wm.b2b.cxml/receiveCXML</VendorURL>
+														<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+	<Catalog id="GRAINGER.SDI_smith" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000011943">
+															<Identities>
+																<From domain="DUNS" userId="049624117" />
+																<To domain="DUNS" userId="Grainger" />
+																<Sender domain="DUNS" userId="049624117" userPw="smith"></Sender>
+															</Identities>
+															<VendorURL>https://b2bconnect.grainger.com:443/invoke/wm.b2b.cxml/receiveCXML</VendorURL>
+															<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+	<Catalog id="GRAINGER.SDI_upenn" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000011943">
+															<Identities>
+																<From domain="DUNS" userId="049624117" />
+																<To domain="DUNS" userId="Grainger" />
+																<Sender domain="DUNS" userId="049624117" userPw="upenn"></Sender>
+															</Identities>
+															<VendorURL>https://b2bconnect.grainger.com:443/invoke/wm.b2b.cxml/receiveCXML</VendorURL>
+															<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+	<Catalog id="GRAINGER.SDI_webco" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000011943">
+															<Identities>
+																<From domain="DUNS" userId="049624117" />
+																<To domain="DUNS" userId="Grainger" />
+																<Sender domain="DUNS" userId="049624117" userPw="webco"></Sender>
+															</Identities>
+															<VendorURL>https://b2bconnect.grainger.com:443/invoke/wm.b2b.cxml/receiveCXML</VendorURL>
+															<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+	<Catalog id="GRAINGER.SDI" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000011943">
+															<Identities>
+																<From domain="DUNS" userId="049624117" />
+																<To domain="DUNS" userId="Grainger" />
+																<Sender domain="DUNS" userId="049624117" userPw="sdi"></Sender>
+															</Identities>
+															<VendorURL>https://b2bconnect.grainger.com:443/invoke/wm.b2b.cxml/receiveCXML</VendorURL>
+															<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+	<Catalog id="GRAINGER.SDI_sdivisteon" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000011943">
+															<Identities>
+																<From domain="DUNS" userId="049624117" />
+																<To domain="DUNS" userId="Grainger" />
+																<Sender domain="DUNS" userId="049624117" userPw="sdivisteon"></Sender>
+															</Identities>
+															<VendorURL>https://b2bconnect.grainger.com:443/invoke/wm.b2b.cxml/receiveCXML</VendorURL>
+															<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+	<Catalog id="GRAINGER.sdi_MillerCoors" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000011943">
+		<Identities>
+			<From domain="DUNS" userId="049624117" />
+			<To domain="DUNS" userId="Grainger" />
+			<Sender domain="DUNS" userId="049624117" userPw="049624117-M"></Sender>
+		</Identities>
+		<VendorURL>https://b2bconnect.grainger.com:443/invoke/wm.b2b.cxml/receiveCXML</VendorURL>
+		<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+	<Catalog id="GRAINGER.advanceturnbine" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000011943">
+			<Identities>
+				<From domain="DUNS" userId="049624117" />
+				<To domain="DUNS" userId="Grainger" />
+				<Sender domain="DUNS" userId="049624117" userPw="advanceturnbine"></Sender>
+			</Identities>
+			<VendorURL>https://b2bconnect.grainger.com:443/invoke/wm.b2b.cxml/receiveCXML</VendorURL>
+			<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+	</Catalog> 
+	 <Catalog id="GRAINGER.sdi_Kelloggs" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000011943">
+			<Identities>
+				<From domain="DUNS" userId="049624117" />
+				<To domain="DUNS" userId="Grainger" />
+				<Sender domain="DUNS" userId="049624117" userPw="kellogs"></Sender>
+			</Identities>
+			<VendorURL>https://b2bconnect.grainger.com:443/invoke/wm.b2b.cxml/receiveCXML</VendorURL>
+			<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+	</Catalog> 
+	<Catalog id="GRAINGER.sdi_JohnDeere" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000011943">
+			<Identities>
+				<From domain="DUNS" userId="049624117" />
+				<To domain="DUNS" userId="Grainger" />
+				<Sender domain="DUNS" userId="049624117" userPw="deere"></Sender>
+			</Identities>
+			<VendorURL>https://b2bconnect.grainger.com:443/invoke/wm.b2b.cxml/receiveCXML</VendorURL>
+			<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+			
+	</Catalog>
+	<Catalog id="GRAINGER.sdi_UNCC" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000011943">
+					<Identities>
+						<From domain="DUNS" userId="049624117" />
+						<To domain="DUNS" userId="Grainger" />
+						<Sender domain="DUNS" userId="049624117" userPw="uncc"></Sender>
+					</Identities>
+					<VendorURL>https://b2bconnect.grainger.com:443/invoke/wm.b2b.cxml/receiveCXML</VendorURL>
+					<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+	<Catalog id="APPLIED.default" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd">
+		<Identities>
+			<From domain="SDI" userId="millerbrew" />
+			<To domain="APPLIED" userId="millerbrew" />
+			<Sender domain="APPLIED" userId="millerbrew" userPw="applied" />
+		</Identities>
+		<VendorURL>https://alpha.appliedexchange.com/invoke/Ariba.PunchoutRequest/punchoutRequest</VendorURL>
+	</Catalog>
+	 <Catalog id="WEINSTEIN.default" docType="cXML.dtd" docVersion="1.2.017" logging="error" sdiVendorId="0000012081" sendUsingWebClient="True">
+    <Identities>
+      <From domain="AribaNetworkId" userId="184103" />
+      <To domain="DUNS" userId="001903202" />
+      <Sender domain="DUNS" userId="184103sdi" userPw="HAJ1928!">
+        <UserAgentOverride>Ariba Network 1.2</UserAgentOverride>
+      </Sender>
+    </Identities>
+       <VendorURL>https://supplyweb.hajoca.com/mid/eclipse.ecl</VendorURL>
+       <PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+  </Catalog>
+  <Catalog id="AMAZON.default" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000039777" securityProtocol="192">
+    <Identities>
+      <From domain="NetworkId" userId="SDIDirectOrdering2356630089" />
+      <To domain="NetworkId" userId="Amazon" />
+      <Sender domain="NetworkId" userId="SDIDirectOrdering2356630089" userPw="6LhhKUA2D53IrSMYujgODVmJq6AgK5">
+        <UserAgentOverride>Ariba Network 1.2</UserAgentOverride>
+      </Sender>
+    </Identities>
+    <VendorURL>https://www.amazon.com/eprocurement/punchout</VendorURL>
+    <PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+  </Catalog>
+</xmlData>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xmlData>
+	<Catalog>
+		<Todomain>GRAYBAR</Todomain>
+		<Identity>SDI-Punchout</Identity>
+		<SharedSecret>SD1-Punch0ut</SharedSecret>
+		<VendorURL>https://one.eplusonline.com/procurement/cXmlPunchoutRequest.aspx</VendorURL>
+	</Catalog>
+	<Catalog>
+		<Todomain>MSCDIRECT</Todomain>
+		<Identity>02245154</Identity>
+		<SharedSecret></SharedSecret>
+		<VendorURL>https://xml1.mscdirect.com/cgi/aribain</VendorURL>
+	</Catalog>
+	<Catalog>
+		<Todomain>ONESOURCE</Todomain>
+		<Identity>SDI-Punchout</Identity>
+		<SharedSecret>SD1-Punch0ut</SharedSecret>
+		<VendorURL>https://one.eplusonline.com/procurement/cXmlPunchoutRequest.aspx</VendorURL>
+	</Catalog>
+	<Catalog>
+		<Todomain>SDI</Todomain>
+		<Identity>90052</Identity>
+		<SharedSecret></SharedSecret>
+		<VendorURL>http://cptest.sdi.com/ISOLPunchin/punchinlaunch.aspx</VendorURL>
+	</Catalog>
+</xmlData>
