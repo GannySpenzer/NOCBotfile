@@ -9,6 +9,8 @@ Imports System.Xml
 
 Module Module1
 
+    'WARNING!!! This test project is configured right now to test KLATENCOR - VR 01/10/2018
+
     Private strVendorURL As String
     Private m_setupReqDoc As punchOutSetupRequestDoc = Nothing
     Private m_vendorConfig As punchoutVendorConfig = Nothing
@@ -288,15 +290,36 @@ Module Module1
 
                 strInput = ""
 
+                'strInput = "<?xml version=""1.0"" encoding=""UTF-8""?>"
+                'strInput &= "<cXML version=""1.2.011"" payloadID=""2018-02-0208:11:11.00505693074C1ED7B7D4E18A75C502BC"" timestamp=""2017-12-11T11:11:11"">"
+                'strInput &= "<Header><From><Credential domain=""NetworkId""><Identity>kla-tencor</Identity></Credential></From>"
+                'strInput &= "<To><Credential domain=""DUNS""><Identity>128293714</Identity></Credential></To>"
+                'strInput &= "<Sender><Credential domain=""NetworkId""><Identity>kla-tencor</Identity><SharedSecret>KIZId67wndDZCuer8kzoqA==</SharedSecret></Credential><UserAgent>ERP</UserAgent></Sender></Header>"
+                'strInput &= "<Request deploymentMode=""production""><OrderRequest><OrderRequestHeader orderID=""0021018850"" orderDate=""20171211"" type=""new""><ShipTo><Address><Name>KLA-TENCOR</Name><PostalAddress><DeliverTo>J.K.LEONG</DeliverTo><Street>KLA -Tencor-J.K. Leong</Street><Street>5 Technology Drive</Street><City>Milpitas</City><State>CA</State><PostalCode>95035</PostalCode><Country isoCountryCode=""US""></Country></PostalAddress><Email>Jack.pop@noone.com</Email><Phone><TelephoneNumber><Number>999 999 9999</Number></TelephoneNumber></Phone></Address></ShipTo><BillTo><Address><Name xml:lang=""en"">KLA-Tencor Corporation</Name><PostalAddress><Street>Santa Clara, CA  95056-4970</Street><City>Santa Clara</City><State>CA</State><PostalCode>95056-4970</PostalCode><Country>United States</Country></PostalAddress></Address></BillTo></OrderRequestHeader><ItemOut quantity=""1.000"" lineNumber=""00010""><ItemID><SupplierPartID>1027111837003\1</SupplierPartID><SupplierPartAuxiliaryID>1027111837003\1</SupplierPartAuxiliaryID></ItemID><ItemDetail><UnitPrice><Money currency=""USD"">2552.16</Money></UnitPrice><Description xml:lang=""en""> Dell Mobile Precision Workstation</Description></ItemDetail></ItemOut></OrderRequest></Request></cXML>"
+
                 strInput = "<?xml version=""1.0"" encoding=""UTF-8""?>"
-                strInput &= "<cXML version=""1.2.011"" payloadID=""2017-12-1111:11:11.00505693074C1ED7B7D4E18A75C502BC"" timestamp=""2017-12-11T11:11:11"">"
-                strInput &= "<Header><From><Credential domain=""NetworkId""><Identity>kla-tencor</Identity></Credential></From>"
-                strInput &= "<To><Credential domain=""DUNS""><Identity>128293714</Identity></Credential></To>"
-                strInput &= "<Sender><Credential domain=""NetworkId""><Identity>kla-tencor</Identity><SharedSecret>nopassword</SharedSecret></Credential><UserAgent>ERP</UserAgent></Sender></Header>"
-                strInput &= "<Request deploymentMode=""production""><OrderRequest><OrderRequestHeader orderID=""0021018850"" orderDate=""20171211"" type=""new""><ShipTo><Address><Name>KLA-TENCOR</Name><PostalAddress><DeliverTo>J.K.LEONG</DeliverTo><Street>KLA -Tencor-J.K. Leong</Street><Street>5 Technology Drive</Street><City>Milpitas</City><State>CA</State><PostalCode>95035</PostalCode><Country isoCountryCode=""US""></Country></PostalAddress><Email>J.K.LEONG@kla-tencor.com</Email><Phone><TelephoneNumber><Number>999 999 9999</Number></TelephoneNumber></Phone></Address></ShipTo><BillTo><Address><Name xml:lang=""en"">KLA-Tencor Corporation</Name><PostalAddress><Street>Santa Clara, CA  95056-4970</Street><City>Santa Clara</City><State>CA</State><PostalCode>95056-4970</PostalCode><Country>United States</Country></PostalAddress></Address></BillTo></OrderRequestHeader><ItemOut quantity=""1.000"" lineNumber=""00010""><ItemID><SupplierPartID>1027111837003\1</SupplierPartID><SupplierPartAuxiliaryID>1027111837003\1</SupplierPartAuxiliaryID></ItemID><ItemDetail><UnitPrice><Money currency=""USD"">2552.16</Money></UnitPrice><Description xml:lang=""en""> Dell Mobile Precision Workstation</Description></ItemDetail></ItemOut></OrderRequest></Request></cXML>"
+                strInput &= "<cXML version=""1.2.011"" payloadID=""2018-02-0208:11:11.00505693074C1ED7B7D4E18A75C502BC"" timestamp=""2017-12-11T11:11:11"">"
+                strInput &= "<Header>"
+                strInput &= "<From><Credential domain=""NetworkId""><Identity>kla-tencor</Identity></Credential>"
+                strInput &= "</From>"
+                strInput &= "<To><Credential domain=""DUNS""><Identity>128293714</Identity></Credential>"
+                strInput &= "</To>"
+                strInput &= "<Sender>"
+                strInput &= "<Credential domain=""NetworkId"">"
+                strInput &= "<Identity>kla-tencor</Identity>"
+                strInput &= "<SharedSecret>KIZId67wndDZCuer8kzoqA==</SharedSecret>"
+                strInput &= "</Credential>"
+                strInput &= "<UserAgent>ERP</UserAgent>"
+                strInput &= "</Sender>"
+                strInput &= "</Header>"
+                strInput &= "<Request>"
+                strInput &= "<OrderRequest>"
+                strInput &= "</OrderRequest>"
+                strInput &= "</Request></cXML>"
 
-                ' http://sdixbatch.sdi.com:8084/SDIWebSvcIn/KLATencor.aspx
+                'KLATencor.aspx
 
+                '  </OrderRequest></Request></cXML>
 
             Case Else
                 Exit Sub
@@ -1142,10 +1165,10 @@ Module Module1
         Dim sHttpResponse As String = ""
         Dim httpSession As New easyHttp
 
-        ' for KLA-Tencor: "http://sdixbatch.sdi.com:8084/SDIWebSvcIn/KLATencor.aspx"
+        ' for KLA-Tencor: "https://sdiexchtest.sdi.com/WebSvcSDI/KLATencor.aspx "  '  "http://sdixbatch.sdi.com:8084/SDIWebSvcIn/KLATencor.aspx"
 
         ' httpSession.URL = strUrlToSend 
-        httpSession.URL = "http://sdixbatch.sdi.com:8084/SDIWebSvcIn/KLATencor.aspx"  ' strUrlToSend  '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"  
+        httpSession.URL = "https://sdiexchtest.sdi.com/WebSvcSDI/KLATencor.aspx "  ' strUrlToSend  '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"  
 
         '  "https://https.amazonsedi.com/c47fcf9d-286d-498a-ba9f-df390c2757a2"  '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"    '  "http://192.168.253.46:8011/sdiwebin/CytecMatMastIn.aspx"  '   "http://ims.sdi.com:8913/sdiwebinSvc/CytecNstkPoRecpts.aspx"   ' "http://ims.sdi.com:8913/sdiwebinSvc/CytecPurchReqs.aspx"    '  "http://ims.sdi.com:8913/sdiwebinSvc/CytecStkReservIn.aspx"    '  "http://ims.sdi.com:8913/sdiwebinSvc/CytecMatMastIn.aspx"    '  "http://localhost/SDIWebProcessors/CytecMatMastIn.aspx"    '    "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"  '    "http://localhost/SDIWebProcessors/XmlInSDI.aspx"   '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx" 
         '   "https://https.amazonsedi.com/073dbe31-c230-403f-990c-6f74eeed1510"  '    "https://www.amazon.com/eprocurement/punchout"  '    "https://supplydev.hajoca.com/hajomid/eclipse.ecl"

@@ -144,10 +144,8 @@ Public Class easyHttp
                 System.Net.ServicePointManager.CertificatePolicy = New AlwaysIgnoreCertPolicy
             End If
 
-            ' this line of code forces .NET to use SSL30 as security protocol
-            '    since TLS does not work when trying to communicate with Grainger/Kaman (https)
             'System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3
-            System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls
+            System.Net.ServicePointManager.SecurityProtocol = 3072 ' SecurityProtocolType.Tls
 
             ' action type
             'request.Headers.Add(name:="SOAPAction", value:="https://schemas.microsoft.com/crm/2006/WebServices/Retrieve")
