@@ -76,9 +76,6 @@ Module Module1
             logpath = sLogPath & "\KLATencorPOInToINTF" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
         End If
 
-        'Call SftpUpload("C:\KLATencorIn\SFTP\KLA_TEST.txt")
-        'Exit Sub
-
         ' initialize logs
 
         myLoggr1 = New SDI.ApplicationLogger.appLogger(sErrLogPath, TraceLevel.Error)
@@ -90,8 +87,6 @@ Module Module1
                                      System.Reflection.Assembly.GetExecutingAssembly.GetModules()(0).FullyQualifiedName & _
                                      " Version: " & System.Reflection.Assembly.GetExecutingAssembly.GetName.Version.ToString & _
                                      "")
-
-        'm_POConfirm_Logger = New SDI.ApplicationLogger.appLogger(sPOConfirmPath, TraceLevel.Verbose)
 
         'process received info
         Call ProceesKLATencorPOInfo()
@@ -107,9 +102,6 @@ Module Module1
             myLoggr1 = Nothing
             'm_POConfirm_Logger = Nothing
         End Try
-
-        'put m_POConfirm_Logger on sftp server - using sPOConfirmPath
-        Call SftpUpload(sPOConfirmPath)
 
         ' destroy logger object
         Try
@@ -293,6 +285,8 @@ Module Module1
                         End Try
                     End Try
 
+                    sPoConfirmText = ""
+                    sPOConfirmPath = ""
                     Dim strReqId As String = ""
                     If Trim(strXMLError) = "" Then
 
@@ -382,7 +376,7 @@ Module Module1
                                                                 strOrderNum = attrib.Value
                                                                 'm_POConfirm_Logger.WriteInformationLog("KLA-Tencor PO # : " & strOrderNum)
                                                                 sPoConfirmText &= "KLA-Tencor PO # : " & strOrderNum
-                                                                sPOConfirmPath = "C:\KLATencorIn\SFTP\POConfrm\PO_Confirm_For_" & strOrderNum  '  Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+                                                                sPOConfirmPath = "C:\KLATencorIn\SFTP\POConfrm\KLA_US_" & strOrderNum  '  Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
                                                             End If
                                                         Next  '  For Each attrib As XmlAttribute In nodeOrdrRefr.Attributes()
                                                     End If
@@ -787,7 +781,32 @@ Module Module1
                             File.Delete(aFiles(I).FullName)
                             m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & "C:\KLATencorIn\BadXML\" & aFiles(I).Name)
                         End If
-                        
+
+                        'upload 'is Failed' PO Confirmation to SFTP
+                        If Trim(strXMLError) <> "" Then
+
+                        Else
+                            strXMLError = "File is not processed OK"
+                        End If
+                        sPoConfirmText &= vbCrLf & " KLA-Tencor From PO To SDI tables has completed with errors. " & vbCrLf & _
+                            " Error Message is: " & vbCrLf & vbCrLf & _
+                            Trim(strXMLError) & vbCrLf & _
+                            ""
+                        sPOConfirmPath &= "_is_Failed_" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"  '  C:\KLATencorIn\SFTP\POConfrm\POConfirmFor: " & strOrderNum  '  Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+                        m_POConfirm_LoggerN1 = New SDI.ApplicationLogger.appLogger(sPOConfirmPath, TraceLevel.Verbose)
+                        m_POConfirm_LoggerN1.WriteInformationLog(sPoConfirmText)
+
+                        Try
+                            m_POConfirm_LoggerN1.Dispose()
+                        Catch ex As Exception
+
+                        Finally
+                            m_POConfirm_LoggerN1 = Nothing
+                        End Try
+
+                        'put m_POConfirm_Logger on sftp server - using sPOConfirmPath
+                        Call SftpUpload(sPOConfirmPath)
+
                     Else
 
                         'move file to XMLInProcessed folder
@@ -798,6 +817,7 @@ Module Module1
                         sPOConfirmPath &= "_is_Processed OK_" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"  '  C:\KLATencorIn\SFTP\POConfrm\POConfirmFor: " & strOrderNum  '  Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
                         m_POConfirm_LoggerN1 = New SDI.ApplicationLogger.appLogger(sPOConfirmPath, TraceLevel.Verbose)
                         m_POConfirm_LoggerN1.WriteInformationLog(sPoConfirmText)
+
                         Try
                             m_POConfirm_LoggerN1.Dispose()
                         Catch ex As Exception
@@ -805,6 +825,9 @@ Module Module1
                         Finally
                             m_POConfirm_LoggerN1 = Nothing
                         End Try
+
+                        'put m_POConfirm_Logger on sftp server - using sPOConfirmPath
+                        Call SftpUpload(sPOConfirmPath)
 
                     End If
 
@@ -1241,25 +1264,7 @@ Module Module1
         End Try
 
         Dim strEmailBodyEnd As String = "</body></html>"
-        'Dim strMyPoConfrm As String = ""
-        'strMyPoConfrm = "<html><body>" & strEmailBody & strEmailBodyEnd
-
-        'm_POConfirm_Logger.WriteInformationLog(strMyPoConfrm)
-        sPoConfirmText &= vbCrLf & " KLA-Tencor From PO To INTF tables has completed with errors. " & vbCrLf & _
-            " XML file name(s) are below. " & vbCrLf & vbCrLf & _
-            strErrListForSFTP & vbCrLf & _
-            ""
-        sPOConfirmPath &= "_is_Failed_" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"  '  C:\KLATencorIn\SFTP\POConfrm\POConfirmFor: " & strOrderNum  '  Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-        m_POConfirm_LoggerN1 = New SDI.ApplicationLogger.appLogger(sPOConfirmPath, TraceLevel.Verbose)
-        m_POConfirm_LoggerN1.WriteInformationLog(sPoConfirmText)
-        Try
-            m_POConfirm_LoggerN1.Dispose()
-        Catch ex As Exception
-
-        Finally
-            m_POConfirm_LoggerN1 = Nothing
-        End Try
-
+        
         strEmailBody = strAddSDILogo & strEmailBody
         strEmailBody &= "" & _
                     "<HR width='100%' SIZE='1'>" & _
