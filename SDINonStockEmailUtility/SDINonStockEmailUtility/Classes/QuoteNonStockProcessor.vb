@@ -753,6 +753,7 @@ Public Class QuoteNonStockProcessor
 
             If DbUrl.Substring(DbUrl.Length - 4).ToUpper = "STAR" Or _
                 DbUrl.Substring(DbUrl.Length - 4).ToUpper = "RPTG" Or _
+                DbUrl.Substring(DbUrl.Length - 4).ToUpper = "PLGR" Or _
                 DbUrl.Substring(DbUrl.Length - 4).ToUpper = "DEVL" Then
                 EmailTo = "webdev@sdi.com;SDIportalsupport@avasoft.biz"
             End If
@@ -1569,7 +1570,7 @@ Public Class QuoteNonStockProcessor
                 ' override for RFQ origin to include (if provided) the work order # on the subject line
                 '   - erwin 3/26/2014
                 If (itmQuoted.OrderOrigin = "RFQ") Then
-                    If (itmQuoted.WorkOrderNumber.Length > 0) Then
+                    If Trim(itmQuoted.WorkOrderNumber) <> "" Then  '  If (itmQuoted.WorkOrderNumber.Length > 0) Then
                         eml.Subject &= " (Work Order # " & itmQuoted.WorkOrderNumber & ")"
                     End If
                 End If
@@ -2253,7 +2254,7 @@ Public Class QuoteNonStockProcessor
             ' override for RFQ origin to include (if provided) the work order # on the subject line
             '   - erwin 3/26/2014
             If (itmQuoted.OrderOrigin = "RFQ") Then
-                If (itmQuoted.WorkOrderNumber.Length > 0) Then
+                If Trim(itmQuoted.WorkOrderNumber) <> "" Then  '  If (itmQuoted.WorkOrderNumber.Length > 0) Then
                     eml.Subject &= " (Work Order #" & itmQuoted.WorkOrderNumber & ")"
                 End If
             End If

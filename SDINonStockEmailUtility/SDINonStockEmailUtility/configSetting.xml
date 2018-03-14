@@ -82,5 +82,6 @@
     <punchInBU id="I0442" desc="Ascend-Dec" />
     <punchInBU id="I0443" desc="Ascend-Gre" />
     <punchInBU id="I0444" desc="Ascend-Fol" />
+    <punchInBU id="I0515" desc="KLA-Tencor" />
   </punchInBUs>
 </configuration>
