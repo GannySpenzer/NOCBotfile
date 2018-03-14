@@ -317,6 +317,30 @@ Module Module1
                         'start parsing XML file
                         m_logger.WriteInformationLog(rtn & " :: Start parsing XML file ")
                         If Trim(strXMLError) = "" Then
+                            Dim strOrigOrderQuoteNumber As String = " "
+                            'get node "HEADER"
+                            Dim nodeHeaderN As XmlNode = root.FirstChild()  '  node "HEADER"
+                            Dim strNodeHeaderName As String = nodeHeaderN.Name
+                            If nodeHeaderN.ChildNodes.Count > 0 Then
+                                Dim iHdr As Integer = 0
+                                Dim strHeaderChildName As String = ""
+                                For iHdr = 0 To nodeHeaderN.ChildNodes.Count - 1
+                                    strHeaderChildName = UCase(nodeHeaderN.ChildNodes(iHdr).Name)
+                                    Dim nodeHeaderChild As XmlNode = nodeHeaderN.ChildNodes(iHdr)
+                                    If strHeaderChildName = "ORIGINALDOCUMENT" Then
+                                        If nodeHeaderChild.Attributes.Count > 0 Then
+                                            For Each attrib As XmlAttribute In nodeHeaderChild.Attributes()
+                                                If UCase(attrib.Name) = "PAYLOADID" Then
+                                                    strOrigOrderQuoteNumber = attrib.Value
+                                                End If
+                                            Next   '  For Each attrib As XmlAttribute In nodeHeaderChild.Attributes()
+                                        End If  '  If nodeHeaderChild.Attributes.Count > 0 Then
+                                    End If  '  If strHeaderChildName = "ORIGINALDOCUMENT" Then
+                                Next  '  For iHdr = 0 To nodeHeaderN.ChildNodes.Count - 1
+                            End If  '  If nodeHeaderN.ChildNodes.Count > 0 Then
+                            If Trim(strOrigOrderQuoteNumber) = "" Then
+                                strOrigOrderQuoteNumber = " "
+                            End If
 
                             Dim nodeOrdConf As XmlNode = root.LastChild()  '  node "REQUEST" 
 
@@ -346,6 +370,8 @@ Module Module1
                                         arrCurrency(0) = ""
                                         Dim arrDescr(0) As String
                                         arrDescr(0) = ""
+                                        Dim arrMatGroupTax(0) As String
+                                        arrMatGroupTax(0) = ""
 
                                         If nodeOrdRequest.ChildNodes.Count > 0 Then
                                             j1 = 0
@@ -363,6 +389,8 @@ Module Module1
                                             arrCurrency(0) = ""
                                             ReDim arrDescr(0)
                                             arrDescr(0) = ""
+                                            ReDim arrMatGroupTax(0)
+                                            arrMatGroupTax(0) = ""
 
                                             For iCtr = 0 To nodeOrdRequest.ChildNodes.Count - 1
                                                 strChildNodeName = UCase(nodeOrdRequest.ChildNodes(iCtr).Name)
@@ -472,13 +500,24 @@ Module Module1
 
                                                                                         Next  '  For Each NodeChildIUnitPrice As XmlNode In NodeChildItemID.ChildNodes() - node MONEY
                                                                                     End If
-                                                                                    
+
                                                                                 Case "DESCRIPTION"
                                                                                     If j1 = 0 Then
                                                                                     Else
                                                                                         ReDim Preserve arrDescr(j1)
                                                                                     End If
                                                                                     arrDescr(j1) = NodeChildItemID.InnerText
+
+                                                                                    'below is the code for the Charge Code (Material Group for KLA)
+                                                                                    '<ManufacturerPartID>33</ManufacturerPartID> - their field
+                                                                                    ' ISA_CUST_CHARGE_CD - our Interface line field
+                                                                                Case "MANUFACTURERPARTID"
+                                                                                    If j1 = 0 Then
+                                                                                    Else
+                                                                                        ReDim Preserve arrMatGroupTax(j1)
+                                                                                    End If
+                                                                                    arrMatGroupTax(j1) = NodeChildItemID.InnerText
+
                                                                                 Case Else
                                                                                     'do nothing
                                                                             End Select
@@ -501,242 +540,303 @@ Module Module1
                                             m_logger.WriteInformationLog(rtn & " :: Start creating Interface records ")
                                             Dim strSqlString As String = ""
                                             strReqId = ""
-                                           
+
                                             If Trim(strOrderNum) <> "" Then
-                                                If arrDescr.Length > 0 And arrUnitPrice.Length > 0 And arrCurrency.Length > 0 And arrSupplPartIDs.Length > 0 And arrAuxSupplPartIDs.Length > 0 And arrLineNums.Length > 0 And arrLineQtys.Length > 0 Then
-                                                    'get new Order No.
-                                                    strReqId = getOrdreqID()
+                                                'get new Order No.
+                                                'strReqId = getOrdreqID()
+                                                strReqId = "K" & Mid(strOrderNum, 2)
 
-                                                    Dim i3 As Integer = 0
-                                                    Dim cmd As OleDbCommand = Nothing
+                                                Dim bIsOrderExists As Boolean = False
+                                                bIsOrderExists = IsOrdreqIDExists(strReqId)
 
-                                                    connectOR.Open()
-                                                    Dim trnsactSession As OleDbTransaction = connectOR.BeginTransaction
+                                                If Not bIsOrderExists Then
 
-                                                    Try
-                                                        'header Insert string
-                                                        strSqlString = "INSERT INTO SYSADM8.PS_ISA_ORD_INTF_HD " & vbCrLf & _
-                                                        "( " & vbCrLf & _
-                                                        " BUSINESS_UNIT_OM " & vbCrLf & _
-                                                        ",ORDER_NO " & vbCrLf & _
-                                                        ",BILL_TO_CUST_ID " & vbCrLf & _
-                                                        ",ORIGIN " & vbCrLf & _
-                                                        ",SOURCE_ID " & vbCrLf & _
-                                                        ",ORDER_DATE " & vbCrLf & _
-                                                        ",ORDER_STATUS " & vbCrLf & _
-                                                        ",REQUESTOR_ID " & vbCrLf & _
-                                                        ",ISA_ORDER_TYPE " & vbCrLf & _
-                                                        ",ADD_DTTM " & vbCrLf & _
-                                                        ",LASTUPDDTTM " & vbCrLf & _
-                                                        ") " & vbCrLf & _
-                                                        "VALUES " & vbCrLf & _
-                                                        "( " & vbCrLf & _
-                                                        " 'I0515' " & vbCrLf & _
-                                                        ",'" & strReqId & "' " & vbCrLf & _
-                                                        ",'90589' " & vbCrLf & _
-                                                        ",'IOL' " & vbCrLf & _
-                                                        ",' ' " & vbCrLf & _
-                                                        ",TO_DATE('" & Now.ToString & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
-                                                        ",'OPN' " & vbCrLf & _
-                                                        ",' ' " & vbCrLf & _
-                                                        ",' ' " & vbCrLf & _
-                                                        ",TO_DATE('" & Now.ToString & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
-                                                        ",TO_DATE('" & Now.ToString & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
-                                                        ") " & vbCrLf & _
-                                                        ""
+                                                    If arrDescr.Length > 0 And arrUnitPrice.Length > 0 And arrCurrency.Length > 0 And arrSupplPartIDs.Length > 0 And arrAuxSupplPartIDs.Length > 0 And arrLineNums.Length > 0 And arrLineQtys.Length > 0 Then
 
-                                                        cmd = connectOR.CreateCommand
-                                                        cmd.CommandText = strSqlString
-                                                        cmd.CommandType = CommandType.Text
-                                                        cmd.Transaction = trnsactSession
-                                                        i3 = cmd.ExecuteNonQuery()
-                                                        cmd = Nothing
-                                                        If i3 > 0 Then
-                                                            m_logger.WriteInformationLog(rtn & " :: Created Interface Header record with Order number: " & strReqId)
-                                                        Else
-                                                            'error
-                                                            m_logger.WriteInformationLog(rtn & " :: Rollback. Error - rows affected <= 0 for Interface Header record with Order number: " & strReqId)
-                                                            strXMLError &= rtn & " :: Rollback. Error - rows affected <= 0 for Interface Line record with Order number: " & strReqId
+                                                        Dim i3 As Integer = 0
+                                                        Dim cmd As OleDbCommand = Nothing
 
-                                                            'bolError = True
-                                                            bLineError = True
-                                                            Exit For
-                                                        End If
-                                                        If Trim(strXMLError) = "" Then
-                                                            Dim bIsAtLeastOneLineOK As Boolean = False
-                                                            'create INTF_LN records based on arrSupplPartIDs(iLn) values
-                                                            Dim iLn As Integer = 0
-                                                            Dim strTAX_EXEMPT As String = My.Settings("TaxExempt").ToString.Trim
-                                                            For iLn = 0 To arrLineNums.Length - 1
+                                                        connectOR.Open()
+                                                        Dim trnsactSession As OleDbTransaction = connectOR.BeginTransaction
 
-                                                                ' needed info: UnitPrice, UOM, ChargeCode for this part: arrSupplPartIDs(iLn)
-                                                                Dim strUnitPrice As String = " "
-                                                                Dim strStdUom As String = "EA"
-                                                                Dim strPartChargeCode As String = " "
+                                                        Try
+                                                            'header Insert string
+                                                            strSqlString = "INSERT INTO SYSADM8.PS_ISA_ORD_INTF_HD " & vbCrLf & _
+                                                            "( " & vbCrLf & _
+                                                            " BUSINESS_UNIT_OM " & vbCrLf & _
+                                                            ",ORDER_NO " & vbCrLf & _
+                                                            ",BILL_TO_CUST_ID " & vbCrLf & _
+                                                            ",ORIGIN " & vbCrLf & _
+                                                            ",SOURCE_ID " & vbCrLf & _
+                                                            ",ORDER_DATE " & vbCrLf & _
+                                                            ",ORDER_STATUS " & vbCrLf & _
+                                                            ",REQUESTOR_ID " & vbCrLf & _
+                                                            ",ISA_ORDER_TYPE " & vbCrLf & _
+                                                            ",ADD_DTTM " & vbCrLf & _
+                                                            ",LASTUPDDTTM " & vbCrLf & _
+                                                            ") " & vbCrLf & _
+                                                            "VALUES " & vbCrLf & _
+                                                            "( " & vbCrLf & _
+                                                            " 'I0515' " & vbCrLf & _
+                                                            ",'" & strReqId & "' " & vbCrLf & _
+                                                            ",'90589' " & vbCrLf & _
+                                                            ",'IOL' " & vbCrLf & _
+                                                            ",' ' " & vbCrLf & _
+                                                            ",TO_DATE('" & Now.ToString & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
+                                                            ",'OPN' " & vbCrLf & _
+                                                            ",' ' " & vbCrLf & _
+                                                            ",' ' " & vbCrLf & _
+                                                            ",TO_DATE('" & Now.ToString & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
+                                                            ",TO_DATE('" & Now.ToString & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
+                                                            ") " & vbCrLf & _
+                                                            ""
 
-                                                                strSqlString = "SELECT A.INV_ITEM_ID, A.UNIT_MEASURE_STD, B.ISA_CUST_CHARGE_CD, C.PRICE FROM PS_MASTER_ITEM_TBL A, PS_ISA_MASTER_ITEM B, SYSADM8.PS_ISA_SDIEX_PRICE C " & vbCrLf & _
-                                                                    "WHERE A.INV_ITEM_ID = '" & arrSupplPartIDs(iLn) & "' AND A.INV_ITEM_ID = B.INV_ITEM_ID AND A.INV_ITEM_ID = C.INV_ITEM_ID" & vbCrLf & _
-                                                                    "" & vbCrLf & _
-                                                                    "" & vbCrLf & _
-                                                                    ""
+                                                            cmd = connectOR.CreateCommand
+                                                            cmd.CommandText = strSqlString
+                                                            cmd.CommandType = CommandType.Text
+                                                            cmd.Transaction = trnsactSession
+                                                            i3 = cmd.ExecuteNonQuery()
+                                                            cmd = Nothing
+                                                            If i3 > 0 Then
+                                                                m_logger.WriteInformationLog(rtn & " :: Created Interface Header record with Order number: " & strReqId)
+                                                            Else
+                                                                'error
+                                                                m_logger.WriteInformationLog(rtn & " :: Rollback. Error - rows affected <= 0 for Interface Header record with Order number: " & strReqId)
+                                                                strXMLError &= rtn & " :: Rollback. Error - rows affected <= 0 for Interface Line record with Order number: " & strReqId
+
+                                                                'bolError = True
+                                                                bLineError = True
+                                                                Exit For
+                                                            End If
+                                                            If Trim(strXMLError) = "" Then
+                                                                Dim strDefaultEmpID As String = "ROVENSV1"
+                                                                Dim strEmplIdSql As String = "SELECT ISA_EMPLOYEE_ID FROM SYSADM8.PS_ISA_ORD_INTF_LN  WHERE BUSINESS_UNIT_OM = 'I0515' AND ORDER_NO = '" & strOrigOrderQuoteNumber & "'"
+
                                                                 cmd = connectOR.CreateCommand
-                                                                cmd.CommandText = strSqlString
+                                                                cmd.CommandText = strEmplIdSql
                                                                 cmd.CommandType = CommandType.Text
                                                                 cmd.Transaction = trnsactSession
-                                                                'get reader
-                                                                Dim rdr As OleDbDataReader = cmd.ExecuteReader()
-                                                                If Not (rdr Is Nothing) Then
-                                                                    If rdr.Read Then
-                                                                        'get fields for INTF_LN
-                                                                        strStdUom = CType(rdr("UNIT_MEASURE_STD"), String)
-                                                                        strPartChargeCode = CType(rdr("ISA_CUST_CHARGE_CD"), String)
-                                                                        strUnitPrice = CType(rdr("PRICE"), String)
+
+                                                                Try
+                                                                    strDefaultEmpID = cmd.ExecuteScalar
+                                                                Catch ex As Exception
+                                                                    strDefaultEmpID = "ROVENSV1"
+                                                                End Try
+
+                                                                cmd = Nothing
+
+                                                                Dim bIsAtLeastOneLineOK As Boolean = False
+                                                                'create INTF_LN records based on arrSupplPartIDs(iLn) values
+                                                                Dim iLn As Integer = 0
+                                                                Dim strTAX_EXEMPT As String = My.Settings("TaxExempt").ToString.Trim
+                                                                For iLn = 0 To arrLineNums.Length - 1
+
+                                                                    ' needed info: UnitPrice, UOM, ChargeCode for this part: arrSupplPartIDs(iLn)
+                                                                    Dim strUnitPrice As String = " "
+                                                                    Dim strStdUom As String = "EA"
+                                                                    Dim strPartChargeCode As String = " "
+                                                                    Dim strInvItemId As String = " "
+
+                                                                    '  PS_REQ_LINE  arrUnitPrice(iLn)
+                                                                    ' no B.ISA_CUST_CHARGE_CD - will get it from XML
+
+                                                                    'strSqlString = "SELECT A.INV_ITEM_ID, A.UNIT_MEASURE_STD, C.PRICE FROM PS_MASTER_ITEM_TBL A, PS_ISA_MASTER_ITEM B, SYSADM8.PS_ISA_SDIEX_PRICE C " & vbCrLf & _
+                                                                    '    "WHERE A.INV_ITEM_ID = '" & arrSupplPartIDs(iLn) & "' AND A.INV_ITEM_ID = B.INV_ITEM_ID AND A.INV_ITEM_ID = C.INV_ITEM_ID" & vbCrLf & _
+                                                                    '    "" & vbCrLf & _
+                                                                    '    "" & vbCrLf & _
+                                                                    '    ""
+
+                                                                    strSqlString = "SELECT INV_ITEM_ID, UNIT_MEASURE_STD, PRICE_REQ_BSE FROM SYSADM8.PS_REQ_LINE " & vbCrLf & _
+                                                                        "WHERE REQ_ID = '" & strOrigOrderQuoteNumber & "' AND MFG_ITM_ID = '" & arrSupplPartIDs(iLn) & "'" & vbCrLf & _
+                                                                        "" & vbCrLf & _
+                                                                        ""
+
+                                                                    cmd = connectOR.CreateCommand
+                                                                    cmd.CommandText = strSqlString
+                                                                    cmd.CommandType = CommandType.Text
+                                                                    cmd.Transaction = trnsactSession
+                                                                    'get reader
+                                                                    Dim rdr As OleDbDataReader = cmd.ExecuteReader()
+                                                                    If Not (rdr Is Nothing) Then
+                                                                        If rdr.Read Then
+                                                                            'get fields for INTF_LN
+                                                                            strStdUom = CType(rdr("UNIT_MEASURE_STD"), String)
+                                                                            strInvItemId = CType(rdr("INV_ITEM_ID"), String)
+                                                                            'strUnitPrice = CType(rdr("PRICE"), String)
+                                                                            strUnitPrice = CType(rdr("PRICE_REQ_BSE"), String)
+                                                                        Else
+                                                                            'error
+                                                                            strXMLError += "Error retrieving MFG_ITM_ID info for: " & arrSupplPartIDs(iLn) & vbCrLf
+                                                                            'do not process this file
+                                                                            m_logger.WriteInformationLog(rtn & " :: Rollback. Error description: " & strXMLError)
+                                                                            strXMLError &= rtn & " :: Rollback. Error description: " & strXMLError
+                                                                            'bolError = True
+                                                                            bLineError = True
+                                                                            Exit For
+                                                                        End If
+                                                                    End If
+                                                                    rdr.Close()
+                                                                    rdr = Nothing
+                                                                    cmd = Nothing
+
+                                                                    m_logger.WriteInformationLog(rtn & " :: Retrieved MFG_ITM_ID info for: " & arrSupplPartIDs(iLn))
+                                                                    'insert interface line string
+
+                                                                    'get INTF insert line SQL
+
+                                                                    ' Due Date 
+                                                                    Dim dDueDate As Date = DateAdd(DateInterval.Day, 7, DateTime.Now.Date)
+                                                                    Dim StrDueDate As String = dDueDate.ToString()
+                                                                    Try
+                                                                        StrDueDate = "TO_DATE('" & StrDueDate & "', 'MM/DD/YYYY HH:MI:SS AM')"
+                                                                    Catch ex As Exception
+                                                                        StrDueDate = ""
+                                                                    End Try
+
+                                                                    strSqlString = "INSERT INTO SYSADM8.PS_ISA_ORD_INTF_LN (BUSINESS_UNIT_OM,ORDER_NO,ISA_INTFC_LN,BUSINESS_UNIT_IN,BUSINESS_UNIT_PO,REF_ORDER_NO,REF_LINE_NBR,SHIP_TO_CUST_ID,OPRID_APPROVED_BY,ITM_SETID," & _
+                                                                        "INV_ITEM_ID,CONTRACT_NUM,CONTRACT_LINE_NUM2,TXN_CURRENCY_CD,CURRENCY_CD_BASE,PRICE_VNDR,ISA_SELL_PRICE," & _
+                                                                        "UNIT_OF_MEASURE,QTY_REQUESTED,QTY_ORDERED_BASE,ISA_LINE_STATUS,CHANGE_FLAG,TAX_EXEMPT,TAX_EXEMPT_CERT," & _
+                                                                        "TAX_GROUP,ISA_EMPLOYEE_ID,ISA_PRIORITY_FLAG,NEEDS_REPAIR_SW,PRIORITY_NBR,VENDOR_SETID,VENDOR_ID," & _
+                                                                        "ITM_ID_VNDR,MFG_ID,ISA_MFG_FREEFORM,MFG_ITM_ID,ISA_NONCAT_KEY,INSPECT_CD,DESCR254,ISA_UNLOADING_PT," & _
+                                                                        "DELIVERED_TO,PROCESS_INSTANCE,CUSTOMER_PO,ISA_CUST_PO_LINE,ACCOUNT,ISA_WORK_ORDER_NO,ISA_ACTIVITY_NBR,ISA_MACHINE_NO," & _
+                                                                        "NETWORK_ID,ISA_WBS_ELMNT,PROJECT_ID,ISA_CUST_CHARGE_CD,ISA_QUOTE_REF,ISA_INTFC_LN_TYPE,ADD_DTTM,OPRID_ENTERED_BY," &
+                                                                        "SHIPTO_ID,LOCATION2,QTY_RECEIVED,QTY_SHIPPED,KIT_PRESENT_FLG,ISA_KIT_ID,LINE_FIELD_C6,RFQ_IND,ISA_PICK_COMPLETE," & _
+                                                                        "ISA_SUGGESTED_VNDR,STORAGE_AREA,STOR_LEVEL_1,STOR_LEVEL_2,STOR_LEVEL_3,STOR_LEVEL_4,HAZARDOUS_SW,ISA_ITEM_CAT," & _
+                                                                        "DELIVERED_FLG,ISA_LANE_ID,BUYER_ID,SERIAL_ID,USER_CHAR1,USER_CHAR2,USER_CHAR3,USER_AMT1,USER_AMT2,USER_AMT3,USER1," & _
+                                                                        "ISA_USER1,ISA_USER2,ISA_USER3,ISA_USER4,ISA_USER5,ERROR_FLAG,OPRID_MODIFIED_BY,ISA_STOP_NBR"
+
+                                                                    If Not String.IsNullOrEmpty(StrDueDate) Then
+                                                                        strSqlString = strSqlString + ",ISA_REQUIRED_BY_DT"
+                                                                    End If
+                                                                    strSqlString = strSqlString + ")"
+
+                                                                    'default values
+                                                                    Dim strWorkOrder As String = " "
+                                                                    Dim strMachineNo As String = " "
+                                                                    Dim strVendorID As String = " "
+                                                                    Dim strVendorITMID As String = " "
+                                                                    Dim strPULINEFIELD As String = " "
+                                                                    Dim strRfqInd As String = " "
+                                                                    Dim strAddToCtlg As String = " "
+                                                                    Dim strMfdID As String = " "
+                                                                    Dim strMfdName As String = " "
+                                                                    Dim strMfgPartNumber As String = " "
+                                                                    Dim strShipto As String = "L0515-01"
+                                                                    Dim strDefaultUserId As String = strDefaultEmpID  '   "TESTERJ1" ' special test user created in SDiExchange: JACK TESTER Superuser with email: vitaly.rovensky@sdi.com
+
+                                                                    If Trim(strStdUom) = "" Then
+                                                                        strStdUom = "EA"
+                                                                    End If
+                                                                    If Trim(strInvItemId) = "" Then
+                                                                        strInvItemId = " "
+                                                                    End If
+                                                                    If Trim(strUnitPrice) = "" Then
+                                                                        strUnitPrice = "0"
+                                                                    End If
+                                                                    If Trim(strTAX_EXEMPT) = "" Then
+                                                                        strTAX_EXEMPT = " "
+                                                                    End If
+
+                                                                    strMfgPartNumber = arrSupplPartIDs(iLn)
+
+                                                                    If Trim(strMfgPartNumber) = "" Then
+                                                                        strMfgPartNumber = " "
+                                                                    End If
+
+                                                                    strPartChargeCode = arrMatGroupTax(iLn)
+
+                                                                    If Trim(strPartChargeCode) = "" Then
+                                                                        strPartChargeCode = " "
+                                                                    End If
+
+                                                                    strSqlString = strSqlString & " VALUES ('I0515','" & strReqId & "'," & (iLn + 1) & ",' ',' ',' ',0,'90589',' ','MAIN1'," & _
+                                                                    "'" & strInvItemId & "',' ',0,' ',' ','" & arrUnitPrice(iLn) & "'," & strUnitPrice & "," & _
+                                                                    "'" & strStdUom & "'," & arrLineQtys(iLn) & ",0,'NEW',' ','" & strTAX_EXEMPT & "',' '," & _
+                                                                    "' ','" & strDefaultEmpID & "', ' ',' ',0,'MAIN1','" & strVendorID & "'," & _
+                                                                    "'" & strVendorITMID & "','" & strMfdID & "','" & strMfdName & "','" & strMfgPartNumber & "',' ','N','" & arrDescr(iLn) & "',' '," & _
+                                                                    "' ',0,'" & strOrderNum & "','" & arrLineNums(iLn) & "',' ','" & strWorkOrder & "',' ','" & strMachineNo & "'," & _
+                                                                    "' ',' ',' ','" & strPartChargeCode & "','" & strOrigOrderQuoteNumber & "',' ',TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM'),'" & strDefaultUserId & "'," & _
+                                                                    "'" & strShipto & "',' ',0,0,' ',' ','" & strPULINEFIELD & "','" & strRfqInd & "',' '," & _
+                                                                    "' ',' ',' ',' ',' ',' ',' ',' '," & _
+                                                                    "' ',0,' ',' ',' ',' ',' ',0,0,0,'" & strAddToCtlg & "',' ',' ',' ',' ','" & arrAuxSupplPartIDs(iLn) & "',' ',' ',0"
+
+                                                                    If Not String.IsNullOrEmpty(StrDueDate) Then
+                                                                        strSqlString = strSqlString + "," & StrDueDate
+                                                                    End If
+                                                                    strSqlString = strSqlString + ")"
+
+                                                                    cmd = connectOR.CreateCommand
+                                                                    cmd.CommandText = strSqlString
+                                                                    cmd.CommandType = CommandType.Text
+                                                                    cmd.Transaction = trnsactSession
+                                                                    i3 = cmd.ExecuteNonQuery
+                                                                    cmd = Nothing
+                                                                    If i3 > 0 Then
+                                                                        m_logger.WriteInformationLog(rtn & " :: Created Interface Line record with Order number: " & strReqId & " for line number: " & (iLn + 1).ToString())
+                                                                        bIsAtLeastOneLineOK = True
                                                                     Else
                                                                         'error
-                                                                        strXMLError += "Error retrieving Part info for: " & arrSupplPartIDs(iLn) & vbCrLf
-                                                                        'do not process this file
-                                                                        m_logger.WriteInformationLog(rtn & " :: Rollback. Error description: " & strXMLError)
-                                                                        strXMLError &= rtn & " :: Rollback. Error description: " & strXMLError
+                                                                        m_logger.WriteInformationLog(rtn & " :: Rollback. Error - rows affected <= 0 for Interface Line record with Order number: " & strReqId & " for line number: " & (iLn + 1).ToString())
+                                                                        strXMLError &= rtn & " :: Rollback. Error - rows affected <= 0 for Interface Line record with Order number: " & strReqId & " for line number: " & (iLn + 1).ToString()
                                                                         'bolError = True
                                                                         bLineError = True
                                                                         Exit For
                                                                     End If
-                                                                End If
-                                                                rdr.Close()
-                                                                rdr = Nothing
-                                                                cmd = Nothing
+                                                                Next  ' For iLn = 0 To arrLineNums.Length - 1
 
-                                                                m_logger.WriteInformationLog(rtn & " :: Retrieved part info for: " & arrSupplPartIDs(iLn))
-                                                                'insert interface line string
+                                                                'If bIsAtLeastOneLineOK Then
+                                                                '    'created INTF records. Need to record problems with lines if exists
+                                                                'Else
+                                                                '    'rollback
+                                                                '    bolError = True
+                                                                '    strXMLError &= rtn & " :: Rollback. All lines in the current order are erred out"
+                                                                'End If
+                                                            End If  '  If Trim(strXMLError) = "" Then - for line Items
 
-                                                                'get INTF insert line SQL
+                                                            If Trim(strXMLError) = "" Then
+                                                                'Commit transaction
+                                                                trnsactSession.Commit()
+                                                                connectOR.Close()
+                                                                trnsactSession = Nothing
+                                                                m_logger.WriteInformationLog(rtn & " :: Finished Interface records creation for: " & aFiles(I).Name)
+                                                            Else
+                                                                'rollback
+                                                                trnsactSession.Rollback()
+                                                                connectOR.Close()
+                                                                trnsactSession = Nothing
+                                                                m_logger.WriteInformationLog(rtn & " :: Rollback. Error Description: " & strXMLError)
+                                                                'bolError = True
+                                                                bLineError = True
+                                                            End If
 
-                                                                ' Due Date 
-                                                                Dim dDueDate As Date = DateAdd(DateInterval.Day, 7, DateTime.Now.Date)
-                                                                Dim StrDueDate As String = dDueDate.ToString()
-                                                                Try
-                                                                    StrDueDate = "TO_DATE('" & StrDueDate & "', 'MM/DD/YYYY HH:MI:SS AM')"
-                                                                Catch ex As Exception
-                                                                    StrDueDate = ""
-                                                                End Try
-
-                                                                strSqlString = "INSERT INTO SYSADM8.PS_ISA_ORD_INTF_LN (BUSINESS_UNIT_OM,ORDER_NO,ISA_INTFC_LN,BUSINESS_UNIT_IN,BUSINESS_UNIT_PO,REF_ORDER_NO,REF_LINE_NBR,SHIP_TO_CUST_ID,OPRID_APPROVED_BY,ITM_SETID," & _
-                                                                    "INV_ITEM_ID,CONTRACT_NUM,CONTRACT_LINE_NUM2,TXN_CURRENCY_CD,CURRENCY_CD_BASE,PRICE_VNDR,ISA_SELL_PRICE," & _
-                                                                    "UNIT_OF_MEASURE,QTY_REQUESTED,QTY_ORDERED_BASE,ISA_LINE_STATUS,CHANGE_FLAG,TAX_EXEMPT,TAX_EXEMPT_CERT," & _
-                                                                    "TAX_GROUP,ISA_EMPLOYEE_ID,ISA_PRIORITY_FLAG,NEEDS_REPAIR_SW,PRIORITY_NBR,VENDOR_SETID,VENDOR_ID," & _
-                                                                    "ITM_ID_VNDR,MFG_ID,ISA_MFG_FREEFORM,MFG_ITM_ID,ISA_NONCAT_KEY,INSPECT_CD,DESCR254,ISA_UNLOADING_PT," & _
-                                                                    "DELIVERED_TO,PROCESS_INSTANCE,CUSTOMER_PO,ISA_CUST_PO_LINE,ACCOUNT,ISA_WORK_ORDER_NO,ISA_ACTIVITY_NBR,ISA_MACHINE_NO," & _
-                                                                    "NETWORK_ID,ISA_WBS_ELMNT,PROJECT_ID,ISA_CUST_CHARGE_CD,ISA_QUOTE_REF,ISA_INTFC_LN_TYPE,ADD_DTTM,OPRID_ENTERED_BY," &
-                                                                    "SHIPTO_ID,LOCATION2,QTY_RECEIVED,QTY_SHIPPED,KIT_PRESENT_FLG,ISA_KIT_ID,LINE_FIELD_C6,RFQ_IND,ISA_PICK_COMPLETE," & _
-                                                                    "ISA_SUGGESTED_VNDR,STORAGE_AREA,STOR_LEVEL_1,STOR_LEVEL_2,STOR_LEVEL_3,STOR_LEVEL_4,HAZARDOUS_SW,ISA_ITEM_CAT," & _
-                                                                    "DELIVERED_FLG,ISA_LANE_ID,BUYER_ID,SERIAL_ID,USER_CHAR1,USER_CHAR2,USER_CHAR3,USER_AMT1,USER_AMT2,USER_AMT3,USER1," & _
-                                                                    "ISA_USER1,ISA_USER2,ISA_USER3,ISA_USER4,ISA_USER5,ERROR_FLAG,OPRID_MODIFIED_BY,ISA_STOP_NBR"
-
-                                                                If Not String.IsNullOrEmpty(StrDueDate) Then
-                                                                    strSqlString = strSqlString + ",ISA_REQUIRED_BY_DT"
-                                                                End If
-                                                                strSqlString = strSqlString + ")"
-
-                                                                'default values
-                                                                Dim strWorkOrder As String = " "
-                                                                Dim strMachineNo As String = " "
-                                                                Dim strVendorID As String = " "
-                                                                Dim strVendorITMID As String = " "
-                                                                Dim strPULINEFIELD As String = " "
-                                                                Dim strRfqInd As String = " "
-                                                                Dim strAddToCtlg As String = " "
-                                                                Dim strMfdID As String = " "
-                                                                Dim strMfdName As String = " "
-                                                                Dim strMfgPartNumber As String = " "
-                                                                Dim strDefaultEmpID As String = "TESTERJ1"
-                                                                Dim strShipto As String = "L0515-01"
-                                                                Dim strDefaultUserId As String = "TESTERJ1" ' special test user created in SDiExchange: JACK TESTER Superuser with email: vitaly.rovensky@sdi.com
-
-                                                                If Trim(strUnitPrice) = "" Then
-                                                                    strUnitPrice = "0"
-                                                                End If
-                                                                If Trim(strTAX_EXEMPT) = "" Then
-                                                                    strTAX_EXEMPT = " "
-                                                                End If
-
-                                                                strSqlString = strSqlString & " VALUES ('I0515','" & strReqId & "'," & (iLn + 1) & ",' ',' ',' ',0,'90589',' ','MAIN1'," & _
-                                                                "'" & arrSupplPartIDs(iLn) & "',' ',0,' ',' ','" & arrUnitPrice(iLn) & "'," & strUnitPrice & "," & _
-                                                                "'" & strStdUom & "'," & arrLineQtys(iLn) & ",0,'RFQ',' ','" & strTAX_EXEMPT & "',' '," & _
-                                                                "' ','" & strDefaultEmpID & "', ' ',' ',0,'MAIN1','" & strVendorID & "'," & _
-                                                                "'" & strVendorITMID & "','" & strMfdID & "','" & strMfdName & "','" & strMfgPartNumber & "',' ','N','" & arrDescr(iLn) & "',' '," & _
-                                                                "' ',0,'" & strOrderNum & "','" & arrLineNums(iLn) & "',' ','" & strWorkOrder & "',' ','" & strMachineNo & "'," & _
-                                                                "' ',' ',' ','" & strPartChargeCode & "',' ',' ',TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM'),'" & strDefaultUserId & "'," & _
-                                                                "'" & strShipto & "',' ',0,0,' ',' ','" & strPULINEFIELD & "','" & strRfqInd & "',' '," & _
-                                                                "' ',' ',' ',' ',' ',' ',' ',' '," & _
-                                                                "' ',0,' ',' ',' ',' ',' ',0,0,0,'" & strAddToCtlg & "',' ',' ',' ',' ','" & arrAuxSupplPartIDs(iLn) & "',' ',' ',0"
-
-                                                                If Not String.IsNullOrEmpty(StrDueDate) Then
-                                                                    strSqlString = strSqlString + "," & StrDueDate
-                                                                End If
-                                                                strSqlString = strSqlString + ")"
-
-                                                                cmd = connectOR.CreateCommand
-                                                                cmd.CommandText = strSqlString
-                                                                cmd.CommandType = CommandType.Text
-                                                                cmd.Transaction = trnsactSession
-                                                                i3 = cmd.ExecuteNonQuery
-                                                                cmd = Nothing
-                                                                If i3 > 0 Then
-                                                                    m_logger.WriteInformationLog(rtn & " :: Created Interface Line record with Order number: " & strReqId & " for line number: " & (iLn + 1).ToString())
-                                                                    bIsAtLeastOneLineOK = True
-                                                                Else
-                                                                    'error
-                                                                    m_logger.WriteInformationLog(rtn & " :: Rollback. Error - rows affected <= 0 for Interface Line record with Order number: " & strReqId & " for line number: " & (iLn + 1).ToString())
-                                                                    strXMLError &= rtn & " :: Rollback. Error - rows affected <= 0 for Interface Line record with Order number: " & strReqId & " for line number: " & (iLn + 1).ToString()
-                                                                    'bolError = True
-                                                                    bLineError = True
-                                                                    Exit For
-                                                                End If
-                                                            Next  ' For iLn = 0 To arrLineNums.Length - 1
-
-                                                            'If bIsAtLeastOneLineOK Then
-                                                            '    'created INTF records. Need to record problems with lines if exists
-                                                            'Else
-                                                            '    'rollback
-                                                            '    bolError = True
-                                                            '    strXMLError &= rtn & " :: Rollback. All lines in the current order are erred out"
-                                                            'End If
-                                                        End If  '  If Trim(strXMLError) = "" Then - for line Items
-
-                                                        If Trim(strXMLError) = "" Then
-                                                            'Commit transaction
-                                                            trnsactSession.Commit()
-                                                            connectOR.Close()
-                                                            trnsactSession = Nothing
-                                                            m_logger.WriteInformationLog(rtn & " :: Finished Interface records creation for: " & aFiles(I).Name)
-                                                        Else
+                                                        Catch exTrans As Exception
                                                             'rollback
+                                                            strXMLError &= " Error creating INTF records. Rolling back for: " & aFiles(I).Name & ". Error: " & exTrans.Message()
                                                             trnsactSession.Rollback()
                                                             connectOR.Close()
                                                             trnsactSession = Nothing
-                                                            m_logger.WriteInformationLog(rtn & " :: Rollback. Error Description: " & strXMLError)
                                                             'bolError = True
                                                             bLineError = True
-                                                        End If
+                                                            m_logger.WriteInformationLog(rtn & " :: Rollback. Error Description: " & strXMLError)
+                                                        End Try
 
-                                                    Catch exTrans As Exception
-                                                        'rollback
-                                                        strXMLError &= " Error creating INTF records. Rolling back for: " & aFiles(I).Name & ". Error: " & exTrans.Message()
-                                                        trnsactSession.Rollback()
-                                                        connectOR.Close()
-                                                        trnsactSession = Nothing
+                                                    Else
+                                                        strXMLError &= " Some or all line info is missing for this file: " & aFiles(I).Name
+                                                        m_logger.WriteInformationLog(rtn & " :: Error Description: " & strXMLError)
+
                                                         'bolError = True
                                                         bLineError = True
-                                                        m_logger.WriteInformationLog(rtn & " :: Rollback. Error Description: " & strXMLError)
-                                                    End Try
+                                                    End If
 
                                                 Else
-                                                    strXMLError &= " Some or all line info is missing for this file: " & aFiles(I).Name
+                                                    'duplicate order - get out
+                                                    strXMLError &= " Duplicate Order Number sent ('" & strOrderNum & "') for this file: " & aFiles(I).Name
                                                     m_logger.WriteInformationLog(rtn & " :: Error Description: " & strXMLError)
 
                                                     'bolError = True
                                                     bLineError = True
-                                                End If
+                                                End If   '   If Not bIsOrderExists Then
+
                                             Else
                                                 strXMLError &= " Order Number is missing for this file: " & aFiles(I).Name
                                                 m_logger.WriteInformationLog(rtn & " :: Error Description: " & strXMLError)
@@ -1064,6 +1164,92 @@ Module Module1
         End Try
 
         Return dt
+
+    End Function
+
+    Private Function IsOrdreqIDExists(ByVal strReqId As String) As Boolean
+
+        Dim strReqNo As String = ""
+        Dim strOrderNo As String = ""
+        Dim strOrdIntfcH As String = ""
+        Dim bolReqExist As Boolean
+        bolReqExist = True
+        Dim bolOrderExist As Boolean = True
+        Dim bolOrdNoIntfcH As Boolean = True
+        Dim bolExist As Boolean = True
+        Dim strBusunit As String = "I0515"
+        Dim strSiteBu As String = "ISA00"
+
+        Dim i As Integer = 0
+        Dim cmd As OleDbCommand = Nothing
+
+        connectOR.Open()
+
+        Dim reqSelSQL As String = ""
+
+        'check PS_REQ_HDR
+        Dim strSQLstring As String = "SELECT A.REQ_ID" & vbCrLf & _
+        " FROM PS_REQ_HDR A" & vbCrLf & _
+        " WHERE A.BUSINESS_UNIT = '" & strSiteBu & "'" & vbCrLf & _
+        " AND A.REQ_ID = '" & strReqId & "'"
+
+        cmd = connectOR.CreateCommand
+        cmd.CommandText = strSQLstring
+        cmd.CommandType = CommandType.Text
+        'm_logger.WriteVerboseLog(msg:=rtn & "::   executing : " & sql21)
+        strReqNo = cmd.ExecuteScalar
+        cmd = Nothing
+        If strReqNo = strReqId Then
+            bolReqExist = True
+        Else
+            bolReqExist = False
+        End If
+
+        'check PS_ORD_HEADER
+        Dim strSQLstringOrd As String = "SELECT A.ORDER_NO" & vbCrLf & _
+        " FROM PS_ORD_HEADER A" & vbCrLf & _
+        " WHERE A.BUSINESS_UNIT = '" & strBusunit & "'" & vbCrLf & _
+        " AND A.ORDER_NO = '" & strReqId & "'"
+
+        cmd = connectOR.CreateCommand
+        cmd.CommandText = strSQLstringOrd
+        cmd.CommandType = CommandType.Text
+        'm_logger.WriteVerboseLog(msg:=rtn & "::   executing : " & sql21)
+        strOrderNo = cmd.ExecuteScalar
+        cmd = Nothing
+
+        If strOrderNo = strReqId Then
+            bolOrderExist = True
+        Else
+            bolOrderExist = False
+        End If
+
+        ' check PS_ISA_ORD_INTFC_H (BUSINESS_UNIT_OM and ORDER_NO)
+        Dim strSQLstringIntfcH As String = "SELECT A.ORDER_NO" & vbCrLf & _
+        " FROM SYSADM8.PS_ISA_ORD_INTF_HD A" & vbCrLf & _
+        " WHERE A.BUSINESS_UNIT_OM = '" & strBusunit & "'" & vbCrLf & _
+        " AND A.ORDER_NO = '" & strReqId & "'"
+
+        cmd = connectOR.CreateCommand
+        cmd.CommandText = strSQLstringIntfcH
+        cmd.CommandType = CommandType.Text
+        'm_logger.WriteVerboseLog(msg:=rtn & "::   executing : " & sql21)
+        strOrdIntfcH = cmd.ExecuteScalar
+        cmd = Nothing
+
+        If strOrdIntfcH = strReqId Then
+            bolOrdNoIntfcH = True
+        Else
+            bolOrdNoIntfcH = False
+        End If
+
+        If (bolReqExist = False) And (bolOrderExist = False) And (bolOrdNoIntfcH = False) Then
+            bolExist = False
+        End If
+
+        connectOR.Close()
+
+        Return bolExist
 
     End Function
 
