@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://www.Insiteonline.com" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" targetNamespace="http://www.Insiteonline.com" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://www.Insiteonline.com">
+      <s:element name="Stat_Change_Email_Copy">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="filepath" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="StrMessage" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="Stat_Change_Email_CopyResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Stat_Change_Email_CopyResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="Stat_Change_Email_Send">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="filepath" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="Stat_Change_Email_SendResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Stat_Change_Email_SendResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="Stat_Change_Email_check_dir_exist">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="rootdir" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="Stat_Change_Email_check_dir_existResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Stat_Change_Email_check_dir_existResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="Stat_Change_Email_CopySoapIn">
+    <wsdl:part name="parameters" element="tns:Stat_Change_Email_Copy" />
+  </wsdl:message>
+  <wsdl:message name="Stat_Change_Email_CopySoapOut">
+    <wsdl:part name="parameters" element="tns:Stat_Change_Email_CopyResponse" />
+  </wsdl:message>
+  <wsdl:message name="Stat_Change_Email_SendSoapIn">
+    <wsdl:part name="parameters" element="tns:Stat_Change_Email_Send" />
+  </wsdl:message>
+  <wsdl:message name="Stat_Change_Email_SendSoapOut">
+    <wsdl:part name="parameters" element="tns:Stat_Change_Email_SendResponse" />
+  </wsdl:message>
+  <wsdl:message name="Stat_Change_Email_check_dir_existSoapIn">
+    <wsdl:part name="parameters" element="tns:Stat_Change_Email_check_dir_exist" />
+  </wsdl:message>
+  <wsdl:message name="Stat_Change_Email_check_dir_existSoapOut">
+    <wsdl:part name="parameters" element="tns:Stat_Change_Email_check_dir_existResponse" />
+  </wsdl:message>
+  <wsdl:portType name="SDI_loadbalance_IOSoap">
+    <wsdl:operation name="Stat_Change_Email_Copy">
+      <wsdl:input message="tns:Stat_Change_Email_CopySoapIn" />
+      <wsdl:output message="tns:Stat_Change_Email_CopySoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Stat_Change_Email_Send">
+      <wsdl:input message="tns:Stat_Change_Email_SendSoapIn" />
+      <wsdl:output message="tns:Stat_Change_Email_SendSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Stat_Change_Email_check_dir_exist">
+      <wsdl:input message="tns:Stat_Change_Email_check_dir_existSoapIn" />
+      <wsdl:output message="tns:Stat_Change_Email_check_dir_existSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="SDI_loadbalance_IOSoap" type="tns:SDI_loadbalance_IOSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="Stat_Change_Email_Copy">
+      <soap:operation soapAction="http://www.Insiteonline.com/Stat_Change_Email_Copy" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Stat_Change_Email_Send">
+      <soap:operation soapAction="http://www.Insiteonline.com/Stat_Change_Email_Send" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Stat_Change_Email_check_dir_exist">
+      <soap:operation soapAction="http://www.Insiteonline.com/Stat_Change_Email_check_dir_exist" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="SDI_loadbalance_IOSoap12" type="tns:SDI_loadbalance_IOSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="Stat_Change_Email_Copy">
+      <soap12:operation soapAction="http://www.Insiteonline.com/Stat_Change_Email_Copy" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Stat_Change_Email_Send">
+      <soap12:operation soapAction="http://www.Insiteonline.com/Stat_Change_Email_Send" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Stat_Change_Email_check_dir_exist">
+      <soap12:operation soapAction="http://www.Insiteonline.com/Stat_Change_Email_check_dir_exist" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="SDI_loadbalance_IO">
+    <wsdl:port name="SDI_loadbalance_IOSoap" binding="tns:SDI_loadbalance_IOSoap">
+      <soap:address location="http://sdixbatch:8084/SDI_loadbalance_IO/SDI_loadbalance_IO.asmx" />
+    </wsdl:port>
+    <wsdl:port name="SDI_loadbalance_IOSoap12" binding="tns:SDI_loadbalance_IOSoap12">
+      <soap12:address location="http://sdixbatch:8084/SDI_loadbalance_IO/SDI_loadbalance_IO.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

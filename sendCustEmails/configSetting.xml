@@ -1,14 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <configuration>
 	<!-- DATABASE CONNECTION
-	*** for PRODUCTION access
-	<sourceDB cnstring="Provider=MSDAORA.1;Data Source=PROD;User ID=einternet;Password=einternet;"
-		type="oracle8" />
-	*** for TEST DB access
-	<sourceDB cnstring="Provider=MSDAORA.1;Data Source=PLGR;User ID=ewindows;Password=ewindows;"
-		type="oracle8" />
+	
 	//-->
-	<sourceDB cnString="Provider=MSDAORA.1;Password=einternet;User ID=einternet;Data Source=UATC"
+	<sourceDB cnString="Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=RPTG"
 		type="oracle8" />
 	<!-- TIMER
 		 timer object properties for checking newly added quoted non-stock items on the database.  this
@@ -28,7 +23,7 @@
 		<statusNotify name="John Waters" addy="john.waters@isacs.com" />
 	//-->
 	<serviceNotification notifySubject="SDI Quoted Non-Stock Email Service Notification" notifyFrom="service.notification@sdi.com">
-		<statusNotify name="Erwin Bautista" addy="erwin.bautista@sdi.com" />
+		<statusNotify name="Erwin Bautista" addy="vitaly.rovensky@sdi.com" />
 	</serviceNotification>
 	<!-- EMAIL DEFAULT AND/OR INCLUDES
 		<subject defaultText="SDI Quoted Non-Stock Email Service" />
@@ -52,7 +47,7 @@
 			<bccItem name="Ronald Fijalkowski" addy="ronald.fijalkowski@isacs.com" />
 		//-->
 		<additionalBcc desc="individuals that will be added in the BCC field of emails sent through this service">
-			<bccItem name="Erwin Bautista" addy="erwin.bautista@sdi.com" />
+			<bccItem name="Erwin Bautista" addy="vitaly.rovensky@sdi.com" />
 		</additionalBcc>
 		<defaultSubject text="Quote Process (TESTING PHASE)" />
 		<!-- for TESTING or PRODUCTION web page

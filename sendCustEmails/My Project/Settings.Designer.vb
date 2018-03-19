@@ -15,7 +15,7 @@ Option Explicit On
 Namespace My
     
     <Global.System.Runtime.CompilerServices.CompilerGeneratedAttribute(),  _
-     Global.System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "11.0.0.0"),  _
+     Global.System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "10.0.0.0"),  _
      Global.System.ComponentModel.EditorBrowsableAttribute(Global.System.ComponentModel.EditorBrowsableState.Advanced)>  _
     Partial Friend NotInheritable Class MySettings
         Inherits Global.System.Configuration.ApplicationSettingsBase
@@ -66,7 +66,18 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=STAR")>  _
+         Global.System.Configuration.SpecialSettingAttribute(Global.System.Configuration.SpecialSetting.WebServiceUrl),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx")>  _
+        Public ReadOnly Property sendCustEmails_SDiEmailUtilityService_EmailServices() As String
+            Get
+                Return CType(Me("sendCustEmails_SDiEmailUtilityService_EmailServices"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=R"& _ 
+            "PTG")>  _
         Public ReadOnly Property oraCNString1() As String
             Get
                 Return CType(Me("oraCNString1"),String)
@@ -76,10 +87,10 @@ Namespace My
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.SpecialSettingAttribute(Global.System.Configuration.SpecialSetting.WebServiceUrl),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx")>  _
-        Public ReadOnly Property sendCustEmails_SDiEmailUtilityService_EmailServices() As String
+         Global.System.Configuration.DefaultSettingValueAttribute("http://sdixbatch:8084/SDI_loadbalance_IO/SDI_loadbalance_IO.asmx")>  _
+        Public ReadOnly Property sendCustEmails_loadBalance_March2018_SDI_loadbalance_IO() As String
             Get
-                Return CType(Me("sendCustEmails_SDiEmailUtilityService_EmailServices"),String)
+                Return CType(Me("sendCustEmails_loadBalance_March2018_SDI_loadbalance_IO"),String)
             End Get
         End Property
     End Class

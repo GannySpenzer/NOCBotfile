@@ -169,6 +169,11 @@
     <Compile Include="Web References\loadbalance\Reference.vb">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Web References\loadBalance_March2018\Reference.vb">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.map</DependentUpon>
+    </Compile>
     <Compile Include="Web References\SDiEmailUtilityService\Reference.vb">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -180,6 +185,12 @@
     <Content Include="Web References\loadbalance\Reference.map" />
     <Content Include="Web References\loadbalance\SDI_loadbalance_IO.disco" />
     <Content Include="Web References\loadbalance\SDI_loadbalance_IO.wsdl" />
+    <None Include="Web References\loadBalance_March2018\Reference.map">
+      <Generator>MSDiscoCodeGenerator</Generator>
+      <LastGenOutput>Reference.vb</LastGenOutput>
+    </None>
+    <None Include="Web References\loadBalance_March2018\SDI_loadbalance_IO.disco" />
+    <None Include="Web References\loadBalance_March2018\SDI_loadbalance_IO.wsdl" />
     <None Include="Web References\SDiEmailUtilityService\EmailServices.disco" />
     <None Include="Web References\SDiEmailUtilityService\Reference.map">
       <Generator>MSDiscoCodeGenerator</Generator>
@@ -229,6 +240,17 @@
       </CachedDynamicPropName>
       <CachedAppSettingsObjectName>MySettings</CachedAppSettingsObjectName>
       <CachedSettingsPropName>sendCustEmails_SDiEmailUtilityService_EmailServices</CachedSettingsPropName>
+    </WebReferenceUrl>
+    <WebReferenceUrl Include="http://sdixbatch:8084/SDI_loadbalance_IO/SDI_loadbalance_IO.asmx">
+      <UrlBehavior>Dynamic</UrlBehavior>
+      <RelPath>Web References\loadBalance_March2018\</RelPath>
+      <UpdateFromURL>http://sdixbatch:8084/SDI_loadbalance_IO/SDI_loadbalance_IO.asmx</UpdateFromURL>
+      <ServiceLocationURL>
+      </ServiceLocationURL>
+      <CachedDynamicPropName>
+      </CachedDynamicPropName>
+      <CachedAppSettingsObjectName>MySettings</CachedAppSettingsObjectName>
+      <CachedSettingsPropName>sendCustEmails_loadBalance_March2018_SDI_loadbalance_IO</CachedSettingsPropName>
     </WebReferenceUrl>
   </ItemGroup>
   <ItemGroup>

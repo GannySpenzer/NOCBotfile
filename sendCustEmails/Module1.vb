@@ -14,7 +14,8 @@ Module Module1
     Dim objStreamWriter As StreamWriter
     Dim rootDir As String = "C:\SendCustEmail"
     Dim logpath As String = "C:\SendCustEmail\LOGS\SendCustEmailOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=STAR")
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=RPTG")
+    '     PS_ISA_OUTBND_EML
     'ISA_EMAIL_ID                              NOT NULL NUMBER(38)
     'DATETIME_ADDED                                     DATE
     'EMAIL_SUBJECT_LONG                        NOT NULL VARCHAR2(80)
@@ -27,24 +28,35 @@ Module Module1
     'ISA_STATUS                                NOT NULL VARCHAR2(1)
     'EMAIL_DATETIME                                     DATE
     'EMAIL_TEXTLONG                                     LONG
+
+    ' SDIXEMAIL
+
+    'EMAILKEY      NOT NULL NUMBER(12)     -  ISA_EMAIL_ID  
+    'EMAILFROM              VARCHAR2(60)   - ISA_EMAIL_FROM 
+    'EMAILTO                VARCHAR2(250)  - ISA_EMAIL_TO
+    'EMAILSUBJECT           VARCHAR2(250)   - EMAIL_SUBJECT_LONG
+    'EMAILCC                VARCHAR2(250)  - ISA_EMAIL_CC
+    'EMAILBCC               VARCHAR2(250)  - ISA_EMAIL_BCC 
+    'EMAILBODYPATH          VARCHAR2(250)  
+    'EMAILTYPE              VARCHAR2(20)   
+    'EMAILRESENDID          VARCHAR2(12)   
+    'DT_TIMESTAMP  NOT NULL TIMESTAMP(6)    - DATETIME_ADDED
+    'OPRID                  VARCHAR2(8)    
+    'EMAILBODY              VARCHAR2(4000) 
+    'BATCH_PRINT            VARCHAR2(1)    
+    'BATCH_DTTM             DATE          -  EMAIL_DATETIME
+
     Sub Main()
 
-        Console.WriteLine("Start SendCustEmail")
+        Console.WriteLine("Start Sending Customer Emails")
         Console.WriteLine("")
-
-        'If Dir(rootDir, FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir)
-        'End If
-        'If Dir(rootDir & "\LOGS", FileAttribute.Directory) = "" Then
-        '    MkDir(rootDir & "\LOGS")
-        'End If
 
         '   (1) connection string / db connection
         Dim cnString As String = ""
         Try
             cnString = My.Settings("oraCNString1").ToString.Trim
         Catch ex As Exception
-            cnString = "Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=STAR"
+            cnString = "Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=RPTG"
         End Try
         If Trim(cnString) <> "" Then
             cnString = Trim(cnString)
@@ -57,19 +69,19 @@ Module Module1
             Try
                 connectOR = New OleDbConnection(cnString)
             Catch ex As Exception
-                connectOR = New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=STAR")
+                connectOR = New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=RPTG")
             End Try
         End If
 
         objStreamWriter = File.CreateText(logpath)
-        objStreamWriter.WriteLine("Send emails out " & Now())
+        objStreamWriter.WriteLine("Starting send Customer emails out " & Now())
 
         Dim bolError As Boolean = buildSendCustEmailOut()
 
         If bolError = True Then
             SendErrEmail()
         End If
-        objStreamWriter.WriteLine("End of sendCustEmails Email send " & Now())
+        objStreamWriter.WriteLine("End of send Customer Emails out " & Now())
 
         objStreamWriter.Flush()
         objStreamWriter.Close()
@@ -262,19 +274,17 @@ Module Module1
         Else
             Mailer.Subject = dr.Item("EMAIL_SUBJECT_LONG")
         End If
-        If InStr(Mailer.Subject, "In-Site?") Then
-            Mailer.Subject = Replace(Mailer.Subject, "In-Site?", "In-Site®")
-        End If
 
         Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
 
         If dr.Item("ISA_STATUS") = "T" Then
             Mailer.To = Trim(dr.Item("ISA_EMAIL_BCC"))
         ElseIf connectOR.DataSource.ToUpper = "RPTG" Or _
-                connectOR.DataSource.ToUpper = "SNBX" Or _
+                connectOR.DataSource.ToUpper = "PLGR" Or _
                 connectOR.DataSource.ToUpper = "STAR" Or _
                 connectOR.DataSource.ToUpper = "DEVL" Then
-            Mailer.To = "DoNotSendRPTG@sdi.com"
+            Mailer.To = "WEBDEV@sdi.com"
+            Mailer.Subject = " (Test Run) - " & Mailer.Subject
         Else
             Mailer.To = strEmailEmpEmail
         End If
@@ -298,7 +308,7 @@ Module Module1
 
         'Send the email and handle any error that occurs
         Try
-            'SmtpMail.Send(email)
+            'SmtpMail.Send(email) - maybe this  ?? (Just change to NETMAIL)
 
             SendEmail1(email)
         Catch
@@ -313,17 +323,20 @@ Module Module1
             
             SendEmail1(mailer)
         Catch ex As Exception
-            objStreamWriter.WriteLine("     Error - in the sendemail to customer SUB")
+
         End Try
     End Function
 
     Private Sub SendEmail1(ByVal mailer As System.Web.Mail.MailMessage)
 
         Try
-            SendLogger(mailer.Subject, mailer.Body, "SENDCUSTEMAILS", "Mail", mailer.To, "", mailer.Bcc, mailer.From)
-            'UpdEmailOut.UpdEmailOut.UpdEmailOut(mailer.Subject, mailer.From, mailer.To, "", "", "N", mailer.Body, connectOR)
-        Catch ex As Exception
+            ''SendLogger(mailer.Subject, mailer.Body, "SENDCUSTEMAILS", "Mail", mailer.To, "", mailer.Bcc, mailer.From)
 
+            ' here a newer version of UpdEmailOut
+
+            ''UpdEmailOut.UpdEmailOut.UpdEmailOut(mailer.Subject, mailer.From, mailer.To, "", "", "N", mailer.Body, connectOR)
+        Catch ex As Exception
+            objStreamWriter.WriteLine("     Error - in the sendemail to customer SUB")
         End Try
     End Sub
 
@@ -411,15 +424,15 @@ Module Module1
         ' The web service is named SDI_load_balance_IO.
         ' call webservice 
         Try
-            'Dim myloadbalance As loadbalance.SDI_loadbalance_IO = New loadbalance.SDI_loadbalance_IO
-            Dim myloadbalance As loadbalance2.SDI_loadbalance_IO = New loadbalance2.SDI_loadbalance_IO
-            'Dim ExtMsgFile1 As String = ctype(strFilePath.) 
-            Dim ExtMsgFile As String = (strFilePath)
+            Dim myloadbalance As loadBalance_March2018.SDI_loadbalance_IO = New loadBalance_March2018.SDI_loadbalance_IO
+            'Dim myloadbalance As loadbalance2.SDI_loadbalance_IO = New loadbalance2.SDI_loadbalance_IO
+
+            Dim ExtMsgFile As String = strFilePath
             Dim readerline As String
             readerline = myloadbalance.Stat_Change_Email_Send(ExtMsgFile)
             Return readerline
         Catch ex As Exception
-            'Dazzle is probably down so we can't grab the text file.
+
             Return ""
         End Try
 
