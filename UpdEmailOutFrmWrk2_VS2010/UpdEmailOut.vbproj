@@ -171,7 +171,17 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.map</DependentUpon>
     </Compile>
+    <Compile Include="Web References\LoadBalance_March2018\Reference.vb">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.map</DependentUpon>
+    </Compile>
     <Content Include="PathLocator.xml" />
+    <None Include="Web References\LoadBalance_March2018\Reference.map">
+      <Generator>MSDiscoCodeGenerator</Generator>
+      <LastGenOutput>Reference.vb</LastGenOutput>
+    </None>
+    <None Include="Web References\LoadBalance_March2018\SDI_loadbalance_IO.disco" />
     <None Include="app.config" />
     <None Include="My Project\Settings.settings">
       <CustomToolNamespace>My</CustomToolNamespace>
@@ -190,6 +200,7 @@
     <None Include="Web References\loadbalance\SDI_loadbalance_IO.disco" />
     <None Include="Web References\loadbalance\SDI_loadbalance_IO.wsdl" />
     <None Include="Web References\loadbalance_dazzle2\SDI_loadbalance_IO.wsdl" />
+    <None Include="Web References\LoadBalance_March2018\SDI_loadbalance_IO.wsdl" />
     <WebReferences Include="Web References\" />
     <WebReferenceUrl Include="http://dazzle/SDI_loadbalance_IO/SDI_loadbalance_IO.asmx">
       <RelPath>Web References\loadbalance\</RelPath>
@@ -205,6 +216,17 @@
       </CachedDynamicPropName>
       <CachedAppSettingsObjectName>MySettings</CachedAppSettingsObjectName>
       <CachedSettingsPropName>UpdEmailOut_loadbalance_dazzle2_SDI_loadbalance_IO</CachedSettingsPropName>
+    </WebReferenceUrl>
+    <WebReferenceUrl Include="http://sdixbatch:8084/SDI_loadbalance_IO/SDI_loadbalance_IO.asmx">
+      <UrlBehavior>Dynamic</UrlBehavior>
+      <RelPath>Web References\LoadBalance_March2018\</RelPath>
+      <UpdateFromURL>http://sdixbatch:8084/SDI_loadbalance_IO/SDI_loadbalance_IO.asmx</UpdateFromURL>
+      <ServiceLocationURL>
+      </ServiceLocationURL>
+      <CachedDynamicPropName>
+      </CachedDynamicPropName>
+      <CachedAppSettingsObjectName>MySettings</CachedAppSettingsObjectName>
+      <CachedSettingsPropName>UpdEmailOut_LoadBalance_March2018_SDI_loadbalance_IO</CachedSettingsPropName>
     </WebReferenceUrl>
   </ItemGroup>
   <ItemGroup />
