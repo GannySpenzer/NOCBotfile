@@ -8,6 +8,7 @@ Imports System.Web.Services.Protocols
 Imports System.Xml.Serialization
 Imports System.Xml
 Imports System.Collections.Generic
+Imports System.Net.Mail
 
 Module Module1
 
@@ -28,23 +29,6 @@ Module Module1
     'ISA_STATUS                                NOT NULL VARCHAR2(1)
     'EMAIL_DATETIME                                     DATE
     'EMAIL_TEXTLONG                                     LONG
-
-    ' SDIXEMAIL
-
-    'EMAILKEY      NOT NULL NUMBER(12)     -  ISA_EMAIL_ID  
-    'EMAILFROM              VARCHAR2(60)   - ISA_EMAIL_FROM 
-    'EMAILTO                VARCHAR2(250)  - ISA_EMAIL_TO
-    'EMAILSUBJECT           VARCHAR2(250)   - EMAIL_SUBJECT_LONG
-    'EMAILCC                VARCHAR2(250)  - ISA_EMAIL_CC
-    'EMAILBCC               VARCHAR2(250)  - ISA_EMAIL_BCC 
-    'EMAILBODYPATH          VARCHAR2(250)  
-    'EMAILTYPE              VARCHAR2(20)   
-    'EMAILRESENDID          VARCHAR2(12)   
-    'DT_TIMESTAMP  NOT NULL TIMESTAMP(6)    - DATETIME_ADDED
-    'OPRID                  VARCHAR2(8)    
-    'EMAILBODY              VARCHAR2(4000) 
-    'BATCH_PRINT            VARCHAR2(1)    
-    'BATCH_DTTM             DATE          -  EMAIL_DATETIME
 
     Sub Main()
 
@@ -78,7 +62,7 @@ Module Module1
 
         Dim bolError As Boolean = buildSendCustEmailOut()
 
-        If bolError = True Then
+        If bolError Then
             SendErrEmail()
         End If
         objStreamWriter.WriteLine("End of send Customer Emails out " & Now())
@@ -90,16 +74,19 @@ Module Module1
 
     Private Function buildSendCustEmailOut() As Boolean
 
-        Dim strSQLstring As String
+        Dim strSQLstring As String = ""
+        Dim bErrorExists As Boolean = False
 
-        strSQLstring = "SELECT TO_CHAR(A.DATETIME_ADDED,'YYYY-MM-DD-HH24.MI.SS.""000000""') as ADD_DATE," & vbCrLf & _
-                    " A.EMAIL_SUBJECT_LONG, A.ISA_EMAIL_FROM," & vbCrLf & _
-                    " A.ISA_EMAIL_TO, A.ISA_EMAIL_CC, A.ISA_EMAIL_BCC," & vbCrLf & _
-                    " A.ISA_EMAIL_DFL_HEAD, ISA_EMAIL_TXT_FILE," & vbCrLf & _
-                    " A.ISA_STATUS," & vbCrLf & _
-                    " A.EMAIL_TEXTLONG" & vbCrLf & _
-                    " FROM PS_ISA_OUTBND_EML A" & vbCrLf & _
-                    " WHERE A.EMAIL_DATETIME Is NULL" & vbCrLf
+        'strSQLstring = "SELECT TO_CHAR(A.DATETIME_ADDED,'YYYY-MM-DD-HH24.MI.SS.""000000""') as ADD_DATE," & vbCrLf & _
+        '            " A.EMAIL_SUBJECT_LONG, A.ISA_EMAIL_FROM," & vbCrLf & _
+        '            " A.ISA_EMAIL_TO, A.ISA_EMAIL_CC, A.ISA_EMAIL_BCC," & vbCrLf & _
+        '            " A.ISA_EMAIL_DFL_HEAD, ISA_EMAIL_TXT_FILE," & vbCrLf & _
+        '            " A.ISA_STATUS," & vbCrLf & _
+        '            " A.EMAIL_TEXTLONG" & vbCrLf & _
+        '            " FROM PS_ISA_OUTBND_EML A" & vbCrLf & _
+        '            " WHERE A.EMAIL_DATETIME Is NULL" & vbCrLf
+
+        strSQLstring = "SELECT * FROM SDIXEMAIL where BATCH_PRINT = 'Y'"
 
         Dim Command As OleDbCommand = New OleDbCommand(strSQLstring, connectOR)
         connectOR.Open()
@@ -122,25 +109,48 @@ Module Module1
             Return False
         End If
 
-        'insert into the PS_ISA_ORDSTAT_EML table
-
-        Dim I As Integer
-        'Dim bolEmailSent As Boolean
+        Dim I As Integer = 0
+        Dim bLineResult As Boolean = False
 
         connectOR.Open()
         For I = 0 To ds.Tables(0).Rows.Count - 1
-            buildSendCustEmailOut = sendCustEmail(ds.Tables(0).Rows(I))
-            If buildSendCustEmailOut = False Then
-                buildSendCustEmailOut = updateSendEmailTbl(ds.Tables(0).Rows(I))
+            bLineResult = sendCustEmail(ds.Tables(0).Rows(I))
+            If Not bLineResult Then
+                bErrorExists = True
+            End If
+            If bLineResult Then
+                bLineResult = updateSendEmailTbl(ds.Tables(0).Rows(I))
+                If Not bLineResult Then
+                    bErrorExists = True
+                End If
             End If
 
         Next
         objStreamWriter.WriteLine("  sendCustEmails send selected emails = " & ds.Tables(0).Rows.Count)
         connectOR.Close()
 
+        Return bErrorExists
+
     End Function
 
     Private Function sendCustEmail(ByVal dr As DataRow) As Boolean
+
+        ' SDIXEMAIL
+
+        'EMAILKEY      NOT NULL NUMBER(12)     -  ISA_EMAIL_ID  
+        'EMAILFROM              VARCHAR2(60)   - ISA_EMAIL_FROM 
+        'EMAILTO                VARCHAR2(250)  - ISA_EMAIL_TO
+        'EMAILSUBJECT           VARCHAR2(250)   - EMAIL_SUBJECT_LONG
+        'EMAILCC                VARCHAR2(250)  - ISA_EMAIL_CC
+        'EMAILBCC               VARCHAR2(250)  - ISA_EMAIL_BCC 
+        'EMAILBODYPATH          VARCHAR2(250)  - ISA_EMAIL_TXT_FILE --> filepath 
+        'EMAILTYPE              VARCHAR2(20)   - <EMAILTYPE> - newer param - like "MATSTOCK"
+        'EMAILRESENDID - not required -  VARCHAR2(12)   
+        'DT_TIMESTAMP  NOT NULL TIMESTAMP(6)    - DATETIME_ADDED --> CURRENT_TIMESTAMP or Now()
+        'OPRID                  VARCHAR2(8)   - newer param --> like "VROV1" 
+        'EMAILBODY              VARCHAR2(4000)  - EMAIL_TEXTLONG  --> email body
+        'BATCH_PRINT --> 'Y'    VARCHAR2(1)  - change to 'N' after emailed - in SendCustEmails
+        'BATCH_DTTM - not required here -   DATE  - in SendCustEmails: EMAIL_DATETIME --> CURRENT_TIMESTAMP 
 
         Dim strbodyhead As String = ""
         Dim strbodydetl As String = ""
@@ -152,14 +162,17 @@ Module Module1
         Dim strSQLstring As String = ""
         Dim strFirstName As String = " "
         Dim strLastName As String = " "
-        Dim strEmailList As String = dr.Item("ISA_EMAIL_TO")
+        Dim strEmailList As String = dr.Item("EMAILTO")  '   dr.Item("ISA_EMAIL_TO")
         Dim strEmailTo() As String = Split(strEmailList, ";")
         Dim intTotal As Integer = strEmailTo.Length()
         Dim intCnt As Integer = 0
         Dim strEmailEmpName As String = ""
         Dim strEmailEmpEmail As String = ""
 
+        Dim eMail As System.Net.Mail.MailMessage = New System.Net.Mail.MailMessage()
+
         For intCnt = 0 To intTotal - 1
+            eMail.To.Add(strEmailTo(intCnt))
 
             strSQLstring = "SELECT A.FIRST_NAME_SRCH, A.LAST_NAME_SRCH" & vbCrLf & _
                         " FROM PS_ISA_USERS_TBL A" & vbCrLf & _
@@ -183,57 +196,58 @@ Module Module1
         Next  '  For intCnt = 0 To intTotal - 1
 
         strEmailEmpEmail = strEmailList
-        Dim Mailer As MailMessage = New MailMessage
-        'Mailer.From = "Insiteonline@SDI.com"
-        Mailer.From = Trim(dr.Item("ISA_EMAIL_FROM"))
-        If Convert.ToString(dr.Item("ISA_EMAIL_CC")).Length = 1 Then
-            Mailer.Cc = ""
-        Else
-            Mailer.Cc = Trim(dr.Item("ISA_EMAIL_CC"))
-        End If
-        If Convert.ToString(dr.Item("ISA_EMAIL_BCC")).Length = 1 Then
-            Mailer.Bcc = ""
-        Else
-            Mailer.Bcc = Trim(dr.Item("ISA_EMAIL_BCC"))
-        End If
-        Dim strAddBCC As String = getAddBCC()
-        If Not Trim(strAddBCC) = "" Then
-            If Mailer.Bcc = "" Then
-                Mailer.Bcc = strAddBCC
-            Else
-                If Not InStr(Mailer.Bcc, strAddBCC) Then
-                    Mailer.Bcc = "; " & strAddBCC
-                End If
-            End If
-        End If
+        'Dim Mailer As System.Web.Mail.MailMessage = New System.Web.Mail.MailMessage
 
-        If dr.Item("ISA_EMAIL_DFL_HEAD") = "Y" Then
-            strbodyhead = "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI, Inc</span></center>" & vbCrLf
-            strbodyhead = strbodyhead & "<center><span >" & dr.Item("EMAIL_SUBJECT_LONG") & "</span></center>"
-            strbodyhead = strbodyhead & "&nbsp;" & vbCrLf
-        End If
+        'Mailer.From = Trim(dr.Item("EMAILFROM"))   '  Trim(dr.Item("ISA_EMAIL_FROM"))
+        eMail.From = New MailAddress("SDIExchange@sdi.com", "SDI Exchange")
+        'eMail.CC = " "
+        eMail.Bcc.Add(New MailAddress("webdev@sdi.com", "WEBDEV Group"))
+        'If Trim(dr.Item("EMAILCC")) = "" Then  '  If Convert.ToString(dr.Item("ISA_EMAIL_CC")).Length = 1 Then
+        'Mailer.Cc = " "
+        'Else
+        '    Mailer.Cc = Trim(dr.Item("EMAILCC"))   '  Mailer.Cc = Trim(dr.Item("ISA_EMAIL_CC"))
+        'End If
+        'If Trim(dr.Item("EMAILBCC")) = "" Then  '  If Convert.ToString(dr.Item("ISA_EMAIL_BCC")).Length = 1 Then
+        '    Mailer.Bcc = "webdev@sdi.com"
+        'Else
+        '    Mailer.Bcc = Trim(dr.Item("EMAILBCC"))   '  Mailer.Bcc = Trim(dr.Item("ISA_EMAIL_BCC"))
+        'End If
+        'Dim strAddBCC As String = getAddBCC()
+        'If Not Trim(strAddBCC) = "" Then
+        '    If Mailer.Bcc = "" Then
+        '        Mailer.Bcc = strAddBCC
+        '    Else
+        '        If Not InStr(Mailer.Bcc, strAddBCC) Then
+        '            Mailer.Bcc = "; " & strAddBCC
+        '        End If
+        '    End If
+        'End If
 
-        If Trim(dr.Item("EMAIL_TEXTLONG")) = "" And _
-            Trim(dr.Item("ISA_EMAIL_TXT_FILE")) = "" Then
+        'strbodyhead = "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI, Inc</span></center>" & vbCrLf
+        ''strbodyhead = strbodyhead & "<center><span >" & dr.Item("EMAIL_SUBJECT_LONG") & "</span></center>"
+        'strbodyhead = strbodyhead & "<center><span >" & dr.Item("EMAILSUBJECT") & "</span></center>"
+        'strbodyhead = strbodyhead & "&nbsp;" & vbCrLf
+        
+        If Trim(dr.Item("EMAILBODY")) = "" And Trim(dr.Item("EMAILBODYPATH")) = "" Then  '  If Trim(dr.Item("EMAIL_TEXTLONG")) = "" And Trim(dr.Item("ISA_EMAIL_TXT_FILE")) = "" Then
             objStreamWriter.WriteLine("  error no email message - " & strEmailEmpEmail & " for " & strEmailEmpName & " at " & Now())
             Return True
         End If
         strbodydetl = "&nbsp;" & vbCrLf
         strbodydetl = strbodydetl & "<div>"
-        If dr.Item("ISA_EMAIL_DFL_HEAD") = "Y" Then
-            If Not Trim(strEmailEmpName) = "" Then
-                strbodydetl = strbodydetl & "<p>Hello " & strEmailEmpName & ",<br></p>"
-            End If
-        End If
+
+        'If Not Trim(strEmailEmpName) = "" Then
+        '    strbodydetl = strbodydetl & "<p>Hello " & strEmailEmpName & ",<br></p>"
+        'End If
 
         strbodydetl = strbodydetl & "<TABLE cellSpacing='1' cellPadding='1' width='100%' border='0'>" & vbCrLf
-        If Not Trim(dr.Item("EMAIL_TEXTLONG")) = "" Then
-            strbodydetl = strbodydetl + "<TR><TD Class='DetailRow' width='100%'>" & dr.Item("EMAIL_TEXTLONG") & "</TD></TR>"
+        If Not Trim(dr.Item("EMAILBODY")) = "" Then  '  If Not Trim(dr.Item("EMAIL_TEXTLONG")) = "" Then
+            'strbodydetl = strbodydetl + "<TR><TD Class='DetailRow' width='100%'>" & dr.Item("EMAIL_TEXTLONG") & "</TD></TR>"
+            strbodydetl = strbodydetl + "<TR><TD Class='DetailRow' width='100%'>" & dr.Item("EMAILBODY") & "</TD></TR>"
         Else
             ' get external file
-            Dim strExtMessage As String = getExternalMessageFile(dr.Item("ISA_EMAIL_TXT_FILE"))
+            Dim strExtMessage As String = getExternalMessageFile(dr.Item("EMAILBODYPATH"))
             If Trim(strExtMessage) = "" Then
-                objStreamWriter.WriteLine("  error no email message - " & strEmailEmpEmail & " for " & strEmailEmpName & " at " & Now())
+                objStreamWriter.WriteLine("  error in 'getExternalMessageFile' no email message - " & strEmailEmpEmail & " for " & strEmailEmpName & " at " & Now())
                 Return True
             Else
                 strbodydetl = strbodydetl + "<TR><TD Class='DetailRow' width='100%'>" & strExtMessage & "</TD></TR>"
@@ -245,13 +259,12 @@ Module Module1
         strbodydetl = strbodydetl & "</TABLE>" & vbCrLf
 
         strbodydetl = strbodydetl & "&nbsp;<br>"
-        If dr.Item("ISA_EMAIL_DFL_HEAD") = "Y" Then
-            strbodydetl = strbodydetl & "Sincerely,<br>"
-            strbodydetl = strbodydetl & "&nbsp;<br>"
-            strbodydetl = strbodydetl & "SDI Customer Care<br>"
-            strbodydetl = strbodydetl & "&nbsp;<br>"
-        End If
 
+        'strbodydetl = strbodydetl & "Sincerely,<br>"
+        'strbodydetl = strbodydetl & "&nbsp;<br>"
+        'strbodydetl = strbodydetl & "SDI Customer Care<br>"
+        'strbodydetl = strbodydetl & "&nbsp;<br>"
+        
         strbodydetl = strbodydetl & "</p>"
         strbodydetl = strbodydetl & "</div>"
 
@@ -267,64 +280,86 @@ Module Module1
                     " sender by replying to this email and delete the material from" & _
                     " all computers.</FONT></SPAN></CENTER></P>"
 
-        Mailer.Body = strbodyhead & strbodydetl & strbodyfoot
+        'Mailer.Body = strbodyhead & strbodydetl '   & strbodyfoot
+        eMail.Body = strbodyhead & strbodydetl
 
-        If Trim(dr.Item("EMAIL_SUBJECT_LONG")) = "" Then
-            Mailer.Subject = "Email from SDI, INC"
+        If Trim(dr.Item("EMAILSUBJECT")) = "" Then   '  If Trim(dr.Item("EMAIL_SUBJECT_LONG")) = "" Then
+            eMail.Subject = "Email from SDI, INC"
         Else
-            Mailer.Subject = dr.Item("EMAIL_SUBJECT_LONG")
+            'Mailer.Subject = dr.Item("EMAIL_SUBJECT_LONG")
+            eMail.Subject = dr.Item("EMAILSUBJECT")
         End If
 
-        Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
+        'Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
 
-        If dr.Item("ISA_STATUS") = "T" Then
-            Mailer.To = Trim(dr.Item("ISA_EMAIL_BCC"))
-        ElseIf connectOR.DataSource.ToUpper = "RPTG" Or _
+        If connectOR.DataSource.ToUpper = "RPTG" Or _
                 connectOR.DataSource.ToUpper = "PLGR" Or _
                 connectOR.DataSource.ToUpper = "STAR" Or _
                 connectOR.DataSource.ToUpper = "DEVL" Then
-            Mailer.To = "WEBDEV@sdi.com"
-            Mailer.Subject = " (Test Run) - " & Mailer.Subject
-        Else
-            Mailer.To = strEmailEmpEmail
+
+            eMail.To.Clear()
+            eMail.To.Add("webdev@sdi.com")
+            eMail.Subject = " (Test Run) - " & eMail.Subject
+       
         End If
-        sendCustEmail = sendemail(Mailer)
-        If sendCustEmail = False Then
-            objStreamWriter.WriteLine("  email sent to email " & Mailer.To & " from " & Mailer.From & " at " & Now())
+
+        eMail.IsBodyHtml = True
+
+        sendCustEmail = sendemail(eMail)
+
+        If sendCustEmail Then
+            objStreamWriter.WriteLine("  email sent for EmailKey: " & dr.Item("EMAILKEY") & " - with Subject: " & eMail.Subject & " - at " & Now())
         End If
 
     End Function
 
     Private Sub SendErrEmail()
 
-        Dim email As New MailMessage
-        email.From = "TechSupport@sdi.com"
-        email.To = "webdev@sdi.com"
-        email.Subject = "Sent Cust Email OUT Error"
-        email.Priority = MailPriority.High
-        email.BodyFormat = MailFormat.Html
-        email.Body = "<html><body><table><tr><td>sendCustEmails has completed with errors, review log.</td></tr>"
-        email.Bcc = "vitaly.rovensky@sdi.com"
+        'Dim email As New System.Web.Mail.MailMessage
+        'email.From = "TechSupport@sdi.com"
+        'email.To = "webdev@sdi.com"
+        'email.Subject = "Sent Cust Email OUT Error"
+
+        'email.BodyFormat = MailFormat.Html
+        'email.Body = "<html><body><table><tr><td>sendCustEmails has completed with errors, review log.</td></tr>"
+        'email.Bcc = "webdev@sdi.com"
+
+        Dim eMailNet As System.Net.Mail.MailMessage = New System.Net.Mail.MailMessage()
+
+        eMailNet.From = New MailAddress("TechSupport@sdi.com", "Tech Support")  '  "TechSupport@sdi.com"
+        eMailNet.To.Add(New MailAddress("webdev@sdi.com", "WEBDEV"))
+        eMailNet.Subject = "Sent Cust Email OUT Error"
+        eMailNet.Body = "<html><body><table><tr><td>sendCustEmails has completed with errors, review log.</td></tr>"
+        eMailNet.IsBodyHtml = True
 
         'Send the email and handle any error that occurs
         Try
-            'SmtpMail.Send(email) - maybe this  ?? (Just change to NETMAIL)
+           
+            'SendEmail1(email)
 
-            SendEmail1(email)
-        Catch
-            objStreamWriter.WriteLine("     Error - the email was not sent")
+            sendemail(eMailNet)
+
+        Catch ex As Exception
+            objStreamWriter.WriteLine("     Error - the email was not sent: " & ex.Message)
         End Try
 
     End Sub
 
-    Private Function sendemail(ByVal mailer As MailMessage) As Boolean
-
+    Private Function sendemail(ByVal mailer As System.Net.Mail.MailMessage) As Boolean
+        Dim bRetrn As Boolean = True
         Try
-            
-            SendEmail1(mailer)
-        Catch ex As Exception
 
+            Dim clientSMTP As SmtpClient = New SmtpClient("SDIMBXHYBRID.isacs.com")
+
+            clientSMTP.Send(mailer)
+
+        Catch ex As Exception
+            bRetrn = False
+            objStreamWriter.WriteLine("     Error - the email was not sent: " & ex.Message)
         End Try
+
+        Return bRetrn
+
     End Function
 
     Private Sub SendEmail1(ByVal mailer As System.Web.Mail.MailMessage)
@@ -332,9 +367,8 @@ Module Module1
         Try
             ''SendLogger(mailer.Subject, mailer.Body, "SENDCUSTEMAILS", "Mail", mailer.To, "", mailer.Bcc, mailer.From)
 
-            ' here a newer version of UpdEmailOut
+            'SmtpMail.Send(email) - maybe this  ?? (Just change to NETMAIL)
 
-            ''UpdEmailOut.UpdEmailOut.UpdEmailOut(mailer.Subject, mailer.From, mailer.To, "", "", "N", mailer.Body, connectOR)
         Catch ex As Exception
             objStreamWriter.WriteLine("     Error - in the sendemail to customer SUB")
         End Try
@@ -360,31 +394,49 @@ Module Module1
 
     Private Function updateSendEmailTbl(ByVal dr As DataRow) As Boolean
 
-        Dim strSQLstring As String
-        Dim rowsaffected As Integer
-        strSQLstring = "UPDATE PS_ISA_OUTBND_EML" & vbCrLf & _
-                       " SET EMAIL_DATETIME = TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')," & vbCrLf & _
-                       " ISA_STATUS = 'S'" & vbCrLf & _
-                       " WHERE TO_CHAR(DATETIME_ADDED,'YYYY-MM-DD-HH24.MI.SS.""000000""') = '" & dr.Item("ADD_DATE") & "'" & vbCrLf & _
-                       " AND ISA_EMAIL_TO = '" & dr.Item("ISA_EMAIL_TO") & "'"
+        ' SDIXEMAIL
+
+        'EMAILKEY      NOT NULL NUMBER(12)     -  ISA_EMAIL_ID  
+        'EMAILFROM              VARCHAR2(60)   - ISA_EMAIL_FROM 
+        'EMAILTO                VARCHAR2(250)  - ISA_EMAIL_TO
+        'EMAILSUBJECT           VARCHAR2(250)   - EMAIL_SUBJECT_LONG
+        'EMAILCC                VARCHAR2(250)  - ISA_EMAIL_CC
+        'EMAILBCC               VARCHAR2(250)  - ISA_EMAIL_BCC 
+        'EMAILBODYPATH          VARCHAR2(250)  - ISA_EMAIL_TXT_FILE --> filepath 
+        'EMAILTYPE              VARCHAR2(20)   - <EMAILTYPE> - newer param - like "MATSTOCK"
+        'EMAILRESENDID - not required -  VARCHAR2(12)   
+        'DT_TIMESTAMP  NOT NULL TIMESTAMP(6)    - DATETIME_ADDED --> CURRENT_TIMESTAMP or Now()
+        'OPRID                  VARCHAR2(8)   - newer param --> like "VROV1" 
+        'EMAILBODY              VARCHAR2(4000)  - EMAIL_TEXTLONG  --> email body
+        'BATCH_PRINT --> 'Y'    VARCHAR2(1)  - change to 'N' after emailed - in SendCustEmails
+        'BATCH_DTTM - not required here -   DATE  - in SendCustEmails: EMAIL_DATETIME --> CURRENT_TIMESTAMP 
+
+        Dim strSQLstring As String = ""
+        Dim rowsaffected As Integer = 0
+
+        strSQLstring = "UPDATE SDIXEMAIL" & vbCrLf & _
+                       " SET BATCH_DTTM = TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')," & vbCrLf & _
+                       " BATCH_PRINT = 'N'" & vbCrLf & _
+                       " WHERE EMAILKEY = " & dr.Item("EMAILKEY") & "" 
 
         Dim Command1 As OleDbCommand
         Command1 = New OleDbCommand(strSQLstring, connectOR)
+        updateSendEmailTbl = True
         Try
             rowsaffected = Command1.ExecuteNonQuery
             If rowsaffected = 0 Then
                 objStreamWriter.WriteLine("**")
-                objStreamWriter.WriteLine("     Error - rowsaffected = 0 for table PS_ISA_OUTBND_EML tbl for order " & dr.Item("ADD_DATE") & " " & dr.Item("ISA_EMAIL_TO"))
+                objStreamWriter.WriteLine("     Error - rowsaffected = 0 for table SDIXEMAIL tbl for EMAILKEY " & dr.Item("EMAILKEY"))
                 objStreamWriter.WriteLine("  Sql statement: " & strSQLstring)
                 objStreamWriter.WriteLine("**")
-                updateSendEmailTbl = True
+                updateSendEmailTbl = False
             End If
         Catch OleDBExp As OleDbException
             objStreamWriter.WriteLine("**")
-            objStreamWriter.WriteLine("     Error - updating PS_ISA_OUTBND_EML tbl for order " & dr.Item("ADD_DATE") & " " & dr.Item("ISA_EMAIL_TO"))
+            objStreamWriter.WriteLine("     Error - updating SDIXEMAIL tbl for EMAILKEY " & dr.Item("EMAILKEY"))
             objStreamWriter.WriteLine("          " & OleDBExp.Message)
             objStreamWriter.WriteLine("**")
-            updateSendEmailTbl = True
+            updateSendEmailTbl = False
         End Try
         Command1.Dispose()
     End Function
@@ -409,55 +461,65 @@ Module Module1
 
         Catch ex As Exception
             objStreamWriter.WriteLine("  EmailAddBCC.txt exp = " & ex.Message)
+            Try
+                reader.Close()
+            Catch exErr As Exception
+
+            End Try
         End Try
-        reader.Close()
+
         Return ""
 
     End Function
 
     Private Function getExternalMessageFile(ByVal strFilePath As String) As String
-        ' this is where we are going to call the web service
-        ' the web service determines where the overflow email resides
-        ' emails > 3999 characters get copied to a text file.
-        ' Before the load balancer, it went to the server where ISOL resided.
-        ' Now we'll have three servers, so we will let IIS determine where the text files reside.
-        ' The web service is named SDI_load_balance_IO.
-        ' call webservice 
-        Try
-            Dim myloadbalance As loadBalance_March2018.SDI_loadbalance_IO = New loadBalance_March2018.SDI_loadbalance_IO
-            'Dim myloadbalance As loadbalance2.SDI_loadbalance_IO = New loadbalance2.SDI_loadbalance_IO
-
-            Dim ExtMsgFile As String = strFilePath
-            Dim readerline As String
-            readerline = myloadbalance.Stat_Change_Email_Send(ExtMsgFile)
-            Return readerline
-        Catch ex As Exception
-
-            Return ""
-        End Try
-
-        'Dim ExtMsgFile As String = strFilePath
-        'Dim reader As TextReader
-        'If File.Exists(ExtMsgFile) Then
-        '    reader = File.OpenText(ExtMsgFile)
-        'Else
-        '    objStreamWriter.WriteLine("  " & ExtMsgFile & " does not exist")
-        '    Return ""
-        'End If
-        'Dim readerline As String
-        'Dim I As Integer
+        '' this is where we are going to call the web service
+        '' the web service determines where the overflow email resides
+        '' emails > 3999 characters get copied to a text file.
+        '' Before the load balancer, it went to the server where ISOL resided.
+        '' Now we'll have three servers, so we will let IIS determine where the text files reside.
+        '' The web service is named SDI_load_balance_IO.
+        '' call webservice 
         'Try
-        '    While reader.Peek <> -1
-        '        readerline = readerline & reader.ReadLine()
-        '    End While
+        '    Dim myloadbalance As loadBalance_March2018.SDI_loadbalance_IO = New loadBalance_March2018.SDI_loadbalance_IO
+        '    'Dim myloadbalance As loadbalance2.SDI_loadbalance_IO = New loadbalance2.SDI_loadbalance_IO
 
-        '    reader.Close()
+        '    Dim ExtMsgFile As String = strFilePath
+        '    Dim readerline As String
+        '    readerline = myloadbalance.Stat_Change_Email_Send(ExtMsgFile)
         '    Return readerline
         'Catch ex As Exception
-        '    objStreamWriter.WriteLine("  " & ExtMsgFile & " - " & ex.Message)
+
+        '    Return ""
         'End Try
-        'reader.Close()
-        'Return ""
+
+        Dim ExtMsgFile As String = strFilePath
+        Dim reader As TextReader
+        If File.Exists(ExtMsgFile) Then
+            reader = File.OpenText(ExtMsgFile)
+        Else
+            objStreamWriter.WriteLine("  " & ExtMsgFile & " does not exist")
+            Return ""
+        End If
+        Dim readerline As String = ""
+        'Dim I As Integer
+        Try
+            While reader.Peek <> -1
+                readerline = readerline & reader.ReadLine()
+            End While
+
+            reader.Close()
+            Return readerline
+        Catch ex As Exception
+            objStreamWriter.WriteLine("Error in 'getExternalMessageFile' - " & ExtMsgFile & " - " & ex.Message)
+            Try
+                reader.Close()
+            Catch exError As Exception
+
+            End Try
+        End Try
+
+        Return ""
 
     End Function
 
