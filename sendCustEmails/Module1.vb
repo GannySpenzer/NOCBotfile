@@ -57,8 +57,21 @@ Module Module1
             End Try
         End If
 
+        'get root dir
+        Dim strMyRoot As String = "C:\SendCustEmail"
+        Try
+            strMyRoot = My.Settings("rootDirApp").ToString.Trim
+        Catch ex As Exception
+            strMyRoot = "C:\SendCustEmail"
+        End Try
+        If Trim(strMyRoot) <> "" Then
+            rootDir = Trim(strMyRoot)
+            logpath = rootDir & "\LOGS\SendCustEmailOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+        End If
         objStreamWriter = File.CreateText(logpath)
         objStreamWriter.WriteLine("Starting send Customer emails out " & Now())
+        Dim strDbName As String = Right(cnString, 4)
+        objStreamWriter.WriteLine("Database Name: " & strDbName)
 
         Dim bolError As Boolean = buildSendCustEmailOut()
 

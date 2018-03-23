@@ -14,5 +14,8 @@
     <Setting Name="sendCustEmails_loadBalance_March2018_SDI_loadbalance_IO" Type="(Web Service URL)" Scope="Application">
       <Value Profile="(Default)">http://sdixbatch:8084/SDI_loadbalance_IO/SDI_loadbalance_IO.asmx</Value>
     </Setting>
+    <Setting Name="rootDirApp" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">C:\SendCustEmail</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

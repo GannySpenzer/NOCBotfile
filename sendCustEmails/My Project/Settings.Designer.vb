@@ -93,6 +93,15 @@ Namespace My
                 Return CType(Me("sendCustEmails_loadBalance_March2018_SDI_loadbalance_IO"),String)
             End Get
         End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("C:\SendCustEmail")>  _
+        Public ReadOnly Property rootDirApp() As String
+            Get
+                Return CType(Me("rootDirApp"),String)
+            End Get
+        End Property
     End Class
 End Namespace
 
