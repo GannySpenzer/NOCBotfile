@@ -258,7 +258,7 @@ Module Module1
         Dim dteStrDate As DateTime
         dteStrDate = Now.AddMonths(-3).ToString
         Dim strSQLstring As String
-        strSQLstring = "SELECT B.ORDER_NO, B.ISA_INTFC_LN AS INTFC_LINE_NUM, B.ISA_INTFC_LN AS ORDER_INT_LINE_NO, D.DEMAND_LINE_NO," & vbCrLf & _
+        strSQLstring = "SELECT /*+ index(D,PSWIN_DEMAND) */ B.ORDER_NO, B.ISA_INTFC_LN AS INTFC_LINE_NUM, B.ISA_INTFC_LN AS ORDER_INT_LINE_NO, D.DEMAND_LINE_NO," & vbCrLf & _
                 " B.BUSINESS_UNIT_OM, B.ISA_EMPLOYEE_ID AS EMPLID, E.DESCR60, E.INV_ITEM_ID, A.Origin" & vbCrLf & _
                 " FROM PS_ISA_ORD_INTF_HD A, PS_ISA_ORD_INTF_LN B," & vbCrLf & _
                 " PS_ISA_USERS_TBL C, SYSADM8.PS_IN_DEMAND D," & vbCrLf & _
