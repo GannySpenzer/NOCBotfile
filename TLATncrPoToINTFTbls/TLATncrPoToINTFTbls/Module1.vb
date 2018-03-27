@@ -404,7 +404,13 @@ Module Module1
                                                                 strOrderNum = attrib.Value
                                                                 'm_POConfirm_Logger.WriteInformationLog("KLA-Tencor PO # : " & strOrderNum)
                                                                 sPoConfirmText &= "KLA-Tencor PO # : " & strOrderNum
-                                                                sPOConfirmPath = "C:\KLATencorIn\SFTP\POConfrm\KLA_US_" & strOrderNum  '  Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+                                                                sPOConfirmPath = "C:\KLATencorIn\SFTP\POConfrm\KLA_US_" & strOrderNum
+                                                                If connectOR.DataSource.ToUpper.IndexOf("RPTG") > -1 Or _
+                                                                        connectOR.DataSource.ToUpper.IndexOf("DEVL") > -1 Or _
+                                                                        connectOR.DataSource.ToUpper.IndexOf("STAR") > -1 Or _
+                                                                        connectOR.DataSource.ToUpper.IndexOf("PLGR") > -1 Then
+                                                                    sPOConfirmPath &= "_TestPO"
+                                                                End If
                                                             End If
                                                         Next  '  For Each attrib As XmlAttribute In nodeOrdrRefr.Attributes()
                                                     End If
@@ -602,7 +608,7 @@ Module Module1
                                                             Else
                                                                 'error
                                                                 m_logger.WriteInformationLog(rtn & " :: Rollback. Error - rows affected <= 0 for Interface Header record with Order number: " & strReqId)
-                                                                strXMLError &= rtn & " :: Rollback. Error - rows affected <= 0 for Interface Line record with Order number: " & strReqId
+                                                                strXMLError &= rtn & " :: Rollback. Error - rows affected <= 0 for Interface Line record with Order number: " & strReqId & " - for KLA-Tencor PO # : " & strOrderNum
 
                                                                 'bolError = True
                                                                 bLineError = True
@@ -646,10 +652,39 @@ Module Module1
                                                                     '    "" & vbCrLf & _
                                                                     '    ""
 
-                                                                    strSqlString = "SELECT INV_ITEM_ID, UNIT_MEASURE_STD, PRICE_REQ_BSE FROM SYSADM8.PS_REQ_LINE " & vbCrLf & _
-                                                                        "WHERE REQ_ID = '" & strOrigOrderQuoteNumber & "' AND MFG_ITM_ID = '" & arrSupplPartIDs(iLn) & "'" & vbCrLf & _
-                                                                        "" & vbCrLf & _
-                                                                        ""
+                                                                    'strSqlString = "SELECT INV_ITEM_ID, UNIT_MEASURE_STD, PRICE_REQ_BSE FROM SYSADM8.PS_REQ_LINE " & vbCrLf & _
+                                                                    '    "WHERE REQ_ID = '" & strOrigOrderQuoteNumber & "' AND MFG_ITM_ID = '" & arrSupplPartIDs(iLn) & "'" & vbCrLf & _
+                                                                    '    "" & vbCrLf & _
+                                                                    '    ""
+
+                                                                    'new code based on change requested by Mike Randall - VR 03/15/2018
+                                                                    ' Mfg Part No field has new structure: 'MfgPartId:LineNo' - need to split it
+                                                                    Dim intLineNoFromSplit As Integer = 0
+                                                                    Dim strMfgItemIdFromSplit = ""
+                                                                    Dim arrMfgPartId() As String = Split(arrSupplPartIDs(iLn), ":")
+                                                                    Dim bIsLineNoSent As Boolean = False
+                                                                    strMfgItemIdFromSplit = arrSupplPartIDs(iLn)
+                                                                    If arrMfgPartId.Length = 2 Then
+                                                                        If IsNumeric(arrMfgPartId(1)) Then
+                                                                            bIsLineNoSent = True
+                                                                            intLineNoFromSplit = CType(arrMfgPartId(1), Integer)
+                                                                            strMfgItemIdFromSplit = arrMfgPartId(0)
+                                                                        End If
+                                                                    
+                                                                    End If
+                                                                    If bIsLineNoSent Then
+                                                                        ' search using Line No
+                                                                        strSqlString = "SELECT INV_ITEM_ID, UNIT_MEASURE_STD, PRICE_REQ_BSE FROM SYSADM8.PS_REQ_LINE " & vbCrLf & _
+                                                                            "WHERE REQ_ID = '" & strOrigOrderQuoteNumber & "' AND LINE_NBR = '" & intLineNoFromSplit & "'" & vbCrLf & _
+                                                                            "" & vbCrLf & _
+                                                                            ""
+                                                                    Else
+                                                                        'search using Mfg Item Id
+                                                                        strSqlString = "SELECT INV_ITEM_ID, UNIT_MEASURE_STD, PRICE_REQ_BSE FROM SYSADM8.PS_REQ_LINE " & vbCrLf & _
+                                                                            "WHERE REQ_ID = '" & strOrigOrderQuoteNumber & "' AND MFG_ITM_ID = '" & arrSupplPartIDs(iLn) & "'" & vbCrLf & _
+                                                                            "" & vbCrLf & _
+                                                                            ""
+                                                                    End If
 
                                                                     cmd = connectOR.CreateCommand
                                                                     cmd.CommandText = strSqlString
@@ -664,20 +699,113 @@ Module Module1
                                                                             strInvItemId = CType(rdr("INV_ITEM_ID"), String)
                                                                             'strUnitPrice = CType(rdr("PRICE"), String)
                                                                             strUnitPrice = CType(rdr("PRICE_REQ_BSE"), String)
+
+                                                                            rdr.Close()
+                                                                            rdr = Nothing
+                                                                            cmd = Nothing
                                                                         Else
-                                                                            'error
-                                                                            strXMLError += "Error retrieving MFG_ITM_ID info for: " & arrSupplPartIDs(iLn) & vbCrLf
-                                                                            'do not process this file
-                                                                            m_logger.WriteInformationLog(rtn & " :: Rollback. Error description: " & strXMLError)
-                                                                            strXMLError &= rtn & " :: Rollback. Error description: " & strXMLError
-                                                                            'bolError = True
-                                                                            bLineError = True
-                                                                            Exit For
+
+                                                                            rdr.Close()
+                                                                            rdr = Nothing
+                                                                            cmd = Nothing
+                                                                            ' check is orig. order is punchout order. If yes - then try to get info from
+                                                                            ' intf line table
+                                                                            Dim strOrigOrderOrigin As String = ""
+                                                                            strSqlString = "SELECT ORIGIN FROM PS_ISA_ORD_INTF_HD  where ORDER_NO = '" & strOrigOrderQuoteNumber & "' and BUSINESS_UNIT_OM = 'I0515'"
+
+                                                                            cmd = connectOR.CreateCommand
+                                                                            cmd.CommandText = strSqlString
+                                                                            cmd.CommandType = CommandType.Text
+                                                                            cmd.Transaction = trnsactSession
+
+                                                                            Try
+                                                                                strOrigOrderOrigin = cmd.ExecuteScalar
+                                                                                If strOrigOrderOrigin = "PCH" Then
+                                                                                    'punchout order
+                                                                                    cmd = Nothing
+                                                                                    'get info form INTF Line table
+                                                                                    If bIsLineNoSent Then
+                                                                                        ' search using Line No
+                                                                                        strSqlString = "SELECT INV_ITEM_ID, UNIT_OF_MEASURE AS UNIT_MEASURE_STD, ISA_SELL_PRICE AS PRICE_REQ_BSE FROM SYSADM8.PS_ISA_ORD_INTF_LN " & vbCrLf & _
+                                                                                            "WHERE ORDER_NO = '" & strOrigOrderQuoteNumber & "' AND ISA_INTFC_LN = '" & intLineNoFromSplit & "'" & vbCrLf & _
+                                                                                            "" & vbCrLf & _
+                                                                                            ""
+                                                                                    Else
+                                                                                        'search using Mfg Item Id
+                                                                                        strSqlString = "SELECT INV_ITEM_ID, UNIT_OF_MEASURE AS UNIT_MEASURE_STD, ISA_SELL_PRICE AS PRICE_REQ_BSE FROM SYSADM8.PS_ISA_ORD_INTF_LN " & vbCrLf & _
+                                                                                            "WHERE ORDER_NO = '" & strOrigOrderQuoteNumber & "' AND MFG_ITM_ID = '" & arrSupplPartIDs(iLn) & "'" & vbCrLf & _
+                                                                                            "" & vbCrLf & _
+                                                                                            ""
+                                                                                    End If
+
+                                                                                    cmd = connectOR.CreateCommand
+                                                                                    cmd.CommandText = strSqlString
+                                                                                    cmd.CommandType = CommandType.Text
+                                                                                    cmd.Transaction = trnsactSession
+
+                                                                                    Try
+                                                                                        'get reader
+                                                                                        Dim rdrIntf1 As OleDbDataReader = cmd.ExecuteReader()
+                                                                                        If Not (rdrIntf1 Is Nothing) Then
+                                                                                            If rdrIntf1.Read Then
+                                                                                                'get fields for INTF_LN
+                                                                                                strStdUom = CType(rdrIntf1("UNIT_MEASURE_STD"), String)
+                                                                                                strInvItemId = CType(rdrIntf1("INV_ITEM_ID"), String)
+                                                                                                'strUnitPrice = CType(rdr("PRICE"), String)
+                                                                                                strUnitPrice = CType(rdrIntf1("PRICE_REQ_BSE"), String)
+
+                                                                                                rdrIntf1.Close()
+                                                                                                rdrIntf1 = Nothing
+                                                                                                cmd = Nothing
+                                                                                            Else
+                                                                                                rdrIntf1.Close()
+                                                                                                rdrIntf1 = Nothing
+                                                                                                cmd = Nothing
+                                                                                                'if not - error
+                                                                                                strXMLError &= "Error retrieving MFG_ITM_ID info (rdrIntf1) for: " & arrSupplPartIDs(iLn) & vbCrLf
+                                                                                                'do not process this file
+                                                                                                m_logger.WriteInformationLog(rtn & " :: Rollback. Error description: " & strXMLError)
+                                                                                                strXMLError = rtn & " :: Rollback. Error description: " & strXMLError & " - for KLA-Tencor PO # : " & strOrderNum
+                                                                                                'bolError = True
+                                                                                                bLineError = True
+                                                                                                Exit For
+                                                                                            End If
+
+                                                                                        End If
+                                                                                    Catch exIntfLn As Exception
+                                                                                        cmd = Nothing
+                                                                                        strXMLError &= exIntfLn.Message
+                                                                                        'do not process this file
+                                                                                        m_logger.WriteInformationLog(rtn & " :: Rollback. Error description: " & strXMLError)
+                                                                                        strXMLError = rtn & " :: Rollback. Error description: " & strXMLError & " - for KLA-Tencor PO # : " & strOrderNum
+                                                                                        'bolError = True
+                                                                                        bLineError = True
+                                                                                        Exit For
+                                                                                    End Try
+                                                                                Else
+                                                                                    cmd = Nothing
+                                                                                    'if not - error
+                                                                                    strXMLError &= "Error retrieving MFG_ITM_ID info for: " & arrSupplPartIDs(iLn) & vbCrLf
+                                                                                    'do not process this file
+                                                                                    m_logger.WriteInformationLog(rtn & " :: Rollback. Error description: " & strXMLError)
+                                                                                    strXMLError = rtn & " :: Rollback. Error description: " & strXMLError & " - for KLA-Tencor PO # : " & strOrderNum
+                                                                                    'bolError = True
+                                                                                    bLineError = True
+                                                                                    Exit For
+                                                                                End If
+                                                                            Catch exOrigin As Exception
+                                                                                cmd = Nothing
+                                                                                strXMLError += exOrigin.Message
+                                                                                'do not process this file
+                                                                                m_logger.WriteInformationLog(rtn & " :: Rollback. Error description: " & strXMLError)
+                                                                                strXMLError = rtn & " :: Rollback. Error description: " & strXMLError & " - for KLA-Tencor PO # : " & strOrderNum
+                                                                                'bolError = True
+                                                                                bLineError = True
+                                                                                Exit For
+                                                                            End Try
+                                                                           
                                                                         End If
                                                                     End If
-                                                                    rdr.Close()
-                                                                    rdr = Nothing
-                                                                    cmd = Nothing
 
                                                                     m_logger.WriteInformationLog(rtn & " :: Retrieved MFG_ITM_ID info for: " & arrSupplPartIDs(iLn))
                                                                     'insert interface line string
@@ -737,7 +865,11 @@ Module Module1
                                                                         strTAX_EXEMPT = " "
                                                                     End If
 
-                                                                    strMfgPartNumber = arrSupplPartIDs(iLn)
+                                                                    If bIsLineNoSent Then
+                                                                        strMfgPartNumber = strMfgItemIdFromSplit
+                                                                    Else
+                                                                        strMfgPartNumber = arrSupplPartIDs(iLn)
+                                                                    End If
 
                                                                     If Trim(strMfgPartNumber) = "" Then
                                                                         strMfgPartNumber = " "
@@ -746,7 +878,14 @@ Module Module1
                                                                     strPartChargeCode = arrMatGroupTax(iLn)
 
                                                                     If Trim(strPartChargeCode) = "" Then
-                                                                        strPartChargeCode = " "
+                                                                        'strPartChargeCode = " "
+
+                                                                        'generate error and get out - must not be empty - by Mike Randall request - VR 03/15/2018
+                                                                        m_logger.WriteInformationLog(rtn & " :: Rollback. Error - Material Group is Empty for Interface Line record with Order number: " & strReqId & " for line number: " & (iLn + 1).ToString())
+                                                                        strXMLError &= rtn & " :: Rollback. Error - Material Group is Empty for Interface Line record with Order number: " & strReqId & " for line number: " & (iLn + 1).ToString() & " - for KLA-Tencor PO # : " & strOrderNum
+                                                                        'bolError = True
+                                                                        bLineError = True
+                                                                        Exit For
                                                                     End If
 
                                                                     strSqlString = strSqlString & " VALUES ('I0515','" & strReqId & "'," & (iLn + 1) & ",' ',' ',' ',0,'90589',' ','MAIN1'," & _
@@ -777,7 +916,7 @@ Module Module1
                                                                     Else
                                                                         'error
                                                                         m_logger.WriteInformationLog(rtn & " :: Rollback. Error - rows affected <= 0 for Interface Line record with Order number: " & strReqId & " for line number: " & (iLn + 1).ToString())
-                                                                        strXMLError &= rtn & " :: Rollback. Error - rows affected <= 0 for Interface Line record with Order number: " & strReqId & " for line number: " & (iLn + 1).ToString()
+                                                                        strXMLError &= rtn & " :: Rollback. Error - rows affected <= 0 for Interface Line record with Order number: " & strReqId & " for line number: " & (iLn + 1).ToString() & " - for KLA-Tencor PO # : " & strOrderNum
                                                                         'bolError = True
                                                                         bLineError = True
                                                                         Exit For
@@ -804,7 +943,7 @@ Module Module1
                                                                 trnsactSession.Rollback()
                                                                 connectOR.Close()
                                                                 trnsactSession = Nothing
-                                                                m_logger.WriteInformationLog(rtn & " :: Rollback. Error Description: " & strXMLError)
+                                                                m_logger.WriteInformationLog(rtn & " :: Rollback. Error Description: " & strXMLError & " - for KLA-Tencor PO # : " & strOrderNum)
                                                                 'bolError = True
                                                                 bLineError = True
                                                             End If
@@ -817,7 +956,7 @@ Module Module1
                                                             trnsactSession = Nothing
                                                             'bolError = True
                                                             bLineError = True
-                                                            m_logger.WriteInformationLog(rtn & " :: Rollback. Error Description: " & strXMLError)
+                                                            m_logger.WriteInformationLog(rtn & " :: Rollback. Error Description: " & strXMLError & " - for KLA-Tencor PO # : " & strOrderNum)
                                                         End Try
 
                                                     Else
@@ -996,9 +1135,19 @@ Module Module1
                 ' Upload files
                 transferOptions.TransferMode = TransferMode.Binary
 
+                Dim strUploadPathForSFTP As String = "/KLA_PO_CONFIRM/"
+                If connectOR.DataSource.ToUpper.IndexOf("RPTG") > -1 Or _
+                        connectOR.DataSource.ToUpper.IndexOf("DEVL") > -1 Or _
+                        connectOR.DataSource.ToUpper.IndexOf("STAR") > -1 Or _
+                        connectOR.DataSource.ToUpper.IndexOf("PLGR") > -1 Then
+
+                    strUploadPathForSFTP = "/KLA_PO_CONFIRM/TEST/"
+
+                End If
+
                 Dim transferResult As TransferOperationResult
                 transferResult =
-                    session.PutFiles(strFullSourcePath, "/KLA_PO_CONFIRM/", False, transferOptions)
+                    session.PutFiles(strFullSourcePath, strUploadPathForSFTP, False, transferOptions)
 
                 ' Throw on any error
                 transferResult.Check()
