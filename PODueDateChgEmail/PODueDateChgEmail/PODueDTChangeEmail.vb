@@ -75,7 +75,7 @@ Public Class PODueDTChangeEmail
         Catch ex As Exception
             sMyDbase = ""
         End Try
-        If (sMyDbase.Length > 0) Then
+        If Trim(sMyDbase) <> "" Then
             m_oraCNstring = "" & _
                     oraCN_default_provider & _
                     oraCN_default_creden & _
@@ -261,11 +261,20 @@ Public Class PODueDTChangeEmail
                         Catch ex As Exception
                             logger.WriteErrorLog(("rdr order line No error: " & ex.Message))
                         End Try
+
+                        Dim cmdEmpl As OleDbCommand = cn.CreateCommand
+                        cmdEmpl.CommandText = "SELECT intfc_l.ISA_EMPLOYEE_ID FROM SYSADM8.ps_isa_ord_intf_lN intfc_l " & vbCrLf & _
+                            " WHERE intfc_l.ORDER_NO = '" & currPOLnSched.OrderNo & "' " & vbCrLf & _
+                            " AND intfc_l.ISA_INTFC_LN = " & currPOLnSched.OrderLineNo & " "
+                        cmdEmpl.CommandType = CommandType.Text
+                       
                         Try
-                            currPOLnSched.EmployeeID = CStr(rdr("ISA_EMPLOYEE_ID"))
+                            currPOLnSched.EmployeeID = cmdEmpl.ExecuteScalar
+                            'currPOLnSched.EmployeeID = CStr(rdr("ISA_EMPLOYEE_ID"))
                         Catch ex As Exception
                             logger.WriteErrorLog(("rdr employee ID error: " & ex.Message))
                         End Try
+                        cmdEmpl = Nothing
 
                         If currPO.PurchasingBusinessUnit.Length > 0 And _
                            currPO.POId.Length > 0 And _
@@ -390,6 +399,9 @@ Public Class PODueDTChangeEmail
                         sBusUnitIN = ""
                         myReq = colEmailedPOs.Item(iCollectionIndex)
 
+                        'If iCollectionIndex = 6 Then
+                        '    Exit For
+                        'End If
                         If sendEmailForPO(myReq) Then
 
                             'sBusUnit = myReq.POBusinessUnit
@@ -1334,7 +1346,10 @@ Public Class PODueDTChangeEmail
                     saEmailTos = sEmailTo.Split(";")
 
                     For iCount As Integer = 0 To UBound(saEmailTos) - 1
-                        eml.To.Add(saEmailTos(iCount).ToString)
+                        If Trim(saEmailTos(iCount)) <> "" Then
+                            eml.To.Add(saEmailTos(iCount).ToString)
+                        End If
+
                     Next
 
                     Try
@@ -1351,7 +1366,7 @@ Public Class PODueDTChangeEmail
 
                     eml.From = fromAddress
 
-                    Dim sCNString As String = cn.ConnectionString
+                    Dim sCNString As String = m_oraCNstring
                     Dim strDBase As String = "PLGR"
                     If Len(sCNString) > 4 Then
                         strDBase = UCase(Right(sCNString, 4))
@@ -1360,6 +1375,7 @@ Public Class PODueDTChangeEmail
                     Select Case strDBase
                         Case "STAR", "PLGR", "RPTG", "DEVL"
                             eml.Subject = " TEST SDIX92 - " & eml.Subject
+                            eml.To.Clear()
                             eml.To.Add("webdev@sdi.com")
                             sEmailTo = "webdev@sdi.com"
                         Case Else
@@ -1373,14 +1389,15 @@ Public Class PODueDTChangeEmail
 
                     Try
 
-                        SendLogger(eml.Subject, sEmailBody, "PODUEDATECHGEMAIL", "Mail", sEmailTo, "", "webdev@sdi.com")
+                        SendLogger(eml.Subject, sEmailBody, "PODUEDATECHGEMAIL", "Mail", sEmailTo, " ", "webdev@sdi.com")
+
+                        bIsSuccessful = True
 
                     Catch ex As Exception
                         bIsSuccessful = False
                         logger.WriteErrorLog("Error Sending Email to " & eml.To.ToString)
                     End Try
                 End If
-                bIsSuccessful = True
             Else
                 logger.WriteVerboseLog(cHdr & vbCrLf & "No Email Address Found for Business Unit: " & myReq.BusinessUnit & "  employee: " & myReq.EmployeeId)
                 bIsSuccessful = False
@@ -1434,17 +1451,61 @@ Public Class PODueDTChangeEmail
                                 End Try
 
                             End While
-                        Else
-                            logger.WriteVerboseLog(" Employee " & myUserID & " is NOT set in the System")
-                            eletReturn = EventLogEntryType.FailureAudit
+                        Else  '  no rows
+                            ' check is user has a Role. If Yes, read Role Details - not the privs table
+                            Dim iRoleNumber As Integer = 0
+                            iRoleNumber = GetUserAccessRole(myUserID, myBusinessUnit)
+                            If iRoleNumber = 0 Then
+                                logger.WriteVerboseLog(" Employee " & myUserID & " is NOT set in the System")
+                                eletReturn = EventLogEntryType.FailureAudit
+                            Else
+                                'user has a Role. Get role details
+                                rdr.Close()
+                                rdr = Nothing
+                                sSQL = "SELECT * FROM SDIX_ROLEDETAIL where ROLENUM = " & iRoleNumber & ""
+                                Dim cmdEml As OleDbCommand = cn.CreateCommand
+                                cmdEml.CommandText = sSQL
+                                cmdEml.CommandType = CommandType.Text
+                                Dim bIsPrivExists As Boolean = False
+
+                                rdr = cmdEml.ExecuteReader
+
+                                If Not (rdr Is Nothing) Then
+                                    If rdr.HasRows() Then
+                                        While rdr.Read
+                                            If CStr(rdr("ALIAS_NAME")).Trim = "EMLPODUEDT" Then
+                                                bIsPrivExists = True
+                                                Exit While
+                                            End If
+                                        End While
+                                    End If
+                                End If
+                                If bIsPrivExists Then
+                                    logger.WriteVerboseLog(" Employee " & myUserID & " is set to receive emails")
+                                    eletReturn = EventLogEntryType.SuccessAudit
+                                Else
+                                    logger.WriteVerboseLog(" Employee " & myUserID & " is set to NOT receive emails")
+                                    eletReturn = EventLogEntryType.FailureAudit
+                                End If
+                            End If ' If iRoleNumber = 0 Then
+                            
                         End If
                     Else
                         logger.WriteErrorLog(" Employee " & myUserID & " will  NOT receive email due to error")
                         eletReturn = EventLogEntryType.Error
                     End If
+                    rdr.Close()
                 Catch ex As Exception
+                    Try
+                        rdr.Close()
+                    Catch exCls As Exception
+
+                    End Try
+
                     logger.WriteErrorLog(cHdr & " ERROR Executing Reader:  " & ex.Message)
                     eletReturn = EventLogEntryType.Error
+                Finally
+                    rdr = Nothing
                 End Try
             Else
                 logger.WriteErrorLog(cHdr & " Connection is not Open")
@@ -1458,6 +1519,38 @@ Public Class PODueDTChangeEmail
 
         Return (eletReturn)
     End Function
+
+    Public Function GetUserAccessRole(ByVal employeeID As String, ByVal businessUnit As String) As Integer
+
+        Dim connection As New OleDbConnection(m_oraCNstring)
+        Dim p_strQuery As String = ""
+        Dim oleCommand As New OleDbCommand()
+        Dim returnParam As Integer = 0
+        Try
+            p_strQuery = "SELECT NVL(ROLENUM, 0) FROM SDIX_USERS_TBL  WHERE ISA_EMPLOYEE_ID = '" + employeeID + "' AND BUSINESS_UNIT = '" + businessUnit + "'"
+            oleCommand = New OleDbCommand(p_strQuery, connection)
+            oleCommand.CommandTimeout = 120
+            connection.Open()
+            Try
+                returnParam = CType(oleCommand.ExecuteScalar(), Integer)
+            Catch ex32 As Exception
+                returnParam = 0
+            End Try
+            Try
+                connection.Close()
+            Catch ex1 As Exception
+
+            End Try
+        Catch objException As Exception
+            returnParam = 0
+            If connection.State = ConnectionState.Open Then
+                connection.Close()
+            End If
+        End Try
+
+        Return returnParam
+    End Function
+
     Private Function GetPOEmailAddress(ByVal myBusinessUnit As String, ByVal myEmployeeID As String) As String
         Dim cHdr As String = m_sCommonMsgText & "GetPOEmailAddress: "
         Dim sSQL As String
@@ -1485,8 +1578,7 @@ Public Class PODueDTChangeEmail
                 sSQL = sSQL & "                    WHERE E.BUSINESS_UNIT LIKE '%" & strBu3 & "'" & _
                 "              AND  upper(E.ISA_EMPLOYEE_ID) =   upper('" & myEmployeeID & "')"
             Else
-                sSQL = sSQL & "                    WHERE E.BUSINESS_UNIT = '" & myBusinessUnit & "'" & _
-                "              AND  upper(E.ISA_EMPLOYEE_ID) =   upper('" & myEmployeeID & "')"
+                sSQL = sSQL & "                    WHERE upper(E.ISA_EMPLOYEE_ID) =   upper('" & myEmployeeID & "')"
             End If
             
 
@@ -1713,8 +1805,11 @@ Public Class PODueDTChangeEmail
 
         Try
             s = "" & _
-            "SELECT BUSINESS_UNIT , PO_ID, PO_DT, LINE_NBR, SCHED_NBR, BUSINESS_UNIT_IN, bu_nstk, ORDER_NO " & vbCrLf & _
-            ", ORDER_INT_LINE_NO, ISA_EMPLOYEE_ID,  MFG_ID || ' - ' ||  MFG_ITM_ID AS ITEM_ID, DESCR254_MIXED, ORIG_PROMISE_DT, DUE_DT FROM (" & vbCrLf & _
+            " SELECT BUSINESS_UNIT, PO_ID, PO_DT, LINE_NBR, SCHED_NBR, BUSINESS_UNIT_IN, bu_nstk, ORDER_NO " & vbCrLf & _
+            ", ORDER_INT_LINE_NO, " & vbCrLf & _
+            " ' ' AS ISA_EMPLOYEE_ID,  " & vbCrLf & _
+            "MFG_ID || ' - ' ||  MFG_ITM_ID AS ITEM_ID, DESCR254_MIXED, SHIPTO_ID, " & vbCrLf & _
+            "ORIG_PROMISE_DT, DUE_DT FROM (" & vbCrLf & _
             "SELECT " & vbCrLf & _
             " B.BUSINESS_UNIT " & vbCrLf & _
             ",B.PO_ID " & vbCrLf & _
@@ -1725,9 +1820,8 @@ Public Class PODueDTChangeEmail
             ",LB.business_unit_in as bu_nstk " & vbCrLf & _
             ",LB.REQ_ID  AS ORDER_NO  " & vbCrLf & _
             ",LB.req_line_nbr AS ORDER_INT_LINE_NO " & vbCrLf & _
-            ",LB.EMPLID AS isa_employee_id " & vbCrLf & _
             ",L.MFG_ID ,L.MFG_ITM_ID " & vbCrLf & _
-            ",l.DESCR254_MIXED " & vbCrLf & _
+            ",l.DESCR254_MIXED, A.SHIPTO_ID " & vbCrLf & _
             ",MAX(trunc(A.ORIG_PROM_DT)) AS ORIG_PROMISE_DT " & vbCrLf & _
             ",MAX(trunc(A.DUE_DT)) AS DUE_DT " & vbCrLf & _
             "FROM " & vbCrLf & _
@@ -1753,7 +1847,7 @@ Public Class PODueDTChangeEmail
             "  AND l.unit_of_measure <> 'DO' " & vbCrLf & _
             "  AND A.CANCEL_STATUS <> 'X' " & vbCrLf & _
             "  AND L.CANCEL_STATUS <> 'X' " & vbCrLf & _
-            "  AND TRIM(LB.EMPLID) IS NOT NULL "
+            "   "
             '"  AND A.BUSINESS_UNIT_IN <> ' ' " & vbCrLf & _
             '"  AND B.BUSINESS_UNIT = 'ISA00' " & vbCrLf & _
             '"  AND B.PO_ID = '0001989271' "
@@ -1796,12 +1890,12 @@ Public Class PODueDTChangeEmail
             ", LB.business_unit_in " & vbCrLf & _
             ",A.ORDER_NO " & vbCrLf & _
             ",A.ORDER_INT_LINE_NO " & vbCrLf & _
-            ",LB.REQ_ID    ,LB.req_line_nbr ,LB.EMPLID " & _
+            ",LB.REQ_ID    ,LB.req_line_nbr  " & _
             ",L.MFG_ID ,L.MFG_ITM_ID " & vbCrLf & _
-            ",l.DESCR254_MIXED " & vbCrLf & _
+            ",l.DESCR254_MIXED, A.SHIPTO_ID " & vbCrLf & _
             "ORDER BY B.BUSINESS_UNIT, B.PO_ID, A.LINE_NBR, A.SCHED_NBR " & vbCrLf & _
             ") WHERE ((to_char(ORIG_PROMISE_DT) <> to_char(DUE_DT)) or(ORIG_PROMISE_DT is null and  DUE_DT is not null) ) " & vbCrLf & _
-            " and due_dt >= sysdate "
+            " and due_dt >= sysdate  "
             strBuild.Append(s)
             s = ""
             s = strBuild.ToString
@@ -1809,7 +1903,7 @@ Public Class PODueDTChangeEmail
             s = ""
             logger.WriteErrorLog(cHdr & vbCrLf & ex.ToString)
         End Try
-        '   logger.WriteVerboseLog(s)
+        '   logger.WriteVerboseLog(s)   '  and SHIPTO_ID LIKE '%EL_PAS%'
         Return (s)
     End Function
 
