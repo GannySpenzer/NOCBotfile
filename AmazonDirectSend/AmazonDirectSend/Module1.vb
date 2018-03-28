@@ -11,7 +11,6 @@ Module Module1
 
     'WARNING!!! This project is read Oracle for AMAZON orders and send them to Amazon as cXML file - VR 03/06/2018
 
-    'WARNING!!! This test project is configured right now to test KLATENCOR - VR 01/10/2018
 
     Private strVendorURL As String
     Private m_setupReqDoc As punchOutSetupRequestDoc = Nothing
@@ -28,7 +27,7 @@ Module Module1
 
     ' if folder changed - make sure check all code for EXPLICIT directory settings like 'C:\Program Files\sdi\AmazonClient'!!!
 
-    Dim strUrlToSend As String = "https://https.amazonsedi.com/c47fcf9d-286d-498a-ba9f-df390c2757a2"
+    Dim strUrlToSend As String = "https://https-ats.amazonsedi.com/5375ff74-a613-4b12-9555-41bcd38c5fd0"  ' VR 03/15/2018 - new from AMAZON  '   "https://https.amazonsedi.com/c47fcf9d-286d-498a-ba9f-df390c2757a2"
     Dim rootDir As String = "C:\Program Files\sdi\AmazonClient"
     Dim logpath As String = "C:\Program Files\sdi\AmazonClient\AmazonLOGS\AmazonClientOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
     Dim filePath As String = "C:\Program Files\sdi\AmazonClient\AmazonXMLFiles\AmazonClientXMLOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".xml"
@@ -161,7 +160,7 @@ Module Module1
                     objStreamWriter.WriteLine("Got VendorConfig " & Now())
 
                     'read view, get list of orders
-                    Dim strListOrders As String = "select distinct po_id from SYSADM.PS_ISA_PO_DISP_XML WHERE PO_ID = '0003672255'"
+                    Dim strListOrders As String = "select distinct po_id from SYSADM8.PS_ISA_PO_DISP_XML"  '   WHERE PO_ID = 'S010792283'"
 
                     Try
                         Dim Command As OleDbCommand = New OleDbCommand(strListOrders, connectOR)
@@ -302,50 +301,50 @@ Module Module1
                                                             End If
                                                             Dim bNoErrors As Boolean = True
 
-                                                            connectOR.Open()
-                                                            Try
-                                                                Dim iOrdCount As Integer = OrderListDataSet.Tables(0).Rows.Count
-                                                                ' run query for every order sent
-                                                                If connectOR.State = ConnectionState.Open Then
-                                                                Else
-                                                                    connectOR.Open()
-                                                                End If
-                                                                Dim rowsAffected As Integer = 0
-                                                                Dim iCnt As Integer = 0
-                                                                For iCnt = 0 To iOrdCount - 1
-                                                                    'If iCnt = 1 Then Exit For ' for testing ONLY!
-                                                                    rowsAffected = 0
-                                                                    strOrderNo = OrderListDataSet.Tables(0).Rows(iCnt).Item("po_id").ToString()
-                                                                    'run query
-                                                                    Dim strUpdateQuery As String = "update SYSADM.PS_PO_DISPATCHED set ECQUEUEINSTANCE=" & intNumberToWrite & " where po_id='" & strOrderNo & "'"
+                                                            'connectOR.Open()
+                                                            'Try
+                                                            '    Dim iOrdCount As Integer = OrderListDataSet.Tables(0).Rows.Count
+                                                            '    ' run query for every order sent
+                                                            '    If connectOR.State = ConnectionState.Open Then
+                                                            '    Else
+                                                            '        connectOR.Open()
+                                                            '    End If
+                                                            '    Dim rowsAffected As Integer = 0
+                                                            '    Dim iCnt As Integer = 0
+                                                            '    For iCnt = 0 To iOrdCount - 1
+                                                            '        'If iCnt = 1 Then Exit For ' for testing ONLY!
+                                                            '        rowsAffected = 0
+                                                            '        strOrderNo = OrderListDataSet.Tables(0).Rows(iCnt).Item("po_id").ToString()
+                                                            '        'run query
+                                                            '        Dim strUpdateQuery As String = "update SYSADM8.PS_PO_DISPATCHED set EIP_CTL_ID='" & intNumberToWrite.ToString() & "' where po_id='" & strOrderNo & "'"
 
-                                                                    Dim UpdCommand As OleDbCommand = New OleDbCommand(strUpdateQuery, connectOR)
-                                                                    UpdCommand.CommandTimeout = 120
-                                                                    rowsAffected = UpdCommand.ExecuteNonQuery()
-                                                                    Try
-                                                                        UpdCommand.Dispose()
-                                                                    Catch ex As Exception
+                                                            '        Dim UpdCommand As OleDbCommand = New OleDbCommand(strUpdateQuery, connectOR)
+                                                            '        UpdCommand.CommandTimeout = 120
+                                                            '        rowsAffected = UpdCommand.ExecuteNonQuery()
+                                                            '        Try
+                                                            '            UpdCommand.Dispose()
+                                                            '        Catch ex As Exception
 
-                                                                    End Try
-                                                                    If rowsAffected = 0 Then
-                                                                        bNoErrors = False
-                                                                        objStreamWriter.WriteLine("Order status change returned: 'rowsAffected = 0' for Order: " & strOrderNo)
-                                                                    End If
-                                                                Next
-                                                            Catch ex As Exception
-                                                                bNoErrors = False
-                                                                objStreamWriter.WriteLine("Error trying to update Order: " & strOrderNo & " Error Message: " & ex.Message)
-                                                                Try
-                                                                    connectOR.Close()
-                                                                Catch ex1 As Exception
+                                                            '        End Try
+                                                            '        If rowsAffected = 0 Then
+                                                            '            bNoErrors = False
+                                                            '            objStreamWriter.WriteLine("Order status change returned: 'rowsAffected = 0' for Order: " & strOrderNo)
+                                                            '        End If
+                                                            '    Next
+                                                            'Catch ex As Exception
+                                                            '    bNoErrors = False
+                                                            '    objStreamWriter.WriteLine("Error trying to update Order: " & strOrderNo & " Error Message: " & ex.Message)
+                                                            '    Try
+                                                            '        connectOR.Close()
+                                                            '    Catch ex1 As Exception
 
-                                                                End Try
-                                                            End Try
-                                                            Try
-                                                                connectOR.Close()
-                                                            Catch ex As Exception
+                                                            '    End Try
+                                                            'End Try
+                                                            'Try
+                                                            '    connectOR.Close()
+                                                            'Catch ex As Exception
 
-                                                            End Try
+                                                            'End Try
                                                             If bNoErrors Then
                                                                 objStreamWriter.WriteLine("Order statuses changed without errors " & Now())
                                                             Else
@@ -493,13 +492,15 @@ Module Module1
         ' new one:  "http://localhost/SDIWebProcessors/CytecPurchReqs.aspx"    '   "http://ims.sdi.com:8913/sdiwebinSvc/CytecMatMastIn.aspx"  
         '  "http://ims.sdi.com:8913/sdiwebinSvc/CytecNstkPoRecpts.aspx"   '  "http://192.168.253.46:8011/sdiwebin/CytecMatMastIn.aspx"
 
+        ' 03/15/2018 New Amazon URL: "https://https-ats.amazonsedi.com/5375ff74-a613-4b12-9555-41bcd38c5fd0"
+
         Dim sHttpResponse As String = ""
         Dim httpSession As New easyHttp
 
         ' for KLA-Tencor: "https://sdiexchtest.sdi.com/WebSvcSDI/KLATencor.aspx "  '  "http://sdixbatch.sdi.com:8084/SDIWebSvcIn/KLATencor.aspx"
 
-        ' httpSession.URL = strUrlToSend 
-        httpSession.URL = "https://sdiexchtest.sdi.com/WebSvcSDI/KLATencor.aspx "  ' strUrlToSend  '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"  
+        httpSession.URL = strUrlToSend
+        'httpSession.URL = "https://sdiexchtest.sdi.com/SDIWebProcessors/CytecPurchReqs.aspx"  ' strUrlToSend  '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"  
 
         '  "https://https.amazonsedi.com/c47fcf9d-286d-498a-ba9f-df390c2757a2"  '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"    '  "http://192.168.253.46:8011/sdiwebin/CytecMatMastIn.aspx"  '   "http://ims.sdi.com:8913/sdiwebinSvc/CytecNstkPoRecpts.aspx"   ' "http://ims.sdi.com:8913/sdiwebinSvc/CytecPurchReqs.aspx"    '  "http://ims.sdi.com:8913/sdiwebinSvc/CytecStkReservIn.aspx"    '  "http://ims.sdi.com:8913/sdiwebinSvc/CytecMatMastIn.aspx"    '  "http://localhost/SDIWebProcessors/CytecMatMastIn.aspx"    '    "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"  '    "http://localhost/SDIWebProcessors/XmlInSDI.aspx"   '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx" 
         '   "https://https.amazonsedi.com/073dbe31-c230-403f-990c-6f74eeed1510"  '    "https://www.amazon.com/eprocurement/punchout"  '    "https://supplydev.hajoca.com/hajomid/eclipse.ecl"
