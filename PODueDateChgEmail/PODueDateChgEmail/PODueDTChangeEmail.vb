@@ -1304,9 +1304,9 @@ Public Class PODueDTChangeEmail
                              "<BODY><CENTER><SPAN style=""WIDTH: 256px; FONT-FAMILY: Arial; FONT-SIZE: x-large"">SDI Marketplace</SPAN></CENTER>" & _
                              "<CENTER><SPAN>SDiExchange -<B> Order Due Date Change</B></SPAN></CENTER>&nbsp;" & _
                               "&nbsp; <DIV><P>Hello SDI Site Rep,<BR></DIV><BR>There has been a Due Date change for Order Number: <B> " & myReq.ReqId.ToString & _
-                              "</B><BR><BR><TABLE> <COLGROUP><COL width=""7%"" valign=""top""><COL width=""25%"" valign=""top"">" & _
-                              "<COL width=""50%"" valign=""top""><COL width=""9%"" valign=""top""><COL width=""9%"" valign=""top"">" & _
-                              "<TR><TD><U>LINE <BR>NUMBER</U></TD><TD><U>MFG -<BR> MFG ITEM NO.</U><TD><U>DESCRIPTION</U></TD>" & _
+                              "</B><BR><BR><TABLE> <COLGROUP><COL width=""7%"" valign=""top""><COL width=""21%"" valign=""top""><COL width=""11%"" valign=""top""><COL width=""7%"" valign=""top"">" & _
+                              "<COL width=""36%"" valign=""top""><COL width=""9%"" valign=""top""><COL width=""9%"" valign=""top"">" & _
+                              "<TR><TD><U>LINE <BR>NUMBER</U></TD><TD><U>MFG -<BR> MFG ITEM NO.</U></TD><TD><U>PO ID</U></TD><TD><U>PO LINE <BR>NUMBER</U></TD><TD><U>DESCRIPTION</U></TD>" & _
                               "<TD><U>ORIGINAL <BR>DUE DATE</U></TD><TD><U>NEW <BR>DUE DATE</U></TD></TR><TR></TR>" & vbCrLf
 
         For Each myLine As ReqLine In myReq.ReqLines
@@ -1318,6 +1318,8 @@ Public Class PODueDTChangeEmail
             End Try
             sEmailBody &= "<TR><TD>&nbsp;" & myLine.ReqLineNo & "</TD>" & _
                           "<TD>&nbsp;" & myLine.ItemID & "</TD>" & _
+                          "<TD>&nbsp;" & myLine.POID & "</TD>" & _
+                          "<TD>&nbsp;" & myLine.POLine_NBR & "</TD>" & _
                           "<TD>&nbsp;" & myLine.Desc & "</TD>" & _
                           "<TD>&nbsp;" & sOrigDueDate & "</TD>" & _
                           "<TD>&nbsp;" & myLine.newDate & "</TD></TR>"
