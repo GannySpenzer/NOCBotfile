@@ -19,7 +19,7 @@ Module Module1
     Dim rootDir As String = "C:\AmazonSdiDirectIn"
     Dim logpath As String = "C:\AmazonSdiDirectIn\LOGS\UpdAmazonOrdrConfXmlIn" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
     Dim sErrLogPath As String = "C:\AmazonSdiDirectIn\LOGS\ErredSQLsAmazonOrdrConf" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=DEVL")
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=RPTG")
     Dim strOverride As String
     Dim bolWarning As Boolean = False
     Dim strVendorId As String = "0000039777"  '  "0000041491"  '   "0000039777"  '  AMAZON ID
@@ -35,7 +35,7 @@ Module Module1
         ' default log level
         Dim logLevel As System.Diagnostics.TraceLevel = TraceLevel.Verbose
 
-        Dim cnStringORA As String = "Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=DEVL"
+        Dim cnStringORA As String = "Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=RPTG"
         Try
             cnStringORA = My.Settings("oraCNString1").ToString.Trim
         Catch ex As Exception
@@ -397,9 +397,9 @@ Module Module1
                                                     'get Status type ("detail" or "reject"), UOM, 
                                                     Dim strChldNodeName1 As String = ""
                                                     For Each ChildItemNode As XmlNode In nodeConfItem1.ChildNodes()
-                                                        strChldNodeName1 = ChildItemNode.Name
+                                                        strChldNodeName1 = UCase(ChildItemNode.Name)
                                                         Select Case strChldNodeName1
-                                                            Case "ConfirmationStatus"
+                                                            Case "CONFIRMATIONSTATUS"
                                                                 If ChildItemNode.Attributes.Count > 0 Then
                                                                     'get attribute type value
                                                                     For Each attrib As XmlAttribute In ChildItemNode.Attributes()
@@ -425,16 +425,16 @@ Module Module1
                                                                             Exit For
                                                                         End If  '  If UCase(attrib.Name) = "TYPE" Then
                                                                     Next  '  For Each attrib As XmlAttribute In ChildItemNode.Attributes()
-                                                                
+
                                                                 End If  '  If ChildItemNode.Attributes.Count > 0 Then
 
                                                                 ' get Line Level Error - is exists
                                                                 If ChildItemNode.ChildNodes.Count > 0 Then
                                                                     Dim strConfStatusChldname As String = ""
                                                                     For Each ConfStatusChild In ChildItemNode
-                                                                        strConfStatusChldname = ConfStatusChild.Name
+                                                                        strConfStatusChldname = UCase(ConfStatusChild.Name)
                                                                         Select Case strConfStatusChldname
-                                                                            Case "Comments"
+                                                                            Case "COMMENTS"
                                                                                 'this node contains line error message
                                                                                 Dim strLineErrorDescr As String = ""
                                                                                 strLineErrorDescr = ConfStatusChild.InnerText
@@ -447,10 +447,10 @@ Module Module1
                                                                                 'do nothing
                                                                         End Select
                                                                     Next  '  For Each ConfStatusChild In ChildItemNode
-                                                                    
+
                                                                 End If  '  If ChildItemNode.ChildNodes.Count > 0 Then
 
-                                                            Case "UnitOfMeasure"
+                                                            Case "UNITOFMEASURE"
                                                                 If j1 = 0 Then
                                                                 Else
                                                                     ReDim Preserve arrUoms(j1)
@@ -513,16 +513,16 @@ Module Module1
                                             Else
                                                 ' continue writing to Oracle tables
 
-                                                'get Vendor ID based on strOrderNum
-                                                strVendorId = GetVendorId(strOrderNum)
+                                                'get Vendor ID based on strOrderNum - and PO Bus. Unit
+                                                strVendorId = GetVendorId(strOrderNum, strSiteBu)
 
                                                 Dim bolErrM1 As Boolean = False
                                                 ' adding one more array (arrLineConfirmed) to this function - VR 07/12/2017
                                                 bolErrM1 = createECConfirmation(intQueueInst, strVendorId, strOrderNum, strSiteBu, strOrderDate, arrLineNums, arrLineQtys, arrUoms, arrLineConfirmed)
                                                 If bolErrM1 Then
-                                                    strXMLError &= " Error updating EC tables for Order No: " & strOrderNum
+                                                    strXMLError = " Error updating EC tables for Order No: " & strOrderNum
                                                 Else
-                                                    strXMLError &= ""
+                                                    strXMLError = ""
                                                 End If
                                             End If
 
@@ -575,19 +575,33 @@ Module Module1
 
     End Function
 
-    Private Function GetVendorId(ByVal strOrderNum As String) As String
-        Dim strVendorIdByOrder As String = ""
+    Private Function GetVendorId(ByVal strOrderNum As String, Optional ByRef strPOBusUnit As String = "") As String
+        Dim strVendorIdByOrder As String = "0000039777"
         Dim strSQLString As String = ""
+        Dim dsPOdata As DataSet = Nothing
+        strPOBusUnit = "ISA00"
 
-        strSQLString = "select VENDOR_ID from SYSADM.PS_PO_DISPATCHED where PO_ID = '" & strOrderNum & "'" & vbCrLf
+        strSQLString = "select VENDOR_ID, BUSINESS_UNIT from SYSADM8.PS_PO_DISPATCHED where PO_ID = '" & strOrderNum & "'" & vbCrLf
         Try
-            strVendorIdByOrder = ORDBAccess.GetScalar(strSQLString, connectOR)
+            dsPOdata = ORDBAccess.GetAdapter(strSQLString, connectOR)
+            If Not dsPOdata Is Nothing Then
+                If dsPOdata.Tables.Count > 0 Then
+                    If dsPOdata.Tables(0).Rows.Count > 0 Then
+                        strVendorIdByOrder = dsPOdata.Tables(0).Rows(0).Item("VENDOR_ID")
+                        strPOBusUnit = dsPOdata.Tables(0).Rows(0).Item("BUSINESS_UNIT")
+                    End If
+                End If
+            End If
+            
+            'strVendorIdByOrder = ORDBAccess.GetScalar(strSQLString, connectOR)
         Catch ex As Exception
             strVendorIdByOrder = "0000039777"
+            strPOBusUnit = "ISA00"
         End Try
 
         If Trim(strVendorIdByOrder) = "" Then
             strVendorIdByOrder = "0000039777"
+            strPOBusUnit = "ISA00"
         End If
         Return strVendorIdByOrder
     End Function
@@ -631,7 +645,7 @@ Module Module1
 
     Private Function getpoinfo(ByVal ponum As String, ByVal vendor As String, ByVal strPoSiteBu As String) As DataSet
 
-        Dim strSQLString As String
+        Dim strSQLString As String = ""
 
         strSQLString = "SELECT TO_CHAR(A.PO_DT,'MM-DD-YYYY') as PODT, B.LINE_NBR," & vbCrLf & _
                     " C.SCHED_NBR," & vbCrLf & _
@@ -677,7 +691,7 @@ Module Module1
                     " AND C.DISTRIB_LN_STATUS != 'X'" & vbCrLf & _
                     " AND B.LINE_NBR = C.LINE_NBR" & vbCrLf & _
                     " AND NOT EXISTS (SELECT 'X'" & vbCrLf & _
-                            " FROM SYSADM.PS_PO_LINE_EC LEC" & vbCrLf & _
+                            " FROM SYSADM8.PS_PO_LINE_EC LEC" & vbCrLf & _
                             " WHERE LEC.BUSINESS_UNIT = '" & strPoSiteBu & "'" & vbCrLf & _
                             " AND C.PO_ID = LEC.PO_ID" & vbCrLf & _
                             " AND C.LINE_NBR = LEC.LINE_NBR)" & vbCrLf & _
@@ -890,7 +904,10 @@ Module Module1
 
                             If iLoc1 > -1 Then
                                 strQtyMy3 = arrLineQtys(iLoc1)
-                                strUom1 = arrUoms(iLoc1)
+                                If Trim(arrUoms(iLoc1)) <> "" Then
+                                    strUom1 = arrUoms(iLoc1)
+                                End If
+
                             Else
                                 strQtyMy3 = dsPOdata.Tables(0).Rows(I).Item("QTY_PO")
                             End If
@@ -956,16 +973,20 @@ Module Module1
                             If Trim(strUPCID) = "" Then
                                 strUPCID = " "
                             End If
+                            If Trim(strUom1) = "" Then
+                                strUom1 = " "
+                            End If
 
+                            'ECQUEUEINSTANCE, ECTRANSINOUTSW, ::  " & intQueueInst & ", 'I',
                             strSQLstring = "INSERT INTO PS_PO_LINE_EC" & vbCrLf & _
-                                    " (ECTRANSID, ECQUEUEINSTANCE, ECTRANSINOUTSW," & vbCrLf & _
+                                    " (EIP_CTL_ID, " & vbCrLf & _
                                     " BUSINESS_UNIT, PO_ID, LINE_NBR," & vbCrLf & _
                                     " INV_ITEM_ID, DESCR254_MIXED, ITM_ID_VNDR," & vbCrLf & _
                                     " VNDR_CATALOG_ID, UNIT_OF_MEASURE, MFG_ID," & vbCrLf & _
                                     " CNTRCT_ID, CNTRCT_LINE_NBR, RFQ_ID," & vbCrLf & _
                                     " RFQ_LINE_NBR, ACK_STATUS, MFG_ITM_ID," & vbCrLf & _
-                                    " UPC_ID)" & vbCrLf & _
-                                    " VALUES('PO ACK', " & intQueueInst & ", 'I'," & vbCrLf & _
+                                    " UPN_ID,PROCESS_FLG,PO_LINE_CHNG_COUNT,PO_LINE_BO_COUNT,CATEGORY_ID,VERSION_NBR,CAT_LINE_NBR,RELEASE_NBR)" & vbCrLf & _
+                                    " VALUES('PO ACK', " & vbCrLf & _
                                     " '" & strPoSiteBu & "', '" & strPoId & "', '" & strLineNum & "'," & vbCrLf & _
                                     " '" & strInvItemID & "'," & vbCrLf & _
                                     " '" & strDescr.ToUpper & "'," & vbCrLf & _
@@ -976,21 +997,22 @@ Module Module1
                                     " ' ',0,' '," & vbCrLf & _
                                     " 0,'" & strStatus & "'," & vbCrLf & _
                                     " '" & strMfgItemID & "'," & vbCrLf & _
-                                    " '" & strUPCID & " ')" & vbCrLf
+                                    " '" & strUPCID & "' ,' ',0,0,' ',0,0,0)" & vbCrLf
 
                             rowsaffected = ORDBAccess.ExecNonQuery(strSQLstring, connectOR)
                             If rowsaffected = 0 Then
                                 bolUpdateFailed = True
                             End If
 
+                            'ECQUEUEINSTANCE, ECTRANSINOUTSW,  ::  " & intQueueInst & ", 'I',
                             strSQLstring = "INSERT INTO PS_PO_LINE_SHIP_EC" & vbCrLf & _
-                                    " (ECTRANSID, ECQUEUEINSTANCE, ECTRANSINOUTSW," & vbCrLf & _
+                                    " (EIP_CTL_ID, " & vbCrLf & _
                                     " BUSINESS_UNIT, PO_ID, LINE_NBR," & vbCrLf & _
                                     " SCHED_NBR, PRICE_PO, DUE_DT," & vbCrLf & _
                                     " DUE_TIME, SHIPTO_ID, QTY_PO," & vbCrLf & _
                                     " MERCHANDISE_AMT, CURRENCY_CD, FREIGHT_TERMS," & vbCrLf & _
-                                    " SHIP_TYPE_ID)" & vbCrLf & _
-                                    " VALUES('PO ACK', " & intQueueInst & ", 'I'," & vbCrLf & _
+                                    " SHIP_TYPE_ID,REVISION,CUSTOM_PRICE,ZERO_PRICE_IND,PROCESS_FLG,BCKORD_ORG_SCHED,ATTN_TO,STD_ID_NUM_SHIPTO)" & vbCrLf & _
+                                    " VALUES('PO ACK', " & vbCrLf & _
                                     " '" & strPoSiteBu & "', '" & strPoId & "', '" & strLineNum & "'," & vbCrLf & _
                                     " '" & strSchedNum & "'," & vbCrLf & _
                                     " " & decPrice & "," & vbCrLf & _
@@ -1000,7 +1022,7 @@ Module Module1
                                     " " & (decQTY * decPrice) & "," & vbCrLf & _
                                     " '" & strCurrCd & "'," & vbCrLf & _
                                     " '" & strFrtTerms & "'," & vbCrLf & _
-                                    " '" & strShipTypeId & "')"
+                                    " '" & strShipTypeId & "',' ',' ',' ',' ',0,' ',' ')"
 
                             rowsaffected = ORDBAccess.ExecNonQuery(strSQLstring, connectOR)
                             If rowsaffected = 0 Then
@@ -1021,15 +1043,16 @@ Module Module1
                         Dim strCURRENCY_CD_HDR As String = dsPOdata.Tables(0).Rows(0).Item("CURRENCY_CD_HDR")
                         Dim strRT_TYPE As String = dsPOdata.Tables(0).Rows(0).Item("RT_TYPE")
 
+                        'ECQUEUEINSTANCE, ECTRANSINOUTSW, 
                         strSQLstring = "INSERT INTO PS_PO_HDR_EC" & vbCrLf & _
-                                    " (ECTRANSID, ECQUEUEINSTANCE, ECTRANSINOUTSW," & vbCrLf & _
+                                    " (EIP_CTL_ID, " & vbCrLf & _
                                     " BUSINESS_UNIT, PO_ID, CHNG_ORD_BATCH," & vbCrLf & _
                                     " PO_REF, PYMNT_TERMS_CD, CNTCT_SEQ_NUM," & vbCrLf & _
                                     " BILL_LOCATION, TAX_EXEMPT, TAX_EXEMPT_ID," & vbCrLf & _
                                     " CURRENCY_CD, RT_TYPE, ACKNOWLEGE_DT," & vbCrLf & _
                                     " ACK_STATUS, ACK_RECEIVED_DT, REVIEWED," & vbCrLf & _
-                                    " REVIEWED_DT, OPRID)" & vbCrLf & _
-                                    " VALUES('PO ACK', " & intQueueInst & ", 'I'," & vbCrLf & _
+                                    " REVIEWED_DT, OPRID,PAY_TRM_BSE_DT_OPT,DISP_METHOD,PROCESS_FLG,PO_POA_STATUS,PO_ACK_SOURCE,EDX_COMPARE_STATUS,VNDR_UPN_FLG,STD_ID_NUM_VNDRGLN,STD_ID_NUM_BILLTO,COMMENTS)" & vbCrLf & _
+                                    " VALUES('PO ACK" & intQueueInst & "I'," & vbCrLf & _
                                     " '" & strPoSiteBu & "', '" & strPoId & "',0," & vbCrLf & _
                                     " '" & strPoRef & "'," & vbCrLf & _
                                     " '" & strPYMNT_TERMS_CD & "'," & vbCrLf & _
@@ -1042,7 +1065,7 @@ Module Module1
                                     " TO_DATE('" & dteNowd & "','MM-DD-YYYY')," & vbCrLf & _
                                     " '" & strStatus & "'," & vbCrLf & _
                                     " TO_DATE('" & dteNowd & "','MM-DD-YYYY')," & vbCrLf & _
-                                    " 'N','','ASNVEND')"
+                                    " 'N','','ASNVEND',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ')"
 
                         rowsaffected = ORDBAccess.ExecNonQuery(strSQLstring, connectOR)
                         If rowsaffected = 0 Then
@@ -1077,9 +1100,9 @@ Module Module1
 
                 Try
                     strSQLstring = "DELETE FROM PS_PO_LINE_EC" & vbCrLf & _
-                         " WHERE ECTRANSID = 'PO ACK'" & vbCrLf & _
-                         " AND ECQUEUEINSTANCE = " & intQueueInst & vbCrLf & _
-                         " AND ECTRANSINOUTSW = 'I'" & vbCrLf
+                         " WHERE EIP_CTL_ID = 'PO ACK'" & vbCrLf & _
+                         " AND BUSINESS_UNIT = '" & strPoSiteBu & "'" & vbCrLf & _
+                         " AND PO_ID = '" & strPoId & "'" & vbCrLf
 
 
                     rowsaffected = ORDBAccess.ExecNonQuery(strSQLstring, connectOR)
@@ -1090,9 +1113,9 @@ Module Module1
 
                 Try
                     strSQLstring = "DELETE FROM PS_PO_LINE_SHIP_EC" & vbCrLf & _
-                         " WHERE ECTRANSID = 'PO ACK'" & vbCrLf & _
-                         " AND ECQUEUEINSTANCE = " & intQueueInst & vbCrLf & _
-                         " AND ECTRANSINOUTSW = 'I'" & vbCrLf
+                         " WHERE EIP_CTL_ID = 'PO ACK'" & vbCrLf & _
+                         " AND BUSINESS_UNIT = '" & strPoSiteBu & "'" & vbCrLf & _
+                         " AND PO_ID = '" & strPoId & "'" & vbCrLf
 
 
                     rowsaffected = ORDBAccess.ExecNonQuery(strSQLstring, connectOR)
@@ -1103,9 +1126,9 @@ Module Module1
 
                 Try
                     strSQLstring = "DELETE FROM PS_PO_HDR_EC" & vbCrLf & _
-                         " WHERE ECTRANSID = 'PO ACK'" & vbCrLf & _
-                         " AND ECQUEUEINSTANCE = " & intQueueInst & vbCrLf & _
-                         " AND ECTRANSINOUTSW = 'I'" & vbCrLf
+                         " WHERE EIP_CTL_ID = 'PO ACK" & intQueueInst & "I'" & vbCrLf & _
+                         " AND BUSINESS_UNIT = '" & strPoSiteBu & "'" & vbCrLf & _
+                         " AND PO_ID = '" & strPoId & "'" & vbCrLf
 
                     rowsaffected = ORDBAccess.ExecNonQuery(strSQLstring, connectOR)
 
