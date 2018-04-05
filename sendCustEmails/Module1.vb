@@ -185,7 +185,9 @@ Module Module1
         Dim eMail As System.Net.Mail.MailMessage = New System.Net.Mail.MailMessage()
 
         For intCnt = 0 To intTotal - 1
-            eMail.To.Add(strEmailTo(intCnt))
+            If Trim(strEmailTo(intCnt)) <> "" Then
+                eMail.To.Add(strEmailTo(intCnt))
+            End If
 
             strSQLstring = "SELECT A.FIRST_NAME_SRCH, A.LAST_NAME_SRCH" & vbCrLf & _
                         " FROM PS_ISA_USERS_TBL A" & vbCrLf & _
@@ -207,6 +209,11 @@ Module Module1
                 strEmailEmpName &= ", " & strFirstName & " " & strLastName
             End If
         Next  '  For intCnt = 0 To intTotal - 1
+
+        If Trim(strEmailEmpName) = "" Then
+            objStreamWriter.WriteLine("  email was NOT sent for EmailKey: " & dr.Item("EMAILKEY") & " - because e-mail address doesn't exist in Users table")
+            Return True
+        End If
 
         strEmailEmpEmail = strEmailList
         'Dim Mailer As System.Web.Mail.MailMessage = New System.Web.Mail.MailMessage
