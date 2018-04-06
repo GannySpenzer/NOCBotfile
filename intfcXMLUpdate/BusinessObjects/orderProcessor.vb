@@ -1784,7 +1784,7 @@ Public Class orderProcessor
         Dim cnORA As New OleDbConnection(Me.oleConnectionString)
         Dim strPrice As String = "0"
         Dim strSQLstring As String = ""
-        strSQLstring = "SELECT PRICE FROM SYSADM8.PS_ISA_SDIEX_PRICE WHERE INV_ITEM_ID = '" & strInvItemId & "'"
+        strSQLstring = "SELECT PRICE FROM SYSADM8.PS_ISA_SDIEX_PRCBU WHERE INV_ITEM_ID = '" & strInvItemId & "' AND BUSINESS_UNIT = 'I0256'"
 
         Try
             strPrice = ORDBAccess.GetScalar(strSQLstring, cnORA)
