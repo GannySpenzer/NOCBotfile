@@ -92,7 +92,7 @@ Module SDI_BRT_HeaderLine
         Dim filePath As String
         Dim i As Integer
 
-        connectionString = ("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=RPTG")
+        connectionString = ("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=RPTG")
 
         '   (1) connection string / db connection
         Dim cnString As String = ""
