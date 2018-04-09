@@ -83,11 +83,11 @@ Module Module1
 
     Sub Main()
 
-        'WARNING!!! This test project is configured right now to test KLATENCOR - VR 01/10/2018
+        'WARNING!!! This test project is configured right now to test NEW_AMAZON - VR 04/02/2018 '  KLATENCOR - VR 01/10/2018
 
         Dim strInput As String = ""  '  <?xml version=""1.0"" encoding=""UTF-8""?><!DOCTYPE cXML SYSTEM ""http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd""[]><cXML payloadID=""3/30/2015 11:56:16 AM 019768490@sdi.com"" xml:lang=""en-US"" timestamp=""3/30/2015 11:56:16 AM""><Header><From><Credential domain=""NetworkId""><Identity>SDIINC</Identity></Credential></From><To><Credential domain=""NetworkId""><Identity>Amazon</Identity></Credential></To><Sender><Credential domain=""DUNS""><Identity>SDIINC</Identity><SharedSecret>Y2XN7SefSxpPAoD5i6OtYix4w5TK402d</SharedSecret></Credential><UserAgent>Ariba Network 1.2</UserAgent></Sender></Header><Request><PunchOutSetupRequest operation=""create""><BuyerCookie>3xx1vu5dn5sttwrc2zqspprl</BuyerCookie><Extrinsic name=""UniqueName"">ROVENSKY,VITALY</Extrinsic><Extrinsic name=""UserEmail"">vitaly.rovensky@sdi.com</Extrinsic><Extrinsic name=""CostCenter"">I0256</Extrinsic><BrowserFormPost><URL>http://localhost/InsiteOnline/shopredirect.aspx?PUNOUT=YES</URL></BrowserFormPost><ShipTo><Address addressID=""L0256-01""><Name xml:lang=""en-US"">UNCC Facility Maint. Shop</Name><PostalAddress><DeliverTo>SDI c/o UNCC Facility Maint Shop</DeliverTo><Street>9201 University City Blvd.</Street><City>Charlotte</City><State>NC</State><PostalCode>28223</PostalCode><Country isoCountryCode=""US"">United States</Country></PostalAddress></Address></ShipTo></PunchOutSetupRequest></Request></cXML>"
         Dim strOutput As String = ""
-        Dim strWhatToTest As String = "KLATENCOR"  '   "AMAZON"   ' "NEW_AMAZON"  '    "CYTECMXM" 
+        Dim strWhatToTest As String = "NEW_AMAZON"  '  "KLATENCOR"  '   "AMAZON"   ' "NEW_AMAZON"  '    "CYTECMXM" 
         Dim Response_Doc As String
         Dim msgEx As String = ""
         Dim strMsgVendConfig As String = ""
@@ -232,38 +232,38 @@ Module Module1
                 'objStreamWriter = File.CreateText(logpath)
                 objStreamWriter.WriteLine("Started NEW_AMAZON Test " & Now())
 
-                '' Ship Notice
+                ' Ship Notice
 
                 strInput = "<?xml version=""1.0"" encoding=""UTF-8""?><!DOCTYPE cXML SYSTEM "
                 strInput += """http://xml.cxml.org/schemas/cXML/1.2.024/Fulfill.dtd""> "
                 strInput += "<cXML payloadID=""1394645847931.18059.42xx@amazon.com"" "
-                strInput += "timestamp=""2014-03-12T17:37:27+17:37"" xml:lang=""en-US""><Header><From><Credential domain=""NetworkId""><Identity>0000039777</Identity></Credential></From><To><Credential domain=""NetworkId""><Identity>SDIDirectOrdering2356630089</Identity></Credential></To><Sender><Credential domain=""NetworkId""><Identity>0000039777</Identity><SharedSecret>CNznizfS4klqFVc2FDCJGQ==</SharedSecret></Credential><UserAgent>Amazon LLC eProcurement Application</UserAgent></Sender></Header><Request><ShipNoticeRequest><ShipNoticeHeader shipmentID=""2199947375124"" operation="
+                strInput += "timestamp=""2014-03-12T17:37:27+17:37"" xml:lang=""en-US""><Header><From><Credential domain=""NetworkId""><Identity>0000039777</Identity></Credential></From><To><Credential domain=""NetworkId""><Identity>SDIINCPUNCHOUT7330406532</Identity></Credential></To><Sender><Credential domain=""NetworkId""><Identity>0000039777</Identity><SharedSecret>CNznizfS4klqFVc2FDCJGQ==</SharedSecret></Credential><UserAgent>Amazon LLC eProcurement Application</UserAgent></Sender></Header><Request><ShipNoticeRequest><ShipNoticeHeader shipmentID=""2199947375124"" operation="
                 strInput += "  ""new"" noticeDate=""2014-03-12T17:37:35+17:37"" shipmentDate="
                 strInput += "   ""2014-03-12T17:32:02+17:32"" "
                 strInput += "   deliveryDate=""2014-03-14T03:00:00+03:00"" "
                 strInput += "    shipmentType=""actual""/><ShipControl><CarrierIdentifier domain=""companyName""></CarrierIdentifier><ShipmentIdentifier>1Z1Y2E270339295041</ShipmentIdentifier><PackageIdentification rangeBegin=""1"" rangeEnd=""1""/></ShipControl><ShipNoticePortion><OrderReference orderDate=""2014-03-11T15:57:28-04:00"" orderID=""E010653511xxxx""><DocumentReference payloadID=""1394567848065.10310490xx.OrderRequest@xx.org""/></OrderReference><ShipNoticeItem lineNumber=""10"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""4"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""13"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""6"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""5"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""7"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""2"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""9"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""12"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""8"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""14"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""11"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""15"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""3"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem><ShipNoticeItem lineNumber=""1"" quantity=""2""><UnitOfMeasure>EA</UnitOfMeasure></ShipNoticeItem></ShipNoticePortion></ShipNoticeRequest></Request></cXML>"
 
-                ''Order Confirm
+                'Order Confirm
 
-                'strInput = "<?xml version=""1.0"" encoding=""UTF-8""?><!DOCTYPE cXML SYSTEM"
-                'strInput += " ""http://xml.cxml.org/schemas/cXML/1.2.024/Fulfill.dtd"">"
-                'strInput += "<cXML payloadID=""1394568264055.446.73xx@amazon.com"" "
-                'strInput += "timestamp=""2014-03-11T13:04:24+13:04"" xml:lang=""en-US""><Header><From><Credential "                'strInput += "domain=""NetworkId""><Identity>0000039777</Identity></Credential></From><To><Credential "                'strInput += "domain=""NetworkId""><Identity>SDIDirectOrdering2356630089</Identity></Credential></To><Sender><Credential "                'strInput += "domain=""NetworkId""><Identity>0000039777</Identity><SharedSecret>CNznizfS4klqFVc2FDCJGQ==</SharedSecret></Credential><UserAgent>Amazon LLC eProcurement "                'strInput += "Application</UserAgent></Sender></Header><Request><ConfirmationRequest><ConfirmationHeader confirmID=""105-5528563-5618617"" "
-                'strInput += " operation=""new"" type=""detail"" "
-                'strInput += " noticeDate=""2014-03-11T13:04:24+13:04""><Total><Money currency=""USD"">137.18</Money></Total><Shipping><Money currency=""USD"">0.00</Money><Description "                'strInput += "xml:lang=""en-US"">Cost of "
-                'strInput += "shipping, not including shipping tax</Description></Shipping><Tax><Money currency=""USD"">8.60</Money><Description xml:lang=""en-US"">Cost of tax, including "
-                'strInput += "shipping tax</Description></Tax></ConfirmationHeader><OrderReference orderID=""E010653511913xxx"" orderDate="
-                'strInput += " ""2014-03-11T12:57:28-07:00"">"
-                'strInput += "<DocumentReference payloadID="
-                'strInput += " ""1394567848065.10310490xx.OrderRequest@xx.org""/></OrderReference><ConfirmationItem quantity=""2"" "                'strInput += "lineNumber=""1""><UnitOfMeasure>EA</UnitOfMeasure><ConfirmationStatus quantity=""2"" type=""detail""><UnitOfMeasure>EA</UnitOfMeasure><Tax><Money "                'strInput += "currency=""USD"">0.60</Money><Description xml:lang=""en-US"">Cost of tax, including "
-                'strInput += "shipping tax</Description></Tax><Shipping><Money currency=""USD"">0.00</Money><Description xml:lang=""en-US"">Cost of shipping, not including "
-                'strInput += "shipping tax</Description></Shipping><Comments type=""confirmID"">105-5528563-5618617</Comments></ConfirmationStatus></ConfirmationItem><ConfirmationItem "                'strInput += "quantity=""2"" lineNumber=""13""><UnitOfMeasure>EA</UnitOfMeasure><ConfirmationStatus quantity=""2"" type=""detail""><UnitOfMeasure>EA</UnitOfMeasure><Tax><Money "                'strInput += "currency=""USD"">0.60</Money><Description xml:lang=""en-US"">Cost of tax, including "
-                'strInput += "shipping tax</Description></Tax><Shipping><Money currency=""USD"">0.00</Money><Description xml:lang=""en-US"">Cost of shipping, not including "
-                'strInput += "shipping tax</Description></Shipping><Comments type=""confirmID"">105-5528563-5618617</Comments></ConfirmationStatus></ConfirmationItem><ConfirmationItem "                'strInput += "quantity=""2"" lineNumber=""14""><UnitOfMeasure>EA</UnitOfMeasure><ConfirmationStatus quantity=""2"" type=""detail""><UnitOfMeasure>EA</UnitOfMeasure><UnitPrice><Money "                'strInput += "currency=""USD"">2.96</Money></UnitPrice><Tax><Money currency=""USD"">0.40</Money><Description xml:lang=""en-US"">Cost of tax, including "
-                'strInput += "shipping tax</Description></Tax><Shipping><Money currency=""USD"">0.00</Money><Description xml:lang=""en-US"">Cost of shipping, not including "
-                'strInput += "shipping tax</Description></Shipping><Comments type=""confirmID"">105-5528563-5618617</Comments></ConfirmationStatus></ConfirmationItem><ConfirmationItem "                'strInput += "quantity=""2"" lineNumber=""15""><UnitOfMeasure>EA</UnitOfMeasure><ConfirmationStatus quantity=""2"" type=""detail""><UnitOfMeasure>EA</UnitOfMeasure><Tax><Money "                'strInput += "currency=""USD"">0.60</Money><Description xml:lang=""en-US"">Cost of tax, including "
-                'strInput += "shipping tax</Description></Tax><Shipping><Money currency=""USD"">0.00</Money><Description xml:lang=""en-US"">Cost of shipping, not including "
-                'strInput += "shipping tax</Description></Shipping><Comments type=""confirmID"">105-5528563-"                'strInput += "5618617</Comments></ConfirmationStatus></ConfirmationItem></ConfirmationRequest></Request></cXML>"
+                strInput = "<?xml version=""1.0"" encoding=""UTF-8""?><!DOCTYPE cXML SYSTEM"
+                strInput += " ""http://xml.cxml.org/schemas/cXML/1.2.024/Fulfill.dtd"">"
+                strInput += "<cXML payloadID=""1394568264055.446.73xx@amazon.com"" "
+                strInput += "timestamp=""2014-03-11T13:04:24+13:04"" xml:lang=""en-US""><Header><From><Credential "                strInput += "domain=""NetworkId""><Identity>0000039777</Identity></Credential></From><To><Credential "                strInput += "domain=""NetworkId""><Identity>SDIINCPUNCHOUT7330406532</Identity></Credential></To><Sender><Credential "                strInput += "domain=""NetworkId""><Identity>0000039777</Identity><SharedSecret>CNznizfS4klqFVc2FDCJGQ==</SharedSecret></Credential><UserAgent>Amazon LLC eProcurement "                strInput += "Application</UserAgent></Sender></Header><Request><ConfirmationRequest><ConfirmationHeader confirmID=""105-5528563-5618617"" "
+                strInput += " operation=""new"" type=""detail"" "
+                strInput += " noticeDate=""2014-03-11T13:04:24+13:04""><Total><Money currency=""USD"">137.18</Money></Total><Shipping><Money currency=""USD"">0.00</Money><Description "                strInput += "xml:lang=""en-US"">Cost of "
+                strInput += "shipping, not including shipping tax</Description></Shipping><Tax><Money currency=""USD"">8.60</Money><Description xml:lang=""en-US"">Cost of tax, including "
+                strInput += "shipping tax</Description></Tax></ConfirmationHeader><OrderReference orderID=""E010653511913xxx"" orderDate="
+                strInput += " ""2014-03-11T12:57:28-07:00"">"
+                strInput += "<DocumentReference payloadID="
+                strInput += " ""1394567848065.10310490xx.OrderRequest@xx.org""/></OrderReference><ConfirmationItem quantity=""2"" "                strInput += "lineNumber=""1""><UnitOfMeasure>EA</UnitOfMeasure><ConfirmationStatus quantity=""2"" type=""detail""><UnitOfMeasure>EA</UnitOfMeasure><Tax><Money "                strInput += "currency=""USD"">0.60</Money><Description xml:lang=""en-US"">Cost of tax, including "
+                strInput += "shipping tax</Description></Tax><Shipping><Money currency=""USD"">0.00</Money><Description xml:lang=""en-US"">Cost of shipping, not including "
+                strInput += "shipping tax</Description></Shipping><Comments type=""confirmID"">105-5528563-5618617</Comments></ConfirmationStatus></ConfirmationItem><ConfirmationItem "                strInput += "quantity=""2"" lineNumber=""13""><UnitOfMeasure>EA</UnitOfMeasure><ConfirmationStatus quantity=""2"" type=""detail""><UnitOfMeasure>EA</UnitOfMeasure><Tax><Money "                strInput += "currency=""USD"">0.60</Money><Description xml:lang=""en-US"">Cost of tax, including "
+                strInput += "shipping tax</Description></Tax><Shipping><Money currency=""USD"">0.00</Money><Description xml:lang=""en-US"">Cost of shipping, not including "
+                strInput += "shipping tax</Description></Shipping><Comments type=""confirmID"">105-5528563-5618617</Comments></ConfirmationStatus></ConfirmationItem><ConfirmationItem "                strInput += "quantity=""2"" lineNumber=""14""><UnitOfMeasure>EA</UnitOfMeasure><ConfirmationStatus quantity=""2"" type=""detail""><UnitOfMeasure>EA</UnitOfMeasure><UnitPrice><Money "                strInput += "currency=""USD"">2.96</Money></UnitPrice><Tax><Money currency=""USD"">0.40</Money><Description xml:lang=""en-US"">Cost of tax, including "
+                strInput += "shipping tax</Description></Tax><Shipping><Money currency=""USD"">0.00</Money><Description xml:lang=""en-US"">Cost of shipping, not including "
+                strInput += "shipping tax</Description></Shipping><Comments type=""confirmID"">105-5528563-5618617</Comments></ConfirmationStatus></ConfirmationItem><ConfirmationItem "                strInput += "quantity=""2"" lineNumber=""15""><UnitOfMeasure>EA</UnitOfMeasure><ConfirmationStatus quantity=""2"" type=""detail""><UnitOfMeasure>EA</UnitOfMeasure><Tax><Money "                strInput += "currency=""USD"">0.60</Money><Description xml:lang=""en-US"">Cost of tax, including "
+                strInput += "shipping tax</Description></Tax><Shipping><Money currency=""USD"">0.00</Money><Description xml:lang=""en-US"">Cost of shipping, not including "
+                strInput += "shipping tax</Description></Shipping><Comments type=""confirmID"">105-5528563-"                strInput += "5618617</Comments></ConfirmationStatus></ConfirmationItem></ConfirmationRequest></Request></cXML>"
 
                 '    "https://sdiexchtest.sdi.com/WebSvcSDI/xmlinsdi.aspx"
 
@@ -1155,8 +1155,10 @@ Module Module1
 
         strBox2 = ""
 
+        'Amazon SDI Direct Order Conf
         ' new secure on SDIX (Production): "https://www.sdiexchange.com/websdi/xmlinsdi.aspx"
         ' new secure on IMS -   "https://sdiexchtest.sdi.com/WebSvcSDI/xmlinsdi.aspx"
+
         '  my test URL: "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"   ' not seen outside: "http://websrv.sdi.com/sdiwebin/xmlinsdi.aspx"   '  
         ' Amazon SDI Direct (test): "https://https.amazonsedi.com/073dbe31-c230-403f-990c-6f74eeed1510"  '  
         ' new one:  "http://localhost/SDIWebProcessors/CytecPurchReqs.aspx"    '   "http://ims.sdi.com:8913/sdiwebinSvc/CytecMatMastIn.aspx"  
@@ -1165,10 +1167,14 @@ Module Module1
         Dim sHttpResponse As String = ""
         Dim httpSession As New easyHttp
 
-        ' for KLA-Tencor: "https://sdiexchtest.sdi.com/WebSvcSDI/KLATencor.aspx "  '  "http://sdixbatch.sdi.com:8084/SDIWebSvcIn/KLATencor.aspx"
+        ' for KLA-Tencor: "https://www.sdiexchange.com/WebSvcSDI/KLATencor.aspx "  '  "http://sdixbatch.sdi.com:8084/SDIWebSvcIn/KLATencor.aspx"
 
         ' httpSession.URL = strUrlToSend 
-        httpSession.URL = "https://sdiexchtest.sdi.com/WebSvcSDI/KLATencor.aspx "  ' strUrlToSend  '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"  
+        httpSession.URL = "https://www.sdiexchange.com/WebSvcSDI/xmlinsdi.aspx"  '   "https://sdiexchtest.sdi.com/WebSvcSDI/KLATencor.aspx "
+
+        '   "https://www.sdiexchange.com/WebSvcSDI/KLATencor.aspx"
+
+        '   "https://sdiexchtest.sdi.com/WebSvcSDI/KLATencor.aspx "  ' strUrlToSend  '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"  
 
         '  "https://https.amazonsedi.com/c47fcf9d-286d-498a-ba9f-df390c2757a2"  '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"    '  "http://192.168.253.46:8011/sdiwebin/CytecMatMastIn.aspx"  '   "http://ims.sdi.com:8913/sdiwebinSvc/CytecNstkPoRecpts.aspx"   ' "http://ims.sdi.com:8913/sdiwebinSvc/CytecPurchReqs.aspx"    '  "http://ims.sdi.com:8913/sdiwebinSvc/CytecStkReservIn.aspx"    '  "http://ims.sdi.com:8913/sdiwebinSvc/CytecMatMastIn.aspx"    '  "http://localhost/SDIWebProcessors/CytecMatMastIn.aspx"    '    "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"  '    "http://localhost/SDIWebProcessors/XmlInSDI.aspx"   '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx" 
         '   "https://https.amazonsedi.com/073dbe31-c230-403f-990c-6f74eeed1510"  '    "https://www.amazon.com/eprocurement/punchout"  '    "https://supplydev.hajoca.com/hajomid/eclipse.ecl"
