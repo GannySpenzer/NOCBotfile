@@ -642,6 +642,9 @@ Module Module1
                                                                     Dim strStdUom As String = "EA"
                                                                     Dim strPartChargeCode As String = " "
                                                                     Dim strInvItemId As String = " "
+                                                                    Dim strVendorID As String = " "
+                                                                    Dim strVendorITMID As String = " "
+                                                                    Dim strMfdName As String = " "
 
                                                                     '  PS_REQ_LINE  arrUnitPrice(iLn)
                                                                     ' no B.ISA_CUST_CHARGE_CD - will get it from XML
@@ -699,6 +702,9 @@ Module Module1
                                                                             strInvItemId = CType(rdr("INV_ITEM_ID"), String)
                                                                             'strUnitPrice = CType(rdr("PRICE"), String)
                                                                             strUnitPrice = CType(rdr("PRICE_REQ_BSE"), String)
+                                                                            strVendorID = " "
+                                                                            strVendorITMID = " "
+                                                                            strMfdName = " "
 
                                                                             rdr.Close()
                                                                             rdr = Nothing
@@ -726,13 +732,13 @@ Module Module1
                                                                                     'get info form INTF Line table
                                                                                     If bIsLineNoSent Then
                                                                                         ' search using Line No
-                                                                                        strSqlString = "SELECT INV_ITEM_ID, UNIT_OF_MEASURE AS UNIT_MEASURE_STD, ISA_SELL_PRICE AS PRICE_REQ_BSE FROM SYSADM8.PS_ISA_ORD_INTF_LN " & vbCrLf & _
+                                                                                        strSqlString = "SELECT INV_ITEM_ID, UNIT_OF_MEASURE AS UNIT_MEASURE_STD, ISA_SELL_PRICE AS PRICE_REQ_BSE, VENDOR_ID, ITM_ID_VNDR, ISA_MFG_FREEFORM, DESCR254 FROM SYSADM8.PS_ISA_ORD_INTF_LN " & vbCrLf & _
                                                                                             "WHERE ORDER_NO = '" & strOrigOrderQuoteNumber & "' AND ISA_INTFC_LN = '" & intLineNoFromSplit & "'" & vbCrLf & _
                                                                                             "" & vbCrLf & _
                                                                                             ""
                                                                                     Else
                                                                                         'search using Mfg Item Id
-                                                                                        strSqlString = "SELECT INV_ITEM_ID, UNIT_OF_MEASURE AS UNIT_MEASURE_STD, ISA_SELL_PRICE AS PRICE_REQ_BSE FROM SYSADM8.PS_ISA_ORD_INTF_LN " & vbCrLf & _
+                                                                                        strSqlString = "SELECT INV_ITEM_ID, UNIT_OF_MEASURE AS UNIT_MEASURE_STD, ISA_SELL_PRICE AS PRICE_REQ_BSE, VENDOR_ID, ITM_ID_VNDR, ISA_MFG_FREEFORM, DESCR254 FROM SYSADM8.PS_ISA_ORD_INTF_LN " & vbCrLf & _
                                                                                             "WHERE ORDER_NO = '" & strOrigOrderQuoteNumber & "' AND MFG_ITM_ID = '" & arrSupplPartIDs(iLn) & "'" & vbCrLf & _
                                                                                             "" & vbCrLf & _
                                                                                             ""
@@ -751,8 +757,13 @@ Module Module1
                                                                                                 'get fields for INTF_LN
                                                                                                 strStdUom = CType(rdrIntf1("UNIT_MEASURE_STD"), String)
                                                                                                 strInvItemId = CType(rdrIntf1("INV_ITEM_ID"), String)
-                                                                                                'strUnitPrice = CType(rdr("PRICE"), String)
+                                                                                                strVendorID = CType(rdrIntf1("VENDOR_ID"), String)
+                                                                                                strVendorITMID = CType(rdrIntf1("ITM_ID_VNDR"), String)
                                                                                                 strUnitPrice = CType(rdrIntf1("PRICE_REQ_BSE"), String)
+                                                                                                strMfdName = CType(rdrIntf1("ISA_MFG_FREEFORM"), String)
+                                                                                                If Trim(CType(rdrIntf1("DESCR254"), String)) <> "" Then
+                                                                                                    arrDescr(iLn) = Trim(CType(rdrIntf1("DESCR254"), String))
+                                                                                                End If
 
                                                                                                 rdrIntf1.Close()
                                                                                                 rdrIntf1 = Nothing
@@ -841,13 +852,10 @@ Module Module1
                                                                     'default values
                                                                     Dim strWorkOrder As String = " "
                                                                     Dim strMachineNo As String = " "
-                                                                    Dim strVendorID As String = " "
-                                                                    Dim strVendorITMID As String = " "
                                                                     Dim strPULINEFIELD As String = " "
                                                                     Dim strRfqInd As String = " "
                                                                     Dim strAddToCtlg As String = " "
                                                                     Dim strMfdID As String = " "
-                                                                    Dim strMfdName As String = " "
                                                                     Dim strMfgPartNumber As String = " "
                                                                     Dim strShipto As String = "L0515-01"
                                                                     Dim strDefaultUserId As String = strDefaultEmpID  '   "TESTERJ1" ' special test user created in SDiExchange: JACK TESTER Superuser with email: vitaly.rovensky@sdi.com
@@ -875,10 +883,22 @@ Module Module1
                                                                         strMfgPartNumber = " "
                                                                     End If
 
+                                                                    If Trim(strVendorID) = "" Then
+                                                                        strVendorID = " "
+                                                                    End If
+
+                                                                    If Trim(strVendorITMID) = "" Then
+                                                                        strVendorITMID = " "
+                                                                    End If
+
+                                                                    If Trim(strMfdName) = "" Then
+                                                                        strMfdName = " "
+                                                                    End If
+
                                                                     strPartChargeCode = arrMatGroupTax(iLn)
 
                                                                     If Trim(strPartChargeCode) = "" Then
-                                                                        'strPartChargeCode = " "
+                                                                        'strPartChargeCode = " "  
 
                                                                         'generate error and get out - must not be empty - by Mike Randall request - VR 03/15/2018
                                                                         m_logger.WriteInformationLog(rtn & " :: Rollback. Error - Material Group is Empty for Interface Line record with Order number: " & strReqId & " for line number: " & (iLn + 1).ToString())
