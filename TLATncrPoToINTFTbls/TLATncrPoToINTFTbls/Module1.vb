@@ -958,6 +958,26 @@ Module Module1
                                                                 connectOR.Close()
                                                                 trnsactSession = Nothing
                                                                 m_logger.WriteInformationLog(rtn & " :: Finished Interface records creation for: " & aFiles(I).Name)
+
+                                                                connectOR.Open()
+                                                                ' change orig order header status to space
+                                                                Dim iMe As Integer = 0
+                                                                strSqlString = "UPDATE SYSADM8.PS_ISA_ORD_INTF_HD SET ORDER_STATUS = ' ' WHERE BUSINESS_UNIT_OM = 'I0515' AND ORDER_NO = '" & strOrigOrderQuoteNumber & "'"
+                                                                cmd = connectOR.CreateCommand
+                                                                cmd.CommandText = strSqlString
+                                                                cmd.CommandType = CommandType.Text
+                                                                Try
+                                                                    iMe = cmd.ExecuteNonQuery
+                                                                    connectOR.Close()
+                                                                Catch ex32 As Exception
+                                                                    Try
+                                                                        connectOR.Close()
+                                                                    Catch ex As Exception
+
+                                                                    End Try
+                                                                End Try
+                                                                cmd = Nothing
+
                                                             Else
                                                                 'rollback
                                                                 trnsactSession.Rollback()
