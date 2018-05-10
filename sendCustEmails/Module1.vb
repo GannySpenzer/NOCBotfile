@@ -124,12 +124,18 @@ Module Module1
 
         Dim I As Integer = 0
         Dim bLineResult As Boolean = False
+        Dim bAreThereBadEmails As Boolean = False
+        Dim bNeedToSendErrorEmail As Boolean = False
 
         connectOR.Open()
         For I = 0 To ds.Tables(0).Rows.Count - 1
-            bLineResult = sendCustEmail(ds.Tables(0).Rows(I))
+            bAreThereBadEmails = False
+            bLineResult = sendCustEmail(ds.Tables(0).Rows(I), bAreThereBadEmails)
             If Not bLineResult Then
                 bErrorExists = True
+            End If
+            If bAreThereBadEmails Then
+                bNeedToSendErrorEmail = True
             End If
             If bLineResult Then
                 bLineResult = updateSendEmailTbl(ds.Tables(0).Rows(I))
@@ -142,11 +148,16 @@ Module Module1
         objStreamWriter.WriteLine("  sendCustEmails send selected emails = " & ds.Tables(0).Rows.Count)
         connectOR.Close()
 
+        If Not bErrorExists Then
+            If bNeedToSendErrorEmail Then
+                bErrorExists = True
+            End If
+        End If
         Return bErrorExists
 
     End Function
 
-    Private Function sendCustEmail(ByVal dr As DataRow) As Boolean
+    Private Function sendCustEmail(ByVal dr As DataRow, Optional ByRef bAreThereBadEmails As Boolean = False) As Boolean
 
         ' SDIXEMAIL
 
@@ -168,10 +179,7 @@ Module Module1
         Dim strbodyhead As String = ""
         Dim strbodydetl As String = ""
         Dim strbodyfoot As String = ""
-        'Dim txtBody As String
-        'Dim txtHdr As String
-        'Dim txtMsg As String
-        'Dim bolSelectItem As Boolean
+
         Dim strSQLstring As String = ""
         Dim strFirstName As String = " "
         Dim strLastName As String = " "
@@ -181,56 +189,68 @@ Module Module1
         Dim intCnt As Integer = 0
         Dim strEmailEmpName As String = ""
         Dim strEmailEmpEmail As String = ""
+        Dim strBadEmailsList As String = ""
 
         Dim eMail As System.Net.Mail.MailMessage = New System.Net.Mail.MailMessage()
 
         For intCnt = 0 To intTotal - 1
             If Trim(strEmailTo(intCnt)) <> "" Then
-                eMail.To.Add(strEmailTo(intCnt))
-            End If
+                If IsValidSingleAdd(Trim(strEmailTo(intCnt))) Then
+                    eMail.To.Add(strEmailTo(intCnt))
 
-            strSQLstring = "SELECT A.FIRST_NAME_SRCH, A.LAST_NAME_SRCH" & vbCrLf & _
-                        " FROM PS_ISA_USERS_TBL A" & vbCrLf & _
-                        " WHERE UPPER(A.ISA_EMPLOYEE_EMAIL) = UPPER('" & strEmailTo(intCnt) & "')" & vbCrLf & _
-                        " AND ROWNUM < 2"
+                    strFirstName = ""
+                    strLastName = ""
+                    strSQLstring = "SELECT A.FIRST_NAME_SRCH, A.LAST_NAME_SRCH" & vbCrLf & _
+                                " FROM PS_ISA_USERS_TBL A" & vbCrLf & _
+                                " WHERE UPPER(A.ISA_EMPLOYEE_EMAIL) = UPPER('" & strEmailTo(intCnt) & "')" & vbCrLf & _
+                                " AND ROWNUM < 2"
 
-            Dim drName As OleDbDataReader
-            Dim command As OleDbCommand = New OleDbCommand(strSQLstring, connectOR)
-            drName = command.ExecuteReader()
-            If drName.Read Then
-                strFirstName = drName.Item("FIRST_NAME_SRCH")
-                strLastName = drName.Item("LAST_NAME_SRCH")
-            End If
-            drName.Close()
+                    Dim drName As OleDbDataReader
+                    Dim command As OleDbCommand = New OleDbCommand(strSQLstring, connectOR)
+                    drName = command.ExecuteReader()
+                    If drName.Read Then
+                        strFirstName = drName.Item("FIRST_NAME_SRCH")
+                        strLastName = drName.Item("LAST_NAME_SRCH")
+                    End If
+                    drName.Close()
 
-            If Trim(strEmailEmpName) = "" Then
-                strEmailEmpName = strFirstName & " " & strLastName
-            Else
-                strEmailEmpName &= ", " & strFirstName & " " & strLastName
-            End If
+                    If (Trim(strFirstName) <> "") Or (Trim(strLastName) <> "") Then
+                        If Trim(strEmailEmpName) = "" Then
+                            strEmailEmpName = Trim(strFirstName) & " " & Trim(strLastName)
+                        Else
+                            strEmailEmpName &= ", " & Trim(strFirstName) & " " & Trim(strLastName)
+                        End If
+
+                    End If
+
+                Else
+                    ' bad email address - need to find out for whom
+                    If Trim(strBadEmailsList) = "" Then
+                        strBadEmailsList = Trim(strEmailTo(intCnt))
+                    Else
+                        strBadEmailsList += " ; " & Trim(strEmailTo(intCnt))
+                    End If
+                End If  '  If IsValidSingleAdd(Trim(strEmailTo(intCnt))) Then
+
+            End If  '  If Trim(strEmailTo(intCnt)) <> "" Then
+
         Next  '  For intCnt = 0 To intTotal - 1
 
-        If Trim(strEmailEmpName) = "" Then
-            objStreamWriter.WriteLine("  email was NOT sent for EmailKey: " & dr.Item("EMAILKEY") & " - because e-mail address doesn't exist in Users table")
-            Return True
+        If Trim(strBadEmailsList) <> "" Then
+            objStreamWriter.WriteLine("  Bad email(s) for EmailKey: " & dr.Item("EMAILKEY") & ". Bad email(s) list:" & Trim(strBadEmailsList))
+            bAreThereBadEmails = True
         End If
 
         strEmailEmpEmail = strEmailList
-        'Dim Mailer As System.Web.Mail.MailMessage = New System.Web.Mail.MailMessage
 
-        'Mailer.From = Trim(dr.Item("EMAILFROM"))   '  Trim(dr.Item("ISA_EMAIL_FROM"))
         eMail.From = New MailAddress("SDIExchange@sdi.com", "SDI Exchange")
-        'eMail.CC = " "
+
         eMail.Bcc.Add(New MailAddress("webdev@sdi.com", "WEBDEV Group"))
-        'If Trim(dr.Item("EMAILCC")) = "" Then  '  If Convert.ToString(dr.Item("ISA_EMAIL_CC")).Length = 1 Then
-        'Mailer.Cc = " "
-        'Else
-        '    Mailer.Cc = Trim(dr.Item("EMAILCC"))   '  Mailer.Cc = Trim(dr.Item("ISA_EMAIL_CC"))
-        'End If
-        'If Trim(dr.Item("EMAILBCC")) = "" Then  '  If Convert.ToString(dr.Item("ISA_EMAIL_BCC")).Length = 1 Then
+
+        'If Trim(dr.Item("EMAILBCC")) = "" Then 
         '    Mailer.Bcc = "webdev@sdi.com"
         'Else
-        '    Mailer.Bcc = Trim(dr.Item("EMAILBCC"))   '  Mailer.Bcc = Trim(dr.Item("ISA_EMAIL_BCC"))
+        '    Mailer.Bcc = Trim(dr.Item("EMAILBCC")) 
         'End If
         'Dim strAddBCC As String = getAddBCC()
         'If Not Trim(strAddBCC) = "" Then
@@ -243,11 +263,6 @@ Module Module1
         '    End If
         'End If
 
-        'strbodyhead = "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI, Inc</span></center>" & vbCrLf
-        ''strbodyhead = strbodyhead & "<center><span >" & dr.Item("EMAIL_SUBJECT_LONG") & "</span></center>"
-        'strbodyhead = strbodyhead & "<center><span >" & dr.Item("EMAILSUBJECT") & "</span></center>"
-        'strbodyhead = strbodyhead & "&nbsp;" & vbCrLf
-        
         If Trim(dr.Item("EMAILBODY")) = "" And Trim(dr.Item("EMAILBODYPATH")) = "" Then  '  If Trim(dr.Item("EMAIL_TEXTLONG")) = "" And Trim(dr.Item("ISA_EMAIL_TXT_FILE")) = "" Then
             objStreamWriter.WriteLine("  error no email message - " & strEmailEmpEmail & " for " & strEmailEmpName & " at " & Now())
             Return True
@@ -284,7 +299,7 @@ Module Module1
         'strbodydetl = strbodydetl & "&nbsp;<br>"
         'strbodydetl = strbodydetl & "SDI Customer Care<br>"
         'strbodydetl = strbodydetl & "&nbsp;<br>"
-        
+
         strbodydetl = strbodydetl & "</p>"
         strbodydetl = strbodydetl & "</div>"
 
@@ -320,7 +335,13 @@ Module Module1
             eMail.To.Clear()
             eMail.To.Add("webdev@sdi.com")
             eMail.Subject = " (Test Run) - " & eMail.Subject
-       
+        Else
+
+            If Trim(strEmailEmpName) = "" Then
+                objStreamWriter.WriteLine("  email was NOT sent for EmailKey: " & dr.Item("EMAILKEY") & " - because e-mail address doesn't exist in Users table")
+                Return True
+            End If
+
         End If
 
         eMail.IsBodyHtml = True
@@ -330,6 +351,39 @@ Module Module1
         If sendCustEmail Then
             objStreamWriter.WriteLine("  email sent for EmailKey: " & dr.Item("EMAILKEY") & " - with Subject: " & eMail.Subject & " - at " & Now())
         End If
+
+    End Function
+
+    Private Function IsValidSingleAdd(ByVal SingleEmailAdd As String) As Boolean
+        Dim bValid As Boolean = False
+        Try
+            Dim strPart1 As String = ""
+            If Trim(SingleEmailAdd) <> "" Then
+                SingleEmailAdd = Trim(SingleEmailAdd)
+                Dim cParts As String() = SingleEmailAdd.Split(CType("@", Char))
+
+                If cParts.Length = 2 Then
+                    bValid = (cParts(0).Length > 0 And cParts(1).Length > 0)
+                    If bValid Then
+                        strPart1 = Trim(cParts(1))
+                        If strPart1.Contains(".") Then
+                            bValid = True
+                        Else
+                            bValid = False
+                        End If
+                    End If
+                Else
+                    bValid = False
+                End If
+            Else
+                bValid = False
+            End If
+
+        Catch ex As Exception
+            bValid = False
+        End Try
+
+        Return bValid
 
     End Function
 
