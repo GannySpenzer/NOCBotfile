@@ -132,13 +132,13 @@ Module OrderApprovalMail
 
                         If decApprvThres > 0 Then
                             If decOrderTotal > decApprvThres Then
-                                ApprOrd.SendMail(StrBu, StrOrderNo, StrUserID, strFinalApprValue)
+
                                 If ApprovalOrders.IsNYC(StrBu) Then
                                     m_logger.WriteVerboseLog(" Order Total is more than Threshold. E-mail was not sent for NYC order No: " & StrOrderNo & " ------ " & Now())
 
                                 Else
+                                    ApprOrd.SendMail(StrBu, StrOrderNo, StrUserID, strFinalApprValue)
                                     m_logger.WriteVerboseLog(" Order Total is more than Threshold. E-mail sent for order No: " & StrOrderNo & " ------ " & Now())
-
                                 End If
                                
                             Else
@@ -164,12 +164,12 @@ Module OrderApprovalMail
                                 'ApprovalOrders.flagOrderAsProcessed(StrOrderNo, StrBu)
                             End If
                         Else
-                            ApprOrd.SendMail(StrBu, StrOrderNo, StrUserID, strFinalApprValue)
                             
                             If ApprovalOrders.IsNYC(StrBu) Then
                                 m_logger.WriteVerboseLog(" No Threshold. E-mail was not sent for NYC order No: " & StrOrderNo & " ------ " & Now())
 
                             Else
+                                ApprOrd.SendMail(StrBu, StrOrderNo, StrUserID, strFinalApprValue)
                                 m_logger.WriteVerboseLog(" No Threshold. E-mail was sent for order No: " & StrOrderNo & " ------ " & Now())
 
                             End If
@@ -185,7 +185,7 @@ Module OrderApprovalMail
                     If Trim(strOrdersList) <> "" Then
 
                         ' log verbose
-                        m_logger.WriteVerboseLog(" List of Orders processed by Bypass Requestor Non Stock Email Utility process: " & Now())
+                        m_logger.WriteVerboseLog(" List of Orders processed by Send Approver Email Utility process: " & Now())
                         m_logger.WriteVerboseLog(strOrdersList)
                         m_logger.WriteVerboseLog("-------------------")
 
@@ -288,8 +288,10 @@ Public Class ApprovalOrders
             Dim StrQry As String = "SELECT DISTINCT A.ORDER_NO, A.BUSINESS_UNIT_OM, A.ISA_EMPLOYEE_ID,B.ISA_CUSTINT_APPRVL " & vbCrLf & _
                 " , DECODE(B.APPRVALTHRESHOLD, NULL, 0, B.APPRVALTHRESHOLD) AS APPRVALTHRESHOLD " & vbCrLf & _
                 " FROM PS_ISA_ORD_INTF_LN A, PS_ISA_ENTERPRISE B " & vbCrLf & _
-                " WHERE A.ISA_LINE_STATUS = 'QTW' AND  A.INV_ITEM_ID = ' ' AND A.OPRID_APPROVED_BY = A.ISA_EMPLOYEE_ID " & vbCrLf & _
-                " AND B.BU_STATUS = 1 AND B.ISA_BYP_RQSTR_APPR = 'Y'  AND B.ISA_BUSINESS_UNIT = A.BUSINESS_UNIT_OM" & vbCrLf & _
+                " WHERE A.ISA_LINE_STATUS = 'QTW' AND  ( (A.INV_ITEM_ID = ' ' AND A.OPRID_APPROVED_BY = A.ISA_EMPLOYEE_ID " & vbCrLf & _
+                " AND B.ISA_BYP_RQSTR_APPR = 'Y') OR " & vbCrLf & _
+                " (A.INV_ITEM_ID <> ' ' AND A.OPRID_APPROVED_BY = ' ' AND B.ISA_ORO_AS_STOCK = 'N' ) ) " & vbCrLf & _
+                " AND B.BU_STATUS = 1  AND B.ISA_BUSINESS_UNIT = A.BUSINESS_UNIT_OM" & vbCrLf & _
                                     "   AND NOT EXISTS (" & vbCrLf & _
                                     "                   SELECT 'X'" & vbCrLf & _
                                     "                   FROM PS_ISA_ORDSTAT_EML G" & vbCrLf & _
