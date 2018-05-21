@@ -184,6 +184,7 @@ Module Module1
         Dim strFirstName As String = " "
         Dim strLastName As String = " "
         Dim strEmailList As String = dr.Item("EMAILTO")  '   dr.Item("ISA_EMAIL_TO")
+        strEmailList = Replace(strEmailList, ",", ";")
         Dim strEmailTo() As String = Split(strEmailList, ";")
         Dim intTotal As Integer = strEmailTo.Length()
         Dim intCnt As Integer = 0
@@ -338,8 +339,8 @@ Module Module1
         Else
 
             If Trim(strEmailEmpName) = "" Then
-                objStreamWriter.WriteLine("  email was NOT sent for EmailKey: " & dr.Item("EMAILKEY") & " - because e-mail address doesn't exist in Users table")
-                Return True
+                objStreamWriter.WriteLine("  email address problem for EmailKey: " & dr.Item("EMAILKEY") & " - e-mail address doesn't exist in Users table")
+                'bAreThereBadEmails = True
             End If
 
         End If
