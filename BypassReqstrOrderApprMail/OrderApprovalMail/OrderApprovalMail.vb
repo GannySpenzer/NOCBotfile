@@ -135,7 +135,7 @@ Module OrderApprovalMail
 
                                 If ApprovalOrders.IsNYC(StrBu) Then
                                     m_logger.WriteVerboseLog(" Order Total is more than Threshold. E-mail was not sent for NYC order No: " & StrOrderNo & " ------ " & Now())
-
+                                    ApprovalOrders.flagOrderAsProcessed(StrOrderNo, StrBu)
                                 Else
                                     ApprOrd.SendMail(StrBu, StrOrderNo, StrUserID, strFinalApprValue)
                                     m_logger.WriteVerboseLog(" Order Total is more than Threshold. E-mail sent for order No: " & StrOrderNo & " ------ " & Now())
@@ -161,13 +161,13 @@ Module OrderApprovalMail
 
                                 End Try
                                 m_logger.WriteVerboseLog(" Order Total is Less than Threshold. Order line status is set to: " & strFinalApprValue & ". E-mail was not sent for order No: " & StrOrderNo & " ------ " & Now())
-                                'ApprovalOrders.flagOrderAsProcessed(StrOrderNo, StrBu)
+                                ApprovalOrders.flagOrderAsProcessed(StrOrderNo, StrBu)
                             End If
                         Else
                             
                             If ApprovalOrders.IsNYC(StrBu) Then
                                 m_logger.WriteVerboseLog(" No Threshold. E-mail was not sent for NYC order No: " & StrOrderNo & " ------ " & Now())
-
+                                ApprovalOrders.flagOrderAsProcessed(StrOrderNo, StrBu)
                             Else
                                 ApprOrd.SendMail(StrBu, StrOrderNo, StrUserID, strFinalApprValue)
                                 m_logger.WriteVerboseLog(" No Threshold. E-mail was sent for order No: " & StrOrderNo & " ------ " & Now())
