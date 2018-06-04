@@ -301,50 +301,54 @@ Module Module1
                                                             End If
                                                             Dim bNoErrors As Boolean = True
 
-                                                            'connectOR.Open()
-                                                            'Try
-                                                            '    Dim iOrdCount As Integer = OrderListDataSet.Tables(0).Rows.Count
-                                                            '    ' run query for every order sent
-                                                            '    If connectOR.State = ConnectionState.Open Then
-                                                            '    Else
-                                                            '        connectOR.Open()
-                                                            '    End If
-                                                            '    Dim rowsAffected As Integer = 0
-                                                            '    Dim iCnt As Integer = 0
-                                                            '    For iCnt = 0 To iOrdCount - 1
-                                                            '        'If iCnt = 1 Then Exit For ' for testing ONLY!
-                                                            '        rowsAffected = 0
-                                                            '        strOrderNo = OrderListDataSet.Tables(0).Rows(iCnt).Item("po_id").ToString()
-                                                            '        'run query
-                                                            '        Dim strUpdateQuery As String = "update SYSADM8.PS_PO_DISPATCHED set EIP_CTL_ID='" & intNumberToWrite.ToString() & "' where po_id='" & strOrderNo & "'"
+                                                            connectOR.Open()
+                                                            Try
+                                                                Dim iOrdCount As Integer = OrderListDataSet.Tables(0).Rows.Count
+                                                                ' run query for every order sent
+                                                                If connectOR.State = ConnectionState.Open Then
+                                                                Else
+                                                                    connectOR.Open()
+                                                                End If
+                                                                Dim rowsAffected As Integer = 0
+                                                                Dim iCnt As Integer = 0
+                                                                For iCnt = 0 To iOrdCount - 1
+                                                                    'If iCnt = 1 Then Exit For ' for testing ONLY!
+                                                                    rowsAffected = 0
+                                                                    strOrderNo = OrderListDataSet.Tables(0).Rows(iCnt).Item("po_id").ToString()
+                                                                    'run query
+                                                                    Dim strToWrite As String = intNumberToWrite.ToString()
+                                                                    If Microsoft.VisualBasic.Left(strToWrite, 1) = "-" Then
+                                                                        strToWrite = Mid(strToWrite, 2)
+                                                                    End If
+                                                                    Dim strUpdateQuery As String = "update SYSADM8.PS_PO_DISPATCHED set EIP_CTL_ID='" & intNumberToWrite.ToString() & "' where po_id='" & strOrderNo & "'"
 
-                                                            '        Dim UpdCommand As OleDbCommand = New OleDbCommand(strUpdateQuery, connectOR)
-                                                            '        UpdCommand.CommandTimeout = 120
-                                                            '        rowsAffected = UpdCommand.ExecuteNonQuery()
-                                                            '        Try
-                                                            '            UpdCommand.Dispose()
-                                                            '        Catch ex As Exception
+                                                                    Dim UpdCommand As OleDbCommand = New OleDbCommand(strUpdateQuery, connectOR)
+                                                                    UpdCommand.CommandTimeout = 120
+                                                                    rowsAffected = UpdCommand.ExecuteNonQuery()
+                                                                    Try
+                                                                        UpdCommand.Dispose()
+                                                                    Catch ex As Exception
 
-                                                            '        End Try
-                                                            '        If rowsAffected = 0 Then
-                                                            '            bNoErrors = False
-                                                            '            objStreamWriter.WriteLine("Order status change returned: 'rowsAffected = 0' for Order: " & strOrderNo)
-                                                            '        End If
-                                                            '    Next
-                                                            'Catch ex As Exception
-                                                            '    bNoErrors = False
-                                                            '    objStreamWriter.WriteLine("Error trying to update Order: " & strOrderNo & " Error Message: " & ex.Message)
-                                                            '    Try
-                                                            '        connectOR.Close()
-                                                            '    Catch ex1 As Exception
+                                                                    End Try
+                                                                    If rowsAffected = 0 Then
+                                                                        bNoErrors = False
+                                                                        objStreamWriter.WriteLine("Order status change returned: 'rowsAffected = 0' for Order: " & strOrderNo)
+                                                                    End If
+                                                                Next
+                                                            Catch ex As Exception
+                                                                bNoErrors = False
+                                                                objStreamWriter.WriteLine("Error trying to update Order: " & strOrderNo & " Error Message: " & ex.Message)
+                                                                Try
+                                                                    connectOR.Close()
+                                                                Catch ex1 As Exception
 
-                                                            '    End Try
-                                                            'End Try
-                                                            'Try
-                                                            '    connectOR.Close()
-                                                            'Catch ex As Exception
+                                                                End Try
+                                                            End Try
+                                                            Try
+                                                                connectOR.Close()
+                                                            Catch ex As Exception
 
-                                                            'End Try
+                                                            End Try
                                                             If bNoErrors Then
                                                                 objStreamWriter.WriteLine("Order statuses changed without errors " & Now())
                                                             Else
@@ -492,21 +496,22 @@ Module Module1
         ' new one:  "http://localhost/SDIWebProcessors/CytecPurchReqs.aspx"    '   "http://ims.sdi.com:8913/sdiwebinSvc/CytecMatMastIn.aspx"  
         '  "http://ims.sdi.com:8913/sdiwebinSvc/CytecNstkPoRecpts.aspx"   '  "http://192.168.253.46:8011/sdiwebin/CytecMatMastIn.aspx"
 
-        ' 03/15/2018 New Amazon URL: "https://https-ats.amazonsedi.com/5375ff74-a613-4b12-9555-41bcd38c5fd0"
-
         Dim sHttpResponse As String = ""
         Dim httpSession As New easyHttp
 
         ' for KLA-Tencor: "https://sdiexchtest.sdi.com/WebSvcSDI/KLATencor.aspx "  '  "http://sdixbatch.sdi.com:8084/SDIWebSvcIn/KLATencor.aspx"
 
+        ' 03/28/2018 Newer Amazon URL: "https://https-ats.amazonsedi.com/5375ff74-a613-4b12-9555-41bcd38c5fd0"
+
         httpSession.URL = strUrlToSend
+
         'httpSession.URL = "https://sdiexchtest.sdi.com/SDIWebProcessors/CytecPurchReqs.aspx"  ' strUrlToSend  '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"  
 
         '  "https://https.amazonsedi.com/c47fcf9d-286d-498a-ba9f-df390c2757a2"  '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"    '  "http://192.168.253.46:8011/sdiwebin/CytecMatMastIn.aspx"  '   "http://ims.sdi.com:8913/sdiwebinSvc/CytecNstkPoRecpts.aspx"   ' "http://ims.sdi.com:8913/sdiwebinSvc/CytecPurchReqs.aspx"    '  "http://ims.sdi.com:8913/sdiwebinSvc/CytecStkReservIn.aspx"    '  "http://ims.sdi.com:8913/sdiwebinSvc/CytecMatMastIn.aspx"    '  "http://localhost/SDIWebProcessors/CytecMatMastIn.aspx"    '    "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"  '    "http://localhost/SDIWebProcessors/XmlInSDI.aspx"   '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx" 
         '   "https://https.amazonsedi.com/073dbe31-c230-403f-990c-6f74eeed1510"  '    "https://www.amazon.com/eprocurement/punchout"  '    "https://supplydev.hajoca.com/hajomid/eclipse.ecl"
 
         httpSession.DataToPost = strBox1
-        httpSession.ContentType = "text/xml; charset=utf-8"
+        httpSession.ContentType = "text/xml"
         httpSession.Method = easyHttp.HTTPMethod.HTTP_POST
         httpSession.IgnoreServerCertificate = True
         httpSession.HeaderAttributes.Add(name:="SOAPAction", value:="https://schemas.microsoft.com/crm/2006/WebServices/Retrieve")

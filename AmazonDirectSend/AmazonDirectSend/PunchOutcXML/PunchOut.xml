@@ -403,7 +403,7 @@
   <Catalog id="AMAZON.default" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000039777" securityProtocol="3072">
     <Identities>
       <From domain="NetworkId" userId="SDIINCPUNCHOUT7330406532" />
-      <To domain="DUNS" userId="Amazon" />
+      <To domain="NetworkId" userId="Amazon" />
       <Sender domain="NetworkId" userId="SDIINCPUNCHOUT7330406532" userPw="yl6xE1zqFDN73vOgklz6nUbIpuHon5">
         <UserAgentOverride>Ariba Network 1.2</UserAgentOverride>
       </Sender>
