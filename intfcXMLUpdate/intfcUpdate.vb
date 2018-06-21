@@ -1768,10 +1768,22 @@ Module module1
             Else
                 Try
                     Dim objInvItemid As New clsInvItemID(strOROItemID, connectOR)
-                    dstcartSTK.Rows(I).Item("DESCR254") = objInvItemid.DESCR254
-                    dstcartSTK.Rows(I).Item("MFG_ID") = objInvItemid.MFGID
-                    dstcartSTK.Rows(I).Item("MFG_ITM_ID") = objInvItemid.MFGITMID
-                    dstcartSTK.Rows(I).Item("ISA_MFG_FREEFORM") = objInvItemid.DESCR
+                    
+                    If Trim(objInvItemid.DESCR254) <> "" Then
+                        dstcartSTK.Rows(I).Item("DESCR254") = objInvItemid.DESCR254
+                    End If
+
+                    If Trim(objInvItemid.MFGID) <> "" Then
+                        dstcartSTK.Rows(I).Item("MFG_ID") = objInvItemid.MFGID
+                    End If
+
+                    If Trim(objInvItemid.MFGITMID) <> "" Then
+                        dstcartSTK.Rows(I).Item("MFG_ITM_ID") = objInvItemid.MFGITMID
+                    End If
+
+                    If Trim(objInvItemid.DESCR) <> "" Then
+                        dstcartSTK.Rows(I).Item("ISA_MFG_FREEFORM") = objInvItemid.DESCR
+                    End If
                     connectOR.Close()
                 Catch ex As Exception
 
@@ -1824,6 +1836,7 @@ Module module1
             dstcartSTK.Columns.Remove("ISA_WORK_ORDER_NO")
             dstcartSTK.Columns.Remove("ISA_CUST_NOTES")
 
+            dstcartSTK.AcceptChanges()
             dtgcart.DataSource = dstcartSTK
             dtgcart.DataBind()
             dtgcart.CellPadding = 3
@@ -1908,6 +1921,7 @@ Module module1
             dstCartNSTK.Columns.Remove("NET_UNIT_PRICE")
             dstCartNSTK.Columns.Remove("ISA_WORK_ORDER_NO")
 
+            dstCartNSTK.AcceptChanges()
             dtgcart.DataSource = dstCartNSTK
             dtgcart.DataBind()
             dtgcart.CellPadding = 3

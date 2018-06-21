@@ -4,6 +4,7 @@ Imports System.Data
 Imports System.Data.OleDb
 Imports System.Data.SqlClient
 
+' *** Added Stock Item Information: UOM, Descr, MFG and MFG Item ID - VR - 06/07/2018  ***
 
 Public Class orderProcessor
 
@@ -1466,6 +1467,7 @@ Public Class orderProcessor
     Private Function buildLineINTFCInsertSQL(ByVal orderReq As order, _
                                              ByVal orderReqLine As orderLine) As String
         Dim sql As String = ""
+        Dim cnORA As New OleDbConnection(Me.oleConnectionString)
 
         Dim dtRequired As DateTime = Now
         Try
@@ -1491,9 +1493,70 @@ Public Class orderProcessor
             End If
         End If
 
+        Dim strOracleSql1 As String = ""
+        Dim strOrclUom As String = " "
+        Dim strOrclDescr As String = " "
+        Dim strOrclMfg As String = " "
+        Dim strOrclMfgName As String = " "
+        Dim strOrclMfgItemId As String = " "
+        If Trim(itemId) <> "" Then
+            itemId = Trim(itemId)
+            'get Inv Item infor from Oracle tables
+            strOracleSql1 = "SELECT B.INV_ITEM_ID, B.UNIT_MEASURE_STD, B.DESCR60, D.MFG_ID, D.MFG_ITM_ID, G.DESCR60 AS MFG_DESCR FROM PS_MASTER_ITEM_TBL B, PS_ITEM_MFG D, PS_MANUFACTURER G " & vbCrLf & _
+                " WHERE B.INV_ITEM_ID = '" & itemId & "' AND B.INV_ITEM_ID = D.INV_ITEM_ID and D.MFG_ID = G.MFG_ID(+)"
+            Dim dsOrcl1 As DataSet = ORDBAccess.GetAdapter(strOracleSql1, cnORA)
+
+            If Not dsOrcl1 Is Nothing Then
+                If dsOrcl1.Tables.Count > 0 Then
+                    If dsOrcl1.Tables(0).Rows.Count > 0 Then
+                        Try
+                            strOrclUom = dsOrcl1.Tables(0).Rows(0).Item("UNIT_MEASURE_STD")
+                        Catch ex As Exception
+                            strOrclUom = " "
+                        End Try
+                        Try
+                            strOrclDescr = dsOrcl1.Tables(0).Rows(0).Item("DESCR60")
+                            strOrclDescr = Replace(strOrclDescr, "'", "")
+                            strOrclDescr = Replace(strOrclDescr, ",", " ")
+                        Catch ex As Exception
+                            strOrclDescr = " "
+                        End Try
+                        Try
+                            strOrclMfg = dsOrcl1.Tables(0).Rows(0).Item("MFG_ID")
+                            strOrclMfg = Replace(strOrclMfg, "'", "")
+                            strOrclMfg = Replace(strOrclMfg, ",", " ")
+                        Catch ex As Exception
+                            strOrclMfg = " "
+                        End Try
+                        Try
+                            strOrclMfgName = dsOrcl1.Tables(0).Rows(0).Item("MFG_DESCR")
+                            strOrclMfgName = Replace(strOrclMfgName, "'", "")
+                            strOrclMfgName = Replace(strOrclMfgName, ",", " ")
+                        Catch ex As Exception
+                            strOrclMfgName = " "
+                        End Try
+                        Try
+                            strOrclMfgItemId = dsOrcl1.Tables(0).Rows(0).Item("MFG_ITM_ID")
+                            strOrclMfgItemId = Replace(strOrclMfgItemId, "'", "")
+                            strOrclMfgItemId = Replace(strOrclMfgItemId, ",", " ")
+                        Catch ex As Exception
+                            strOrclMfgItemId = " "
+                        End Try
+
+                    End If
+                End If
+            End If
+
+        End If
+
         Dim itemDesc As String = CStr(IIf(orderReqLine.InventoryItemDescription.Trim.Length = 0, " ", orderReqLine.InventoryItemDescription.Trim.ToUpper))
         If (itemDesc.Trim.Length > 0) Then
             itemDesc = stringEncoder.formStringForSQL(itemDesc, 254)
+        Else
+            If Trim(strOrclDescr) <> "" Then
+                itemDesc = Trim(strOrclDescr)
+                itemDesc = stringEncoder.formStringForSQL(itemDesc, 254)
+            End If
         End If
 
 
@@ -1505,21 +1568,41 @@ Public Class orderProcessor
         Dim uom As String = CStr(IIf(orderReqLine.UOM.Trim.Length = 0, " ", orderReqLine.UOM.Trim.ToUpper))
         If (uom.Trim.Length > 0) Then
             uom = stringEncoder.formStringForSQL(uom, 3)
+        Else
+            If Trim(strOrclUom) <> "" Then
+                uom = Trim(strOrclUom)
+                uom = stringEncoder.formStringForSQL(uom, 3)
+            End If
         End If
 
         Dim mfgId As String = CStr(IIf(orderReqLine.ManufacturerId.Trim.Length = 0, " ", orderReqLine.ManufacturerId.Trim.ToUpper))
         If (mfgId.Trim.Length > 0) Then
             mfgId = stringEncoder.formStringForSQL(mfgId, 10)
+        Else
+            If Trim(strOrclMfg) <> "" Then
+                mfgId = Trim(strOrclMfg)
+                mfgId = stringEncoder.formStringForSQL(mfgId, 10)
+            End If
         End If
 
         Dim mfgFreeForm As String = CStr(IIf(orderReqLine.ManufacturerId.Trim.Length = 0, " ", orderReqLine.ManufacturerId.Trim.ToUpper))
         If (mfgFreeForm.Trim.Length > 0) Then
             mfgFreeForm = stringEncoder.formStringForSQL(mfgFreeForm, 30)
+        Else
+            If Trim(strOrclMfgName) <> "" Then
+                mfgFreeForm = Trim(strOrclMfgName)
+                mfgFreeForm = stringEncoder.formStringForSQL(mfgFreeForm, 30)
+            End If
         End If
 
         Dim mfgPartNo As String = CStr(IIf(orderReqLine.ManufacturerItemId.Trim.Length = 0, " ", orderReqLine.ManufacturerItemId.Trim.ToUpper))
         If (mfgPartNo.Trim.Length > 0) Then
             mfgPartNo = stringEncoder.formStringForSQL(mfgPartNo, 35)
+        Else
+            If Trim(strOrclMfgItemId) <> "" Then
+                mfgPartNo = Trim(strOrclMfgItemId)
+                mfgPartNo = stringEncoder.formStringForSQL(mfgPartNo, 35)
+            End If
         End If
 
         '' store the LOCATION in the NOTES field along with the suggested cost
@@ -1676,105 +1759,6 @@ Public Class orderProcessor
             sql = sql + ",TO_DATE('" & StrDueDate.ToString & "', 'MM/DD/YYYY HH:MI:SS AM')"
         End If
         sql = sql + ")"
-
-        ''sql = "" & _
-        ''      "INSERT INTO PS_ISA_ORD_INTF_LN " & vbCrLf & _
-        ''      "( " & vbCrLf & _
-        ''      " ISA_PARENT_IDENT " & vbCrLf & _
-        ''      ",REQUESTOR_ID " & vbCrLf & _
-        ''      ",LINE_NBR " & vbCrLf & _
-        ''      ",ISA_REQUIRED_BY_DT " & vbCrLf & _
-        ''      ",EXPECTED_DELIV_DT " & vbCrLf & _
-        ''      ",QTY_REQ " & vbCrLf & _
-        ''      ",QTY_SHIPPED " & vbCrLf & _
-        ''      ",SHIP_FROM_BU " & vbCrLf & _
-        ''      ",ITM_SETID " & vbCrLf & _
-        ''      ",INV_ITEM_ID " & vbCrLf & _
-        ''      ",VENDOR_SETID " & vbCrLf & _
-        ''      ",VENDOR_ID " & vbCrLf & _
-        ''      ",VNDR_LOC " & vbCrLf & _
-        ''      ",ITM_ID_VNDR " & vbCrLf & _
-        ''      ",VNDR_CATALOG_ID " & vbCrLf & _
-        ''      ",SHIPTO_ID " & vbCrLf & _
-        ''      ",SHIP_TO_CUST_ID " & vbCrLf & _
-        ''      ",BUYER_ID " & vbCrLf & _
-        ''      ",UNIT_OF_MEASURE " & vbCrLf & _
-        ''      ",MFG_ID " & vbCrLf & _
-        ''      ",ISA_MFG_FREEFORM " & vbCrLf & _
-        ''      ",PRICE_PO_BSE " & vbCrLf & _
-        ''      ",PRICE_PO " & vbCrLf & _
-        ''      ",NET_UNIT_PRICE_BSE " & vbCrLf & _
-        ''      ",NET_UNIT_PRICE " & vbCrLf & _
-        ''      ",RFQ_IND " & vbCrLf & _
-        ''      ",INSPECT_CD " & vbCrLf & _
-        ''      ",INVENTORY_SRC_FLG " & vbCrLf & _
-        ''      ",ROUTING_ID " & vbCrLf & _
-        ''      ",ISA_TRACKING_ID " & vbCrLf & _
-        ''      ",DESCR254 " & vbCrLf & _
-        ''      ",ISA_CUST_NOTES " & vbCrLf & _
-        ''      ",MFG_ITM_ID " & vbCrLf & _
-        ''      ",CUSTOMER_PO " & vbCrLf & _
-        ''      ",CUSTOMER_PO_LINE " & vbCrLf & _
-        ''      ",EMPLID " & vbCrLf & _
-        ''      ",ISA_CUST_CHARGE_CD " & vbCrLf & _
-        ''      ",ISA_WORK_ORDER_NO " & vbCrLf & _
-        ''      ",ISA_MACHINE_NO " & vbCrLf & _
-        ''      ",ISA_INTFC_LN_TYPE " & vbCrLf & _
-        ''      ",ISA_ORDER_STATUS" & vbCrLf & _
-        ''      ",ADD_DTTM " & vbCrLf & _
-        ''      ",LASTUPDDTTM " & vbCrLf & _
-        ''      ",PROCESS_INSTANCE " & vbCrLf & _
-        ''      ",IN_PROCESS_FLG " & vbCrLf & _
-        ''      ") " & vbCrLf & _
-        ''      "VALUES " & vbCrLf & _
-        ''      "( " & vbCrLf & _
-        ''      " '" & orderReq.Id.ToString & "' " & vbCrLf & _
-        ''      ",' ' " & vbCrLf & _
-        ''      ",'" & orderReqLine.OrderLineNo.ToString & "' " & vbCrLf & _
-        ''      ",TO_DATE('" & dtRequired.ToString & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
-        ''      ",TO_DATE('" & dtRequired.ToString & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
-        ''      "," & orderReqLine.Quantity.ToString & " " & vbCrLf & _
-        ''      ",0 " & vbCrLf & _
-        ''      ",' ' " & vbCrLf & _
-        ''      ",'MAIN1' " & vbCrLf & _
-        ''      ",'" & itemId & "' " & vbCrLf & _
-        ''      ",'MAIN1' " & vbCrLf & _
-        ''      ",'" & strVendid & "' " & vbCrLf & _
-        ''      ",'" & strVenloc & "' " & vbCrLf & _
-        ''      ",'" & strItmIDVndr & "' " & vbCrLf & _
-        ''      ",' ' " & vbCrLf & _
-        ''      ",'" & shipto & "' " & vbCrLf & _
-        ''      ",'" & customerId & "' " & vbCrLf & _
-        ''      ",' ' " & vbCrLf & _
-        ''      ",'" & uom & "' " & vbCrLf & _
-        ''      ",'" & mfgId & "' " & vbCrLf & _
-        ''      ",'" & mfgFreeForm & "' " & vbCrLf & _
-        ''      ",0 " & vbCrLf & _
-        ''      ",'" & orderReqLine.NetPOPrice.ToString & "' " & vbCrLf & _
-        ''      ",0 " & vbCrLf & _
-        ''      ",'" & orderReqLine.NetUnitPrice.ToString & "' " & vbCrLf & _
-        ''      ",'N' " & vbCrLf & _
-        ''      ",'N' " & vbCrLf & _
-        ''      ",'N' " & vbCrLf & _
-        ''      ",' ' " & vbCrLf & _
-        ''      ",' ' " & vbCrLf & _
-        ''      ",'" & itemDesc & "' " & vbCrLf & _
-        ''      ",'" & notes & "' " & vbCrLf & _
-        ''      ",'" & mfgPartNo & "' " & vbCrLf & _
-        ''      ",' ' " & vbCrLf & _
-        ''      ",' ' " & vbCrLf & _
-        ''      ",'" & empId & "' " & vbCrLf & _
-        ''      ",'" & chargeCode & "' " & vbCrLf & _
-        ''      ",'" & workOrderNo & "' " & vbCrLf & _
-        ''      ",' ' " & vbCrLf & _
-        ''      ",' ' " & vbCrLf & _
-        ''      ",'" & strlineordstat & "' " & vbCrLf & _
-        ''      ",TO_DATE('" & Now.ToString & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
-        ''      ",TO_DATE('" & Now.ToString & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
-        ''      ",0 " & vbCrLf & _
-        ''      ",'N' " & vbCrLf & _
-        ''      ") " & vbCrLf & _
-        ''      ""
 
         Return sql
     End Function
