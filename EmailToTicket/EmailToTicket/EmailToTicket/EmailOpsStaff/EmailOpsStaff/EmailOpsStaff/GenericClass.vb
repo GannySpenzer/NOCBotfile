@@ -377,7 +377,6 @@ Public Class GenericClass
                                 sCheckForFile = sFileName
 
                             End If
-
                             Select Case DuplicateFileHandler
                                 Case Is = runInformation.enum_DuplicateFileHandler.APPEND
                                     iLine = 63
@@ -420,6 +419,91 @@ Public Class GenericClass
                                     iLine = 77
 
                             End Select
+                            'upload attachment to a Help Desk Upload File service
+                            Try
+                                'get the exact file name from the path
+                                Dim strFile As String = ""
+                                strFile = System.IO.Path.GetFileName(sCheckForFile)
+                                ' create an instance fo the web service
+                                Dim srv As AttachmentsHelpDesk.helpDeskTicketFileUploader = New AttachmentsHelpDesk.helpDeskTicketFileUploader()
+                                'get the file information form the selected file
+                                Dim fInfo As FileInfo = New FileInfo(sCheckForFile)
+                                'get the length of the file to see if it is possible to upload it (with the standard 4 MB limit)
+                                Dim numBytes As Long = fInfo.Length
+                                Dim dLen As Double = Convert.ToDouble(fInfo.Length / 1000000)
+
+                                'Default limit of 10 MB on web server have to change the web.config to if you want to allow larger uploads
+                                If (dLen < 10) Then
+                                    'set up a file stream and binary reader for the  selected file
+                                    Dim fStream As FileStream = New FileStream(sCheckForFile, FileMode.Open, FileAccess.Read)
+                                    Dim br As BinaryReader = New BinaryReader(fStream)
+
+                                    'convert the file to a byte array
+                                    Dim data As Byte() = br.ReadBytes(numBytes)
+                                    br.Close()
+
+                                    ' pass the byte array (file) and file name to the web service()
+                                    Dim retString As String = srv.uploadFile(sCheckForFile, data)
+                                    srv.Dispose()
+                                    srv = Nothing
+                                    fStream.Close()
+                                    fStream.Dispose()
+
+                                    ' Get the upload result including file name on server.
+                                    Dim ret As sdiFileUploadResult = New sdiFileUploadResult
+                                    Dim typClass As Type() = New Type() {GetType(sdiFileUploadResult)}
+                                    Dim formatter As New System.Xml.Serialization.XmlSerializer(GetType(sdiFileUploadResult))
+                                    Dim encoder As New System.Text.ASCIIEncoding
+                                    Dim buff As Byte() = New Byte() {}
+                                    Dim memStream As System.IO.MemoryStream = Nothing
+
+                                    Try
+                                        buff = encoder.GetBytes(retString)
+                                        memStream = New System.IO.MemoryStream(buff)
+                                        ret = CType(formatter.Deserialize(memStream), sdiFileUploadResult)
+                                        Try
+                                            memStream.Close()
+                                        Catch ex As Exception
+                                        End Try
+                                    Catch ex As Exception
+                                        ' ignore
+                                    End Try
+
+                                    memStream = Nothing
+                                    buff = Nothing
+                                    encoder = Nothing
+                                    formatter = Nothing
+                                    typClass = Nothing
+
+                                    Dim I As Integer = 0
+                                    Dim a As New attachment1
+
+                                    a.LinkName = ret.SourceFileName
+                                    a.url = ret.FileURL
+                                    Dim rows_affected As Integer = 0
+
+                                    Dim ted As String = a.LinkName.ToString.Trim
+                                    Dim terr As String = a.url.ToString.Trim
+                                    Try
+
+                                        rows_affected = Magic_Attachment_Insert(intTickid, struser, strreqbu, _
+                                            ret.SourceFileName.ToString.Trim, ret.SourceFullPath, a.LinkName.ToString.Trim, a.url.ToString.Trim)
+
+                                    Catch exAttachHlpDsk As Exception
+                                        clsLogger.Log_Event("EmailOpsStaff:GenericClass:Processing Item - Magic_Attachment_Insert Error: " & exAttachHlpDsk.ToString)
+
+                                    End Try
+
+                                Else
+                                    'attachment is too big
+                                    clsLogger.Log_Event("EmailOpsStaff:GenericClass:Processing Item - attachment size is more than 10 MB limit")
+                                End If
+
+
+                            Catch ex As Exception
+                                'MessageBox.Show(ex.Message.ToString(), "Upload Error")
+                            End Try
+                            
                         End If
                         iLine = 78
                         If PrintAttachment Then
@@ -469,6 +553,38 @@ Public Class GenericClass
         End Try
 
         Return bReturn
+
+    End Function
+
+    Public Function Magic_Attachment_Insert(ByVal str_Magic_Ticket_ID As String, ByVal struserid As String, ByVal strBU As String, _
+                                   ByVal str_M_Attached_File_in As String, ByVal str_M_Path_in As String, _
+                                   ByVal str_M_Attached_File_out As String, ByVal str_M_Path_out As String)
+
+        Dim strSQLstring As String
+
+        strSQLstring = _
+        "INSERT INTO  [Magic_Attachments]" & vbCrLf & _
+            "([Magic_ticket_ID]" & vbCrLf & _
+             " ,[M_UserID]" & vbCrLf & _
+              ",[M_BU]" & vbCrLf & _
+              ",[M_Attached_File_in]" & vbCrLf & _
+              ",[M_Path_in]" & vbCrLf & _
+              ",[M_Attached_File_out] " & vbCrLf & _
+              ",[M_Path_out]" & vbCrLf & _
+              ",[M_Attached_DatetimeAdded])" & vbCrLf & _
+              " VALUES( " & vbCrLf & _
+              " '" & str_Magic_Ticket_ID & "'," & vbCrLf & _
+              " '" & struserid & "'," & vbCrLf & _
+              " '" & strBU & "'," & vbCrLf & _
+              " '" & str_M_Attached_File_in & "'," & vbCrLf & _
+              " '" & str_M_Path_in & "'," & vbCrLf & _
+              " '" & str_M_Attached_File_out & "'," & vbCrLf & _
+              " '" & str_M_Path_out & "'" & vbCrLf & _
+              " ,getdate() )"
+
+        Dim rows_affected As Integer = SQLDBAccess.ExecNonQuerySql(strSQLstring, connectSQL)
+
+        Return rows_affected
 
     End Function
 
@@ -1121,4 +1237,50 @@ Public Class GenericClass
 	end sub
 	
 End Class
+
+Public Class sdiFileUploadResult
+
+    Public Sub New()
+
+    End Sub
+
+    Public Sub New(ByVal sourceFileName As String, _
+                   ByVal fileURL As String)
+        Me.SourceFileName = sourceFileName
+        Me.FileURL = fileURL
+    End Sub
+
+    Public [Id] As String
+    Public [Message] As String
+    Public [SourceFullPath] As String
+    Public [SourceFileName] As String
+    Public [FileURL] As String
+
+End Class
+
+<Serializable()> _
+Public Class attachment1
+    Public Sub New()
+
+    End Sub
+    Private m_linkName As String = ""
+    Public Property [LinkName]() As String
+        Get
+            Return m_linkName
+        End Get
+        Set(ByVal Value As String)
+            m_linkName = Value
+        End Set
+    End Property
+    Private m_url As String = ""
+    Public Property [url]() As String
+        Get
+            Return m_url
+        End Get
+        Set(ByVal Value As String)
+            m_url = Value
+        End Set
+    End Property
+End Class
+
 

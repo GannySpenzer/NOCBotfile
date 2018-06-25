@@ -50,6 +50,7 @@
     <DocumentationFile>EmailOpsStaff.xml</DocumentationFile>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022,42353,42354,42355</NoWarn>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -121,7 +122,9 @@
     <Reference Include="System.Data.OracleClient" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.EnterpriseServices" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.Services" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core">
@@ -192,6 +195,11 @@
     <Compile Include="SQLDBData.vb" />
     <Compile Include="StartUp.vb" />
     <Compile Include="TripleDES.vb" />
+    <Compile Include="Web References\AttachmentsHelpDesk\Reference.vb">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.map</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
@@ -217,6 +225,11 @@
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
       <SubType>Designer</SubType>
     </None>
+    <None Include="Web References\AttachmentsHelpDesk\helpdeskTicketFileUploader.wsdl" />
+    <None Include="Web References\AttachmentsHelpDesk\Reference.map">
+      <Generator>MSDiscoCodeGenerator</Generator>
+      <LastGenOutput>Reference.vb</LastGenOutput>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="references\EmailClass.dll" />
@@ -225,6 +238,7 @@
     <Content Include="references\Microsoft.Exchange.WebServices.dll" />
     <Content Include="references\UpdEmailOut.dll" />
     <Content Include="references\XMLSerialization.dll" />
+    <None Include="Web References\AttachmentsHelpDesk\helpdeskTicketFileUploader.disco" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -263,6 +277,22 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="obj\Debug\TempPE\" />
+  </ItemGroup>
+  <ItemGroup>
+    <WebReferences Include="Web References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <WebReferenceUrl Include="http://sdixbatch:8084/sdi.webUtility/helpdeskTicketFileUploader.asmx">
+      <UrlBehavior>Dynamic</UrlBehavior>
+      <RelPath>Web References\AttachmentsHelpDesk\</RelPath>
+      <UpdateFromURL>http://sdixbatch:8084/sdi.webUtility/helpdeskTicketFileUploader.asmx</UpdateFromURL>
+      <ServiceLocationURL>
+      </ServiceLocationURL>
+      <CachedDynamicPropName>
+      </CachedDynamicPropName>
+      <CachedAppSettingsObjectName>MySettings</CachedAppSettingsObjectName>
+      <CachedSettingsPropName>EmailOpsStaff_AttachmentsHelpDesk_helpDeskTicketFileUploader</CachedSettingsPropName>
+    </WebReferenceUrl>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

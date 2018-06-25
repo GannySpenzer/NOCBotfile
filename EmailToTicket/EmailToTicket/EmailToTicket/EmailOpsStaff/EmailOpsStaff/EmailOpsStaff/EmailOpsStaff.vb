@@ -11,10 +11,9 @@ Module EmailOpsStaff
 
 
     Sub Main()
-        If Command() = "Setup" Then
-            'If Command() = "" Then
 
-            '  Dim myExchange As New CytecRCTClass
+        If Command() = "Setup" Then
+
             Dim frmSetup As New SetupForm
 
             frmSetup.ShowDialog()

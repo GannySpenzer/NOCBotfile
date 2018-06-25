@@ -75,6 +75,10 @@ Public Class ExchangeBaseClass
 
     Public Function ProcessMailbox(Optional ByVal dttmNow As DateTime = Nothing) As Boolean
 
+        'Dim clsPassword As New PasswordClass
+        'Dim sTempPassword As String = "a8bv5wv2"
+        'sTempPassword = clsPassword.EncryptPassword(sTempPassword)
+
         Dim bReturn As Boolean = True
 
         Dim service As New ExchangeService(ExchangeVersion.Exchange2010)

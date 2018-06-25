@@ -11,5 +11,8 @@
     <Setting Name="sqlCNString" Type="System.String" Scope="Application">
       <Value Profile="(Default)">server=TritonData2;uid=sdiexchange;pwd=$d1Exchange;initial catalog=SDIXtest</Value>
     </Setting>
+    <Setting Name="EmailOpsStaff_AttachmentsHelpDesk_helpDeskTicketFileUploader" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">http://sdixbatch:8084/sdi.webUtility/helpdeskTicketFileUploader.asmx</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
