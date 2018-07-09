@@ -755,7 +755,7 @@ Module Module1
                     " AND H.DISTRIB_LN_STATUS != 'X'" & vbCrLf & _
                     " AND J.LINE_NBR = H.LINE_NBR" & vbCrLf & _
                     " AND NOT EXISTS (SELECT 'X'" & vbCrLf & _
-                            " FROM SYSADM.PS_PO_LINE_EC LEC" & vbCrLf & _
+                            " FROM SYSADM8.PS_PO_LINE_EC LEC" & vbCrLf & _
                             " WHERE LEC.BUSINESS_UNIT = '" & strPoSiteBu & "'" & vbCrLf & _
                             " AND H.PO_ID = LEC.PO_ID" & vbCrLf & _
                             " AND H.LINE_NBR = LEC.LINE_NBR)" & vbCrLf & _
