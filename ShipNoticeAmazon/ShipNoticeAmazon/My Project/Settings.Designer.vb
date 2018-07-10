@@ -66,15 +66,6 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=DEVL")>  _
-        Public ReadOnly Property oraCNString1() As String
-            Get
-                Return CType(Me("oraCNString1"),String)
-            End Get
-        End Property
-        
-        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
-         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.DefaultSettingValueAttribute("C:\AmazonSdiDirectIn")>  _
         Public ReadOnly Property rootDir() As String
             Get
@@ -111,10 +102,30 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("\\ims\SDIWebProcessorsXMLFiles\ShipNoticeAmazon")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=P"& _ 
+            "LGR")>  _
+        Public ReadOnly Property oraCNString1() As String
+            Get
+                Return CType(Me("oraCNString1"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("C:\AmazonSdiDirectIn\XmlInSource")>  _
         Public ReadOnly Property inputDirectory() As String
             Get
                 Return CType(Me("inputDirectory"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.SpecialSettingAttribute(Global.System.Configuration.SpecialSetting.WebServiceUrl),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("https://connect4.sdi.com:8884/PSIGW/PeopleSoftServiceListeningConnector")>  _
+        Public ReadOnly Property ShipNoticeAmazon_SDI_ISA_RECEIPT_ISA_RECEIPT() As String
+            Get
+                Return CType(Me("ShipNoticeAmazon_SDI_ISA_RECEIPT_ISA_RECEIPT"),String)
             End Get
         End Property
     End Class

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DiscoveryClientResultsFile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Results>
+    <DiscoveryClientResult referenceType="System.Web.Services.Discovery.SchemaReference" url="https://connect4.sdi.com:8884/PSIGW/PeopleSoftServiceListeningConnector/ISA_RECEIPT.ISA_PORCL_SDIEX.V1.xsd" filename="ISA_RECEIPT.xsd" />
+    <DiscoveryClientResult referenceType="System.Web.Services.Discovery.ContractReference" url="https://connect4.sdi.com:8884/PSIGW/PeopleSoftServiceListeningConnector/ISA_RECEIPT.1.wsdl" filename="ISA_RECEIPT.wsdl" />
+    <DiscoveryClientResult referenceType="System.Web.Services.Discovery.SchemaReference" url="https://connect4.sdi.com:8884/PSIGW/PeopleSoftServiceListeningConnector/ISA_RECEIPT.V1.xsd" filename="ISA_RECEIPT0.xsd" />
+    <DiscoveryClientResult referenceType="System.Web.Services.Discovery.SchemaReference" url="https://connect4.sdi.com:8884/PSIGW/PeopleSoftServiceListeningConnector/ISA_RESP_SDIEXCHANGE.v1.xsd" filename="ISA_RESP_SDIEXCHANGE.xsd" />
+  </Results>
+</DiscoveryClientResultsFile>

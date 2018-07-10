@@ -123,6 +123,7 @@
     <Import Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AlwaysIgnoreCertPolicy.vb" />
     <Compile Include="Module1.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
@@ -141,6 +142,11 @@
     </Compile>
     <Compile Include="ORDBAccess.vb" />
     <Compile Include="Web References\SDiEmailUtilityService\Reference.vb">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.map</DependentUpon>
+    </Compile>
+    <Compile Include="Web References\SDI_ISA_RECEIPT\Reference.vb">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.map</DependentUpon>
@@ -172,6 +178,23 @@
       <Generator>MSDiscoCodeGenerator</Generator>
       <LastGenOutput>Reference.vb</LastGenOutput>
     </None>
+    <None Include="Web References\SDI_ISA_RECEIPT\ISA_RCV_EX_RSP_TypeShape.datasource">
+      <DependentUpon>Reference.map</DependentUpon>
+    </None>
+    <None Include="Web References\SDI_ISA_RECEIPT\ISA_RECEIPT.wsdl" />
+    <None Include="Web References\SDI_ISA_RECEIPT\ISA_RECEIPT.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Web References\SDI_ISA_RECEIPT\ISA_RECEIPT0.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Web References\SDI_ISA_RECEIPT\ISA_RESP_SDIEXCHANGE.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Web References\SDI_ISA_RECEIPT\Reference.map">
+      <Generator>MSDiscoCodeGenerator</Generator>
+      <LastGenOutput>Reference.vb</LastGenOutput>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="references\SDI.ApplicationLogger.dll" />
@@ -196,6 +219,17 @@
       </CachedDynamicPropName>
       <CachedAppSettingsObjectName>MySettings</CachedAppSettingsObjectName>
       <CachedSettingsPropName>ShipNoticeAmazon_SDiEmailUtilityService_EmailServices</CachedSettingsPropName>
+    </WebReferenceUrl>
+    <WebReferenceUrl Include="https://connect4.sdi.com:8884/PSIGW/PeopleSoftServiceListeningConnector/ISA_RECEIPT.1.wsdl">
+      <UrlBehavior>Dynamic</UrlBehavior>
+      <RelPath>Web References\SDI_ISA_RECEIPT\</RelPath>
+      <UpdateFromURL>https://connect4.sdi.com:8884/PSIGW/PeopleSoftServiceListeningConnector/ISA_RECEIPT.1.wsdl</UpdateFromURL>
+      <ServiceLocationURL>
+      </ServiceLocationURL>
+      <CachedDynamicPropName>
+      </CachedDynamicPropName>
+      <CachedAppSettingsObjectName>MySettings</CachedAppSettingsObjectName>
+      <CachedSettingsPropName>ShipNoticeAmazon_SDI_ISA_RECEIPT_ISA_RECEIPT</CachedSettingsPropName>
     </WebReferenceUrl>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />

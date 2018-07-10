@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns="http://xmlns.oracle.com/Enterprise/Tools/schemas/ISA_RECEIPT_SDI_EXCHANGE.ISA_RCV_EX_RSP.V1" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://xmlns.oracle.com/Enterprise/Tools/schemas/ISA_RECEIPT_SDI_EXCHANGE.ISA_RCV_EX_RSP.V1" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <xsd:element name="ISA_RCV_EX_RSP" type="ISA_RCV_EX_RSP_TypeShape" />
+  <xsd:complexType name="ISA_RCV_EX_RSP_TypeShape">
+    <xsd:sequence>
+      <xsd:element minOccurs="0" name="businessUnitRecv" type="businessUnitRecv_TypeDef" />
+      <xsd:element minOccurs="0" name="transactionId" type="transactionId_TypeDef" />
+      <xsd:element minOccurs="0" name="receiverId" type="receiverId_TypeDef" />
+      <xsd:element minOccurs="0" name="seqNo" type="seqNo_TypeDef" />
+      <xsd:element minOccurs="0" name="messageNbr" type="messageNbr_TypeDef" />
+      <xsd:element minOccurs="0" name="returnCode" type="returnCode_TypeDef" />
+      <xsd:element minOccurs="0" name="messageSeq" type="messageSeq_TypeDef" />
+      <xsd:element minOccurs="0" name="messageText" type="messageText_TypeDef" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="businessUnitRecv_TypeDef">
+    <xsd:restriction base="xsd:string">
+      <xsd:maxLength value="5" />
+      <xsd:whiteSpace value="preserve" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="transactionId_TypeDef">
+    <xsd:restriction base="xsd:string">
+      <xsd:maxLength value="10" />
+      <xsd:whiteSpace value="preserve" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="receiverId_TypeDef">
+    <xsd:restriction base="xsd:string">
+      <xsd:maxLength value="10" />
+      <xsd:whiteSpace value="preserve" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="seqNo_TypeDef">
+    <xsd:restriction base="xsd:integer">
+      <xsd:totalDigits value="15" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="messageNbr_TypeDef">
+    <xsd:restriction base="xsd:integer">
+      <xsd:totalDigits value="10" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="returnCode_TypeDef">
+    <xsd:restriction base="xsd:integer">
+      <xsd:totalDigits value="4" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="messageSeq_TypeDef">
+    <xsd:restriction base="xsd:integer">
+      <xsd:totalDigits value="5" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="messageText_TypeDef">
+    <xsd:restriction base="xsd:string">
+      <xsd:maxLength value="100" />
+      <xsd:whiteSpace value="preserve" />
+    </xsd:restriction>
+  </xsd:simpleType>
+</xsd:schema>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns="http://xmlns.oracle.com/Enterprise/Tools/schemas/ISA_RECEIPT.ISA_PORCH_SDIEX.V1" xmlns:ISA_RECEIPT.ISA_PORCL_SDIEX.V1="http://xmlns.oracle.com/Enterprise/Tools/schemas/ISA_RECEIPT.ISA_PORCL_SDIEX.V1" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://xmlns.oracle.com/Enterprise/Tools/schemas/ISA_RECEIPT.ISA_PORCH_SDIEX.V1" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <xsd:import schemaLocation="https://connect4.sdi.com:8884/PSIGW/PeopleSoftServiceListeningConnector/ISA_RECEIPT.ISA_PORCL_SDIEX.V1.xsd" namespace="http://xmlns.oracle.com/Enterprise/Tools/schemas/ISA_RECEIPT.ISA_PORCL_SDIEX.V1" />
+  <xsd:element name="ISA_PORCH_SDIEX" type="ISA_PORCH_SDIEX_TypeShape" />
+  <xsd:complexType name="ISA_PORCH_SDIEX_TypeShape">
+    <xsd:sequence>
+      <xsd:element name="BUSINESS_UNIT_PO" type="BUSINESS_UNIT_PO_TypeDef" />
+      <xsd:element name="PO_ID" type="PO_ID_TypeDef" />
+      <xsd:element minOccurs="0" name="BUSINESS_UNIT_RECV" type="BUSINESS_UNIT_RECV_TypeDef" />
+      <xsd:element minOccurs="0" name="TRANSACTION_ID" type="TRANSACTION_ID_TypeDef" />
+      <xsd:element minOccurs="1" maxOccurs="unbounded" ref="ISA_RECEIPT.ISA_PORCL_SDIEX.V1:ISA_PORCL_SDIEX" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="BUSINESS_UNIT_PO_TypeDef">
+    <xsd:restriction base="xsd:string">
+      <xsd:maxLength value="5" />
+      <xsd:whiteSpace value="preserve" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="PO_ID_TypeDef">
+    <xsd:restriction base="xsd:string">
+      <xsd:maxLength value="10" />
+      <xsd:whiteSpace value="preserve" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="BUSINESS_UNIT_RECV_TypeDef">
+    <xsd:restriction base="xsd:string">
+      <xsd:maxLength value="5" />
+      <xsd:whiteSpace value="preserve" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="TRANSACTION_ID_TypeDef">
+    <xsd:restriction base="xsd:string">
+      <xsd:maxLength value="10" />
+      <xsd:whiteSpace value="preserve" />
+    </xsd:restriction>
+  </xsd:simpleType>
+</xsd:schema>

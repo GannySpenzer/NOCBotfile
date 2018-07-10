@@ -53,6 +53,23 @@ Public Class ORDBAccess
 
     End Function
 
+    Public Shared Function GetReaderTrans(ByVal p_strQuery As String, ByRef connection As OleDbConnection, ByRef trnsactSession As OleDbTransaction) As OleDbDataReader
+        Dim datareader As OleDbDataReader = Nothing
+        Try
+            Dim Command = New OleDbCommand(p_strQuery, connection)
+            If Not connection.State = ConnectionState.Open Then
+                connection.Open()
+            End If
+            Command.Transaction = trnsactSession
+            datareader = Command.ExecuteReader()
+        Catch objException As Exception
+            
+            datareader = Nothing
+        End Try
+        Return datareader
+
+    End Function
+
     Public Shared Function GetScalar(ByVal p_strQuery As String, ByVal connection As OleDbConnection) As String
         Dim strReturn As String = ""
         Try
