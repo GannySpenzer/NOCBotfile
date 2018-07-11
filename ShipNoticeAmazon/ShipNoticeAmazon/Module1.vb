@@ -473,9 +473,6 @@ Module Module1
 
                                             'will use code from clsReceiver.vb in SDiExchange
                                             Dim arrParamdtgLine As ArrayList
-                                            Dim trnsactSession As OleDbTransaction = Nothing
-                                            connectOR.Open()
-                                            trnsactSession = connectOR.BeginTransaction
                                             Dim strUserIdN1 As String = "ASNVEN2"  ' use here instead of strUserId
                                             Dim strTariffCode As String = ""
                                             Dim strItemWeight As String = ""
@@ -505,27 +502,13 @@ Module Module1
                                                             Dim strErsAction As String = POdataSet.Tables(0).Rows(0).Item("ERS_ACTION")
                                                             Dim strVendLoc As String = POdataSet.Tables(0).Rows(0).Item("VNDR_LOC")
 
-                                                            If Not ReceivingWebServiceAlreadyRun Then
-                                                                Dim bSucceessRcv As Boolean = False
-                                                                strMessageText = ""
-                                                                strNextReceiver = ""
-
-                                                                bSucceessRcv = CallReceiverWebService(strSiteBu, strOrderNum, arrLineQtys, arrLineNums, strMessageText, strNextReceiver)
-                                                                'bSucceessRcv = True
-                                                                'strNextReceiver = "0004964709"
-
-                                                                If Not bSucceessRcv Then
-                                                                    trnsactSession.Rollback()
-                                                                    connectOR.Close()
-                                                                    'write error message
-                                                                    strXMLError = "Error from web service call. Error message: " & strMessageText
-
-                                                                Else
-                                                                    ReceivingWebServiceAlreadyRun = True
-                                                                End If
-                                                            End If ' If Not ReceivingWebServiceAlreadyRun Then
-
                                                             If Trim(strXMLError) = "" Then
+
+                                                                Dim trnsactSession As OleDbTransaction = Nothing
+                                                                If Not connectOR.State = ConnectionState.Open Then
+                                                                    connectOR.Open()
+                                                                End If
+                                                                trnsactSession = connectOR.BeginTransaction
 
                                                                 For iMyCnt = 0 To POdataSet.Tables(0).Rows.Count - 1
                                                                     iLoc1 = -1
@@ -541,28 +524,64 @@ Module Module1
                                                                             createASNShipped(POdataSet.Tables(0).Rows(iMyCnt).Item("LINE_NBR"), strOrderNum, POdataSet.Tables(0).Rows(iMyCnt).Item("QTY_PO"), strSiteBu, POdataSet.Tables(0).Rows(iMyCnt).Item("SCHED_NBR"), strUserId, strOrderDate, POdataSet.Tables(0).Rows(iMyCnt).Item("UNIT_OF_MEASURE"), strTrackngNumber, strCarrierName)
                                                                         Else
 
-                                                                            intLines = intLines + 1
-                                                                            Dim truth As Boolean = True
+                                                                            If Not ReceivingWebServiceAlreadyRun Then
+                                                                                Dim bSucceessRcv As Boolean = False
+                                                                                strMessageText = ""
+                                                                                strNextReceiver = ""
+
+                                                                                bSucceessRcv = CallReceiverWebService(strSiteBu, strOrderNum, arrLineQtys, arrLineNums, strMessageText, strNextReceiver)
+                                                                                'bSucceessRcv = True
+                                                                                'strNextReceiver = "0004964710"
+
+                                                                                If Not bSucceessRcv Then
+                                                                                    'write error message
+                                                                                    strXMLError = "Error from web service call. Error message: " & strMessageText
+
+                                                                                Else
+                                                                                    ReceivingWebServiceAlreadyRun = True
+                                                                                End If
+                                                                            End If ' If Not ReceivingWebServiceAlreadyRun Then
+
+                                                                            If Trim(strXMLError) = "" Then
+                                                                                intLines = intLines + 1
+                                                                                Dim truth As Boolean = True
+
+                                                                                Dim row As DataRow = POdataSet.Tables(0).Rows(iMyCnt)
+                                                                                Dim strMy21Error As String = " "
+
+                                                                                arrParamdtgLine = initializeParamsArrRadGrid(row, strOrderNum, strVendorId, strUserIdN1, strCarrierName, strTrackngNumber, strShipmntId, strSiteBu)
+
+                                                                                truth = createReceiver92(iMyCnt, strNextReceiver, intLines, arrParamdtgLine, strErsAction, "R", trnsactSession, connectOR, " ", strMy21Error)
+                                                                                If Not truth Then
+                                                                                    strXMLError = " subroutine 'createReceiver92' returned False. Error: " & strMy21Error
+                                                                                    trnsactSession.Rollback()
+                                                                                    trnsactSession = Nothing
+                                                                                    connectOR.Close()
+
+                                                                                End If
+                                                                            End If  ' If Trim(strXMLError) = "" Then
                                                                             
-                                                                            Dim row As DataRow = POdataSet.Tables(0).Rows(iMyCnt)
-                                                                            Dim strMy21Error As String = " "
-
-                                                                            arrParamdtgLine = initializeParamsArrRadGrid(row, strOrderNum, strVendorId, strUserIdN1, strCarrierName, strTrackngNumber, strShipmntId, strSiteBu)
-
-                                                                            truth = createReceiver92(iMyCnt, strNextReceiver, intLines, arrParamdtgLine, strErsAction, "R", trnsactSession, connectOR, " ", strMy21Error)
-                                                                            If Not truth Then
-                                                                                strXMLError = " subroutine 'createReceiver92' returned False. Error: " & strMy21Error
-                                                                                trnsactSession.Rollback()
-                                                                                trnsactSession = Nothing
-                                                                                connectOR.Close()
-                                                                                
-                                                                            End If
                                                                         End If  '  based on strSmallSite And strASNSite
 
                                                                     End If  '   If arrLineNums.Contains(iMyCnt.ToString()) Then
 
                                                                 Next  '  For iMyCnt = 0 To POdataSet.Tables(0).Rows.Count - 1
 
+                                                                If Trim(strXMLError) = "" Then
+                                                                    'close connection/commit
+                                                                    Try
+                                                                        trnsactSession.Commit()
+                                                                        trnsactSession = Nothing
+                                                                        connectOR.Close()
+                                                                    Catch ex As Exception
+                                                                        trnsactSession = Nothing
+                                                                        Try
+                                                                            connectOR.Close()
+                                                                        Catch
+
+                                                                        End Try
+                                                                    End Try
+                                                                End If
                                                             End If  ' If Trim(strXMLError) = "" Then - after web service call
 
                                                         Else
@@ -579,22 +598,6 @@ Module Module1
                                                     "Error: " & exPoDs.Message
                                             End Try
 
-                                            If Trim(strXMLError) = "" Then
-                                                'close connection/commit
-                                                Try
-                                                    trnsactSession.Commit()
-                                                    trnsactSession = Nothing
-                                                    connectOR.Close()
-                                                Catch ex As Exception
-                                                    trnsactSession = Nothing
-                                                    Try
-                                                        connectOR.Close()
-                                                    Catch
-
-                                                    End Try
-                                                    connectOR = Nothing
-                                                End Try
-                                            End If
                                             
                                         End If  '  If Trim(strXMLError) = "" Then  '  3rd
 
@@ -913,37 +916,37 @@ Module Module1
             End Try
 
             Dim sMyReqid As String = " "
-            'Try
-            '    'sMyReqid = item("REQ_ID").Text.ToUpper
-            '    If sMyReqid Is Nothing Then
-            '        sMyReqid = ""
-            '    Else
-            '        ' check for HTML space code
-            '        sMyReqid = UCase(sMyReqid)
-            '        If sMyReqid.IndexOf("NBSP") > -1 Then
-            '            sMyReqid = ""
-            '        End If
-            '    End If
-            'Catch ex As Exception
-            '    sMyReqid = ""
-            'End Try
+            Try
+                sMyReqid = UCase(row.Item("REQ_ID"))  ' item("REQ_ID").Text.ToUpper
+                If sMyReqid Is Nothing Then
+                    sMyReqid = ""
+                Else
+                    ' check for HTML space code
+                    sMyReqid = UCase(sMyReqid)
+                    If sMyReqid.IndexOf("NBSP") > -1 Then
+                        sMyReqid = ""
+                    End If
+                End If
+            Catch ex As Exception
+                sMyReqid = ""
+            End Try
             arrdtgline.Insert(26, sMyReqid)
 
             Dim sMyReqLnNbr As String = " "
-            'Try
-            '    'sMyReqLnNbr = item("REQ_LINE_NBR").Text.ToUpper
-            '    If sMyReqLnNbr Is Nothing Then
-            '        sMyReqLnNbr = ""
-            '    Else
-            '        ' check for HTML space code
-            '        sMyReqLnNbr = UCase(sMyReqLnNbr)
-            '        If sMyReqLnNbr.IndexOf("NBSP") > -1 Then
-            '            sMyReqLnNbr = ""
-            '        End If
-            '    End If
-            'Catch ex As Exception
-            '    sMyReqLnNbr = ""
-            'End Try
+            Try
+                sMyReqLnNbr = UCase(row.Item("REQ_LINE_NBR"))  ' item("REQ_LINE_NBR").Text.ToUpper
+                If sMyReqLnNbr Is Nothing Then
+                    sMyReqLnNbr = ""
+                Else
+                    ' check for HTML space code
+                    sMyReqLnNbr = UCase(sMyReqLnNbr)
+                    If sMyReqLnNbr.IndexOf("NBSP") > -1 Then
+                        sMyReqLnNbr = ""
+                    End If
+                End If
+            Catch ex As Exception
+                sMyReqLnNbr = ""
+            End Try
             arrdtgline.Insert(27, sMyReqLnNbr)
 
         Catch ex As Exception
@@ -1795,7 +1798,7 @@ Module Module1
                     " D.CURRENCY_CD_BASE AS SHIP_BASE_CURRENCY," & vbCrLf & _
                     " C.CURRENCY_CD AS DIST_CURRENCY," & vbCrLf & _
                     " C.CURRENCY_CD_BASE AS DIST_BASE_CURRENCY, " & vbCrLf & _
-                    " C.QTY_PO as hQTYPO," & vbCrLf
+                    " C.QTY_PO as hQTYPO, C.REQ_ID, C.REQ_LINE_NBR," & vbCrLf
 
         strSQLString = strSQLString & " (SELECT SUM(D1.QTY_SH_NETRCV_VUOM) FROM " & vbCrLf & _
         " sysadm8.PS_RECV_LN_SHIP D1" & vbCrLf & _
@@ -1849,14 +1852,18 @@ Module Module1
                     " AND C.LINE_NBR = D.LINE_NBR" & vbCrLf & _
                     " AND C.SCHED_NBR = D.SCHED_NBR" & vbCrLf & _
                     " AND D.BUSINESS_UNIT = B.BUSINESS_UNIT" & vbCrLf & _
-                    " AND C.BUSINESS_UNIT = G.BUSINESS_UNIT (+)" & vbCrLf & _
                     " AND D.PO_ID = B.PO_ID" & vbCrLf & _
                     " AND D.LINE_NBR = B.LINE_NBR" & vbCrLf & _
+                    " AND (C.BUSINESS_UNIT = G.BUSINESS_UNIT (+)" & vbCrLf & _
                     " AND C.PO_ID = G.PO_ID(+)" & vbCrLf & _
+                    " AND C.LINE_NBR = G.LINE_NBR(+) AND G.ISA_SHIP_ID = " & vbCrLf & _
+                    " ( SELECT MAX(GB.ISA_SHIP_ID) FROM PS_ISA_ASN_SHIPPED GB " & vbCrLf & _
+                    " WHERE G.BUSINESS_UNIT = GB.BUSINESS_UNIT" & vbCrLf & _
+                    " AND G.PO_ID = GB.PO_ID" & vbCrLf & _
+                    " AND G.LINE_NBR = GB.LINE_NBR))" & vbCrLf & _
                     " AND B.BUSINESS_UNIT = BP.BUSINESS_UNIT (+)" & vbCrLf & _
                     " AND B.PO_ID = BP.PO_ID (+)" & vbCrLf & _
-                    " AND B.LINE_NBR = BP.LINE_NBR (+)" & vbCrLf & _
-                    " AND C.LINE_NBR = G.LINE_NBR(+)" & vbCrLf
+                    " AND B.LINE_NBR = BP.LINE_NBR (+)" & vbCrLf
         If Not strSmallSite = "Y" Then
             strSQLString = strSQLString & _
                     " AND  C.QTY_PO <> G.QTY_LN_REJCT(+)" & vbCrLf & _
