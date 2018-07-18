@@ -108,6 +108,12 @@ Public Class clsQuote
             Return strISA_REQUIRED_BY_DT
         End Get
     End Property
+    Private strISA_Invalid_Ref_NO As String
+    Public ReadOnly Property ISA_Invalid_Ref_NO() As String
+        Get
+            Return strISA_Invalid_Ref_NO
+        End Get
+    End Property
 
 
 
@@ -143,8 +149,8 @@ Public Class clsQuote
 
         Dim command1 As OleDbCommand
         command1 = New OleDbCommand(strSQLstring, connectOR)
-        Dim objReader As OleDbDataReader
-
+        Dim objReader As OleDbDataReader = Nothing
+        strISA_Invalid_Ref_NO = ""
 
         Try
             objReader = command1.ExecuteReader()
@@ -168,12 +174,19 @@ Public Class clsQuote
                 strSHIPTO_ID = objReader.Item("SHIPTO_ID")
                 strVNDR_LOC = objReader.Item("VNDR_LOC")
                 strISA_REQUIRED_BY_DT = objReader.Item("ISA_REQUIRED_BY_DT")
-
-
+                strISA_Invalid_Ref_NO = ""
+            Else
+                strISA_Invalid_Ref_NO = "Invalid Ref Order NO: " & strorderno
             End If
             objReader.Close()
         Catch ex As Exception
-            objReader.Close()
+            strISA_Invalid_Ref_NO = "Invalid Ref Order NO: " & strorderno
+            If Not objReader Is Nothing Then
+                If objReader.HasRows Then
+                    objReader.Close()
+                End If
+                objReader = Nothing
+            End If
         End Try
 
     End Sub

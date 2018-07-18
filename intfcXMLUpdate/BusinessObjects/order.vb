@@ -17,6 +17,7 @@ Public Class order
     Private m_empId As String = ""
     Private m_status As String = ""
     Private m_statusl As String = ""
+    Private m_InvalRefNo As String = ""
 
     Private m_siteInfo As clsEnterprise = Nothing
 
@@ -24,6 +25,15 @@ Public Class order
     Public Sub New()
 
     End Sub
+
+    Public Property InvalidRefNo() As String
+        Get
+            Return m_InvalRefNo
+        End Get
+        Set(ByVal Value As String)
+            m_InvalRefNo = Value
+        End Set
+    End Property
 
     Public Property [Id]() As Integer
         Get

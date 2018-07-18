@@ -5,6 +5,7 @@ Imports System.Data.OleDb
 Imports System.Data.SqlClient
 
 ' *** Added Stock Item Information: UOM, Descr, MFG and MFG Item ID - VR - 06/07/2018  ***
+' *** code to change Orig Order if Order No is starting with U05    - VR - 07/16/2018  ***
 
 Public Class orderProcessor
 
@@ -167,6 +168,12 @@ Public Class orderProcessor
             Me.ProcessMessages.Add(New processMsg(msg:="Retrieved Customer Id is blank.", lvl:=TraceLevel.Error))
         End If
 
+        ' validate ref Ordr NO
+        If Me.OrderRequest.InvalidRefNo <> "" Then
+            bIsValid = False
+            Me.ProcessMessages.Add(New processMsg(Me.OrderRequest.InvalidRefNo, TraceLevel.Error))
+        End If
+
         Return bIsValid
     End Function
 
@@ -186,6 +193,8 @@ Public Class orderProcessor
             Dim sql21 As String = ""
             Dim sOrderNo As String = Me.OrderRequest.OrderNo_Group
             Dim sLineNo As String = ""
+            Dim strRefNO As String = ""
+            Dim bIsOrigOrderUpdateNeeded As Boolean = False
 
             Try
 
@@ -218,7 +227,7 @@ Public Class orderProcessor
                                 Me.OrderRequest.OrderNo_SDI = Me.GetNextSDIOrderNo(Me.OrderRequest.OrderNo_Group, Me.sdiAssociatedOrders)
                                 ' insert
                                 ' see if it is a punchin or not - reference number coming from the quote table which means it is an f-en punchin
-                                Dim strRefNO As String = ""
+
                                 Try
                                     If itm.ReferenceNo.Length > 0 Then
                                         strRefNO = itm.ReferenceNo.Trim.ToString
@@ -229,6 +238,14 @@ Public Class orderProcessor
 
                                 End Try
 
+                                ' code to change Orig Order if Order No is starting with U05 - VR 07/16/2018
+                                If Trim(strRefNO) <> "" Then
+                                    If Len(strRefNO) > 3 Then
+                                        If UCase(Microsoft.VisualBasic.Left(strRefNO, 3)) = "U05" Then
+                                            bIsOrigOrderUpdateNeeded = True
+                                        End If
+                                    End If
+                                End If
 
                                 sql21 = buildHeaderINTFCInsertSQL(Me.OrderRequest, strRefNO)
                                 cmd = cnORA.CreateCommand
@@ -407,6 +424,37 @@ Public Class orderProcessor
                 trnsactSession.Commit()
                 bIsSaved = True
                 m_logger.WriteInformationLog(msg:=rtn & "::transaction committed.")
+
+                'code to change Orig Order if Order No is starting with U05
+                If bIsOrigOrderUpdateNeeded Then
+                    If Not cnORA.State = ConnectionState.Open Then
+                        cnORA.Open()
+                    End If
+                    ' change orig order header status to space
+                    Dim iMe As Integer = 0
+                    Dim strSqlStr32 As String = "UPDATE SYSADM8.PS_ISA_ORD_INTF_HD SET ORDER_STATUS = ' ' WHERE BUSINESS_UNIT_OM = 'I0256' AND ORDER_NO = '" & strRefNO & "'"
+                    cmd = cnORA.CreateCommand
+                    cmd.CommandText = strSqlStr32
+                    cmd.CommandType = CommandType.Text
+                    Try
+                        iMe = cmd.ExecuteNonQuery
+                    Catch ex32 As Exception
+
+                    End Try
+                    cmd = Nothing
+                    ' change orig order line status to space
+                    iMe = 0
+                    strSqlStr32 = "UPDATE SYSADM8.PS_ISA_ORD_INTF_LN SET ISA_LINE_STATUS = ' ' WHERE BUSINESS_UNIT_OM = 'I0256' AND ORDER_NO = '" & strRefNO & "'"
+                    cmd = cnORA.CreateCommand
+                    cmd.CommandText = strSqlStr32
+                    cmd.CommandType = CommandType.Text
+                    Try
+                        iMe = cmd.ExecuteNonQuery
+                    Catch ex32 As Exception
+
+                    End Try
+                    cmd = Nothing
+                End If  '  If bIsOrigOrderUpdateNeeded Then
 
                 sdiAssocOrder = Nothing
 
@@ -791,6 +839,7 @@ Public Class orderProcessor
                                                         connectOR.Open()
                                                         Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
                                                         lne.Vendor_id = objquoteRn.Vendor_ID
+                                                        Me.OrderRequest.InvalidRefNo = objquoteRn.ISA_Invalid_Ref_NO
                                                         If Trim(lne.Vendor_id) = "" Then
                                                             lne.Vendor_id = (lneElem.InnerText.Trim)
                                                         End If
@@ -854,6 +903,7 @@ Public Class orderProcessor
 
                                                         Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
 
+                                                        Me.OrderRequest.InvalidRefNo = objquoteRn.ISA_Invalid_Ref_NO
                                                         If Trim(objquoteRn.NET_UNIT_PRICE) <> "" Then
                                                             If IsNumeric(objquoteRn.NET_UNIT_PRICE) Then
                                                                 lne.NetUnitPrice = CDbl(objquoteRn.NET_UNIT_PRICE)
@@ -882,6 +932,7 @@ Public Class orderProcessor
 
                                                         Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
 
+                                                        Me.OrderRequest.InvalidRefNo = objquoteRn.ISA_Invalid_Ref_NO
                                                         If Trim(objquoteRn.NET_UNIT_PRICE) <> "" Then
                                                             If IsNumeric(objquoteRn.NET_UNIT_PRICE) Then
                                                                 lne.ExtendedAmount = CDbl(objquoteRn.NET_UNIT_PRICE)
@@ -934,7 +985,8 @@ Public Class orderProcessor
 
                                         End Select
                                     End If
-                                Next
+                                Next  '  For Each lneElem As XmlNode In itm.ChildNodes
+
                                 ' add order line
                                 '   don't care if multiple/dupe orderLine #
                                 If lne.OrderLineNo > 0 Then
@@ -944,7 +996,7 @@ Public Class orderProcessor
                             End If
 
                         End If
-                    Next
+                    Next   '  For Each itm As XmlNode In nodeData.ChildNodes  - header and line nodes
                 End If
             End If
             m_logger.WriteVerboseLog(msg:=rtn & "::parsed XML order request.")

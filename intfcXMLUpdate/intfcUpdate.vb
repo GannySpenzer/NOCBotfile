@@ -751,11 +751,11 @@ Module module1
         End Try
         reader.Close()
 
-        Dim X As Integer
-        Dim H As Integer
-        Dim L As Integer
-        Dim strIntfcError As String
-        Dim strPriority As String
+        'Dim X As Integer
+        'Dim H As Integer
+        'Dim L As Integer
+        'Dim strIntfcError As String
+        'Dim strPriority As String
 
         Dim sr As System.IO.StreamReader
         Dim XMLContent As String
@@ -809,9 +809,9 @@ Module module1
         checkOut.Dispose()
         checkOut = Nothing
 
-        If err.Length > 0 Then
-            Return err
-        End If
+        'If err.Length > 0 Then
+        Return err
+        'End If
 
     End Function
 
@@ -997,8 +997,6 @@ Module module1
         email.BodyFormat = System.Web.Mail.MailFormat.Html
         'myEmail.IsBodyHtml = True
 
-        email.BodyFormat = System.Web.Mail.MailFormat.Html
-
         email.Body = ""
         email.Body &= "<html><body>"
         email.Body &= "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI, Inc</span></center><center><span >UNCC XML IN Error</span></center>&nbsp;&nbsp;"
@@ -1010,6 +1008,14 @@ Module module1
         Else
             email.Body &= "errors;"
             email.Subject = "UNCC XML IN Error"
+        End If
+
+        'check is Production server
+        If UCase(Right(connectOR.ConnectionString, 4)) = "PROD" Then
+            'do nothing
+        Else
+            email.Subject = " (Test) " & email.Subject
+            email.To = "webdev@sdi.com"
         End If
 
         'VR 12/18/2014 Adding file names and error descriptions in message body
