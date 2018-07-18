@@ -968,16 +968,32 @@ Module Module1
                                                                 cmd.CommandType = CommandType.Text
                                                                 Try
                                                                     iMe = cmd.ExecuteNonQuery
-                                                                    connectOR.Close()
+                                                                    'connectOR.Close()
                                                                 Catch ex32 As Exception
-                                                                    Try
-                                                                        connectOR.Close()
-                                                                    Catch ex As Exception
+                                                                    'Try
+                                                                    '    connectOR.Close()
+                                                                    'Catch ex As Exception
 
-                                                                    End Try
+                                                                    'End Try
                                                                 End Try
                                                                 cmd = Nothing
 
+                                                                iMe = 0
+                                                                strSqlString = "UPDATE SYSADM8.PS_ISA_ORD_INTF_LN SET ISA_LINE_STATUS = ' ' WHERE BUSINESS_UNIT_OM = 'I0515' AND ORDER_NO = '" & strOrigOrderQuoteNumber & "'"
+                                                                cmd = connectOR.CreateCommand
+                                                                cmd.CommandText = strSqlString
+                                                                cmd.CommandType = CommandType.Text
+                                                                Try
+                                                                    iMe = cmd.ExecuteNonQuery
+                                                                Catch ex32 As Exception
+                                                                    
+                                                                End Try
+                                                                cmd = Nothing
+                                                                Try
+                                                                    connectOR.Close()
+                                                                Catch ex As Exception
+
+                                                                End Try
                                                             Else
                                                                 'rollback
                                                                 trnsactSession.Rollback()
