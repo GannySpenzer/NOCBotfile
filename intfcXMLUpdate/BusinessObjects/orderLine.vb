@@ -223,6 +223,16 @@ Public Class orderLine
             m_ITM_ID_VNDR = Value
         End Set
     End Property
+    Private m_ITM_ID_VNDR_AUX As String = ""
+
+    Public Property ITM_ID_VNDR_AUX() As String
+        Get
+            Return m_ITM_ID_VNDR_AUX
+        End Get
+        Set(ByVal Value As String)
+            m_ITM_ID_VNDR_AUX = Value
+        End Set
+    End Property
     Private m_empId As String = ""
 
     Public Property EmployeeId() As String

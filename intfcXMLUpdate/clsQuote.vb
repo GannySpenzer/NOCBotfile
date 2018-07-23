@@ -72,6 +72,12 @@ Public Class clsQuote
             Return strITM_ID_VNDR
         End Get
     End Property
+    Private strITM_ID_VNDR_AUX As String
+    Public ReadOnly Property ITM_ID_VNDR_AUX() As String
+        Get
+            Return strITM_ID_VNDR_AUX
+        End Get
+    End Property
     Private strVNDR_CATALOG_ID As String
     Public ReadOnly Property VNDR_CATALOG_ID() As String
         Get
@@ -130,7 +136,7 @@ Public Class clsQuote
                                                        " L.ISA_REQUIRED_BY_DT," & vbCrLf & _
                                                        " L.PRICE_VNDR AS PRICE_PO," & vbCrLf & _
                                                        " L.Vendor_ID, " & vbCrLf & _
-                                                       " L.ITM_ID_VNDR, " & vbCrLf & _
+                                                       " L.ITM_ID_VNDR, L.ISA_USER5, " & vbCrLf & _
                                                        " '1' AS VNDR_LOC," & vbCrLf & _
                                                        " ' ' AS VNDR_CATALOG_ID," & vbCrLf & _
                                                        " L.SHIPTO_ID," & vbCrLf & _
@@ -171,6 +177,7 @@ Public Class clsQuote
                 strMFG_ITM_ID = objReader.Item("MFG_ITM_ID")
                 strMFG_ID = objReader.Item("MFG_ID")
                 strITM_ID_VNDR = objReader.Item("ITM_ID_VNDR")
+                strITM_ID_VNDR_AUX = objReader.Item("ISA_USER5")
                 strSHIPTO_ID = objReader.Item("SHIPTO_ID")
                 strVNDR_LOC = objReader.Item("VNDR_LOC")
                 strISA_REQUIRED_BY_DT = objReader.Item("ISA_REQUIRED_BY_DT")

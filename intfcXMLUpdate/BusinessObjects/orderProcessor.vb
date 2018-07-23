@@ -794,19 +794,25 @@ Public Class orderProcessor
                                             Case "ITM_ID_VNDR"
                                                 Try
                                                     lne.ITM_ID_VNDR = (lneElem.InnerText.Trim)
+                                                    lne.ITM_ID_VNDR_AUX = " "
                                                     If lne.ReferenceNo.Length > 0 Then
 
                                                         connectOR.Open()
                                                         Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
                                                         lne.ITM_ID_VNDR = objquoteRn.ITM_ID_VNDR
+                                                        lne.ITM_ID_VNDR_AUX = objquoteRn.ITM_ID_VNDR_AUX
                                                         lne.Location = objquoteRn.VNDR_LOC
                                                         If Trim(lne.ITM_ID_VNDR) = "" Then
                                                             lne.ITM_ID_VNDR = (lneElem.InnerText.Trim)
+                                                        End If
+                                                        If Trim(lne.ITM_ID_VNDR_AUX) = "" Then
+                                                            lne.ITM_ID_VNDR_AUX = " "
                                                         End If
                                                         
                                                     End If
                                                 Catch ex As Exception
                                                     lne.ITM_ID_VNDR = (lneElem.InnerText.Trim)
+                                                    lne.ITM_ID_VNDR_AUX = " "
                                                 End Try
 
                                             Case "QTY"
@@ -1708,7 +1714,7 @@ Public Class orderProcessor
         '   Here we need to deterimine if it is  a Punchin/Punchout record and here we need to make the isa_ = 'Z'
         Dim strVendid As String = orderReqLine.Vendor_id.ToString
         Dim strItmIDVndr As String = orderReqLine.ITM_ID_VNDR.ToString
-
+        Dim strItmIDVndr_AUX As String = orderReqLine.ITM_ID_VNDR_AUX.ToString
 
         'Dim shipTo As String = CStr(IIf(orderReqLine.Location.Trim.Length = 0, " ", orderReqLine.Location.Trim.ToUpper))
 
@@ -1727,18 +1733,30 @@ Public Class orderProcessor
 
 
         Try
-            If strVendid = "" Then
+            If Trim(strVendid) = "" Then
                 strVendid = " "
             End If
         Catch ex As Exception
             strVendid = " "
         End Try
         Try
-            If strItmIDVndr = "" Then
+            If Trim(strItmIDVndr) = "" Then
                 strItmIDVndr = " "
             End If
         Catch ex As Exception
             strItmIDVndr = " "
+        End Try
+        Try
+            If Trim(strItmIDVndr_AUX) = "" Then
+                strItmIDVndr_AUX = " "
+            Else
+                strItmIDVndr_AUX = Trim(strItmIDVndr_AUX)
+                If Len(strItmIDVndr_AUX) > 60 Then
+                    strItmIDVndr_AUX = Microsoft.VisualBasic.Left(strItmIDVndr_AUX, 60)
+                End If
+            End If
+        Catch ex As Exception
+            strItmIDVndr_AUX = " "
         End Try
 
         'BUSINESS_UNIT_OM,ORDER_NO,ISA_INTFC_LN,BUSINESS_UNIT_IN,BUSINESS_UNIT_PO,REF_ORDER_NO,REF_LINE_NBR,SHIP_TO_CUST_ID,
@@ -1805,7 +1823,7 @@ Public Class orderProcessor
             "' ',' ',' ','" & chargeCode & "',' ',' ',TO_DATE('" & Now.ToString & "', 'MM/DD/YYYY HH:MI:SS AM'),'" & empId & "'," & _
             "'" & shipto & "',' ','" & orderReqLine.Quantity.ToString & "',0,' ',' ',' ','N',' '," & _
             "' ',' ',' ',' ',' ',' ',' ',' '," & _
-            "' ',0,' ',' ',' ',' ',' ',0,0,0,' ',' ',' ',' ',' ',' ',' ',' ',0"
+            "' ',0,' ',' ',' ',' ',' ',0,0,0,' ',' ',' ',' ',' ','" & strItmIDVndr_AUX & "',' ',' ',0"
 
         If Not String.IsNullOrEmpty(StrDueDate) Then
             sql = sql + ",TO_DATE('" & StrDueDate.ToString & "', 'MM/DD/YYYY HH:MI:SS AM')"
