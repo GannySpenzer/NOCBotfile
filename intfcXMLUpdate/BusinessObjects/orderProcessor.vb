@@ -827,15 +827,23 @@ Public Class orderProcessor
                                                         If Trim(lne.Quantity) = "" Then
                                                             lne.Quantity = (lneElem.InnerText.Trim)
                                                         End If
+                                                        Me.OrderRequest.InvalidRefNo = objquoteRn.ISA_Invalid_Ref_NO
+                                                        If Trim(objquoteRn.NET_UNIT_PRICE) <> "" Then
+                                                            If IsNumeric(objquoteRn.NET_UNIT_PRICE) Then
+                                                                lne.NetUnitPrice = CDbl(objquoteRn.NET_UNIT_PRICE)
+                                                            End If
+                                                        End If
+                                                        If Trim(objquoteRn.Net_PRICE_PO) <> "" Then
+                                                            If IsNumeric(objquoteRn.Net_PRICE_PO) Then
+                                                                lne.NetPOPrice = CDbl(objquoteRn.Net_PRICE_PO)
+                                                            End If
+                                                        End If
                                                     Catch ex As Exception
                                                         lne.Quantity = (lneElem.InnerText.Trim)
                                                     End Try
                                                     
                                                 End If
-                                                'see if this xml has a reference number
-                                                'if so get the pricing info from the quote table 
-                                                'by this reference numbe line
-                                                '
+
                                             Case "VENDOR_ID"
 
                                                 lne.Vendor_id = (lneElem.InnerText.Trim)
@@ -929,27 +937,7 @@ Public Class orderProcessor
                                             Case "EXTENDED_AMT"
 
                                                 lne.ExtendedAmount = CDbl(lneElem.InnerText.Trim)
-                                                If lne.ReferenceNo.Length > 0 Then
-                                                    Try
-
-
-                                                        connectOR.Open()
-
-
-                                                        Dim objquoteRn As New clsQuote(lne.ReferenceNo, lne.ReferenceNoLine, connectOR)
-
-                                                        Me.OrderRequest.InvalidRefNo = objquoteRn.ISA_Invalid_Ref_NO
-                                                        If Trim(objquoteRn.NET_UNIT_PRICE) <> "" Then
-                                                            If IsNumeric(objquoteRn.NET_UNIT_PRICE) Then
-                                                                lne.ExtendedAmount = CDbl(objquoteRn.NET_UNIT_PRICE)
-                                                            End If
-                                                        End If
-                                                        
-                                                    Catch ex As Exception
-
-                                                    End Try
-                                                End If
-
+                                                
                                             Case "ISA_WORK_ORDER_NO"
                                                 Try
                                                     lne.WorkOrderNo = lneElem.InnerText.Trim
@@ -1792,6 +1780,8 @@ Public Class orderProcessor
 
         End If  '   If Trim(itemId) <> "" Then
 
+        Dim strNetPoPrice As String = orderReqLine.NetPOPrice.ToString
+
         Dim StrDueDate As String = dtRequired.ToString
 
         sql = "INSERT INTO SYSADM8.PS_ISA_ORD_INTF_LN (BUSINESS_UNIT_OM,ORDER_NO,ISA_INTFC_LN,BUSINESS_UNIT_IN,BUSINESS_UNIT_PO," & _
@@ -1812,10 +1802,19 @@ Public Class orderProcessor
         End If
         sql = sql + ")"
 
+        Dim strRefOrdNo As String = orderReqLine.ReferenceNo
+        If Trim(strRefOrdNo) = "" Then
+            strRefOrdNo = " "
+        End If
+
+        Dim intRefOrdNoLine As Integer = 0
+        If Trim(orderReqLine.ReferenceNoLine) <> "" Then
+            intRefOrdNoLine = CType(orderReqLine.ReferenceNoLine, Integer)
+        End If
 
         sql = sql & "VALUES ('I0256','" & orderReq.OrderNo_SDI.ToString & "','" & orderReqLine.OrderLineNo.ToString & "',' ',' '," & _
-            "' ',0,'" & customerId & "',' ','MAIN1'," & _
-            "'" & itemId & "',' ',0,' ',' ','" & orderReqLine.NetPOPrice.ToString & "','" & strNetUnitPrice & "'," & _
+            "'" & strRefOrdNo & "'," & intRefOrdNoLine & ",'" & customerId & "',' ','MAIN1'," & _
+            "'" & itemId & "',' ',0,' ',' ','" & strNetPoPrice & "','" & strNetUnitPrice & "'," & _
             "'" & uom & "'," & orderReqLine.Quantity.ToString & ",0,'" & strlineordstat & "',' ',' ',' '," & _
             "' ','" & empId & "', '" & orderReqLine.PriorityCode & "',' ',0,'MAIN1','" & strVendid & "'," & _
             "'" & strItmIDVndr & "','" & mfgId & "','" & mfgFreeForm & "','" & mfgPartNo & "',' ','N','" & itemDesc & "',' '," & _
