@@ -858,6 +858,7 @@ Public Class QuoteNonStockProcessor
                                  "  AND A1.line_nbr = I.line_nbr" & vbCrLf & _
                                  "  AND I.BUSINESS_UNIT_OM = L.BUSINESS_UNIT_OM" & vbCrLf & _
                                  "  AND A.REQ_ID = L.ORDER_NO" & vbCrLf & _
+                                 "  AND A1.line_nbr = L.ISA_INTFC_LN" & vbCrLf & _
                                  "  AND A4.ORIGIN IN ('IOL','MOB','RFQ','IAP','PCH')" & vbCrLf & _
                                  "  AND L.BUSINESS_UNIT_OM = A2.BUSINESS_UNIT (+)" & vbCrLf & _
                                  "  AND L.ISA_EMPLOYEE_ID = A2.ISA_EMPLOYEE_ID (+) " & vbCrLf & _
@@ -2069,26 +2070,28 @@ Public Class QuoteNonStockProcessor
 
     Public Sub PriceUpdate(ByVal orderid As String, ByVal Linestatus As String)
         Try
-            Dim strUpdateQuery As String = String.Empty
-            Dim strSelectQuery As String = String.Empty
+            Dim strUpdateQuery As String = ""
+            Dim strSelectQuery As String = ""
             Dim ordSts As String = "W"
-            Dim ordIdent As String = String.Empty
-            Dim oprEnteredBy As String = String.Empty
-            Dim ordBu As String = String.Empty
+            Dim ordIdent As String = ""
+            Dim oprEnteredBy As String = ""
+            Dim ordBu As String = ""
             Dim rowsaffected As Integer = 0
             Dim OrcRdr As OleDb.OleDbDataReader = Nothing
-            Dim ordStsL As String = "QTW"
+            'Dim ordStsL As String = "QTW"
+            Dim strEmploId As String = ""
 
-            strSelectQuery = "Select BUSINESS_UNIT_OM, ISA_LINE_STATUS, OPRID_ENTERED_BY, ORDER_NO FROM SYSADM8.PS_ISA_ORD_INTF_LN WHERE ORDER_NO='" & orderid & "'"
+            strSelectQuery = "Select BUSINESS_UNIT_OM, ISA_LINE_STATUS, OPRID_ENTERED_BY, ORDER_NO, ISA_EMPLOYEE_ID FROM SYSADM8.PS_ISA_ORD_INTF_LN WHERE ORDER_NO='" & orderid & "'"
 
             OrcRdr = GetReader(strSelectQuery)
             If OrcRdr.HasRows Then
                 While OrcRdr.Read()
                     ordBu = CType(OrcRdr("BUSINESS_UNIT_OM"), String).Trim()
                     oprEnteredBy = CType(OrcRdr("OPRID_ENTERED_BY"), String).Trim()
+                    strEmploId = CType(OrcRdr("ISA_EMPLOYEE_ID"), String).Trim()
                     If OrcRdr("ISA_LINE_STATUS").Trim().ToUpper() = "QTS" Then  '  If OrcRdr.GetString(0).Trim().ToUpper() = "QTS" Then
                         strUpdateQuery = " UPDATE SYSADM8.PS_ISA_ORD_INTF_LN" & vbCrLf & _
-                                         " SET ISA_LINE_STATUS = '" & Linestatus & "'" & vbCrLf & _
+                                         " SET ISA_LINE_STATUS = '" & Linestatus & "', OPRID_APPROVED_BY = '" & strEmploId & "', APPROVAL_DTTM = TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
                                          " WHERE ORDER_NO = '" & orderid & "'"
                         rowsaffected = ExecNonQuery(strUpdateQuery)
                         SDIAuditInsert("PS_ISA_ORD_INTF_LN", orderid, "ISA_LINE_STATUS", Linestatus, ordBu)
