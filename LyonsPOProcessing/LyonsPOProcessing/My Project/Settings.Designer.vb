@@ -75,15 +75,6 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("")>  _
-        Public ReadOnly Property TaxExempt() As String
-            Get
-                Return CType(Me("TaxExempt"),String)
-            End Get
-        End Property
-        
-        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
-         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.DefaultSettingValueAttribute("C:\LMIn")>  _
         Public ReadOnly Property rootDir() As String
             Get
@@ -143,6 +134,24 @@ Namespace My
         Public ReadOnly Property oraCNString1() As String
             Get
                 Return CType(Me("oraCNString1"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("")>  _
+        Public ReadOnly Property TaxExempt() As String
+            Get
+                Return CType(Me("TaxExempt"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("\\solaris4\EFISHARE\LYONS-MAGNUS\")>  _
+        Public ReadOnly Property FlatFileDir() As String
+            Get
+                Return CType(Me("FlatFileDir"),String)
             End Get
         End Property
     End Class

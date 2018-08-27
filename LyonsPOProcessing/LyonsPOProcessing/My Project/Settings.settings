@@ -8,9 +8,6 @@
     <Setting Name="inputDirectory" Type="System.String" Scope="Application">
       <Value Profile="(Default)">C:\LMIn\XmlInSource</Value>
     </Setting>
-    <Setting Name="TaxExempt" Type="System.String" Scope="Application">
-      <Value Profile="(Default)"> </Value>
-    </Setting>
     <Setting Name="rootDir" Type="System.String" Scope="Application">
       <Value Profile="(Default)">C:\LMIn</Value>
     </Setting>
@@ -31,6 +28,13 @@
     </Setting>
     <Setting Name="oraCNString1" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=STAR</Value>
+    </Setting>
+    <Setting Name="TaxExempt" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">
+                </Value>
+    </Setting>
+    <Setting Name="FlatFileDir" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">\\solaris4\EFISHARE\LYONS-MAGNUS\</Value>
     </Setting>
   </Settings>
 </SettingsFile>

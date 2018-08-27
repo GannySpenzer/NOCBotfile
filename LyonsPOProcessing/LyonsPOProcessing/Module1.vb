@@ -410,8 +410,9 @@ Module Module1
                                                             End If  ' If UCase(attrib.Name) = "ORDERID" Then
                                                         Next ' For Each attrib As XmlAttribute In nodeOrdrRefr.Attributes()
                                                     End If  '  If nodeOrdrRefr.Attributes.Count > 0 Then
-                                                    ' get SDI Bus. Unit
+
                                                     If nodeOrdrRefr.ChildNodes.Count > 0 Then
+                                                        ' get SDI Bus. Unit
                                                         Dim nodeBusUnitName As System.Xml.XmlNode = nodeOrdrRefr.SelectSingleNode("ShipTo/Address/Name")
                                                         If Not (nodeBusUnitName Is Nothing) Then
                                                             Try
@@ -430,6 +431,16 @@ Module Module1
 
                                                             End Try
                                                         End If  '  If Not (nodeBusUnitName Is Nothing) Then
+                                                        ' get SDI Order No
+                                                        Dim nodeOrigOrderNo As System.Xml.XmlNode = nodeOrdrRefr.SelectSingleNode("SupplierOrderInfo")
+                                                        If nodeOrigOrderNo.Attributes.Count > 0 Then
+                                                            For Each attrib As XmlAttribute In nodeOrigOrderNo.Attributes()
+                                                                If UCase(attrib.Name) = "ORDERID" Then
+                                                                    strQuoteID = attrib.Value
+
+                                                                End If  ' If UCase(attrib.Name) = "ORDERID" Then
+                                                            Next  ' For Each attrib As XmlAttribute In nodeOrigOrderNo.Attributes()
+                                                        End If  '  If nodeOrigOrderNo.Attributes.Count > 0 Then
                                                     End If  '  If nodeOrdrRefr.ChildNodes.Count > 0 Then
 
                                                 End If  '  If strChildNodeName = "ORDERREQUESTHEADER" Then
@@ -451,6 +462,13 @@ Module Module1
                                                                     ReDim Preserve arrLineNums(j1)
                                                                 End If
                                                                 arrLineNums(j1) = attrib.Value
+                                                            End If
+                                                            If UCase(attrib.Name) = "SDILINENUMBER" Then
+                                                                If j1 = 0 Then
+                                                                Else
+                                                                    ReDim Preserve arrQuoteLineNum(j1)
+                                                                End If
+                                                                arrQuoteLineNum(j1) = attrib.Value
                                                             End If
                                                             ' code for Due Date 
                                                             If UCase(attrib.Name) = "REQUESTEDDELIVERYDATE" Then
@@ -533,14 +551,12 @@ Module Module1
                                                                                                         ReDim Preserve arrVendPartNum(j1)
                                                                                                         ReDim Preserve arrMfgId(j1)
                                                                                                         ReDim Preserve arrMfgPartNum(j1)
-                                                                                                        ReDim Preserve arrQuoteLineNum(j1)
                                                                                                     End If
                                                                                                     arrUnitPrice(j1) = NodeChildIUnitPrice.InnerText
                                                                                                     arrVendor(j1) = " "
                                                                                                     arrVendPartNum(j1) = " "
                                                                                                     arrMfgId(j1) = " "
                                                                                                     arrMfgPartNum(j1) = " "
-                                                                                                    arrQuoteLineNum(j1) = " "
                                                                                                 Case Else
                                                                                                     'do nothing
                                                                                             End Select
@@ -602,6 +618,7 @@ Module Module1
                                             Dim writerLnsMagn As StreamWriter
                                             Dim strPathForLM As String = ""
                                             Dim strSrchFileName As String = ""
+                                            Dim strFlatFileDir As String = ""
                                             Dim bIsThereAnyData As Boolean = False
                                             Dim iLM As Integer = 0
 
@@ -612,8 +629,18 @@ Module Module1
                                                     strSdiBusUnit = UCase(Trim(strSdiBusUnit))
 
                                                     strSrchFileName = strSdiBusUnit & "_" & strOrderNum.ToUpper & "_" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+                                                    strFlatFileDir = "\\solaris4\EFISHARE\LYONS-MAGNUS\"
 
-                                                    strPathForLM = "C:\LMIn\FlatFile\" & strSrchFileName
+                                                    Try
+                                                        strFlatFileDir = My.Settings("FlatFileDir").ToString.Trim
+                                                        If Trim(strFlatFileDir) = "" Then
+                                                            strFlatFileDir = "\\solaris4\EFISHARE\LYONS-MAGNUS\"
+                                                        End If
+                                                    Catch ex As Exception
+                                                        strFlatFileDir = "\\solaris4\EFISHARE\LYONS-MAGNUS\"
+                                                    End Try
+
+                                                    strPathForLM = strFlatFileDir & strSrchFileName
                                                     writerLnsMagn = New StreamWriter(strPathForLM)
 
                                                     ' need: strQuoteID, arrQuoteLineNum
