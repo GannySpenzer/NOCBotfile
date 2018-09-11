@@ -1149,9 +1149,12 @@ Public Class QuoteNonStockProcessor
                                 End If
                                 arr = Nothing
                                 ' since we won't have this addressee on our table, we'll use the email they provided as the addressee
-                                boItem.Addressee = boItem.TO.TrimEnd(";"c)
-                                ' as well as the employee Id
-                                boItem.EmployeeID = boItem.TO.TrimEnd(";"c)
+                                If Trim(boItem.Addressee) = "" Then
+                                    boItem.Addressee = boItem.TO.TrimEnd(";"c)
+                                End If
+
+                                '' as well as the employee Id
+                                'boItem.EmployeeID = boItem.TO.TrimEnd(";"c)
                             End If
                         End If
                     Else
