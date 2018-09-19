@@ -16,16 +16,68 @@ namespace POMapping
         /// POST Purchase order data to the PMC service
         /// </summary>
         /// <returns></returns>
-        public string postPOMappingData()
+       // Logger m_oLogger;
+        public string postPOMappingData(Logger m_oLogger)
         {
             var strResponse = " ";
             DataTable dtResponse = new DataTable();
             try
-            {          
+            {
+                string json = @"{
+	'_postpurchaseorder_batch_req': {
+		'_postpurchaseorder': [{
+			'XXPMC_SDI_RECORD_ID': '100',
+			'PROCESS_CODE': 'TEST1',
+			'ACTION': 'TEST1',
+			'ORG_ID': '100',
+			'DOCUMENT_TYPE_CODE': 'TEST1',
+			'CURRENCY_CODE': 'TEST1',
+			'AGENT_ID': '100',
+			'FULL_NAME': 'TEST1',
+			'VENDOR_ID': '100',
+			'VENDOR_SITE_ID': '100',
+			'HEADER_SHIP_TO_LOCATION_ID': '100',
+			'HEADER_BILL_TO_LOCATION_ID': '100',
+			'APPROVAL_STATUS': 'TEST1',
+			'FREIGHT_CARRIER': 'TEST1',
+			'FOB': 'TEST1',
+			'TERMS_ID': '100',
+			'REFERENCE_NUM': 'TEST1',
+			'LINE_NUM': '100',
+			'SHIPMENT_NUM': '100',
+			'LINE_TYPE_ID': '100',
+			'ITEM': 'TEST1',
+			'ITEM_DESCRIPTION': 'TEST1',
+			'ITEM_ID': '100',
+			'UOM_CODE': 'ABC',
+			'QUANTITY': '100',
+			'UNIT_PRICE': '100',
+			'LINE_SHIP_TO_ORGANIZATION_CODE': 'ABC',
+			'LINE_SHIP_TO_LOCATION_ID': '100',
+			'LINE_LOC_POPULATED_FLAG': 'Y',
+			'NEED_BY_DATE': '2018/07/03 21:02:44',
+			'PROMISED_DATE': '2018/07/03 21:02:44',
+			'LIST_PRICE_PER_UNIT': '100',
+			'ACCRUE_ON_RECEIPT_FLAG': 'Y',
+			'QUANTITY_ORDERED': '100',
+			'DESTINATION_ORGANIZATION_ID': '100',
+			'SET_OF_BOOKS_ID': '100',
+			'CHARGE_ACCOUNT_ID': '100',
+			'DISTRIBUTION_NUM': '100',
+			'DESTINATION_TYPE_CODE': 'TEST1',
+			'WIP_ENTITY_ID': '100',
+			'WIP_OPERATION_SEQ_NUM': '100',
+			'WIP_RESOURCE_SEQ_NUM': '100',
+			'BOM_RESOURCE_ID': '100'
+		}]
+	}
+}";
+    
                 POMappingDAL objPOMappingDAL = new POMappingDAL();
                 postPoOrderReq objpostPoOrderReq = new postPoOrderReq();
                 List<PostPoOrders> objPostPoOrders = new List<PostPoOrders>();
-                dtResponse = objPOMappingDAL.getPOMappingData();
+                m_oLogger.LogMessage("getPOMappingData", "Getting PO Mapping Data starts here");
+                dtResponse = objPOMappingDAL.getPOMappingData(m_oLogger);
                 if (dtResponse.Rows.Count != 0)
                 {
                     List<PostPoOrdersProperties> target = dtResponse.AsEnumerable()
@@ -69,7 +121,8 @@ namespace POMapping
                             DESTINATION_TYPE_CODE = (String)(row["ISA_DEST_TYPE_CODE"]),
                             WIP_ENTITY_ID = (String)(row["ISA_WORK_ORDER"]),
                             WIP_OPERATION_SEQ_NUM = (String)(row["ACTIVITY_ID"]),
-                            //WIP_RESOURCE_SEQ_NUM = ((Decimal)(row["ISA_ACTIVITY_NBR"])).ToString(),
+                            // WIP_RESOURCE_SEQ_NUM = ((Decimal)(row["ISA_ACTIVITY_NBR"])).ToString(),
+                            WIP_RESOURCE_SEQ_NUM = "",
                             BOM_RESOURCE_ID = ((Decimal)(row["ISA_BOM_RESOURCE"])).ToString(),
                             TERMS_ID = "",
                             LIST_PRICE_PER_UNIT = "",
@@ -93,27 +146,30 @@ namespace POMapping
                     sb.Append("}");
                   
                     JObject resultSet = JObject.Parse(sb.ToString());
-                   
+                    //JObject rss = JObject.Parse(json);
                     using (var client = new WebClient())
                     {
+                        m_oLogger.LogMessage("postPOMappingData", "POST PO Mapping Data to PMC starts here");
                         client.Headers.Add("Authorization: Basic YWRtaW46YWRtaW4=");
                         client.Headers.Add("Content-Type:application/json");
                         client.Headers.Add("Accept:application/json");
                         System.Net.ServicePointManager.CertificatePolicy = new AlwaysIgnoreCertPolicy();
                         System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
-                        var result = client.UploadString("https://10.118.13.27:8243/SDIOutboundPurchaseOrderAPI/v1_0 ", resultSet.ToString());
-
+                        m_oLogger.LogMessage("postPOMappingData", "POST POMapping Data" + resultSet.ToString());
+                        m_oLogger.LogMessage("postPOMappingData", "POST POMapping Data URL : https://10.118.13.27:8243/SDIOutboundPurchaseOrderAPI/v1_0");
+                       
+                        var result = client.UploadString("https://10.118.13.27:8243/SDIOutboundPurchaseOrderAPI/v1_0", resultSet.ToString());
+                       // var result1 = client.UploadString("https://10.118.13.27:8243/SDIOutboundPurchaseOrderAPI/v1_0", rss.ToString());
                         var parsed = JObject.Parse(result);
                         strResponse = parsed.SelectToken("REQUEST_STATUS").Value<string>();
-
+                        m_oLogger.LogMessage("postPOMappingData", "POST POMapping data to PMC server status " + strResponse);
                     }
                 }
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                m_oLogger.LogMessage("postPOMappingData", "Error trying to POST data to PMS server.", ex);
             }
             return strResponse;
         }
