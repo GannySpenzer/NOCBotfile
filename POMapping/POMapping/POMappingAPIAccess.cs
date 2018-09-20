@@ -16,8 +16,9 @@ namespace POMapping
         /// POST Purchase order data to the PMC service
         /// </summary>
         /// <returns></returns>
-       // Logger m_oLogger;
-        public string postPOMappingData(Logger m_oLogger)
+        //Logger m_oLogger;
+        //public string postPOMappingData(Logger m_oLogger)
+            public string postPOMappingData()
         {
             var strResponse = " ";
             DataTable dtResponse = new DataTable();
@@ -76,8 +77,9 @@ namespace POMapping
                 POMappingDAL objPOMappingDAL = new POMappingDAL();
                 postPoOrderReq objpostPoOrderReq = new postPoOrderReq();
                 List<PostPoOrders> objPostPoOrders = new List<PostPoOrders>();
-                m_oLogger.LogMessage("getPOMappingData", "Getting PO Mapping Data starts here");
-                dtResponse = objPOMappingDAL.getPOMappingData(m_oLogger);
+                //m_oLogger.LogMessage("getPOMappingData", "Getting PO Mapping Data starts here");
+                //dtResponse = objPOMappingDAL.getPOMappingData(m_oLogger);
+                dtResponse = objPOMappingDAL.getPOMappingData();
                 if (dtResponse.Rows.Count != 0)
                 {
                     List<PostPoOrdersProperties> target = dtResponse.AsEnumerable()
@@ -123,6 +125,20 @@ namespace POMapping
                             WIP_OPERATION_SEQ_NUM = (String)(row["ACTIVITY_ID"]),
                             // WIP_RESOURCE_SEQ_NUM = ((Decimal)(row["ISA_ACTIVITY_NBR"])).ToString(),
                             WIP_RESOURCE_SEQ_NUM = "",
+                            ATTRIBUTE1 = (string)(row["ISA_ATTRIBUTE_1"]),
+                            ATTRIBUTE10 = (string)(row["ISA_ATTRIBUTE_10"]),
+                            ATTRIBUTE2 = (string)(row["ISA_ATTRIBUTE_2"]),
+                            ATTRIBUTE3 = (string)(row["ISA_ATTRIBUTE_3"]),
+                            ATTRIBUTE4 = (string)(row["ISA_ATTRIBUTE_4"]),
+                            ATTRIBUTE5 = (string)(row["ISA_ATTRIBUTE_5"]),
+                            ATTRIBUTE6 = (string)(row["ISA_ATTRIBUTE_6"]),
+                            ATTRIBUTE7 = (string)(row["ISA_ATTRIBUTE_7"]),
+                            ATTRIBUTE8 = (string)(row["ISA_ATTRIBUTE_8"]),
+                            ATTRIBUTE9 = (string)(row["ISA_ATTRIBUTE_9"]),
+                            //TRANS_STATUS_DESCRIPTION = (string)(row["ISA_COMMENTS_1333"]),
+                            //TRANS_STATUS_DESCRIPTION = null,
+                            TRANS_STATUS_DESCRIPTION = row["ISA_COMMENTS_1333"] == DBNull.Value  ? null : (string)(row["ISA_COMMENTS_1333"]),
+                            TRANSACTION_STATUS = (string)(row["STATUS_MSG"]),
                             BOM_RESOURCE_ID = ((Decimal)(row["ISA_BOM_RESOURCE"])).ToString(),
                             TERMS_ID = "",
                             LIST_PRICE_PER_UNIT = "",
@@ -149,27 +165,27 @@ namespace POMapping
                     //JObject rss = JObject.Parse(json);
                     using (var client = new WebClient())
                     {
-                        m_oLogger.LogMessage("postPOMappingData", "POST PO Mapping Data to PMC starts here");
+                        //m_oLogger.LogMessage("postPOMappingData", "POST PO Mapping Data to PMC starts here");
                         client.Headers.Add("Authorization: Basic YWRtaW46YWRtaW4=");
                         client.Headers.Add("Content-Type:application/json");
                         client.Headers.Add("Accept:application/json");
                         System.Net.ServicePointManager.CertificatePolicy = new AlwaysIgnoreCertPolicy();
                         System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
-                        m_oLogger.LogMessage("postPOMappingData", "POST POMapping Data" + resultSet.ToString());
-                        m_oLogger.LogMessage("postPOMappingData", "POST POMapping Data URL : https://10.118.13.27:8243/SDIOutboundPurchaseOrderAPI/v1_0");
+                        //m_oLogger.LogMessage("postPOMappingData", "POST POMapping Data" + resultSet.ToString());
+                        //m_oLogger.LogMessage("postPOMappingData", "POST POMapping Data URL : https://10.118.13.27:8243/SDIOutboundPurchaseOrderAPI/v1_0");
                        
                         var result = client.UploadString("https://10.118.13.27:8243/SDIOutboundPurchaseOrderAPI/v1_0", resultSet.ToString());
                        // var result1 = client.UploadString("https://10.118.13.27:8243/SDIOutboundPurchaseOrderAPI/v1_0", rss.ToString());
                         var parsed = JObject.Parse(result);
                         strResponse = parsed.SelectToken("REQUEST_STATUS").Value<string>();
-                        m_oLogger.LogMessage("postPOMappingData", "POST POMapping data to PMC server status " + strResponse);
+                       // m_oLogger.LogMessage("postPOMappingData", "POST POMapping data to PMC server status " + strResponse);
                     }
                 }
 
             }
             catch (Exception ex)
             {
-                m_oLogger.LogMessage("postPOMappingData", "Error trying to POST data to PMS server.", ex);
+                //m_oLogger.LogMessage("postPOMappingData", "Error trying to POST data to PMS server.", ex);
             }
             return strResponse;
         }

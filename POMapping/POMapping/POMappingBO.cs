@@ -71,6 +71,19 @@ namespace POMapping
         public string WIP_ENTITY_ID { get; set; }
         public string WIP_OPERATION_SEQ_NUM { get; set; }
         public string WIP_RESOURCE_SEQ_NUM { get; set; }
+        public string ATTRIBUTE1 { get; set; }
+        public string ATTRIBUTE10 { get; set; }         
+        public string ATTRIBUTE2 { get; set; }        
+        public string ATTRIBUTE3 { get; set; }        
+        public string ATTRIBUTE4 { get; set; }        
+        public string ATTRIBUTE5 { get; set; }        
+        public string ATTRIBUTE6 { get; set; }        
+        public string ATTRIBUTE7 { get; set; }        
+        public string ATTRIBUTE8 { get; set; }        
+        public string ATTRIBUTE9 { get; set; }
+        public string TRANS_STATUS_DESCRIPTION { get; set; }
+        public string TRANSACTION_STATUS { get; set; }
         public string BOM_RESOURCE_ID { get; set; }
+
     }
 }
