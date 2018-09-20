@@ -139,19 +139,19 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("")>  _
-        Public ReadOnly Property TaxExempt() As String
+         Global.System.Configuration.DefaultSettingValueAttribute("\\solaris4\EFISHARE\LYONS-MAGNUS\")>  _
+        Public ReadOnly Property FlatFileDir() As String
             Get
-                Return CType(Me("TaxExempt"),String)
+                Return CType(Me("FlatFileDir"),String)
             End Get
         End Property
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("\\solaris4\EFISHARE\LYONS-MAGNUS\")>  _
-        Public ReadOnly Property FlatFileDir() As String
+         Global.System.Configuration.DefaultSettingValueAttribute("")>  _
+        Public ReadOnly Property TaxExempt() As String
             Get
-                Return CType(Me("FlatFileDir"),String)
+                Return CType(Me("TaxExempt"),String)
             End Get
         End Property
     End Class

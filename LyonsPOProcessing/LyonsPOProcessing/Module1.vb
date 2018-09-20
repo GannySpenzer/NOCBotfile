@@ -272,6 +272,9 @@ Module Module1
                     sPoConfirmText = ""
                     sPOConfirmPath = ""
                     Dim strReqId As String = ""
+                    Dim strSdiBusUnit As String = ""
+                    Dim strLyonsPlantName As String = ""
+                    Dim strPayloadID As String = ""
 
                     If Trim(strXMLError) = "" Then
 
@@ -301,12 +304,26 @@ Module Module1
                         End If  '  If Trim(strXMLError) = "" Then  ' 1st level inner
 
                         If Trim(strXMLError) = "" Then
-                            Dim strOrigOrderQuoteNumber As String = " "
-                            ' do not have right now - skip
-                            ' <ADD CODE LATER>
-                            If Trim(strOrigOrderQuoteNumber) = "" Then
-                                strOrigOrderQuoteNumber = " "
-                            End If
+                            ' get PayloadID
+                            If root.Attributes.Count > 0 Then
+                                For Each attrib As XmlAttribute In root.Attributes()
+                                    If UCase(attrib.Name) = "PAYLOADID" Then
+                                        strPayloadID = attrib.Value
+                                        If Trim(strPayloadID) <> "" Then
+                                            strPayloadID = Trim(strPayloadID)
+                                            If Len(strPayloadID) > 2 Then
+                                                strLyonsPlantName = UCase(Right(strPayloadID, 3))
+                                                Select Case strLyonsPlantName
+                                                    Case "LMW"
+                                                        strSdiBusUnit = "I0531"
+                                                    Case "LME"
+                                                        strSdiBusUnit = "I0532"
+                                                End Select
+                                            End If
+                                        End If
+                                    End If  ' If UCase(attrib.Name) = "PAYLOADID" Then
+                                Next  ' For Each attrib As XmlAttribute In root.Attributes()
+                            End If  '  If root.Attributes.Count > 0 Then
 
                             Dim nodeOrdConf As XmlNode = root.LastChild()  '  node "REQUEST" 
 
@@ -321,8 +338,6 @@ Module Module1
                                         Dim j1 As Integer = 0
                                         Dim strChildNodeName As String = ""
                                         Dim strOrderNum As String = ""
-                                        Dim strSdiBusUnit As String = ""
-                                        Dim strLyonsPlantName As String = ""
 
                                         Dim strQuoteID As String = " "
                                         Dim arrQuoteLineNum(0) As String
@@ -412,42 +427,58 @@ Module Module1
                                                     End If  '  If nodeOrdrRefr.Attributes.Count > 0 Then
 
                                                     If nodeOrdrRefr.ChildNodes.Count > 0 Then
-                                                        ' get SDI Bus. Unit
-                                                        Dim nodeBusUnitName As System.Xml.XmlNode = nodeOrdrRefr.SelectSingleNode("ShipTo/Address/Name")
-                                                        If Not (nodeBusUnitName Is Nothing) Then
-                                                            Try
-                                                                strLyonsPlantName = UCase(nodeBusUnitName.InnerText)
-                                                                If Trim(strLyonsPlantName) <> "" Then
-                                                                    If Len(strLyonsPlantName) > 3 Then
-                                                                        If strLyonsPlantName.Contains("WEST") Then
-                                                                            strSdiBusUnit = "I0531"
-                                                                        ElseIf strLyonsPlantName.Contains("EAST") Then
-                                                                            strSdiBusUnit = "I0532"
-                                                                        End If
-                                                                    End If
-                                                                End If
+                                                        '' get SDI Bus. Unit - not user anymore - using PayloadID - VR 08/29/2018
+                                                        'Dim nodeBusUnitName As System.Xml.XmlNode = nodeOrdrRefr.SelectSingleNode("BillTo/Address/Name")
+                                                        'If Not (nodeBusUnitName Is Nothing) Then
+                                                        '    Try
+                                                        '        strLyonsPlantName = UCase(nodeBusUnitName.InnerText)
+                                                        '        If Trim(strLyonsPlantName) <> "" Then
+                                                        '            If Len(strLyonsPlantName) > 3 Then
+                                                        '                If strLyonsPlantName.Contains("WEST") Then
+                                                        '                    strSdiBusUnit = "I0531"
+                                                        '                ElseIf strLyonsPlantName.Contains("EAST") Then
+                                                        '                    strSdiBusUnit = "I0532"
+                                                        '                Else
+                                                        '                    strSdiBusUnit = "I0532"
+                                                        '                End If
+                                                        '            End If
+                                                        '        End If
 
-                                                            Catch ex As Exception
+                                                        '    Catch ex As Exception
 
-                                                            End Try
-                                                        End If  '  If Not (nodeBusUnitName Is Nothing) Then
+                                                        '    End Try
+                                                        'End If  '  If Not (nodeBusUnitName Is Nothing) Then
                                                         ' get SDI Order No
                                                         Dim nodeOrigOrderNo As System.Xml.XmlNode = nodeOrdrRefr.SelectSingleNode("SupplierOrderInfo")
-                                                        If nodeOrigOrderNo.Attributes.Count > 0 Then
-                                                            For Each attrib As XmlAttribute In nodeOrigOrderNo.Attributes()
-                                                                If UCase(attrib.Name) = "ORDERID" Then
-                                                                    strQuoteID = attrib.Value
+                                                        Try
+                                                            If Not (nodeOrigOrderNo Is Nothing) Then
+                                                                If nodeOrigOrderNo.Attributes.Count > 0 Then
+                                                                    For Each attrib As XmlAttribute In nodeOrigOrderNo.Attributes()
+                                                                        If UCase(attrib.Name) = "ORDERID" Then
+                                                                            strQuoteID = attrib.Value
 
-                                                                End If  ' If UCase(attrib.Name) = "ORDERID" Then
-                                                            Next  ' For Each attrib As XmlAttribute In nodeOrigOrderNo.Attributes()
-                                                        End If  '  If nodeOrigOrderNo.Attributes.Count > 0 Then
+                                                                        End If  ' If UCase(attrib.Name) = "ORDERID" Then
+                                                                    Next  ' For Each attrib As XmlAttribute In nodeOrigOrderNo.Attributes()
+                                                                Else
+                                                                    strQuoteID = " "
+                                                                End If  '  If nodeOrigOrderNo.Attributes.Count > 0 Then
+                                                            Else
+                                                                strQuoteID = " "
+                                                            End If  '  If Not (nodeOrigOrderNo Is Nothing) Then
+
+                                                        Catch ex As Exception
+                                                            strQuoteID = " "
+                                                        End Try
+
                                                     End If  '  If nodeOrdrRefr.ChildNodes.Count > 0 Then
 
                                                 End If  '  If strChildNodeName = "ORDERREQUESTHEADER" Then
                                                 'get Line Item info
                                                 If strChildNodeName = "ITEMOUT" Then
                                                     'get Line number and Qty from Attributes
+                                                    Dim bIsThereSdiLineNo As Boolean = False
                                                     If nodeOrdrRefr.Attributes.Count > 0 Then
+                                                        bIsThereSdiLineNo = False
                                                         For Each attrib As XmlAttribute In nodeOrdrRefr.Attributes()
                                                             If UCase(attrib.Name) = "QUANTITY" Then
                                                                 If j1 = 0 Then
@@ -464,6 +495,7 @@ Module Module1
                                                                 arrLineNums(j1) = attrib.Value
                                                             End If
                                                             If UCase(attrib.Name) = "SDILINENUMBER" Then
+                                                                bIsThereSdiLineNo = True
                                                                 If j1 = 0 Then
                                                                 Else
                                                                     ReDim Preserve arrQuoteLineNum(j1)
@@ -479,6 +511,13 @@ Module Module1
                                                                 arrDueDates(j1) = attrib.Value
                                                             End If
                                                         Next  '  For Each attrib As XmlAttribute In nodeOrdrRefr.Attributes()
+                                                        If Not bIsThereSdiLineNo Then
+                                                            If j1 = 0 Then
+                                                            Else
+                                                                ReDim Preserve arrQuoteLineNum(j1)
+                                                            End If
+                                                            arrQuoteLineNum(j1) = " "
+                                                        End If
                                                     End If  '  If nodeOrdrRefr.Attributes.Count > 0 Then
 
                                                     If nodeOrdrRefr.ChildNodes.Count > 0 Then
@@ -614,7 +653,7 @@ Module Module1
 
                                             'start creating Interface record
                                             m_logger.WriteInformationLog(rtn & " :: Start creating Flat File ")
-                                           
+
                                             Dim writerLnsMagn As StreamWriter
                                             Dim strPathForLM As String = ""
                                             Dim strSrchFileName As String = ""
@@ -643,10 +682,9 @@ Module Module1
                                                     strPathForLM = strFlatFileDir & strSrchFileName
                                                     writerLnsMagn = New StreamWriter(strPathForLM)
 
-                                                    ' need: strQuoteID, arrQuoteLineNum
+                                                    'add headers
+                                                    writerLnsMagn.WriteLine("BUSUNIT" & "~" & "POID" & "~" & "POLINENUM" & "~" & "QUOTEID" & "~" & "QUOTELINENUM" & "~" & "PRODUCT_ID" & "~" & "DESCRIPTION" & "~" & "QUANTITY" & "~" & "UOM" & "~" & "ITEM_PRICE" & "~" & "CURRENCY" & "~" & "VENDOR" & "~" & "VENDORPARTNUM" & "~" & "MANFID" & "~" & "MANFPARTNUM" & "~" & "UNSPSC" & "~" & "DUEDATE" & "~" & "TAX")
                                                     For iLM = 0 To arrUnitPrice.Length - 1
-                                                        'add headers
-                                                        writerLnsMagn.WriteLine("BUSUNIT" & "~" & "POID" & "~" & "POLINENUM" & "~" & "QUOTEID" & "~" & "QUOTELINENUM" & "~" & "PRODUCT_ID" & "~" & "DESCRIPTION" & "~" & "QUANTITY" & "~" & "UOM" & "~" & "ITEM_PRICE" & "~" & "CURRENCY" & "~" & "VENDOR" & "~" & "VENDORPARTNUM" & "~" & "MANFID" & "~" & "MANFPARTNUM" & "~" & "UNSPSC" & "~" & "DUEDATE" & "~" & "TAX")
                                                         'add data
                                                         writerLnsMagn.WriteLine(strSdiBusUnit & "~" & strOrderNum & "~" & arrLineNums(iLM) & "~" & strQuoteID & "~" & arrQuoteLineNum(iLM) & "~" & arrSupplPartIDs(iLM) & "~" & arrDescr(iLM) & "~" & arrLineQtys(iLM) & "~" & arrUOMs(iLM) & "~" & arrUnitPrice(iLM) & "~" & arrCurrency(iLM) & "~" & arrVendor(iLM) & "~" & arrVendPartNum(iLM) & "~" & arrMfgId(iLM) & "~" & arrMfgPartNum(iLM) & "~" & " " & "~" & arrDueDates(iLM) & "~" & arrTax(iLM))
 
@@ -663,7 +701,7 @@ Module Module1
                                                 'send error email
                                                 strXMLError = "Error - no data sent. File name: " & aFiles(I).Name
                                             End If
-                                            
+
                                         End If '  If nodeOrdRequest.ChildNodes.Count > 0 Then - node "ORDERREQUEST"
                                     Case Else
                                         'do nothing
