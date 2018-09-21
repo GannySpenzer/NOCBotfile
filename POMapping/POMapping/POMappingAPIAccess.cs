@@ -16,9 +16,9 @@ namespace POMapping
         /// POST Purchase order data to the PMC service
         /// </summary>
         /// <returns></returns>
-        //Logger m_oLogger;
-        //public string postPOMappingData(Logger m_oLogger)
-            public string postPOMappingData()
+        Logger m_oLogger;
+        // public string postPOMappingData()
+        public string postPOMappingData(Logger m_oLogger)
         {
             var strResponse = " ";
             DataTable dtResponse = new DataTable();
@@ -73,13 +73,13 @@ namespace POMapping
 		}]
 	}
 }";
-    
+
                 POMappingDAL objPOMappingDAL = new POMappingDAL();
                 postPoOrderReq objpostPoOrderReq = new postPoOrderReq();
                 List<PostPoOrders> objPostPoOrders = new List<PostPoOrders>();
-                //m_oLogger.LogMessage("getPOMappingData", "Getting PO Mapping Data starts here");
+                m_oLogger.LogMessage("getPOMappingData", "Getting PO Mapping Data starts here");
                 //dtResponse = objPOMappingDAL.getPOMappingData(m_oLogger);
-                dtResponse = objPOMappingDAL.getPOMappingData();
+                dtResponse = objPOMappingDAL.getPOMappingData(m_oLogger);
                 if (dtResponse.Rows.Count != 0)
                 {
                     List<PostPoOrdersProperties> target = dtResponse.AsEnumerable()
@@ -97,11 +97,11 @@ namespace POMapping
                             VENDOR_SITE_ID = ((Decimal)(row["ISA_VNDR_SITE_NUM"])).ToString(),
                             HEADER_SHIP_TO_LOCATION_ID = ((Decimal)(row["ISA_SHIP_LOCNUM"])).ToString(),
                             HEADER_BILL_TO_LOCATION_ID = ((Decimal)(row["ISA_BILL_LOCNUM"])).ToString(),
-                            APPROVAL_STATUS = (String)(row["BUYER_NAME"]),
+                            APPROVAL_STATUS = (String)(row["ISA_APPROVAL_STAT"]),
                             FREIGHT_CARRIER = "",
                             FOB = "",
                             REFERENCE_NUM = (String)(row["PO_ID"]),
-                            LINE_NUM = ((Decimal)(row["ISA_VNDR_SITE_NUM"])).ToString(),
+                            LINE_NUM = ((Decimal)(row["LINE_NBR"])).ToString(),
                             SHIPMENT_NUM = "1",
                             LINE_TYPE_ID = "",
                             // ISA_ITEM = (String)(row["ISA_ITEM"]),
@@ -137,7 +137,7 @@ namespace POMapping
                             ATTRIBUTE9 = (string)(row["ISA_ATTRIBUTE_9"]),
                             //TRANS_STATUS_DESCRIPTION = (string)(row["ISA_COMMENTS_1333"]),
                             //TRANS_STATUS_DESCRIPTION = null,
-                            TRANS_STATUS_DESCRIPTION = row["ISA_COMMENTS_1333"] == DBNull.Value  ? null : (string)(row["ISA_COMMENTS_1333"]),
+                            TRANS_STATUS_DESCRIPTION = row["ISA_COMMENTS_1333"] == DBNull.Value ? null : (string)(row["ISA_COMMENTS_1333"]),
                             TRANSACTION_STATUS = (string)(row["STATUS_MSG"]),
                             BOM_RESOURCE_ID = ((Decimal)(row["ISA_BOM_RESOURCE"])).ToString(),
                             TERMS_ID = "",
@@ -147,45 +147,45 @@ namespace POMapping
                         }).ToList();
 
 
-                    
+
                     string jsontest = JsonConvert.SerializeObject(new
                      {
                          _postpurchaseorder = target
                      });
-                   
+
 
 
                     StringBuilder sb = new StringBuilder();
-                   
+
                     sb.Append("{'_postpurchaseorder_batch_req':");
                     sb.Append(jsontest);
                     sb.Append("}");
-                  
+
                     JObject resultSet = JObject.Parse(sb.ToString());
                     //JObject rss = JObject.Parse(json);
                     using (var client = new WebClient())
                     {
-                        //m_oLogger.LogMessage("postPOMappingData", "POST PO Mapping Data to PMC starts here");
+                        m_oLogger.LogMessage("postPOMappingData", "POST PO Mapping Data to PMC starts here");
                         client.Headers.Add("Authorization: Basic YWRtaW46YWRtaW4=");
                         client.Headers.Add("Content-Type:application/json");
                         client.Headers.Add("Accept:application/json");
                         System.Net.ServicePointManager.CertificatePolicy = new AlwaysIgnoreCertPolicy();
                         System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
-                        //m_oLogger.LogMessage("postPOMappingData", "POST POMapping Data" + resultSet.ToString());
-                        //m_oLogger.LogMessage("postPOMappingData", "POST POMapping Data URL : https://10.118.13.27:8243/SDIOutboundPurchaseOrderAPI/v1_0");
-                       
+                        m_oLogger.LogMessage("postPOMappingData", "POST POMapping Data" + resultSet.ToString());
+                        m_oLogger.LogMessage("postPOMappingData", "POST POMapping Data URL : https://10.118.13.27:8243/SDIOutboundPurchaseOrderAPI/v1_0");
+
                         var result = client.UploadString("https://10.118.13.27:8243/SDIOutboundPurchaseOrderAPI/v1_0", resultSet.ToString());
-                       // var result1 = client.UploadString("https://10.118.13.27:8243/SDIOutboundPurchaseOrderAPI/v1_0", rss.ToString());
+                        // var result1 = client.UploadString("https://10.118.13.27:8243/SDIOutboundPurchaseOrderAPI/v1_0", rss.ToString());
                         var parsed = JObject.Parse(result);
                         strResponse = parsed.SelectToken("REQUEST_STATUS").Value<string>();
-                       // m_oLogger.LogMessage("postPOMappingData", "POST POMapping data to PMC server status " + strResponse);
+                        m_oLogger.LogMessage("postPOMappingData", "POST POMapping data to PMC server status " + strResponse);
                     }
                 }
 
             }
             catch (Exception ex)
             {
-                //m_oLogger.LogMessage("postPOMappingData", "Error trying to POST data to PMS server.", ex);
+                m_oLogger.LogMessage("postPOMappingData", "Error trying to POST data to PMS server.", ex);
             }
             return strResponse;
         }
