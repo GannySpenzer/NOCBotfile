@@ -102,15 +102,6 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("webdev@sdi.com")>  _
-        Public ReadOnly Property onErrorEmail_BCC() As String
-            Get
-                Return CType(Me("onErrorEmail_BCC"),String)
-            End Get
-        End Property
-        
-        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
-         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.DefaultSettingValueAttribute("vitaly.rovensky@sdi.com")>  _
         Public ReadOnly Property onErrorEmail_To() As String
             Get
@@ -120,10 +111,38 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("C:\SendFileAsAttachm\XmlInSource")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("vitaly.rovensky@sdi.com")>  _
+        Public ReadOnly Property onWrongEmail_To() As String
+            Get
+                Return CType(Me("onWrongEmail_To"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("C:\SendFileAsAttachm\XLSXINSource")>  _
         Public ReadOnly Property inputDirectory() As String
             Get
                 Return CType(Me("inputDirectory"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("vitaly.rovensky@sdi.com")>  _
+        Public ReadOnly Property onErrorEmail_BCC() As String
+            Get
+                Return CType(Me("onErrorEmail_BCC"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=S"& _ 
+            "TAR")>  _
+        Public ReadOnly Property oraCNString1() As String
+            Get
+                Return CType(Me("oraCNString1"),String)
             End Get
         End Property
     End Class
