@@ -23,36 +23,7 @@ namespace POReceiptsMapping
             DataTable dtResponse = new DataTable();
             try
             {
-                  string jsonSampleData = @"{	
-	'_postporeceipt_batch_req': {
-		'_postporeceipt': [{
-			'XXPMC_SDI_RECORD_ID': '100',
-			'PROCESSING_STATUS_CODE': '',
-			'RECEIPT_SOURCE_CODE': '',
-			'TRANSACTION_TYPE': '',
-			'VENDOR_ID': '',
-			'EXPECTED_RECEIPT_DATE': '',
-			'VALIDATION_FLAG': 'T',
-			'TRANSACTION_DATE': '',
-			'PROCESSING_MODE_CODE': '',
-			'TRANSACTION_STATUS_CODE': '',
-			'PO_HEADER_ID': '',
-			'PO_LINE_ID': '',
-			'ITEM_ID': '',
-			'QUANTITY': '',
-			'UNIT_OF_MEASURE': '',
-			'PO_LINE_LOCATION_ID': '',
-			'AUTO_TRANSACT_CODE': '',
-			'TO_ORGANIZATION_CODE': '',
-			'SOURCE_DOCUMENT_CODE': '',
-			'DOCUMENT_NUM': '',
-			'DESTINATION_TYPE_CODE': '',
-			'DELIVER_TO_PERSON_ID': '',
-			'DELIVER_TO_LOCATION_ID': '',
-			'SUBINVENTORY': ''
-		}]
-	}
-}";
+                 
                 POReceiptsMappingDAL objPOReceiptsMappingDAL = new POReceiptsMappingDAL();
                 m_oLogger.LogMessage("getPOReceiptMappingData", "Getting PO Receipt Mapping Data starts here");
                 dtResponse = objPOReceiptsMappingDAL.getPOReceiptMappingData(m_oLogger);
@@ -61,33 +32,49 @@ namespace POReceiptsMapping
                     List<POReceiptsMappingBO> target = dtResponse.AsEnumerable()
                         .Select(row => new POReceiptsMappingBO
                         {
-                            XXPMC_SDI_RECORD_ID = "101",
-                            PROCESSING_STATUS_CODE = "",
-                            RECEIPT_SOURCE_CODE = (String)(row["RECEIPT_SOURCE"]),
-                            TRANSACTION_TYPE = (String)(row["TRANS_TYPE"]),
-                            VENDOR_ID = ((Decimal)(row["ISA_VENDOR_NUM"])).ToString(),
+                            XXPMC_SDI_RECORD_ID = ((Decimal)(row["ISA_IDENTIFIER"])).ToString(),
+                            PROCESSING_STATUS_CODE = ReplacePipe((String)(row["STATUS_DESCR"])),
+                            RECEIPT_SOURCE_CODE = ReplacePipe((String)(row["RECEIPT_SOURCE"])),
+                           // TRANSACTION_TYPE = ReplacePipe((String)(row["TRANS_TYPE"])),
+                            HEADER_TRANSACTION_TYPE = ReplacePipe((String)(row["HDR_TRANS_TYPE"])),
+                            VENDOR_ID = ReplacePipe((String)(row["ISA_VENDOR_NUM"])),
                             EXPECTED_RECEIPT_DATE = ((DateTime)(row["ISA_RECEIVING_DATE"])).ToString("yyyy/MM/dd"),
-                          //  EXPECTED_RECEIPT_DATE ="",
-                            VALIDATION_FLAG = "T",
-                           // TRANSACTION_DATE = "",
+                            VALIDATION_FLAG = ReplacePipe((String)(row["VALID_FLAG"])),
                             TRANSACTION_DATE = ((DateTime)(row["TRANSACTION_DATE"])).ToString("yyyy/MM/dd"),
-                            PROCESSING_MODE_CODE = "",
-                            TRANSACTION_STATUS_CODE = ((Decimal)(row["ISA_STATUS_NUM"])).ToString(),
-                            PO_HEADER_ID = (String)(row["ISA_CUST_PO_ID"]),
-                            PO_LINE_ID = ((Decimal)(row["ISA_CUST_PO_LINE"])).ToString(),
-                            ITEM_ID = ((Decimal)(row["ITEM_FIELD_N15_A"])).ToString(),
-                            UNIT_OF_MEASURE = (String)(row["ISA_CUSTOMER_UOM"]),
-                            PO_LINE_LOCATION_ID = "",
-                            AUTO_TRANSACT_CODE = (String)(row["ISA_AUTO_TRANS_CD"]) == " " ? "" : (String)(row["ISA_AUTO_TRANS_CD"]),
-                           // AUTO_TRANSACT_CODE = "",
-                            TO_ORGANIZATION_CODE = "",
-                            SOURCE_DOCUMENT_CODE = (String)(row["SOURCE_DOC"]),
-                            DOCUMENT_NUM = ((Decimal)(row["ISA_CUST_PO_LINE"])).ToString(),
-                            DESTINATION_TYPE_CODE = (String)(row["ISA_DEST_TYPE_CODE"]),
-                            DELIVER_TO_PERSON_ID = (String)(row["RECIPIENT"]) == "|" ? "" : (String)(row["RECIPIENT"]),
-                            DELIVER_TO_LOCATION_ID = (String)(row["ISA_UNLOADING_PT"]) == "|" ? "" : (String)(row["ISA_UNLOADING_PT"]),                      
-                            SUBINVENTORY = "",
-                            QUANTITY = ((Decimal)(row["QTY"])).ToString()                              
+                            PROCESSING_MODE_CODE = ReplacePipe((String)(row["PROC_DESCR"])),
+                            STATUS = ReplacePipe((String)(row["STATUS1"])),
+                            EBS_PO_NUMBER = ReplacePipe((String)(row["ISA_CUST_PO_ID"])),
+                            EBS_PO_LINE_NUMBER = ReplacePipe((String)(row["CUSTOMER_PO_LINE"])),
+                            LINE_TRANSACTION_TYPE = ReplacePipe((String)(row["TRANSACTION_NAME"])),
+                            ITEM = ReplacePipe((String)(row["ISA_ITEM"])),
+                            ITEM_ID = ReplacePipe((String)(row["CUSTOMER_ITEM_NBR"])),
+                            QUANTITY = ((Decimal)(row["QTY"])).ToString(),
+                            UNIT_OF_MEASURE = ReplacePipe((String)(row["ISA_CUSTOMER_UOM"])),
+                            EBS_PO_LINE_LOC_NBR = ReplacePipe((String)(row["PO_LINE_OPT"])),
+                            AUTO_TRANSACT_CODE = ReplacePipe((String)(row["ISA_AUTO_TRANS_CD"])),
+                            TO_ORGANIZATION_CODE = ReplacePipe((String)(row["PLANT"])),
+                            SOURCE_DOCUMENT_CODE = ReplacePipe((String)(row["SOURCE_DOC"])),
+                            DOCUMENT_NUM = ReplacePipe((String)(row["PO_ID"])),
+                            DESTINATION_TYPE_CODE = ReplacePipe((String)(row["ISA_DEST_TYPE_CODE"])),
+                            DELIVER_TO_PERSON_ID = ReplacePipe((String)(row["RECIPIENT"])),
+                            DELIVER_TO_LOCATION_CODE = ReplacePipe((String)(row["ISA_UNLOADING_PT"])),
+                            DELIVER_TO_LOCATION_ID = ReplacePipe((String)(row["DELIVERY_OPT"])),
+                            SUBINVENTORY = ReplacePipe((String)(row["SUB_ITEM_ID"])),
+                            WIP_ENTITY_ID = ReplacePipe((String)(row["ISA_WORK_ORDER"])),
+                            WIP_ENTITY_NAME = ReplacePipe((String)(row["ORDER_NO"])),
+                            WIP_OPERATION_SEQ_NUM = ReplacePipe((String)(row["ACTIVITY_ID"])),
+                            ATTRIBUTE1 = ReplacePipe((String)(row["ISA_ATTRIBUTE_1"])),
+                            ATTRIBUTE2 = ReplacePipe((String)(row["ISA_ATTRIBUTE_2"])),
+                            ATTRIBUTE3 = ReplacePipe((String)(row["ISA_ATTRIBUTE_3"])),
+                            ATTRIBUTE4 = ReplacePipe((String)(row["ISA_ATTRIBUTE_4"])),
+                            ATTRIBUTE5 = ReplacePipe((String)(row["ISA_ATTRIBUTE_5"])),
+                            ATTRIBUTE6 = ReplacePipe((String)(row["ISA_ATTRIBUTE_6"])),
+                            ATTRIBUTE7 = ReplacePipe((String)(row["ISA_ATTRIBUTE_7"])),
+                            ATTRIBUTE8 = ReplacePipe((String)(row["ISA_ATTRIBUTE_8"])),
+                            ATTRIBUTE9 = ReplacePipe((String)(row["ISA_ATTRIBUTE_9"])),
+                            ATTRIBUTE10 = ReplacePipe((String)(row["ISA_ATTRIBUTE_10"])),
+                            TRANS_STATUS_DESCRIPTION = row["ISA_COMMENTS_1333"] == DBNull.Value ? null : ReplacePipe((String)(row["ISA_COMMENTS_1333"])),
+                            TRANSACTION_STATUS = ReplacePipe((String)(row["STATUS_MSG"])),                           
                         }).ToList();
 
 
@@ -136,5 +123,13 @@ namespace POReceiptsMapping
             }
             return strResponse;
         }
+     
+
+        public string ReplacePipe(string x)
+        {
+            x = x.Trim();
+            return x == "|" ? "" : x;
+        }
+
     }
 }
