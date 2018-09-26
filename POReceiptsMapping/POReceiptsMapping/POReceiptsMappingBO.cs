@@ -35,7 +35,7 @@ namespace POReceiptsMapping
 
 
         public string HEADER_TRANSACTION_TYPE { get; set; }
-        public string STATUS { get; set; }
+        //public string STATUS { get; set; }
         public string EBS_PO_NUMBER { get; set; }
         public string EBS_PO_LINE_NUMBER { get; set; }
         public string LINE_TRANSACTION_TYPE { get; set; }
@@ -57,6 +57,7 @@ namespace POReceiptsMapping
         public string ATTRIBUTE10 { get; set; }
         public string TRANS_STATUS_DESCRIPTION { get; set; }
         public string TRANSACTION_STATUS { get; set; }
+        public string TRANSACTION_STATUS_CODE { get; set; }
 
        // public string CREATION_DATE { get; set; }
 

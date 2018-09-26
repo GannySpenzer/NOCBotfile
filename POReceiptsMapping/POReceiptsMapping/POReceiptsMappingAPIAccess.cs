@@ -38,11 +38,11 @@ namespace POReceiptsMapping
                            // TRANSACTION_TYPE = ReplacePipe((String)(row["TRANS_TYPE"])),
                             HEADER_TRANSACTION_TYPE = ReplacePipe((String)(row["HDR_TRANS_TYPE"])),
                             VENDOR_ID = ReplacePipe((String)(row["ISA_VENDOR_NUM"])),
-                            EXPECTED_RECEIPT_DATE = ((DateTime)(row["ISA_RECEIVING_DATE"])).ToString("yyyy/MM/dd"),
+                            EXPECTED_RECEIPT_DATE = ((DateTime)(row["ISA_RECEIVING_DATE"])).ToString("yyyy/MM/dd HH:mm:ss"),
                             VALIDATION_FLAG = ReplacePipe((String)(row["VALID_FLAG"])),
-                            TRANSACTION_DATE = ((DateTime)(row["TRANSACTION_DATE"])).ToString("yyyy/MM/dd"),
+                            TRANSACTION_DATE = ((DateTime)(row["TRANSACTION_DATE"])).ToString("yyyy/MM/dd HH:mm:ss"),
                             PROCESSING_MODE_CODE = ReplacePipe((String)(row["PROC_DESCR"])),
-                            STATUS = ReplacePipe((String)(row["STATUS1"])),
+                            //STATUS = ReplacePipe((String)(row["STATUS1"])),
                             EBS_PO_NUMBER = ReplacePipe((String)(row["ISA_CUST_PO_ID"])),
                             EBS_PO_LINE_NUMBER = ReplacePipe((String)(row["CUSTOMER_PO_LINE"])),
                             LINE_TRANSACTION_TYPE = ReplacePipe((String)(row["TRANSACTION_NAME"])),
@@ -74,7 +74,8 @@ namespace POReceiptsMapping
                             ATTRIBUTE9 = ReplacePipe((String)(row["ISA_ATTRIBUTE_9"])),
                             ATTRIBUTE10 = ReplacePipe((String)(row["ISA_ATTRIBUTE_10"])),
                             TRANS_STATUS_DESCRIPTION = row["ISA_COMMENTS_1333"] == DBNull.Value ? null : ReplacePipe((String)(row["ISA_COMMENTS_1333"])),
-                            TRANSACTION_STATUS = ReplacePipe((String)(row["STATUS_MSG"])),                           
+                            TRANSACTION_STATUS  = ReplacePipe((String)(row["STATUS_MSG"])),
+                            TRANSACTION_STATUS_CODE = "PENDING"
                         }).ToList();
 
 
