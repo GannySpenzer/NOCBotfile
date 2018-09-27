@@ -125,7 +125,7 @@ namespace POMapping
                             WIP_OPERATION_SEQ_NUM = ReplacePipe((String)(row["ACTIVITY_ID"])),
                             // WIP_RESOURCE_SEQ_NUM = ((Decimal)(row["ISA_ACTIVITY_NBR"])).ToString(),
                             // WIP_RESOURCE_SEQ_NUM = "",
-                            WIP_RESOURCE_SEQ_NUM = ((String)(row["ISA_ACTIVITY_SEQ"])),
+                            WIP_RESOURCE_SEQ_NUM = ReplacePipe((String)(row["ISA_ACTIVITY_SEQ"])),
                             ATTRIBUTE1 = ReplacePipe((String)(row["ISA_ATTRIBUTE_1"])),
                             ATTRIBUTE10 = ReplacePipe((String)(row["ISA_ATTRIBUTE_10"])),
                             ATTRIBUTE2 = ReplacePipe((String)(row["ISA_ATTRIBUTE_2"])),
