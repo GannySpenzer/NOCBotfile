@@ -50,6 +50,8 @@ Module Module1
         End Try
         If (sLogPath.Length > 0) Then
             logpath = sLogPath & "\DeleteFiles" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+
+            sErrLogPath = sLogPath & "\MyErredSQLs" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
         End If
 
         ' initialize logs
@@ -95,7 +97,7 @@ Module Module1
 
         m_logger.WriteInformationLog(rtn & " :: Start deleting processed files")
 
-        Dim dirInfo As DirectoryInfo = New DirectoryInfo("C:\SendFileAsAttachm\XLSXIN\")
+        Dim dirInfo As DirectoryInfo = New DirectoryInfo(rootDir & "\XLSXIN\")
         Dim strFiles As String = ""
         Dim strXMLError As String = ""
         Dim bLineError As Boolean = False
@@ -111,7 +113,7 @@ Module Module1
 
                         File.Delete(aFiles1(i1).FullName)
 
-                        m_logger.WriteInformationLog(rtn & " :: Start deleting processed files")
+                        m_logger.WriteInformationLog(rtn & " :: Deleted file: " & aFiles1(i1).FullName)
 
                     Catch exFileDel As Exception
                         strXMLError = "Error deleting file: " & aFiles1(i1).Name
@@ -198,6 +200,12 @@ Module Module1
         Dim strEmailBody As String = ""
         Dim strEmailSubject As String = ""
 
+        Dim strTestOrProd As String = ""
+        Try
+            strTestOrProd = My.Settings("TestOrProd").ToString.Trim
+        Catch ex As Exception
+        End Try
+
         'The email address of the sender
         strEmailFrom = "TechSupport@sdi.com"
         If (CStr(My.Settings(propertyName:="onErrorEmail_From")) <> "") Then
@@ -232,7 +240,12 @@ Module Module1
         strEmailBody &= "<table><tr><td>Delete files from Directory has completed with "
 
         strEmailBody &= "errors."
-        strEmailSubject = " (test run) Delete files from Directory Error"
+
+        If strTestOrProd = "T" Then
+            strEmailSubject = " (test run) 'Delete files from Directory' Error"
+        Else
+            strEmailSubject = "  'Delete files from Directory' Error"
+        End If
 
         'VR 12/18/2014 Adding file names and error descriptions in message body
         Dim sInfoErr As String = ""
@@ -288,14 +301,6 @@ Module Module1
 
         strEmailBody &= "</body></html>"
 
-        'If connectOR.DataSource.ToUpper.IndexOf("RPTG") > -1 Or _
-        '   connectOR.DataSource.ToUpper.IndexOf("DEVL") > -1 Or _
-        '   connectOR.DataSource.ToUpper.IndexOf("STAR") > -1 Or _
-        '   connectOR.DataSource.ToUpper.IndexOf("PLGR") > -1 Then
-        '    strEmailTo = "vitaly.rovensky@sdi.com"
-        '    strEmailSubject = " (test run) " & strEmailSubject
-        'End If
-
         Dim MailAttachmentName As String()
         Dim MailAttachmentbytes As New List(Of Byte())()
 
@@ -303,7 +308,7 @@ Module Module1
         Dim strReturn As String = ""
         Try
 
-            strReturn = SendLogger(strEmailSubject, strEmailBody, "SENDFILEASATTACHM", "Mail", strEmailTo, strEmailCC, strEmailBcc, MailAttachmentName, MailAttachmentbytes.ToArray())
+            strReturn = SendLogger(strEmailSubject, strEmailBody, "DELETEFILESFROMDIR", "Mail", strEmailTo, strEmailCC, strEmailBcc, MailAttachmentName, MailAttachmentbytes.ToArray())
             bSend = True
             m_arrXMLErrFiles = ""
             m_arrErrorsList = ""

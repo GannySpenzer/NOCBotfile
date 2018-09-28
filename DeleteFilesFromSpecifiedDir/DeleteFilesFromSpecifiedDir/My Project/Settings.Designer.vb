@@ -72,6 +72,78 @@ Namespace My
                 Return CType(Me("DeleteFilesFromSpecifiedDir_SDiEmailUtilityService_EmailServices"),String)
             End Get
         End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("T")>  _
+        Public ReadOnly Property TestOrProd() As String
+            Get
+                Return CType(Me("TestOrProd"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("C:\SendFileAsAttachm\LOGS")>  _
+        Public ReadOnly Property logPath() As String
+            Get
+                Return CType(Me("logPath"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("TechSupport@sdi.com")>  _
+        Public ReadOnly Property onErrorEmail_From() As String
+            Get
+                Return CType(Me("onErrorEmail_From"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("")>  _
+        Public ReadOnly Property onErrorEmail_CC() As String
+            Get
+                Return CType(Me("onErrorEmail_CC"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("vitaly.rovensky@sdi.com")>  _
+        Public ReadOnly Property onErrorEmail_To() As String
+            Get
+                Return CType(Me("onErrorEmail_To"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("vitaly.rovensky@sdi.com")>  _
+        Public ReadOnly Property onWrongEmail_To() As String
+            Get
+                Return CType(Me("onWrongEmail_To"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("C:\SendFileAsAttachm\XLSXINSource")>  _
+        Public ReadOnly Property inputDirectory() As String
+            Get
+                Return CType(Me("inputDirectory"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("vitaly.rovensky@sdi.com")>  _
+        Public ReadOnly Property onErrorEmail_BCC() As String
+            Get
+                Return CType(Me("onErrorEmail_BCC"),String)
+            End Get
+        End Property
     End Class
 End Namespace
 
