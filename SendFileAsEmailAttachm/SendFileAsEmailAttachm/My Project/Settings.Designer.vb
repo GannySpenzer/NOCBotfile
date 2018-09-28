@@ -103,15 +103,6 @@ Namespace My
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.DefaultSettingValueAttribute("vitaly.rovensky@sdi.com")>  _
-        Public ReadOnly Property onErrorEmail_To() As String
-            Get
-                Return CType(Me("onErrorEmail_To"),String)
-            End Get
-        End Property
-        
-        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
-         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("vitaly.rovensky@sdi.com")>  _
         Public ReadOnly Property onWrongEmail_To() As String
             Get
                 Return CType(Me("onWrongEmail_To"),String)
@@ -143,6 +134,24 @@ Namespace My
         Public ReadOnly Property oraCNString1() As String
             Get
                 Return CType(Me("oraCNString1"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("C:\SendFileAsAttachm\XLSXIN\")>  _
+        Public ReadOnly Property DirectoryIn() As String
+            Get
+                Return CType(Me("DirectoryIn"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("vitaly.rovensky@sdi.com")>  _
+        Public ReadOnly Property onErrorEmail_To() As String
+            Get
+                Return CType(Me("onErrorEmail_To"),String)
             End Get
         End Property
     End Class

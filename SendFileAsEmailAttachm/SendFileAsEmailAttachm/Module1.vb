@@ -1,5 +1,7 @@
 ﻿Imports System
 Imports System.Data
+Imports System.Windows
+Imports System.Threading.Tasks
 Imports System.IO
 Imports System.Data.OleDb
 Imports System.Web
@@ -65,6 +67,8 @@ Module Module1
         End Try
         If (sLogPath.Length > 0) Then
             logpath = sLogPath & "\SendFileAsAttachm" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+
+            sErrLogPath = sLogPath & "\MyErredSQLs" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
         End If
 
         ' initialize logs
@@ -116,11 +120,11 @@ Module Module1
         '// This is the moving of files to the XLSXIN folder ...
         '// ***
 
-        Dim sInputDir As String = "C:\SendFileAsAttachm\XLSXINSource"
+        Dim sInputDir As String = rootDir & "\XLSXINSource"
         Try
             sInputDir = My.Settings("inputDirectory").ToString.Trim
         Catch ex As Exception
-            sInputDir = "C:\SendFileAsAttachm\XLSXINSource"
+            sInputDir = rootDir & "\XLSXINSource"
         End Try
         Dim dirInfo As DirectoryInfo = New DirectoryInfo(sInputDir)
 
@@ -131,14 +135,20 @@ Module Module1
         strFiles = "*.XLSX"
         Dim aSrcFiles As FileInfo() = dirInfo.GetFiles(strFiles)
         Dim I As Integer
+        Dim strDirIn As String = "C:\SendFileAsAttachm\XLSXIN\"
+        Try
+            strDirIn = My.Settings("DirectoryIn").ToString.Trim
+        Catch ex As Exception
+            strDirIn = "C:\SendFileAsAttachm\XLSXIN\"
+        End Try
 
         Try
             If aSrcFiles.Length > 0 Then
                 For I = 0 To aSrcFiles.Length - 1
                     If aSrcFiles(I).Name.Length > 10 Then
-                        File.Copy(aSrcFiles(I).FullName, "C:\SendFileAsAttachm\XLSXIN\" & aSrcFiles(I).Name, True)
-                        File.Delete(aSrcFiles(I).FullName)
-                        m_logger.WriteInformationLog(rtn & " :: " & aSrcFiles(I).FullName & " moved to " & "C:\SendFileAsAttachm\XLSXIN\" & aSrcFiles(I).Name)
+                        File.Copy(aSrcFiles(I).FullName, strDirIn & aSrcFiles(I).Name, True)
+                        'File.Delete(aSrcFiles(I).FullName)
+                        m_logger.WriteInformationLog(rtn & " :: " & aSrcFiles(I).FullName & " moved to " & strDirIn & aSrcFiles(I).Name)
 
                     End If
                 Next
@@ -146,7 +156,7 @@ Module Module1
                 m_logger.WriteInformationLog(rtn & " :: No files to copy from " & dirInfo.FullName)
             End If
         Catch ex As Exception
-            myLoggr1.WriteErrorLog(rtn & " :: Error moving file(s) from " & dirInfo.FullName & " to C:\SendFileAsAttachm\XLSXIN\ " & "...")
+            myLoggr1.WriteErrorLog(rtn & " :: Error moving file(s) from " & dirInfo.FullName & " to " & strDirIn & " ...")
             myLoggr1.WriteErrorLog(rtn & " :: " & ex.ToString)
             bError = True
             Dim strXMLError As String = ex.Message
@@ -177,20 +187,33 @@ Module Module1
             SendErrorEmail(True)
         End If
 
-        Dim bolError As Boolean = False
-
         Try
-            bolError = PrepareAndSendEmails()
+            bError = False
+            bError = PrepareAndSendEmails()
         Catch ex As Exception
             myLoggr1.WriteErrorLog(rtn & " :: " & ex.ToString)
-            bolError = True
+            bError = True
         End Try
 
-        If bolError = True Or bolWarning = True Then
+        If bError Then
             SendErrorEmail(True)
         End If
        
     End Sub
+
+    Private Async Function CopyFileAsync(ByVal strStartFile As String, ByVal strEndFile As String) As Task(Of Boolean)
+
+        Dim SourceStream As New FileStream(strStartFile, FileMode.Open, FileAccess.Read)
+        Dim DestinationStream As New FileStream(strEndFile, FileMode.Create, FileAccess.Write)
+
+        Using (SourceStream)
+            Using (DestinationStream)
+                Await SourceStream.CopyToAsync(DestinationStream)
+
+            End Using
+        End Using
+
+    End Function
 
     Private Function PrepareAndSendEmails() As Boolean
 
@@ -199,20 +222,22 @@ Module Module1
 
         m_logger.WriteInformationLog(rtn & " :: Start analyzing input files")
 
-        Dim dirInfo As DirectoryInfo = New DirectoryInfo("C:\SendFileAsAttachm\XLSXIN\")
+        Dim strDirIn As String = "C:\SendFileAsAttachm\XLSXIN\"
+        Try
+            strDirIn = My.Settings("DirectoryIn").ToString.Trim
+        Catch ex As Exception
+            strDirIn = "C:\SendFileAsAttachm\XLSXIN\"
+        End Try
+
+        Dim dirInfo As DirectoryInfo = New DirectoryInfo(strDirIn)
         Dim strFiles As String = ""
-        'Dim sr As System.IO.StreamReader
-        'Dim XMLContent As String = ""
         Dim strXMLError As String = ""
         Dim bLineError As Boolean = False
-
-        Dim xmlRequest As New XmlDocument
 
         Dim I As Integer
 
         strFiles = "*.XLSX"
         Dim aFiles As FileInfo() = dirInfo.GetFiles(strFiles)
-        'Dim root As XmlElement
 
         Dim sInputFilename As String = ""
         Dim strSupplierID As String = ""
@@ -227,6 +252,7 @@ Module Module1
 
             If aFiles.Length > 0 Then
                 For I = 0 To aFiles.Length - 1
+
                     sInputFilename = aFiles(I).Name
                     bLineError = False
                     strXMLError = ""
@@ -269,11 +295,15 @@ Module Module1
                                         'send email 
                                         bSuccess = SendEmailWithAttachm(strEmail, strSupplierID, aFiles(I).FullName, aFiles(I).Name, strErrorMsg)
 
-                                        'copy file to Archive directory
                                         If bSuccess Then
-                                            'copy to Archive directory
                                             File.Copy(aFiles(I).FullName, "\\christina2012\dfs\Public\NYC_Custodial\OTD\Archive\" & aFiles(I).Name, True)
-                                           
+
+                                            ''copy to Archive directory
+                                            'Dim bolError1 As Task(Of Boolean)
+                                            'Dim strStartFile As String = aFiles(I).FullName
+                                            'Dim strEndFile As String = "\\christina2012\dfs\Public\NYC_Custodial\OTD\Archive\" & aFiles(I).Name
+                                            'bolError1 = CopyFileAsync(strStartFile, strEndFile)
+
                                             m_logger.WriteInformationLog(rtn & " :: File emailed successfully:  " & sInputFilename)
                                         Else
                                             'copy to Bad Directory
@@ -303,9 +333,9 @@ Module Module1
                                                 End If
                                             End If
                                             'move file to BadXML folder
-                                            File.Copy(aFiles(I).FullName, "C:\SendFileAsAttachm\BadXLSX\" & aFiles(I).Name, True)
+                                            File.Copy(aFiles(I).FullName, rootDir & "\BadXLSX\" & aFiles(I).Name, True)
                                             'File.Delete(aFiles(I).FullName)
-                                            m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & "C:\SendFileAsAttachm\BadXLSX\" & aFiles(I).Name)
+                                            m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & rootDir & "\BadXLSX\" & aFiles(I).Name)
 
                                             bolError = True
                                         End If
@@ -336,9 +366,9 @@ Module Module1
                                             End If
                                         End If
                                         'move file to BadXML folder
-                                        File.Copy(aFiles(I).FullName, "C:\SendFileAsAttachm\BadXLSX\" & aFiles(I).Name, True)
+                                        File.Copy(aFiles(I).FullName, rootDir & "\BadXLSX\" & aFiles(I).Name, True)
                                         'File.Delete(aFiles(I).FullName)
-                                        m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & "C:\SendFileAsAttachm\BadXLSX\" & aFiles(I).Name)
+                                        m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & rootDir & "\BadXLSX\" & aFiles(I).Name)
 
                                         bolError = True
                                     End If
@@ -346,33 +376,29 @@ Module Module1
                                     'no Suppl ID info
                                     strXMLError = "No info in SDIX_EMAIL_SRC for this Supplier ID: " & strSupplierID
                                     m_logger.WriteInformationLog(rtn & " :: " & strXMLError)
-                                    If Trim(m_arrXMLErrFiles) = "" Then
-                                        m_arrXMLErrFiles = aFiles(I).Name
-                                    Else
-                                        m_arrXMLErrFiles &= "," & aFiles(I).Name
-                                    End If
-                                    If Trim(strXMLError) <> "" Then
-                                        If Len(strXMLError) > 250 Then
-                                            strXMLError = Microsoft.VisualBasic.Left(strXMLError, 250)
-                                        End If
-                                        If Trim(m_arrErrorsList) = "" Then
-                                            m_arrErrorsList = strXMLError
-                                        Else
-                                            m_arrErrorsList &= "," & strXMLError
-                                        End If
-                                    Else
-                                        If Trim(m_arrErrorsList) = "" Then
-                                            m_arrErrorsList = "Check Log for the Error Description"
-                                        Else
-                                            m_arrErrorsList &= "," & "Check Log for the Error Description"
-                                        End If
-                                    End If
-                                    'move file to BadXML folder
-                                    File.Copy(aFiles(I).FullName, "C:\SendFileAsAttachm\BadXLSX\" & aFiles(I).Name, True)
-                                    'File.Delete(aFiles(I).FullName)
-                                    m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & "C:\SendFileAsAttachm\BadXLSX\" & aFiles(I).Name)
-
-                                    bolError = True
+                                    'If Trim(m_arrXMLErrFiles) = "" Then
+                                    '    m_arrXMLErrFiles = aFiles(I).Name
+                                    'Else
+                                    '    m_arrXMLErrFiles &= "," & aFiles(I).Name
+                                    'End If
+                                    'If Trim(strXMLError) <> "" Then
+                                    '    If Len(strXMLError) > 250 Then
+                                    '        strXMLError = Microsoft.VisualBasic.Left(strXMLError, 250)
+                                    '    End If
+                                    '    If Trim(m_arrErrorsList) = "" Then
+                                    '        m_arrErrorsList = strXMLError
+                                    '    Else
+                                    '        m_arrErrorsList &= "," & strXMLError
+                                    '    End If
+                                    'Else
+                                    '    If Trim(m_arrErrorsList) = "" Then
+                                    '        m_arrErrorsList = "Check Log for the Error Description"
+                                    '    Else
+                                    '        m_arrErrorsList &= "," & "Check Log for the Error Description"
+                                    '    End If
+                                    'End If
+                                   
+                                    'bolError = True
                                 End If
                                 connectOR.Close()
                             Catch exDS As Exception
@@ -404,9 +430,9 @@ Module Module1
                                     End If
                                 End If
                                 'move file to BadXML folder
-                                File.Copy(aFiles(I).FullName, "C:\SendFileAsAttachm\BadXLSX\" & aFiles(I).Name, True)
-                                'File.Delete(aFiles(I).FullName)
-                                m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & "C:\SendFileAsAttachm\BadXLSX\" & aFiles(I).Name)
+                                File.Copy(aFiles(I).FullName, rootDir & "\BadXLSX\" & aFiles(I).Name, True)
+
+                                m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & rootDir & "\BadXLSX\" & aFiles(I).Name)
 
                                 bolError = True
                             End Try
@@ -414,11 +440,11 @@ Module Module1
                     Else
                         'copy file to BadXLSX directory
                         m_logger.WriteInformationLog(rtn & " :: Short File Name " & sInputFilename)
-                        File.Copy(aFiles(I).FullName, "C:\SendFileAsAttachm\BadXLSX\" & aFiles(I).Name, True)
-                        'File.Delete(aFiles(I).FullName)
-                        m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & "C:\SendFileAsAttachm\BadXLSX\" & aFiles(I).Name)
+                        'File.Copy(aFiles(I).FullName, "C:\SendFileAsAttachm\BadXLSX\" & aFiles(I).Name, True)
+                        ''File.Delete(aFiles(I).FullName)
+                        'm_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & "C:\SendFileAsAttachm\BadXLSX\" & aFiles(I).Name)
 
-                        bolError = True
+                        'bolError = True
                     End If
                 Next  '  For I = 0 To aFiles.Length - 1
 
@@ -448,46 +474,85 @@ Module Module1
                 End If
             End If
             'move file to BadXML folder
-            File.Copy(aFiles(I).FullName, "C:\SendFileAsAttachm\BadXLSX\" & aFiles(I).Name, True)
+            File.Copy(aFiles(I).FullName, rootDir & "\BadXLSX\" & aFiles(I).Name, True)
             'File.Delete(aFiles(I).FullName)
-            m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & "C:\SendFileAsAttachm\BadXLSX\" & aFiles(I).Name)
+            m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & rootDir & "\BadXLSX\" & aFiles(I).Name)
 
             bolError = True
         End Try
 
         aFiles = Nothing
 
-        Try
+        'Dim aFiles1 As FileInfo() = dirInfo.GetFiles(strFiles)
+        'Dim i1 As Integer = 0
+        'Try
 
-            Dim aFiles1 As FileInfo() = dirInfo.GetFiles(strFiles)
-            If aFiles1.Length > 0 Then
-                Dim i1 As Integer = 0
-                For i1 = 0 To aFiles1.Length - 1
-                    Try
-                        ' ???? how to make it available to Delete?
-                        ' it is used by another process - File.Copy
+        '    If aFiles1.Length > 0 Then
+        '        For i1 = 0 To aFiles1.Length - 1
+        '            Try
 
-                        File.Delete(aFiles1(i1).FullName)
-                    Catch exFileDel As Exception
-                        'Dim bRes1 As Boolean = False
-                        'Do While bRes1 = False
-                        '    System.Threading.Thread.Sleep(1000)
-                        '    Try
-                        '        File.Delete(aFiles1(i1).FullName)
-                        '        bRes1 = True
-                        '    Catch ex As Exception
-                        '        bRes1 = False
-                        '    End Try
-                        'Loop  '  Do While bRes1
+        '                File.Delete(aFiles1(i1).FullName)
+        '            Catch exFileDel As Exception
+        '                strXMLError = "Error deleting file: " & aFiles1(i1).Name
+        '                If Trim(m_arrXMLErrFiles) = "" Then
+        '                    m_arrXMLErrFiles = aFiles1(i1).Name
+        '                Else
+        '                    m_arrXMLErrFiles &= "," & aFiles1(i1).Name
+        '                End If
+        '                If Trim(strXMLError) <> "" Then
+        '                    If Len(strXMLError) > 250 Then
+        '                        strXMLError = Microsoft.VisualBasic.Left(strXMLError, 250)
+        '                    End If
+        '                    If Trim(m_arrErrorsList) = "" Then
+        '                        m_arrErrorsList = strXMLError
+        '                    Else
+        '                        m_arrErrorsList &= "," & strXMLError
+        '                    End If
+        '                Else
+        '                    If Trim(m_arrErrorsList) = "" Then
+        '                        m_arrErrorsList = "Check Log for the Error Description"
+        '                    Else
+        '                        m_arrErrorsList &= "," & "Check Log for the Error Description"
+        '                    End If
+        '                End If
 
-                    End Try
+        '                bolError = True
 
-                Next
-            End If
+        '            End Try
 
-        Catch exDel As Exception
+        '        Next
+        '    End If
 
-        End Try
+        'Catch exDel As Exception
+        '    strXMLError = "Error deleting files: " & exDel.ToString
+        '    If Trim(m_arrXMLErrFiles) = "" Then
+        '        m_arrXMLErrFiles = aFiles1(i1).Name
+        '    Else
+        '        m_arrXMLErrFiles &= "," & aFiles1(i1).Name
+        '    End If
+        '    If Trim(strXMLError) <> "" Then
+        '        If Len(strXMLError) > 250 Then
+        '            strXMLError = Microsoft.VisualBasic.Left(strXMLError, 250)
+        '        End If
+        '        If Trim(m_arrErrorsList) = "" Then
+        '            m_arrErrorsList = strXMLError
+        '        Else
+        '            m_arrErrorsList &= "," & strXMLError
+        '        End If
+        '    Else
+        '        If Trim(m_arrErrorsList) = "" Then
+        '            m_arrErrorsList = "Check Log for the Error Description"
+        '        Else
+        '            m_arrErrorsList &= "," & "Check Log for the Error Description"
+        '        End If
+        '    End If
+
+        '    bolError = True
+        'End Try
+
+        ''If bolError Then
+        ''    SendErrorEmail(True)
+        ''End If
 
         Return bolError
 
@@ -514,20 +579,45 @@ Module Module1
 
         'The email address of the recipient. 
         strEmailTo = "vitaly.rovensky@sdi.com"
-        If IsValidEmail(strEmail) Then
-            strEmailTo = strEmail
-        Else
-            strEmailTo = "jan.hines@sdi.com"
-            If (CStr(My.Settings(propertyName:="onWrongEmail_To")) <> "") Then
-                strEmailTo = CStr(My.Settings(propertyName:="onWrongEmail_To")).Trim
-            End If
-            bIsValidEmail = False
-        End If
+        If strEmail.Contains(";") Then
+            'several emails
+            Dim arrEmails() As String = Split(strEmail, ";")
+            Dim i32 As Integer = 0
+            If arrEmails.Length > 0 Then
+                For i32 = 0 To arrEmails.Length - 1
+                    If Trim(arrEmails(i32)) <> "" Then
+                        If IsValidEmail(arrEmails(i32)) Then
+                        Else
+                            bIsValidEmail = False
+                        End If
+                    End If
 
+                Next
+            End If
+            If bIsValidEmail Then
+                strEmailTo = strEmail
+            Else
+                strEmailTo = "jan.hines@sdi.com"
+                If (CStr(My.Settings(propertyName:="onWrongEmail_To")) <> "") Then
+                    strEmailTo = CStr(My.Settings(propertyName:="onWrongEmail_To")).Trim
+                End If
+            End If
+        Else
+            If IsValidEmail(strEmail) Then
+                strEmailTo = strEmail
+            Else
+                strEmailTo = "jan.hines@sdi.com"
+                If (CStr(My.Settings(propertyName:="onWrongEmail_To")) <> "") Then
+                    strEmailTo = CStr(My.Settings(propertyName:="onWrongEmail_To")).Trim
+                End If
+                bIsValidEmail = False
+            End If
+        End If
+       
         If (CStr(My.Settings(propertyName:="onErrorEmail_CC")) <> "") Then
             strEmailCC = CStr(My.Settings(propertyName:="onErrorEmail_CC")).Trim
         Else
-            strEmailCC = ""   '  jan.hines@sdi.com - use for Production in app.config
+            strEmailCC = ""
         End If
 
         If (CStr(My.Settings(propertyName:="onErrorEmail_BCC")) <> "") Then
@@ -608,7 +698,10 @@ Module Module1
            connectOR.DataSource.ToUpper.IndexOf("DEVL") > -1 Or _
            connectOR.DataSource.ToUpper.IndexOf("STAR") > -1 Or _
            connectOR.DataSource.ToUpper.IndexOf("PLGR") > -1 Then
-            strEmailTo = "vitaly.rovensky@sdi.com"
+            strEmailTo = "webdev@sdi.com"
+            If (CStr(My.Settings(propertyName:="onErrorEmail_To")) <> "") Then
+                strEmailTo = CStr(My.Settings(propertyName:="onErrorEmail_To")).Trim
+            End If
             strEmailSubject = " (test run) " & strEmailSubject
         End If
 
@@ -707,7 +800,7 @@ Module Module1
         End If
 
         'The email address of the recipient. 
-        strEmailTo = "vitaly.rovensky@sdi.com"
+        strEmailTo = "webdev@sdi.com"
         If bIsSendOut Then
             If (CStr(My.Settings(propertyName:="onErrorEmail_To")) <> "") Then
                 strEmailTo = CStr(My.Settings(propertyName:="onErrorEmail_To")).Trim
@@ -794,7 +887,7 @@ Module Module1
            connectOR.DataSource.ToUpper.IndexOf("DEVL") > -1 Or _
            connectOR.DataSource.ToUpper.IndexOf("STAR") > -1 Or _
            connectOR.DataSource.ToUpper.IndexOf("PLGR") > -1 Then
-            strEmailTo = "vitaly.rovensky@sdi.com"
+            strEmailTo = "webdev@sdi.com"
             strEmailSubject = " (test run) " & strEmailSubject
         End If
 
