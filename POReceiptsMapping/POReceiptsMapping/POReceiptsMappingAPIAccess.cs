@@ -50,7 +50,7 @@ namespace POReceiptsMapping
                             ITEM_ID = ReplacePipe((String)(row["CUSTOMER_ITEM_NBR"])),
                             QUANTITY = ((Decimal)(row["QTY"])).ToString(),
                             UNIT_OF_MEASURE = ReplacePipe((String)(row["ISA_CUSTOMER_UOM"])),
-                            EBS_PO_LINE_LOC_NBR = ReplacePipe((String)(row["PO_LINE_OPT"])),
+                            EBS_PO_LINE_LOC_NBR = ReplacePipe((String)(row["ISA_LOCATOR_ID"])),
                             AUTO_TRANSACT_CODE = ReplacePipe((String)(row["ISA_AUTO_TRANS_CD"])),
                             TO_ORGANIZATION_CODE = ReplacePipe((String)(row["PLANT"])),
                             SOURCE_DOCUMENT_CODE = ReplacePipe((String)(row["SOURCE_DOC"])),
