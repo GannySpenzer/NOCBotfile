@@ -69,17 +69,17 @@ namespace POIssueMapping
 
                 strSQLstring = "UPDATE SYSADM8.PS_ISA_O_MATR_MOVE SET PROCESS_FLAG='I', DATE_PROCESSED = SYSDATE WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'PMC'";
 
-                m_oLogger.LogMessage("UpdatePOIssueMappingData", "PeopleSoft connection string : " + OracleConString);
-                m_oLogger.LogMessage("UpdatePOIssueMappingData", "Query To Update the PO issue mapping date : " + strSQLstring);
+                m_oLogger.LogMessage("UpdateMatIssueMappingData", "PeopleSoft connection string : " + OracleConString);
+                m_oLogger.LogMessage("UpdateMatIssueMappingData", "Query To Update the PO issue mapping date : " + strSQLstring);
 
                 rowsAffected = OleDBExecuteNonQuery(strSQLstring);
 
-                m_oLogger.LogMessage("UpdatePOIssueMappingData", "Number of rows updated : " + rowsAffected);
+                m_oLogger.LogMessage("UpdateMatIssueMappingData", "Number of rows updated : " + rowsAffected);
 
             }
             catch (Exception ex)
             {
-                m_oLogger.LogMessage("UpdatePOIssueMappingData", "Error trying to Update the PO issue Mapping data.", ex);
+                m_oLogger.LogMessage("UpdateMatIssueMappingData", "Error trying to Update the PO issue Mapping data.", ex);
             }
             return rowsAffected;
         }

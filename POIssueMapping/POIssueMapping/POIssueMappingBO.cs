@@ -39,7 +39,13 @@ namespace POIssueMapping
         public string ATTRIBUTE10 { get; set; }
         public string TRANS_STATUS_DESCRIPTION { get; set; }
         public string TRANSACTION_STATUS { get; set; }
-
+        public string SOURCE_HEADER_ID { get; set; }
+        public string SOURCE_LINE_ID { get; set; }
+        public string TRANSACTION_ACTION_ID { get; set; }
+        public string TRANSACTION_SOURCE_ID { get; set; }
+        public string TRANSACTION_SOURCE_TYPE_ID { get; set; }
+        public string REASON_ID { get; set; }
+        public string REASON_NAME { get; set; }
     }
 
    

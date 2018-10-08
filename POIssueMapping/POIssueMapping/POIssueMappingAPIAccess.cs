@@ -7,6 +7,7 @@ using System.Data;
 using System.Net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using POIssueMapping;
 
 namespace POIssueMapping
 {
@@ -34,11 +35,11 @@ namespace POIssueMapping
                         .Select(row => new POIssueMappingBO
                         {
                             XXPMC_SDI_RECORD_ID = ((Decimal)(row["ISA_IDENTIFIER"])).ToString(),
-                            SOURCE_CODE =ReplacePipe((String)(row["SOURCE_CODE"])),
+                            SOURCE_CODE =ReplacePipe((String)(row["ISA_SOURCE_CODE"])),
                             ORGANIZATION_CODE =ReplacePipe((String)(row["PLANT"])),
                             ITEM =ReplacePipe((String)(row["ISA_ITEM"])),
                             //  INVENTORY_ITEM_ID = ((Decimal)(row["ITEM_FIELD_N15_A"])).ToString(), // "ITEM_FIELD_N15_A is missing in table"
-                            INVENTORY_ITEM_ID = "",
+                            INVENTORY_ITEM_ID = ReplacePipe((String)(row["CUSTOMER_ITEM_NBR"])),
                             ORGANIZATION_ID = ReplacePipe((String)(row["ISA_ORGANIZ_ID"])),
                             TRANSACTION_QUANTITY = ((Decimal)(row["QTY"])).ToString(),
                             PRIMARY_QUANTITY = ((Decimal)(row["QUANTITY"])).ToString(),
@@ -53,10 +54,10 @@ namespace POIssueMapping
                             TRANSACTION_TYPE_ID =ReplacePipe((String)(row["HDR_TRANS_TYPE"])),
                             OPERATION_SEQ_NUM = ((Decimal)(row["MAINJOBSEQ"])).ToString(),
                             TRANSACTION_REFERENCE =ReplacePipe((String)(row["REFERENCE"])),
-                            ATTRIBUTE1 =ReplacePipe((String)(row["ISA_ATTRIBUTE_1"])),
-                            ATTRIBUTE2 =ReplacePipe((String)(row["ISA_ATTRIBUTE_2"])),
-                            ATTRIBUTE3 =ReplacePipe((String)(row["ISA_ATTRIBUTE_3"])),
-                            ATTRIBUTE4 =ReplacePipe((String)(row["ISA_ATTRIBUTE_4"])),
+                            ATTRIBUTE1 = ReplacePipe((String)(row["ISA_ATTRIBUTE_1"])),
+                            ATTRIBUTE2 = ReplacePipe((String)(row["ISA_ATTRIBUTE_2"])),
+                            ATTRIBUTE3 = ReplacePipe((String)(row["ISA_ATTRIBUTE_3"])),
+                            ATTRIBUTE4 = ReplacePipe((String)(row["ISA_ATTRIBUTE_4"])),
                             ATTRIBUTE5 = ReplacePipe((String)(row["ISA_ATTRIBUTE_5"])),
                             ATTRIBUTE6 = ReplacePipe((String)(row["ISA_ATTRIBUTE_6"])),
                             ATTRIBUTE7 = ReplacePipe((String)(row["ISA_ATTRIBUTE_7"])),
@@ -65,6 +66,13 @@ namespace POIssueMapping
                             ATTRIBUTE10 = ReplacePipe((String)(row["ISA_ATTRIBUTE_10"])),
                             TRANS_STATUS_DESCRIPTION = row["ISA_COMMENTS_1333"] == DBNull.Value ? null :ReplacePipe((String)(row["ISA_COMMENTS_1333"])),
                             TRANSACTION_STATUS =ReplacePipe((String)(row["STATUS_MSG"])),
+                            SOURCE_HEADER_ID = ReplacePipe((String)(row["ISA_SOURCE_HDR_ID"])),
+                            SOURCE_LINE_ID = ReplacePipe((String)(row["ISA_SOURCE_LN_ID"])),
+                            TRANSACTION_ACTION_ID = ReplacePipe((String)(row["ISA_TRANS_ACTION"])),
+                            TRANSACTION_SOURCE_ID = ReplacePipe((String)(row["ISA_TRANS_SRC_ID"])),
+                            TRANSACTION_SOURCE_TYPE_ID = ReplacePipe((String)(row["ISA_TRANS_SRC_TYPE"])),
+                            REASON_ID = ReplacePipe((String)(row["ISA_REASON_ID"])),
+                            REASON_NAME = ReplacePipe((String)(row["REASON_CONFERRED"]))
 
                         }).ToList();
 
@@ -72,14 +80,14 @@ namespace POIssueMapping
 
                     string jsontest = JsonConvert.SerializeObject(new
                      {
-                         _postpurchaseorder = target
+                         _postmaterialissuereturncyclecount = target
                      });
 
 
 
                     StringBuilder sb = new StringBuilder();
 
-                    sb.Append("{'_postpurchaseorder_batch_req':");
+                    sb.Append("{'_postmaterialissuereturncyclecount_batch_req':");
                     sb.Append(jsontest);
                     sb.Append("}");
 
@@ -87,29 +95,30 @@ namespace POIssueMapping
                    
                     using (var client = new WebClient())
                     {
-                        m_oLogger.LogMessage("postPOIssueMappingData", "POST PO Issue Mapping Data to PMC starts here");
+                        
+                        m_oLogger.LogMessage("postMatIssueMappingData", "POST PO Issue Mapping Data to PMC starts here");
                         client.Headers.Add("Authorization: Basic YWRtaW46YWRtaW4=");
                         client.Headers.Add("Content-Type:application/json");
                         client.Headers.Add("Accept:application/json");
                         System.Net.ServicePointManager.CertificatePolicy = new AlwaysIgnoreCertPolicy();
                         System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
-                        m_oLogger.LogMessage("postPOIssueMappingData", "POST PO Issue Mapping Data" + resultSet.ToString());
-                        m_oLogger.LogMessage("postPOIssueMappingData", "POST PO Issue Mapping Data URL : https://10.118.13.27:8243/SDIOutboundPurchaseOrderAPI/v1_0");
+                        m_oLogger.LogMessage("postMatIssueMappingData", "POST PO Issue Mapping Data" + resultSet.ToString());
+                        m_oLogger.LogMessage("postMatIssueMappingData", "POST PO Issue Mapping Data URL : https://10.118.13.27:8243/SDIOutboundPurchaseOrderAPI/v1_0");
 
                         //Need to change the URL after service avaialbe from client side
 
-                        var result = client.UploadString("https://10.118.13.27:8243/SDIOutboundPurchaseOrderAPI/v1_0", resultSet.ToString());
+                        var result = client.UploadString("https://10.118.13.27:8243/SDIOutboundMaterialIssueReturnCycleCountAPI/v1_0", resultSet.ToString());
                         
                         var parsed = JObject.Parse(result);
                         strResponse = parsed.SelectToken("REQUEST_STATUS").Value<string>();
-                        m_oLogger.LogMessage("postPOIssueMappingData", "POST PO Issue Mapping data to PMC server status " + strResponse);
+                        m_oLogger.LogMessage("postMatIssueMappingData", "POST Material Issue data to PMC server status " + strResponse);
                     }
                 }
 
             }
             catch (Exception ex)
             {
-                m_oLogger.LogMessage("postPOIssueMappingData", "Error trying to POST data to PMS server.", ex);
+                m_oLogger.LogMessage("postMatIssueMappingData", "Error trying to POST data to PMS server.", ex);
             }
             return strResponse;
         }
@@ -117,7 +126,7 @@ namespace POIssueMapping
         public string ReplacePipe(string x)
         {
             x = x.Trim();
-            return x == "|" ? null : x;
+            return x == "|" ? "" : x;
         }
     }
 }
