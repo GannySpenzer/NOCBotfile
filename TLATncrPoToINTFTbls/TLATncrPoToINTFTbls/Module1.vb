@@ -677,13 +677,13 @@ Module Module1
                                                                     End If
                                                                     If bIsLineNoSent Then
                                                                         ' search using Line No
-                                                                        strSqlString = "SELECT INV_ITEM_ID, UNIT_MEASURE_STD, PRICE_REQ_BSE FROM SYSADM8.PS_REQ_LINE " & vbCrLf & _
+                                                                        strSqlString = "SELECT INV_ITEM_ID, UNIT_MEASURE_STD, PRICE_REQ_BSE , VENDOR_ID, ITM_ID_VNDR, DESCR254_MIXED FROM SYSADM8.PS_REQ_LINE " & vbCrLf & _
                                                                             "WHERE REQ_ID = '" & strOrigOrderQuoteNumber & "' AND LINE_NBR = '" & intLineNoFromSplit & "'" & vbCrLf & _
                                                                             "" & vbCrLf & _
                                                                             ""
                                                                     Else
                                                                         'search using Mfg Item Id
-                                                                        strSqlString = "SELECT INV_ITEM_ID, UNIT_MEASURE_STD, PRICE_REQ_BSE FROM SYSADM8.PS_REQ_LINE " & vbCrLf & _
+                                                                        strSqlString = "SELECT INV_ITEM_ID, UNIT_MEASURE_STD, PRICE_REQ_BSE , VENDOR_ID, ITM_ID_VNDR, DESCR254_MIXED FROM SYSADM8.PS_REQ_LINE " & vbCrLf & _
                                                                             "WHERE REQ_ID = '" & strOrigOrderQuoteNumber & "' AND MFG_ITM_ID = '" & arrSupplPartIDs(iLn) & "'" & vbCrLf & _
                                                                             "" & vbCrLf & _
                                                                             ""
@@ -702,8 +702,11 @@ Module Module1
                                                                             strInvItemId = CType(rdr("INV_ITEM_ID"), String)
                                                                             'strUnitPrice = CType(rdr("PRICE"), String)
                                                                             strUnitPrice = CType(rdr("PRICE_REQ_BSE"), String)
-                                                                            strVendorID = " "
-                                                                            strVendorITMID = " "
+                                                                            strVendorID = CType(rdr("VENDOR_ID"), String)
+                                                                            strVendorITMID = CType(rdr("ITM_ID_VNDR"), String)
+                                                                            If Trim(CType(rdr("DESCR254_MIXED"), String)) <> "" Then
+                                                                                arrDescr(iLn) = Trim(CType(rdr("DESCR254_MIXED"), String))
+                                                                            End If
                                                                             strMfdName = " "
 
                                                                             rdr.Close()
@@ -714,96 +717,97 @@ Module Module1
                                                                             rdr.Close()
                                                                             rdr = Nothing
                                                                             cmd = Nothing
-                                                                            ' check is orig. order is punchout order. If yes - then try to get info from
-                                                                            ' intf line table
-                                                                            Dim strOrigOrderOrigin As String = ""
-                                                                            strSqlString = "SELECT ORIGIN FROM PS_ISA_ORD_INTF_HD  where ORDER_NO = '" & strOrigOrderQuoteNumber & "' and BUSINESS_UNIT_OM = 'I0515'"
+                                                                            '' check is orig. order is punchout order. If yes - then try to get info from
+                                                                            '' intf line table
+                                                                            'Dim strOrigOrderOrigin As String = ""
+                                                                            'strSqlString = "SELECT ORIGIN FROM PS_ISA_ORD_INTF_HD  where ORDER_NO = '" & strOrigOrderQuoteNumber & "' and BUSINESS_UNIT_OM = 'I0515'"
 
-                                                                            cmd = connectOR.CreateCommand
-                                                                            cmd.CommandText = strSqlString
-                                                                            cmd.CommandType = CommandType.Text
-                                                                            cmd.Transaction = trnsactSession
+                                                                            'cmd = connectOR.CreateCommand
+                                                                            'cmd.CommandText = strSqlString
+                                                                            'cmd.CommandType = CommandType.Text
+                                                                            'cmd.Transaction = trnsactSession
 
                                                                             Try
-                                                                                strOrigOrderOrigin = cmd.ExecuteScalar
-                                                                                If strOrigOrderOrigin = "PCH" Then
-                                                                                    'punchout order
-                                                                                    cmd = Nothing
-                                                                                    'get info form INTF Line table
-                                                                                    If bIsLineNoSent Then
-                                                                                        ' search using Line No
-                                                                                        strSqlString = "SELECT INV_ITEM_ID, UNIT_OF_MEASURE AS UNIT_MEASURE_STD, ISA_SELL_PRICE AS PRICE_REQ_BSE, VENDOR_ID, ITM_ID_VNDR, ISA_MFG_FREEFORM, DESCR254 FROM SYSADM8.PS_ISA_ORD_INTF_LN " & vbCrLf & _
-                                                                                            "WHERE ORDER_NO = '" & strOrigOrderQuoteNumber & "' AND ISA_INTFC_LN = '" & intLineNoFromSplit & "'" & vbCrLf & _
-                                                                                            "" & vbCrLf & _
-                                                                                            ""
-                                                                                    Else
-                                                                                        'search using Mfg Item Id
-                                                                                        strSqlString = "SELECT INV_ITEM_ID, UNIT_OF_MEASURE AS UNIT_MEASURE_STD, ISA_SELL_PRICE AS PRICE_REQ_BSE, VENDOR_ID, ITM_ID_VNDR, ISA_MFG_FREEFORM, DESCR254 FROM SYSADM8.PS_ISA_ORD_INTF_LN " & vbCrLf & _
-                                                                                            "WHERE ORDER_NO = '" & strOrigOrderQuoteNumber & "' AND MFG_ITM_ID = '" & arrSupplPartIDs(iLn) & "'" & vbCrLf & _
-                                                                                            "" & vbCrLf & _
-                                                                                            ""
-                                                                                    End If
+                                                                                ''strOrigOrderOrigin = cmd.ExecuteScalar
+                                                                                'cmd = Nothing
+                                                                                'get info form INTF Line table
+                                                                                If bIsLineNoSent Then
+                                                                                    ' search using Line No
+                                                                                    strSqlString = "SELECT INV_ITEM_ID, UNIT_OF_MEASURE AS UNIT_MEASURE_STD, ISA_SELL_PRICE AS PRICE_REQ_BSE, VENDOR_ID, ITM_ID_VNDR, ISA_MFG_FREEFORM, DESCR254 FROM SYSADM8.PS_ISA_ORD_INTF_LN " & vbCrLf & _
+                                                                                        "WHERE ORDER_NO = '" & strOrigOrderQuoteNumber & "' AND ISA_INTFC_LN = '" & intLineNoFromSplit & "'" & vbCrLf & _
+                                                                                        "" & vbCrLf & _
+                                                                                        ""
+                                                                                Else
+                                                                                    'search using Mfg Item Id
+                                                                                    strSqlString = "SELECT INV_ITEM_ID, UNIT_OF_MEASURE AS UNIT_MEASURE_STD, ISA_SELL_PRICE AS PRICE_REQ_BSE, VENDOR_ID, ITM_ID_VNDR, ISA_MFG_FREEFORM, DESCR254 FROM SYSADM8.PS_ISA_ORD_INTF_LN " & vbCrLf & _
+                                                                                        "WHERE ORDER_NO = '" & strOrigOrderQuoteNumber & "' AND MFG_ITM_ID = '" & arrSupplPartIDs(iLn) & "'" & vbCrLf & _
+                                                                                        "" & vbCrLf & _
+                                                                                        ""
+                                                                                End If
 
-                                                                                    cmd = connectOR.CreateCommand
-                                                                                    cmd.CommandText = strSqlString
-                                                                                    cmd.CommandType = CommandType.Text
-                                                                                    cmd.Transaction = trnsactSession
+                                                                                cmd = connectOR.CreateCommand
+                                                                                cmd.CommandText = strSqlString
+                                                                                cmd.CommandType = CommandType.Text
+                                                                                cmd.Transaction = trnsactSession
 
-                                                                                    Try
-                                                                                        'get reader
-                                                                                        Dim rdrIntf1 As OleDbDataReader = cmd.ExecuteReader()
-                                                                                        If Not (rdrIntf1 Is Nothing) Then
-                                                                                            If rdrIntf1.Read Then
-                                                                                                'get fields for INTF_LN
-                                                                                                strStdUom = CType(rdrIntf1("UNIT_MEASURE_STD"), String)
-                                                                                                strInvItemId = CType(rdrIntf1("INV_ITEM_ID"), String)
-                                                                                                strVendorID = CType(rdrIntf1("VENDOR_ID"), String)
-                                                                                                strVendorITMID = CType(rdrIntf1("ITM_ID_VNDR"), String)
-                                                                                                strUnitPrice = CType(rdrIntf1("PRICE_REQ_BSE"), String)
-                                                                                                strMfdName = CType(rdrIntf1("ISA_MFG_FREEFORM"), String)
-                                                                                                If Trim(CType(rdrIntf1("DESCR254"), String)) <> "" Then
-                                                                                                    arrDescr(iLn) = Trim(CType(rdrIntf1("DESCR254"), String))
-                                                                                                End If
-
-                                                                                                rdrIntf1.Close()
-                                                                                                rdrIntf1 = Nothing
-                                                                                                cmd = Nothing
-                                                                                            Else
-                                                                                                rdrIntf1.Close()
-                                                                                                rdrIntf1 = Nothing
-                                                                                                cmd = Nothing
-                                                                                                'if not - error
-                                                                                                strXMLError &= "Error retrieving MFG_ITM_ID info (rdrIntf1) for: " & arrSupplPartIDs(iLn) & vbCrLf
-                                                                                                'do not process this file
-                                                                                                m_logger.WriteInformationLog(rtn & " :: Rollback. Error description: " & strXMLError)
-                                                                                                strXMLError = rtn & " :: Rollback. Error description: " & strXMLError & " - for KLA-Tencor PO # : " & strOrderNum
-                                                                                                'bolError = True
-                                                                                                bLineError = True
-                                                                                                Exit For
+                                                                                Try
+                                                                                    'get reader
+                                                                                    Dim rdrIntf1 As OleDbDataReader = cmd.ExecuteReader()
+                                                                                    If Not (rdrIntf1 Is Nothing) Then
+                                                                                        If rdrIntf1.Read Then
+                                                                                            'get fields for INTF_LN
+                                                                                            strStdUom = CType(rdrIntf1("UNIT_MEASURE_STD"), String)
+                                                                                            strInvItemId = CType(rdrIntf1("INV_ITEM_ID"), String)
+                                                                                            strVendorID = CType(rdrIntf1("VENDOR_ID"), String)
+                                                                                            strVendorITMID = CType(rdrIntf1("ITM_ID_VNDR"), String)
+                                                                                            strUnitPrice = CType(rdrIntf1("PRICE_REQ_BSE"), String)
+                                                                                            strMfdName = CType(rdrIntf1("ISA_MFG_FREEFORM"), String)
+                                                                                            If Trim(CType(rdrIntf1("DESCR254"), String)) <> "" Then
+                                                                                                arrDescr(iLn) = Trim(CType(rdrIntf1("DESCR254"), String))
                                                                                             End If
 
+                                                                                            rdrIntf1.Close()
+                                                                                            rdrIntf1 = Nothing
+                                                                                            cmd = Nothing
+                                                                                        Else
+                                                                                            rdrIntf1.Close()
+                                                                                            rdrIntf1 = Nothing
+                                                                                            cmd = Nothing
+                                                                                            'if not - error
+                                                                                            strXMLError &= "Error retrieving MFG_ITM_ID info (rdrIntf1) for: " & arrSupplPartIDs(iLn) & vbCrLf
+                                                                                            'do not process this file
+                                                                                            m_logger.WriteInformationLog(rtn & " :: Rollback. Error description: " & strXMLError)
+                                                                                            strXMLError = rtn & " :: Rollback. Error description: " & strXMLError & " - for KLA-Tencor PO # : " & strOrderNum
+                                                                                            'bolError = True
+                                                                                            bLineError = True
+                                                                                            Exit For
                                                                                         End If
-                                                                                    Catch exIntfLn As Exception
-                                                                                        cmd = Nothing
-                                                                                        strXMLError &= exIntfLn.Message
-                                                                                        'do not process this file
-                                                                                        m_logger.WriteInformationLog(rtn & " :: Rollback. Error description: " & strXMLError)
-                                                                                        strXMLError = rtn & " :: Rollback. Error description: " & strXMLError & " - for KLA-Tencor PO # : " & strOrderNum
-                                                                                        'bolError = True
-                                                                                        bLineError = True
-                                                                                        Exit For
-                                                                                    End Try
-                                                                                Else
+
+                                                                                    End If
+                                                                                Catch exIntfLn As Exception
                                                                                     cmd = Nothing
-                                                                                    'if not - error
-                                                                                    strXMLError &= "Error retrieving MFG_ITM_ID info for: " & arrSupplPartIDs(iLn) & vbCrLf
+                                                                                    strXMLError &= exIntfLn.Message
                                                                                     'do not process this file
                                                                                     m_logger.WriteInformationLog(rtn & " :: Rollback. Error description: " & strXMLError)
                                                                                     strXMLError = rtn & " :: Rollback. Error description: " & strXMLError & " - for KLA-Tencor PO # : " & strOrderNum
                                                                                     'bolError = True
                                                                                     bLineError = True
                                                                                     Exit For
-                                                                                End If
+                                                                                End Try
+                                                                                'If strOrigOrderOrigin = "PCH" Then
+                                                                                '    'punchout order
+
+                                                                                'Else
+                                                                                '    cmd = Nothing
+                                                                                '    'if not - error
+                                                                                '    strXMLError &= "Error retrieving MFG_ITM_ID info for: " & arrSupplPartIDs(iLn) & vbCrLf
+                                                                                '    'do not process this file
+                                                                                '    m_logger.WriteInformationLog(rtn & " :: Rollback. Error description: " & strXMLError)
+                                                                                '    strXMLError = rtn & " :: Rollback. Error description: " & strXMLError & " - for KLA-Tencor PO # : " & strOrderNum
+                                                                                '    'bolError = True
+                                                                                '    bLineError = True
+                                                                                '    Exit For
+                                                                                'End If
                                                                             Catch exOrigin As Exception
                                                                                 cmd = Nothing
                                                                                 strXMLError += exOrigin.Message
