@@ -50,7 +50,7 @@ namespace POIssueMapping
                             LOCATOR_NAME =ReplacePipe((String)(row["ISA_LOCATOR_NAME"])),
                             WIP_ENTITY_NAME =ReplacePipe((String)(row["ORDER_NO"])),
                             WIP_ENTITY_ID = ((Decimal)(row["MAINJOBINSTANCE"])).ToString(),
-                            TRANSACTION_TYPE_NAME =ReplacePipe((String)(row["TRANSACTION_NAME"])),
+                            TRANSACTION_TYPE_NAME =ReplacePipe((String)(row["ISA_TRANS_NAME"])),
                             TRANSACTION_TYPE_ID =ReplacePipe((String)(row["HDR_TRANS_TYPE"])),
                             OPERATION_SEQ_NUM = ((Decimal)(row["MAINJOBSEQ"])).ToString(),
                             TRANSACTION_REFERENCE =ReplacePipe((String)(row["REFERENCE"])),
