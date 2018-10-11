@@ -34,15 +34,15 @@ Module Module1
             'down
 
             Console.WriteLine("SOLR is Down. Error: " & ErrorMsg)
-
+            MsgBox("SOLR is Down. Error: " & ErrorMsg, MsgBoxStyle.OkOnly, "SOLR Test")
         Else
             'up
 
             Console.WriteLine("SOLR is Up and running")
+            MsgBox("SOLR is Up and running", MsgBoxStyle.OkOnly, "SOLR Test")
 
         End If
 
-        Stop
 
         Console.WriteLine("End SOLR Test")
 
