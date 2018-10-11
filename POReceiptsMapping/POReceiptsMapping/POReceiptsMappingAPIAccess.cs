@@ -45,7 +45,7 @@ namespace POReceiptsMapping
                             //STATUS = ReplacePipe((String)(row["STATUS1"])),
                             EBS_PO_NUMBER = ReplacePipe((String)(row["ISA_CUST_PO_ID"])),
                             EBS_PO_LINE_NUMBER = ReplacePipe((String)(row["CUSTOMER_PO_LINE"])),
-                            LINE_TRANSACTION_TYPE = ReplacePipe((String)(row["TRANSACTION_NAME"])),
+                            LINE_TRANSACTION_TYPE = ReplacePipe((String)(row["ISA_TRANS_NAME"])),
                             ITEM = ReplacePipe((String)(row["ISA_ITEM"])),
                             ITEM_ID = ReplacePipe((String)(row["CUSTOMER_ITEM_NBR"])),
                             QUANTITY = ((Decimal)(row["QTY"])).ToString(),
