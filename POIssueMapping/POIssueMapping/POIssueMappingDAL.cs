@@ -35,7 +35,7 @@ namespace POIssueMapping
             DataTable dtResponse = new DataTable();
             try
             {
-                strSQLstring = "SELECT * FROM sysadm8.PS_ISA_O_MATR_MOVE WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'PMC' AND TRANS_TYPE='ISS'";
+                strSQLstring = "SELECT * FROM sysadm8.PS_ISA_O_MATR_MOVE WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'PMC' AND (TRANS_TYPE = 'ISS' or TRANS_TYPE = 'RMA' OR TRANS_TYPE = 'CYC')";
 
                 m_oLogger.LogMessage("getPOIssueMappingData", "PeopleSoft connection string : " + OracleConString);
                 m_oLogger.LogMessage("getPOIssueMappingData", "Query To get the PO issue mapping date : " + strSQLstring);
