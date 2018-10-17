@@ -22,7 +22,7 @@ namespace InvoiceMapping
 
                 InvoiceMappingDAL objInvoiceMappingDAL = new InvoiceMappingDAL();
 
-                m_oLogger.LogMessage("getInvoiceMappingData", "Getting PO Receipt Mapping Data starts here");
+                m_oLogger.LogMessage("getInvoiceMappingData", "Getting Invoice Mapping Data starts here");
                 dtResponse = objInvoiceMappingDAL.getInvoiceMappingData(m_oLogger);
                 if (dtResponse.Rows.Count != 0)
                 {
@@ -30,9 +30,9 @@ namespace InvoiceMapping
                         .Select(row => new InvoiceMappingBO
                         {
                             XXPMC_SDI_RECORD_ID = ((Decimal)(row["ISA_IDENTIFIER"])).ToString(),
-                            PO_NUMBER = ReplacePipe((String)(row["ISA_CUST_PO_ID"])),
-                            RECEIPT_NUMBER = ReplacePipe((String)(row["RECEIVER_ID"])),
-                            RECEIPT_LINE_NBR = ((Decimal)(row["RECV_LN_NBR"])).ToString(),
+                            PO_NUMBER = ReplacePipe((String)(row["PO_ID"])), //ISA_CUST_PO_ID
+                            RECEIPT_NUMBER = ReplacePipe((String)(row["ISA_CUST_RECEIPT"])), //RECEIVER_ID
+                            RECEIPT_LINE_NBR = ReplacePipe((String)(row["ISA_CUST_RECV_LN"])), //RECV_LN_NBR
                             INVOICE_TYPE_LOOKUP_CODE = ReplacePipe((String)(row["INTFC_REC_TYPE"])),
                             INVOICE_LINE_TYPE_LOOKUP_CODE = ReplacePipe((String)(row["ISA_LINE_TYPE_ID"])),
                             VENDOR_NAME = ReplacePipe((String)(row["VENDOR_NAME"])),
@@ -60,7 +60,8 @@ namespace InvoiceMapping
                             ATTRIBUTE8 = ReplacePipe((String)(row["ISA_ATTRIBUTE_8"])),
                             ATTRIBUTE9 = ReplacePipe((String)(row["ISA_ATTRIBUTE_9"])),
                             ATTRIBUTE10 = ReplacePipe((String)(row["ISA_ATTRIBUTE_10"])),
-                            TRANS_STATUS_DESCRIPTION = row["ISA_COMMENTS_1333"] == DBNull.Value ? null : (string)(row["ISA_COMMENTS_1333"]),
+                            //TRANS_STATUS_DESCRIPTION = row["ISA_COMMENTS_1333"] == DBNull.Value ? null : (string)(row["ISA_COMMENTS_1333"]),
+                            TRANS_STATUS_DESCRIPTION = ReplacePipe((String)(row["COMMENTS_254"])),
                             TRANSACTION_STATUS = ReplacePipe((string)(row["STATUS_MSG"])),
                         }).ToList();
 
@@ -69,12 +70,12 @@ namespace InvoiceMapping
 
                     string jsontest = JsonConvert.SerializeObject(new
                     {
-                        _postporeceipt = target
+                        _postapinvoice = target
                     });
 
 
                     StringBuilder sb = new StringBuilder();
-                    sb.Append("{'_postporeceipt_batch_req':");
+                    sb.Append("{'_postapinvoice_batch_req':");
                     sb.Append(jsontest);
                     sb.Append("}");
 
@@ -84,7 +85,8 @@ namespace InvoiceMapping
                     {
                         m_oLogger.LogMessage("postInvoiceMappingData", "POST InvoiceMapping Data to PMC starts here");
                         m_oLogger.LogMessage("postInvoiceMappingData", "POST InvoiceMapping Data" + resultSet.ToString());
-                        m_oLogger.LogMessage("postInvoiceMappingData", "POST InvoiceMapping Data URL : https://10.118.13.27:8243/SDIOutboundPOReceiptAPI/v1_0");
+                        //m_oLogger.LogMessage("postInvoiceMappingData", "POST InvoiceMapping Data URL : https://10.118.13.27:8243/SDIOutboundPOReceiptAPI/v1_0");
+                        m_oLogger.LogMessage("postInvoiceMappingData", "POST InvoiceMapping Data URL : https://10.118.13.27:8243/SDIOutboundAPInvoiceAPI/v1_0");
 
                         client.Headers.Add("Authorization: Basic YWRtaW46YWRtaW4=");
                         client.Headers.Add("Content-Type:application/json");
@@ -93,8 +95,9 @@ namespace InvoiceMapping
                         System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 
                         /// Need to change the URL after service avaialbe from client side
-                        var result = client.UploadString("https://10.118.13.27:8243/SDIOutboundPOReceiptAPI/v1_0", resultSet.ToString());
-                       
+                        //var result = client.UploadString("https://10.118.13.27:8243/SDIOutboundPOReceiptAPI/v1_0", resultSet.ToString());
+                        //var result = client.UploadString("https://10.118.26.22:8243/SDIOutboundAPInvoiceAPI/v1_0", resultSet.ToString());
+                        var result = client.UploadString("https://10.118.13.27:8243/SDIOutboundAPInvoiceAPI/v1_0", resultSet.ToString());
 
                         var parsed = JObject.Parse(result);
                         strResponse = parsed.SelectToken("REQUEST_STATUS").Value<string>();
@@ -114,7 +117,7 @@ namespace InvoiceMapping
         public string ReplacePipe(string x)
         {
             x = x.Trim();
-            return x == "|" ? null : x;
+            return x == "|" ? "" : x;
         }
     }
 }
