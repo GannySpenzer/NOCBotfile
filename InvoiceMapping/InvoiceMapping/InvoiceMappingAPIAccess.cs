@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using System.Net;
 using Newtonsoft.Json.Linq;
 using InvoiceMapping;
+using System.Configuration;
 
 namespace InvoiceMapping
 {
@@ -15,6 +16,10 @@ namespace InvoiceMapping
     {
         public string postInvoiceMappingData(Logger m_oLogger)
         {
+            string testOrProd = " ";
+            string authorization = " ";
+            string serviceURL = " ";
+
             var strResponse = " ";
             DataTable dtResponse = new DataTable();
             try
@@ -83,21 +88,39 @@ namespace InvoiceMapping
               
                     using (var client = new WebClient())
                     {
+                        string  strTestOrProd = ConfigurationManager.AppSettings["TestOrProd"];
+                        if (strTestOrProd == "TEST")
+                        {
+                            serviceURL = ConfigurationManager.AppSettings["testServiceURL"];
+                            authorization = ConfigurationManager.AppSettings["testAuthorization"];
+                        }
+                        else
+                        {
+                            serviceURL = ConfigurationManager.AppSettings["prodServiceURL"];
+                            authorization = ConfigurationManager.AppSettings["prodAuthorization"];
+                        }
+
+
                         m_oLogger.LogMessage("postInvoiceMappingData", "POST InvoiceMapping Data to PMC starts here");
                         m_oLogger.LogMessage("postInvoiceMappingData", "POST InvoiceMapping Data" + resultSet.ToString());
-                        //m_oLogger.LogMessage("postInvoiceMappingData", "POST InvoiceMapping Data URL : https://10.118.13.27:8243/SDIOutboundPOReceiptAPI/v1_0");
-                        m_oLogger.LogMessage("postInvoiceMappingData", "POST InvoiceMapping Data URL : https://10.118.13.27:8243/SDIOutboundAPInvoiceAPI/v1_0");
+                        //m_oLogger.LogMessage("postInvoiceMappingData", "POST InvoiceMapping Data URL : https://10.118.13.27:8243/SDIOutboundAPInvoiceAPI/v1_0"); //test
+                        //m_oLogger.LogMessage("postInvoiceMappingData", "POST InvoiceMapping Data URL : https://10.118.26.22:8243/SDIOutboundAPInvoiceAPI/v1_0"); //prod
+                        m_oLogger.LogMessage("postInvoiceMappingData", "POST InvoiceMapping Data URL : " + serviceURL); 
 
-                        client.Headers.Add("Authorization: Basic YWRtaW46YWRtaW4=");
+                        //client.Headers.Add("Authorization: Basic YWRtaW46YWRtaW4="); //test
+                        //client.Headers.Add("Authorization: Basic U0RJVXNlcjpTRElQYXNzMTIz="); //prod
+                        client.Headers.Add("Authorization: Basic " + authorization); 
+
                         client.Headers.Add("Content-Type:application/json");
                         client.Headers.Add("Accept:application/json");
                         System.Net.ServicePointManager.CertificatePolicy = new AlwaysIgnoreCertPolicy();
                         System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 
-                        /// Need to change the URL after service avaialbe from client side
-                        //var result = client.UploadString("https://10.118.13.27:8243/SDIOutboundPOReceiptAPI/v1_0", resultSet.ToString());
-                        //var result = client.UploadString("https://10.118.26.22:8243/SDIOutboundAPInvoiceAPI/v1_0", resultSet.ToString());
-                        var result = client.UploadString("https://10.118.13.27:8243/SDIOutboundAPInvoiceAPI/v1_0", resultSet.ToString());
+                        /// Need to change the URL after service available from client side
+                        //var result = client.UploadString("https://10.118.13.27:8243/SDIOutboundAPInvoiceAPI/v1_0", resultSet.ToString()); //test
+                        //var result = client.UploadString("https://10.118.26.22:8243/SDIOutboundAPInvoiceAPI/v1_0", resultSet.ToString()); //prod
+                        var result = client.UploadString(serviceURL, resultSet.ToString()); //prod
+                        
 
                         var parsed = JObject.Parse(result);
                         strResponse = parsed.SelectToken("REQUEST_STATUS").Value<string>();
