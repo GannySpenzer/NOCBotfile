@@ -7,6 +7,7 @@ using System.Data;
 using System.Net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Configuration;
 
 namespace POMapping
 {
@@ -20,6 +21,10 @@ namespace POMapping
         // public string postPOMappingData()
         public string postPOMappingData(Logger m_oLogger)
         {
+            string testOrProd = " ";
+            string authorization = " ";
+            string serviceURL = " ";
+
             var strResponse = " ";
             DataTable dtResponse = new DataTable();
             try
@@ -166,17 +171,33 @@ namespace POMapping
                     //JObject rss = JObject.Parse(json);
                     using (var client = new WebClient())
                     {
+
+                        testOrProd = ConfigurationManager.AppSettings["TestOrProd"];
+                        if (testOrProd == "TEST")
+                        {
+                            serviceURL = ConfigurationManager.AppSettings["testServiceURL"];
+                            authorization = ConfigurationManager.AppSettings["testAuthorization"];
+                        }
+                        else
+                        {
+                            serviceURL = ConfigurationManager.AppSettings["prodServiceURL"];
+                            authorization = ConfigurationManager.AppSettings["prodAuthorization"];
+                        }
+
                         m_oLogger.LogMessage("postPOMappingData", "POST PO Mapping Data to PMC starts here");
-                        client.Headers.Add("Authorization: Basic YWRtaW46YWRtaW4=");
+                        client.Headers.Add("Authorization: Basic " + authorization);
                         client.Headers.Add("Content-Type:application/json");
                         client.Headers.Add("Accept:application/json");
                         System.Net.ServicePointManager.CertificatePolicy = new AlwaysIgnoreCertPolicy();
                         System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
                         m_oLogger.LogMessage("postPOMappingData", "POST POMapping Data" + resultSet.ToString());
-                        m_oLogger.LogMessage("postPOMappingData", "POST POMapping Data URL : https://10.118.13.27:8243/SDIOutboundPurchaseOrderAPI/v1_0");
+                        //m_oLogger.LogMessage("postPOMappingData", "POST POMapping Data URL : https://10.118.13.27:8243/SDIOutboundPurchaseOrderAPI/v1_0");
+                        m_oLogger.LogMessage("postPOMappingData", "POST POMapping Data URL : " + serviceURL);
 
-                        var result = client.UploadString("https://10.118.13.27:8243/SDIOutboundPurchaseOrderAPI/v1_0", resultSet.ToString());
                         // var result1 = client.UploadString("https://10.118.13.27:8243/SDIOutboundPurchaseOrderAPI/v1_0", rss.ToString());
+                        //var result = client.UploadString("https://10.118.13.27:8243/SDIOutboundPurchaseOrderAPI/v1_0", resultSet.ToString());
+                        var result = client.UploadString(serviceURL, resultSet.ToString());
+                        
                         var parsed = JObject.Parse(result);
                         strResponse = parsed.SelectToken("REQUEST_STATUS").Value<string>();
                         m_oLogger.LogMessage("postPOMappingData", "POST POMapping data to PMC server status " + strResponse);
