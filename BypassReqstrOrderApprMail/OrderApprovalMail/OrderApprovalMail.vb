@@ -290,7 +290,7 @@ Public Class ApprovalOrders
                 " FROM PS_ISA_ORD_INTF_LN A, PS_ISA_ENTERPRISE B " & vbCrLf & _
                 " WHERE A.ISA_LINE_STATUS = 'QTW' AND  ( (A.INV_ITEM_ID = ' ' AND A.OPRID_APPROVED_BY = A.ISA_EMPLOYEE_ID " & vbCrLf & _
                 " AND B.ISA_BYP_RQSTR_APPR = 'Y') OR " & vbCrLf & _
-                " (A.INV_ITEM_ID <> ' ' AND A.OPRID_APPROVED_BY = ' ' AND B.ISA_ORO_AS_STOCK = 'N' ) ) " & vbCrLf & _
+                " (A.INV_ITEM_ID <> ' ' AND A.OPRID_APPROVED_BY = A.ISA_EMPLOYEE_ID AND B.ISA_ORO_AS_STOCK = 'N' ) ) " & vbCrLf & _
                 " AND B.BU_STATUS = 1  AND B.ISA_BUSINESS_UNIT = A.BUSINESS_UNIT_OM" & vbCrLf & _
                                     "   AND NOT EXISTS (" & vbCrLf & _
                                     "                   SELECT 'X'" & vbCrLf & _
@@ -2265,6 +2265,7 @@ Public Class Notifiers
             ORDBData.DbUrl.Substring(ORDBData.DbUrl.Length - 4).ToUpper = "DEVL" Then
             StrTo = "webdev@sdi.com;SDIportalsupport@avasoft.com"
             StrSubject = " <<TEST>> SDiExchange - Order Number " & strreqID & " needs approval"
+            StrBody = "TEST DISREGARD TEST " & vbCrLf & vbCrLf & StrBody
         Else
             StrTo = strappEmail
             StrSubject = "SDiExchange - Order Number " & strreqID & " needs approval"
