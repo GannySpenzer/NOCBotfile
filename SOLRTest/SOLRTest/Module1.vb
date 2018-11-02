@@ -16,7 +16,7 @@ Imports System.Xml
 
 Module Module1
 
-    Sub Main()
+    Function Main() As Integer
 
         Dim jsonResponse As String = ""
         Dim urlAddress As String = "https://zeussdixsolr:JCve!6is@zeusclwk4.isacs.com:8985/solr/sdix/select?q=lamp&fq=subset_id:256&sort=score+desc&fl=*,score&wt=json&indent=true&defType=dismax&qf=id%20product_name%20short_desc%20subset_id%20unspsc%20manufacturer_part_number%20manufacturer_part_number_s%20customer_part_number_woprefix%20customer_part_number_woprefix_numeric%20vendor%20brand_name%20product_catagory%20product_sub_category%20long_desc%20client_desc%20extended_desc%20uom%20etag%20product_attr&pf=desc_ns%5E50 short_desc%5E10 long_desc%5E30 client_desc%5E20 &boost=if(termfreq(catalog_ind,1),1.5,1)&lowercaseOperators=true&ps=5&hl=true&hl.fl=product_category%20short_desc%20long_desc%20client_desc%20extended_desc&hl.simple.pre=%3Cem%3E&hl.simple.post=%3C%2Fem%3E&hl.usePhraseHighlighter=true&hl.highlightMultiTerm=true&facet=true&facet.field=manufacturer&facet.mincount=1&rows=0&spellcheck=true&spellcheck.count=4&shards=shard1,shard2,shard3"
@@ -34,19 +34,22 @@ Module Module1
             'down
 
             Console.WriteLine("SOLR is Down. Error: " & ErrorMsg)
-            MsgBox("SOLR is Down. Error: " & ErrorMsg, MsgBoxStyle.OkOnly, "SOLR Test")
+            Console.WriteLine("End SOLR Test")
+            'MsgBox("SOLR is Down. Error: " & ErrorMsg, MsgBoxStyle.OkOnly, "SOLR Test")
+            Return 1
         Else
             'up
 
             Console.WriteLine("SOLR is Up and running")
-            MsgBox("SOLR is Up and running", MsgBoxStyle.OkOnly, "SOLR Test")
+            Console.WriteLine("End SOLR Test")
+            'MsgBox("SOLR is Up and running", MsgBoxStyle.OkOnly, "SOLR Test")
+            Return 0
 
         End If
 
 
-        Console.WriteLine("End SOLR Test")
 
-    End Sub
+    End Function
 
     Private Function CommonGetResults(urlAddress As String, userName As String, password As String, _
                     searchValue As String, Optional ByRef strErr As String = "", Optional ByVal bIsSolrSearch As Boolean = False) As String
