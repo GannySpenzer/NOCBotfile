@@ -2311,7 +2311,7 @@ Public Class Notifiers
             " WHERE A.BUSINESS_UNIT_OM = '" & strBU & "'" & vbCrLf & _
             " AND A.ORDER_NO = '" & strreqID & "'" & vbCrLf & _
             " AND B.ISA_LINE_STATUS = 'QTW'" & vbCrLf & _
-            " AND A.ORDER_NO = B.ORDER_NO" & vbCrLf & _
+            " AND A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM AND A.ORDER_NO = B.ORDER_NO" & vbCrLf & _
             " AND B.QTY_REQUESTED > 0" & vbCrLf & _
             " AND A.ORDER_NO = C.REQ_ID" & vbCrLf & _
             " AND B.ISA_INTFC_LN = C.LINE_NBR" & vbCrLf & _
@@ -2359,6 +2359,7 @@ Public Class Notifiers
         Dim strQty As String
         Dim dstcart As DataTable
         dstcart = New DataTable
+        dstcart.Columns.Add("LN")
         dstcart.Columns.Add("Item Number")
         dstcart.Columns.Add("Description")
         dstcart.Columns.Add("Manuf.")
@@ -2367,8 +2368,7 @@ Public Class Notifiers
         dstcart.Columns.Add("UOM")
         dstcart.Columns.Add("Price")
         dstcart.Columns.Add("Ext. Price")
-        dstcart.Columns.Add("Item ID")
-        dstcart.Columns.Add("LN")
+        'dstcart.Columns.Add("Item ID")
 
         Dim strOraSelectQuery As String = String.Empty
         Dim ordIdentifier As String = String.Empty
@@ -2384,8 +2384,15 @@ Public Class Notifiers
             If dstcart1.Rows.Count > 0 Then
                 For Each dataRowMain As DataRow In dstcart1.Rows
                     dr = dstcart.NewRow()
-                    dr("Item Number") = ""
-                    'CType(dataRowMain("VNDR_CATALOG_ID"), String).Trim()
+
+                    dr("LN") = CType(dataRowMain("ISA_INTFC_LN"), String).Trim()
+
+                    Try
+                        dr("Item Number") = CType(dataRowMain("INV_ITEM_ID"), String).Trim()
+                    Catch ex As Exception
+                        dr("Item Number") = " "
+                    End Try
+
                     dr("Description") = CType(dataRowMain("DESCR254"), String).Trim()
 
                     'If CType(dataRowMain("VNDR_CATALOG_ID"), String).Trim().Contains("NONCAT") Then
@@ -2400,12 +2407,12 @@ Public Class Notifiers
                     Catch ex As Exception
                         dr("Manuf. Partnum") = " "
                     End Try
-                    Try
-                        dr("Item ID") = ""
-                        'CType(dataRowMain("VNDR_CATALOG_ID"), String).Trim()
-                    Catch ex As Exception
-                        dr("Item ID") = " "
-                    End Try
+                    'Try
+                    '    dr("Item ID") = ""
+                    '    'CType(dataRowMain("VNDR_CATALOG_ID"), String).Trim()
+                    'Catch ex As Exception
+                    '    dr("Item ID") = " "
+                    'End Try
 
                     Try
                         dr("UOM") = CType(dataRowMain("UNIT_OF_MEASURE"), String).Trim()
@@ -2439,7 +2446,7 @@ Public Class Notifiers
                     dr("Ext. Price") = CType(Convert.ToDecimal(strQty) * Convert.ToDecimal(strPrice), String)
 
                     'dr("Item Chg Code") = CType(dataRowMain("ISA_CUST_CHARGE_CD"), String).Trim()
-                    dr("LN") = CType(dataRowMain("ISA_INTFC_LN"), String).Trim()
+
                     dstcart.Rows.Add(dr)
                 Next
             End If
