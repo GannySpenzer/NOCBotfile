@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data;
 using System.Net;
+using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Configuration;
@@ -24,6 +25,7 @@ namespace POMapping
             string testOrProd = " ";
             string authorization = " ";
             string serviceURL = " ";
+            string responseErrorText = " ";
 
             var strResponse = " ";
             DataTable dtResponse = new DataTable();
@@ -205,9 +207,20 @@ namespace POMapping
                 }
 
             }
-            catch (Exception ex)
+            //catch (Exception ex)
+            catch (WebException ex)
             {
-                m_oLogger.LogMessage("postPOMappingData", "Error trying to POST data to PMS server.", ex);
+
+                var responseStream = ex.Response.GetResponseStream();
+                if (responseStream != null)
+                {
+                    using (var reader = new StreamReader(responseStream ))
+                    {
+                        responseErrorText = reader.ReadToEnd();
+                    }
+                }
+
+                m_oLogger.LogMessageWeb("postPOMappingData", "Error trying to POST data to PMS server.", responseErrorText); //ex
             }
             return strResponse;
         }

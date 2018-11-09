@@ -63,6 +63,18 @@ namespace POMapping
             SendEmailAlert(sLogMessage);
         }
 
+        public void LogMessageWeb(string sFunctionName, string sMessage, string ex)
+        {
+            string sLogMessage;
+            sLogMessage = sFunctionName + " : " + sMessage + " " + Constants.vbCrLf + ex + " " + Constants.vbCrLf;
+            //if (ex != null)
+            //    sLogMessage = sLogMessage + ex + " " + Constants.vbCrLf;
+
+            WriteLine(sLogMessage);
+
+            SendEmailAlert(sLogMessage);
+        }
+
         public void LogMessage(string sFunctionName, string sMessage)
         {
             WriteLine(sFunctionName + " : " + sMessage);
