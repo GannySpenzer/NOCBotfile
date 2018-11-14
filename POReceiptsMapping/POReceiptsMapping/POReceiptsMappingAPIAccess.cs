@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using POMapping;
 using System.Configuration;
+using System.IO;
 
 namespace POReceiptsMapping
 {
@@ -24,6 +25,8 @@ namespace POReceiptsMapping
             string authorization = " ";
             string serviceURL = " ";
             var strResponse = " ";
+            string responseErrorText = " ";
+
             DataTable dtResponse = new DataTable();
             try
             {
@@ -113,10 +116,10 @@ namespace POReceiptsMapping
                         }
 
 
-                        m_oLogger.LogMessage("postPOReceiptMappingData", "POST PO Mapping Data to PMC starts here");
-                        m_oLogger.LogMessage("postPOReceiptMappingData", "POST POMapping Data" + resultSet.ToString());
+                        m_oLogger.LogMessage("postPOReceiptMappingData", "POST PO Receipt Mapping Data to PMC starts here");
+                        m_oLogger.LogMessage("postPOReceiptMappingData", "POST POReceiptMapping Data" + resultSet.ToString());
                         //m_oLogger.LogMessage("postPOReceiptMappingData", "POST POMapping Data URL : https://10.118.13.27:8243/SDIOutboundPOReceiptAPI/v1_0");
-                        m_oLogger.LogMessage("postPOReceiptMappingData", "POST POMapping Data URL : " + serviceURL);
+                        m_oLogger.LogMessage("postPOReceiptMappingData", "POST POReceiptMapping Data URL : " + serviceURL);
 
                         client.Headers.Add("Authorization: Basic " + authorization);
                         client.Headers.Add("Content-Type:application/json");
@@ -130,16 +133,28 @@ namespace POReceiptsMapping
                         // Console.WriteLine(result);
                         var parsed = JObject.Parse(result);
                         strResponse = parsed.SelectToken("REQUEST_STATUS").Value<string>();
-                        m_oLogger.LogMessage("postPOReceiptMappingData", "POST POMapping data to PMC server status " + strResponse);
+                        m_oLogger.LogMessage("postPOReceiptMappingData", "POST POReceiptMapping data to PMC server status " + strResponse);
 
                         // strResponse = JsonConvert.SerializeObject(result);
                     }
                 }
 
             }
-            catch (Exception ex)
+
+                                            //catch (Exception ex)
+            catch (WebException ex)
             {
-                m_oLogger.LogMessage("postPOReceiptMappingData", "Error trying to POST data to PMS server.", ex);
+
+                var responseStream = ex.Response.GetResponseStream();
+                if (responseStream != null)
+                {
+                    using (var reader = new StreamReader(responseStream ))
+                    {
+                        responseErrorText = reader.ReadToEnd();
+                    }
+                }
+
+                m_oLogger.LogMessageWeb("postPOReceiptMappingData", "Error trying to POST data to PMC server.", responseErrorText); //ex
             }
             return strResponse;
         }
