@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using POIssueMapping;
 using System.Configuration;
+using System.IO;
 
 namespace POIssueMapping
 {
@@ -24,6 +25,7 @@ namespace POIssueMapping
             string testOrProd = " ";
             string authorization = " ";
             string serviceURL = " ";
+            string responseErrorText = " ";
 
             var strResponse = " ";
             DataTable dtResponse = new DataTable();
@@ -32,7 +34,7 @@ namespace POIssueMapping
 
                 POIssueMappingDAL objPOIssueMappingDAL = new POIssueMappingDAL();
 
-                m_oLogger.LogMessage("getPOIssueMappingData", "Getting PO Mapping Data starts here");
+                m_oLogger.LogMessage("getPOIssueMappingData", "Getting PO Issue Mapping Data starts here");
                 dtResponse = objPOIssueMappingDAL.getPOIssueMappingData(m_oLogger);
                 if (dtResponse.Rows.Count != 0)
                 {
@@ -57,7 +59,8 @@ namespace POIssueMapping
                             WIP_ENTITY_ID = ((Decimal)(row["MAINJOBINSTANCE"])).ToString(),
                             TRANSACTION_TYPE_NAME =ReplacePipe((String)(row["ISA_TRANS_NAME"])),
                             TRANSACTION_TYPE_ID =ReplacePipe((String)(row["HDR_TRANS_TYPE"])),
-                            OPERATION_SEQ_NUM = ((Decimal)(row["MAINJOBSEQ"])).ToString(),
+                            //OPERATION_SEQ_NUM = ((Decimal)(row["MAINJOBSEQ"])).ToString(),
+                            OPERATION_SEQ_NUM = ((Decimal)(row["ACTIVITY_ID"])).ToString(),
                             TRANSACTION_REFERENCE =ReplacePipe((String)(row["REFERENCE"])),
                             ATTRIBUTE1 = ReplacePipe((String)(row["ISA_ATTRIBUTE_1"])),
                             ATTRIBUTE2 = ReplacePipe((String)(row["ISA_ATTRIBUTE_2"])),
@@ -137,9 +140,20 @@ namespace POIssueMapping
                 }
 
             }
-            catch (Exception ex)
+                                            //catch (Exception ex)
+            catch (WebException ex)
             {
-                m_oLogger.LogMessage("postMatIssueMappingData", "Error trying to POST data to PMS server.", ex);
+
+                var responseStream = ex.Response.GetResponseStream();
+                if (responseStream != null)
+                {
+                    using (var reader = new StreamReader(responseStream ))
+                    {
+                        responseErrorText = reader.ReadToEnd();
+                    }
+                }
+
+                m_oLogger.LogMessageWeb("postMatIssueMappingData", "Error trying to POST data to PMC server.", responseErrorText); //ex
             }
             return strResponse;
         }
