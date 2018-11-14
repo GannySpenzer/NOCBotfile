@@ -9,6 +9,7 @@ using System.Net;
 using Newtonsoft.Json.Linq;
 using InvoiceMapping;
 using System.Configuration;
+using System.IO;
 
 namespace InvoiceMapping
 {
@@ -19,6 +20,7 @@ namespace InvoiceMapping
             string testOrProd = " ";
             string authorization = " ";
             string serviceURL = " ";
+            string responseErrorText = " ";
 
             var strResponse = " ";
             DataTable dtResponse = new DataTable();
@@ -67,7 +69,8 @@ namespace InvoiceMapping
                             ATTRIBUTE10 = ReplacePipe((String)(row["ISA_ATTRIBUTE_10"])),
                             //TRANS_STATUS_DESCRIPTION = row["ISA_COMMENTS_1333"] == DBNull.Value ? null : (string)(row["ISA_COMMENTS_1333"]),
                             TRANS_STATUS_DESCRIPTION = ReplacePipe((String)(row["COMMENTS_254"])),
-                            TRANSACTION_STATUS = ReplacePipe((string)(row["STATUS_MSG"])),
+                            TRANSACTION_STATUS = ReplacePipe((string)(row["STATUS_MSG"])), 
+                            //TRANSACTION_STATUS = string.Concat(Enumerable.Repeat("a", 51)), //test
                         }).ToList();
 
 
@@ -130,9 +133,20 @@ namespace InvoiceMapping
                 }
 
             }
-            catch (Exception ex)
+                            //catch (Exception ex)
+            catch (WebException ex)
             {
-                m_oLogger.LogMessage("postInvoiceMappingData", "Error trying to POST data to PMS server.", ex);
+
+                var responseStream = ex.Response.GetResponseStream();
+                if (responseStream != null)
+                {
+                    using (var reader = new StreamReader(responseStream ))
+                    {
+                        responseErrorText = reader.ReadToEnd();
+                    }
+                }
+
+                m_oLogger.LogMessageWeb("postInvoiceMappingData", "Error trying to POST data to PMC server.", responseErrorText); //ex
             }
             return strResponse;
         }

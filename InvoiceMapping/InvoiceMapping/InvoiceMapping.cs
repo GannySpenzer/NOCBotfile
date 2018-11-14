@@ -20,8 +20,8 @@ namespace InvoiceMapping
             if (!sLogPath.EndsWith(@"\"))
                 sLogPath += @"\";
             sLogPath += "Logs";
-            m_oLogger = new Logger(sLogPath, "POReceiptsMapping");
-            m_oLogger.LogMessage("Main", "Started utility POReceiptsMapping");
+            m_oLogger = new Logger(sLogPath, "InvoiceMapping");
+            m_oLogger.LogMessage("Main", "Started utility InvoiceMapping");
             InvoiceMappingAPIAccess objInvoiceMappingAPIAccess = new InvoiceMappingAPIAccess();
             InvoiceMappingDAL objInvoiceMappingDAL = new InvoiceMappingDAL();
 
@@ -31,7 +31,7 @@ namespace InvoiceMapping
             {
                 objInvoiceMappingDAL.UpdateInvoiceMappingData(m_oLogger);
             }
-            m_oLogger.LogMessage("Main", "POReceiptsMapping End");
+            m_oLogger.LogMessage("Main", "InvoiceMapping End");
         }
     }
 }

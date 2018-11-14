@@ -63,6 +63,17 @@ namespace InvoiceMapping
             SendEmailAlert(sLogMessage);
         }
 
+        public void LogMessageWeb(string sFunctionName, string sMessage, string ex)
+        {
+            string sLogMessage;
+            sLogMessage = sFunctionName + " : " + sMessage + " " + Constants.vbCrLf + ex + " " + Constants.vbCrLf;
+
+            WriteLine(sLogMessage);
+
+            SendEmailAlert(sLogMessage);
+        }
+
+
         public void LogMessage(string sFunctionName, string sMessage)
         {
             WriteLine(sFunctionName + " : " + sMessage);
@@ -73,7 +84,7 @@ namespace InvoiceMapping
         {
             try
             {
-                const string cErrMsg = "Utility Issue Mapping had a critical error";
+                const string cErrMsg = "Utility Invoice Mapping had a critical error";
                 string strBodyhead = "";
                 string strbodydetl = "";
                 string strBody = "";
@@ -109,7 +120,7 @@ namespace InvoiceMapping
                 strBody = strBodyhead + strbodydetl;
                 try
                 {
-                    SDIEmailService.EmailUtilityServices("Mail", "sdiportalsupport@avasoft.biz","karthick.k.s@avasoft.com", "Error from IssueMapping Utility", "", "", strBody, "SDIERRMAIL", MailAttachmentName, MailAttachmentbytes.ToArray());
+                    SDIEmailService.EmailUtilityServices("Mail", "sdiportalsupport@avasoft.biz","karthick.k.s@avasoft.com", "Error from Invoice Mapping Utility", "", "", strBody, "SDIERRMAIL", MailAttachmentName, MailAttachmentbytes.ToArray());
                 }
                 catch (Exception ex1)
                 {
