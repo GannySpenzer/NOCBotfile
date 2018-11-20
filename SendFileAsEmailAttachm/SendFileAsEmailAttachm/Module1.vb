@@ -628,11 +628,11 @@ Module Module1
 
         Dim strAddSDILogo As String = ""
         strEmailBody = ""
-        strAddSDILogo = "<html><body><img src='https://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' />"
+        strAddSDILogo = "<html><body><img src='https://www.sdiexchange.com/images/SDI_Logo2017_yellow.jpg' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' />"
         'strEmailBody &= "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI, Inc</span></center>&nbsp;&nbsp;"
 
         If bIsValidEmail Then
-            strEmailBody &= "<table><tr><td>Attached is your weekly OTD Report from SDI, Inc.   If you have any questions, please contact Jan Hines at 267-525-5936 "
+            strEmailBody &= "<br/><br/><table><tr><td>Attached is your weekly OTD Report from SDI, Inc.   If you have any questions, please contact Jan Hines at 267-525-5936 "
             strEmailSubject = " ON TIME DELIVERY SDI/ NYC DOE CUSTODIAL/TOOLBOX Week of " & Now.Date.ToString
 
         Else
@@ -821,7 +821,7 @@ Module Module1
 
         Dim strAddSDILogo As String = ""
         strEmailBody = ""
-        strAddSDILogo = "<html><body><img src='https://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' />"
+        strAddSDILogo = "<html><body><img src='https://www.sdiexchange.com/images/SDI_Logo2017_yellow.jpg' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' />"
         strEmailBody &= "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI, Inc</span></center><center><span >Send File as email Attachment Error</span></center>&nbsp;&nbsp;"
 
         strEmailBody &= "<table><tr><td>Send File as email Attachment has completed with "
