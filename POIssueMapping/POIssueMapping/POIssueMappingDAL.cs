@@ -67,7 +67,7 @@ namespace POIssueMapping
             try
             {
 
-                strSQLstring = "UPDATE SYSADM8.PS_ISA_O_MATR_MOVE SET PROCESS_FLAG='I', DATE_PROCESSED = SYSDATE WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'PMC'";
+                strSQLstring = "UPDATE SYSADM8.PS_ISA_O_MATR_MOVE SET PROCESS_FLAG='I', DATE_PROCESSED = SYSDATE WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'PMC' AND (TRANS_TYPE = 'ISS' or TRANS_TYPE = 'RMA' OR TRANS_TYPE = 'CYC')";
 
                 m_oLogger.LogMessage("UpdateMatIssueMappingData", "PeopleSoft connection string : " + OracleConString);
                 m_oLogger.LogMessage("UpdateMatIssueMappingData", "Query To Update the PO issue mapping date : " + strSQLstring);
