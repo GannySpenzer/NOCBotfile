@@ -119,7 +119,8 @@ namespace POMapping
                 strBody = strBodyhead + strbodydetl;
                 try
                 {
-                    SDIEmailService.EmailUtilityServices("Mail", "sdiportalsupport@avasoft.biz","karthick.k.s@avasoft.com", "Error from POReceiptMapping Utility", "", "", strBody, "SDIERRMAIL", MailAttachmentName, MailAttachmentbytes.ToArray());
+                    //SDIEmailService.EmailUtilityServices("Mail", "sdiportalsupport@avasoft.biz","karthick.k.s@avasoft.com", "Error from POReceiptMapping Utility", "", "", strBody, "SDIERRMAIL", MailAttachmentName, MailAttachmentbytes.ToArray());
+                    SDIEmailService.EmailUtilityServices("Mail", "SDIExchADMIN@sdi.com", "webdev@sdi.com; Donna.Ciampoli@sdi.com; scott.doyle@sdi.com", "Error from POIssueMapping Utility", "", "", strBody, "SDIERRMAIL", MailAttachmentName, MailAttachmentbytes.ToArray());
                 }
                 catch (Exception ex1)
                 {
