@@ -60,7 +60,7 @@ namespace POIssueMapping
                             TRANSACTION_TYPE_NAME =ReplacePipe((String)(row["ISA_TRANS_NAME"])),
                             TRANSACTION_TYPE_ID =ReplacePipe((String)(row["HDR_TRANS_TYPE"])),
                             //OPERATION_SEQ_NUM = ((Decimal)(row["MAINJOBSEQ"])).ToString(),
-                            OPERATION_SEQ_NUM = ((String)(row["ACTIVITY_ID"])).ToString(),
+                            OPERATION_SEQ_NUM = ReplacePipe((String)(row["ACTIVITY_ID"])).ToString(),
                             TRANSACTION_REFERENCE =ReplacePipe((String)(row["REFERENCE"])),
                             ATTRIBUTE1 = ReplacePipe((String)(row["ISA_ATTRIBUTE_1"])),
                             ATTRIBUTE2 = ReplacePipe((String)(row["ISA_ATTRIBUTE_2"])),
