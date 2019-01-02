@@ -455,8 +455,8 @@ Module Module1
                                             Dim ReceivingWebServiceAlreadyRun As Boolean = False
                                             Dim strMessageText As String = ""
 
-                                            'get Vendor ID based on strOrderNum
-                                            strVendorId = GetVendorId(strOrderNum)
+                                            'get Vendor ID and strSiteBu based on strOrderNum
+                                            strVendorId = GetVendorId(strOrderNum, strSiteBu)
 
                                             strSmallSite = "Y"  '  getSmallSiteFlag(strOrderNum, strSiteBu)
                                             strASNSite = getASNFlag(strOrderNum, strSiteBu)
@@ -530,8 +530,6 @@ Module Module1
                                                                                 strNextReceiver = ""
 
                                                                                 bSucceessRcv = CallReceiverWebService(strSiteBu, strOrderNum, arrLineQtys, arrLineNums, strMessageText, strNextReceiver)
-                                                                                'bSucceessRcv = True
-                                                                                'strNextReceiver = "0004964710"
 
                                                                                 If Not bSucceessRcv Then
                                                                                     'write error message
@@ -614,6 +612,7 @@ Module Module1
                     ' if there's an error, capture the filename of the XML and corresponding error message
                     If Trim(strXMLError) <> "" Or bolError Then
                         bolError = True
+
                         If Trim(m_arrXMLErrFiles) = "" Then
                             m_arrXMLErrFiles = aFiles(I).Name
                         Else
@@ -790,13 +789,31 @@ Module Module1
             arrdtgline.Insert(4, UCase(row.Item("DESCR254_MIXED")))
 
             arrdtgline.Insert(5, UCase(row.Item("MFG_ID")))
-            arrdtgline.Insert(6, UCase(row.Item("LINE_NBR")))
-            arrdtgline.Insert(7, UCase(row.Item("SCHED_NBR")))
+            arrdtgline.Insert(6, row.Item("LINE_NBR"))
+            arrdtgline.Insert(7, row.Item("SCHED_NBR"))
             arrdtgline.Insert(8, strPO)
             arrdtgline.Insert(9, UCase(row.Item("INV_ITEM_ID")))
             arrdtgline.Insert(10, UCase(row.Item("INV_STOCK_TYPE")))
-            arrdtgline.Insert(11, UCase(row.Item("hQTYLNACCPT")))
-            arrdtgline.Insert(12, UCase(row.Item("hQtyPO")))
+            Dim strQTYLNACCPT As String = ""
+            Try
+                strQTYLNACCPT = row.Item("hQTYLNACCPT")
+                    If Trim(strQTYLNACCPT) = "" Then
+                        strQTYLNACCPT = "0"
+                    End If
+            Catch ex As Exception
+                strQTYLNACCPT = "0"
+            End Try
+            arrdtgline.Insert(11, strQTYLNACCPT)
+            Dim strQtyPO As String = ""
+            Try
+                strQtyPO = row.Item("hQtyPO")
+                If Trim(strQtyPO) = "" Then
+                    strQtyPO = "0"
+                End If
+            Catch ex As Exception
+                strQtyPO = "0"
+            End Try
+            arrdtgline.Insert(12, strQtyPO)
             arrdtgline.Insert(13, UCase(row.Item("UNIT_OF_MEASURE")))
             arrdtgline.Insert(14, strVendor)
             arrdtgline.Insert(15, UCase(row.Item("SHIPTO_ID")))  '  strShiptoID)
@@ -990,21 +1007,38 @@ Module Module1
 
     End Sub
 
-    Private Function GetVendorId(ByVal strOrderNum As String) As String
+    Private Function GetVendorId(ByVal strOrderNum As String, Optional ByRef strSiteBu As String = "ISA00") As String
         Dim strVendorIdByOrder As String = ""
         Dim strSQLString As String = ""
         Dim myConnect As OleDbConnection = New OleDbConnection(ORDBAccess.DbUrl)
 
-        strSQLString = "select VENDOR_ID from SYSADM8.PS_PO_DISPATCHED where PO_ID = '" & strOrderNum & "'" & vbCrLf
+        Dim UserdataSet As System.Data.DataSet = New System.Data.DataSet
+
+        strSQLString = "select * from SYSADM8.PS_PO_DISPATCHED where PO_ID = '" & strOrderNum & "'" & vbCrLf
         Try
-            strVendorIdByOrder = ORDBAccess.GetScalar(strSQLString, myConnect)
+            'strVendorIdByOrder = ORDBAccess.GetScalar(strSQLString, myConnect)
+            UserdataSet = ORDBAccess.GetAdapter(strSQLString, myConnect)
+            ' VENDOR_ID, BUSINESS_UNIT
+            If Not UserdataSet Is Nothing Then
+                If UserdataSet.Tables.Count > 0 Then
+                    If UserdataSet.Tables(0).Rows.Count > 0 Then
+                        strVendorIdByOrder = UserdataSet.Tables(0).Rows(0).Item("VENDOR_ID")
+                        strSiteBu = UserdataSet.Tables(0).Rows(0).Item("BUSINESS_UNIT")
+                    End If
+                End If
+            End If
         Catch ex As Exception
             strVendorIdByOrder = "0000039777"
+            strSiteBu = "ISA00"
         End Try
 
         If Trim(strVendorIdByOrder) = "" Then
             strVendorIdByOrder = "0000039777"
         End If
+        If Trim(strSiteBu) = "" Then
+            strSiteBu = "ISA00"
+        End If
+
         Return strVendorIdByOrder
     End Function
 
@@ -1821,7 +1855,10 @@ Module Module1
         " ' ' as BUSINESS_UNIT," & vbCrLf & _
         " ' ' as RECEIVER_ID," & vbCrLf & _
         " ' ' as RECV_LN_NBR," & vbCrLf & _
-        " G.ISA_SHIP_ID," & vbCrLf
+        " ( SELECT MAX(GB.ISA_SHIP_ID) FROM PS_ISA_ASN_SHIPPED GB " & vbCrLf & _
+          " WHERE G.BUSINESS_UNIT = GB.BUSINESS_UNIT  " & vbCrLf & _
+        " AND G.PO_ID = GB.PO_ID  " & vbCrLf & _
+        " AND G.LINE_NBR = GB.LINE_NBR) AS ISA_SHIP_ID," & vbCrLf
 
         strSQLString = strSQLString & " D.MERCHANDISE_AMT as hMERCHANDISEAMT" & vbCrLf & _
                     " FROM PS_PO_HDR A," & vbCrLf & _
@@ -1856,11 +1893,7 @@ Module Module1
                     " AND D.LINE_NBR = B.LINE_NBR" & vbCrLf & _
                     " AND (C.BUSINESS_UNIT = G.BUSINESS_UNIT (+)" & vbCrLf & _
                     " AND C.PO_ID = G.PO_ID(+)" & vbCrLf & _
-                    " AND C.LINE_NBR = G.LINE_NBR(+) AND G.ISA_SHIP_ID = " & vbCrLf & _
-                    " ( SELECT MAX(GB.ISA_SHIP_ID) FROM PS_ISA_ASN_SHIPPED GB " & vbCrLf & _
-                    " WHERE G.BUSINESS_UNIT = GB.BUSINESS_UNIT" & vbCrLf & _
-                    " AND G.PO_ID = GB.PO_ID" & vbCrLf & _
-                    " AND G.LINE_NBR = GB.LINE_NBR))" & vbCrLf & _
+                    " AND C.LINE_NBR = G.LINE_NBR(+) )" & vbCrLf & _
                     " AND B.BUSINESS_UNIT = BP.BUSINESS_UNIT (+)" & vbCrLf & _
                     " AND B.PO_ID = BP.PO_ID (+)" & vbCrLf & _
                     " AND B.LINE_NBR = BP.LINE_NBR (+)" & vbCrLf
@@ -2064,7 +2097,8 @@ Module Module1
 
     End Function
 
-    Private Sub SendEmail(Optional ByVal bIsSendOut As Boolean = False)
+    Private Sub SendEmail(Optional ByVal bIsSendOut As Boolean = False, Optional ByVal strOrderNum As String = "", _
+            Optional ByVal strXmlError As String = "", Optional ByVal strFileName As String = "")
 
         Dim rtn As String = "AmazonShipNotice.SendEmail"
 
@@ -2085,7 +2119,13 @@ Module Module1
         End If
 
         Dim strEmailSubject As String = ""
-        strEmailSubject = " (TEST) Amazon SDI Direct process Ship Notice Error(s)"
+        strEmailSubject = " Amazon SDI Direct process Ship Notice Error(s)"
+        Dim strDbname As String = ""
+        strDbname = Right(connectOR.ConnectionString, 4)
+        If UCase(strDbname) = "STAR" Or UCase(strDbname) = "DEVL" Or UCase(strDbname) = "RPTG" Or UCase(strDbname) = "PLGR" Then
+            strEmailSubject = " (TEST) Amazon SDI Direct process Ship Notice Error(s)"
+            strEmailTo = "webdev@sdi.com"
+        End If
 
         Dim strEmailBody As String = ""
         strEmailBody &= "<html><body><img src='https://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' />"
@@ -2098,27 +2138,65 @@ Module Module1
         ''    email.Body &= "errors."
         ''End If
 
-        'VR 12/18/2014 Adding file names and error descriptions in message body
-        Dim sInfoErr As String = ""
-        Try
+        'get Buyer email
+        Dim strSqlBuyerEmail As String = ""
+        Dim strBuyerEmail As String = ""
+        If Trim(strOrderNum) <> "" Then
+            strOrderNum = Trim(strOrderNum)
+            strSqlBuyerEmail = "SELECT O.EMAILID FROM SYSADM8.PS_PO_HDR H, SYSADM8.PSOPRDEFN O " & vbCrLf & _
+            " WHERE O.OPRID = H.BUYER_ID AND H.BUSINESS_UNIT = 'ISA00' AND H.PO_ID = '" & strOrderNum & "'"
 
-            sInfoErr &= " XML file name(s) are below. Please review Logs.</td></tr>"
-            If Not m_arrXMLErrFiles Is Nothing Then
-                If Trim(m_arrXMLErrFiles) <> "" Then
-                    Dim arrErrFiles1() As String = Split(m_arrXMLErrFiles, ",")
-                    Dim arrErrDescr2() As String = Split(m_arrErrorsList, ",")
-                    If arrErrFiles1.Length > 0 Then
-                        For i1 As Integer = 0 To arrErrFiles1.Length - 1
-                            sInfoErr &= "<tr><td>" & arrErrFiles1(i1) & "</td><td>&nbsp;&nbsp" & arrErrDescr2(i1) & "</td></tr>"
-                        Next
+            Try
+                strBuyerEmail = ORDBAccess.GetScalar(strSqlBuyerEmail, connectOR)
+                If Trim(strBuyerEmail) <> "" Then
+                    If Len(Trim(strBuyerEmail)) > 4 Then
+                        strBuyerEmail = Trim(strBuyerEmail)
+                        If strBuyerEmail.Contains("@") Then
+                            If strBuyerEmail.Contains(".") Then
+                                strEmailTo = strBuyerEmail
+                            End If
+                        End If
                     End If
                 End If
-            End If
-            strEmailBody &= sInfoErr
-        Catch ex As Exception
+            Catch ex As Exception
 
-            strEmailBody &= " Please review Logs.</td></tr>"
-        End Try
+            End Try
+
+        End If  ' If Trim(strOrderNum) <> "" Then
+
+        'VR 12/18/2014 Adding file names and error descriptions in message body
+        Dim sInfoErr As String = ""
+        sInfoErr &= " XML file name(s) and Error Description(s) are below. Please review Logs.</td></tr>"
+
+        If Trim(strBuyerEmail) <> "" And Trim(strXmlError) <> "" And Trim(strFileName) <> "" Then
+            Try
+                sInfoErr &= "<tr><td>" & Trim(strFileName) & "</td><td>&nbsp;&nbsp" & Trim(strXmlError) & "</td></tr>"
+                strEmailBody &= sInfoErr
+            Catch exBuyer As Exception
+                strEmailBody &= " Please review Logs.</td></tr>"
+            End Try
+        Else
+
+            Try
+
+                If Not m_arrXMLErrFiles Is Nothing Then
+                    If Trim(m_arrXMLErrFiles) <> "" Then
+                        Dim arrErrFiles1() As String = Split(m_arrXMLErrFiles, ",")
+                        Dim arrErrDescr2() As String = Split(m_arrErrorsList, ",")
+                        If arrErrFiles1.Length > 0 Then
+                            For i1 As Integer = 0 To arrErrFiles1.Length - 1
+                                sInfoErr &= "<tr><td>" & arrErrFiles1(i1) & "</td><td>&nbsp;&nbsp" & arrErrDescr2(i1) & "</td></tr>"
+                            Next
+                        End If
+                    End If
+                End If
+                strEmailBody &= sInfoErr
+            Catch ex As Exception
+
+                strEmailBody &= " Please review Logs.</td></tr>"
+            End Try
+
+        End If  '  If Trim(strBuyerEmail) <> "" And Trim(strXmlError) <> "" And Trim(strFileName) <> "" Then
 
         strEmailBody &= "</table>"
 
