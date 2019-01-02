@@ -47,7 +47,10 @@ Public Class ORDBAccess
         Try
 
             Dim Command = New OleDbCommand(p_strQuery, connection)
-            connection.Open()
+            If Not connection.State = ConnectionState.Open Then
+                connection.Open()
+            End If
+
             strReturn = Command.ExecuteScalar()
             connection.Close()
         Catch objException As Exception

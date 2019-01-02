@@ -308,6 +308,7 @@ Module Module1
                         End If  '  If root.ChildNodes.Count > 0 Then
                     End If  '  If Trim(strXMLError) = "" Then
 
+                    Dim strOrderNum As String = ""
                     'start parsing XML file
                     If Trim(strXMLError) = "" Then
 
@@ -329,7 +330,7 @@ Module Module1
                                     Dim arrLineConfirmed(0) As String
                                     arrLineConfirmed(0) = ""
                                     Dim bAtLeastOneLineConfrmd As Boolean = False
-                                    Dim strOrderNum As String = ""
+                                    strOrderNum = ""
                                     Dim strOrderDate As String = ""
                                     'parse and process each XML file - that is confirmation for the each PO received by Amazon
                                     Dim nodeConfReqst As XmlNode = nodeOrdConf.FirstChild()
@@ -542,7 +543,12 @@ Module Module1
                     If Trim(strXMLError) <> "" Or bolError Then
                         bolError = True
                         SaveErrorToFormVars(strXMLError, aFiles(I).Name)
-                        
+
+                        'send email to Buyer
+                        If Trim(strOrderNum) <> "" And Trim(strXMLError) <> "" Then
+                            SendEmail(True, Trim(strOrderNum), Trim(strXMLError), aFiles(I).Name)
+                        End If
+
                         'move file to BadXML folder
                         File.Copy(aFiles(I).FullName, "C:\AmazonSdiDirectIn\BadXML\OrderConfirm\" & aFiles(I).Name, True)
                         File.Delete(aFiles(I).FullName)
@@ -1168,7 +1174,8 @@ Module Module1
         End Try
     End Function
 
-    Private Sub SendEmail(Optional ByVal bIsSendOut As Boolean = False)
+    Private Sub SendEmail(Optional ByVal bIsSendOut As Boolean = False, Optional ByVal strOrderNum As String = "", _
+            Optional ByVal strXmlError As String = "", Optional ByVal strFileName As String = "")
 
         Dim rtn As String = "AmazonOrdrConfirm.SendEmail"
 
@@ -1180,7 +1187,7 @@ Module Module1
                 strEmailTo = CStr(My.Settings(propertyName:="onErrorEmail_To")).Trim
             End If
         End If
-
+       
         Dim strEmailCc As String = " "
 
         Dim strEmailBcc As String = "webdev@sdi.com"
@@ -1189,44 +1196,80 @@ Module Module1
         End If
 
         Dim strEmailSubject As String = "Amazon SDI Direct process Order Confirm Error(s)"
-        Dim strDbname As String = ""
-        strDbname = Right(connectOR.ConnectionString, 4)
-        If UCase(strDbname) = "STAR" Or UCase(strDbname) = "DEVL" Or UCase(strDbname) = "RPTG" Or UCase(strDbname) = "PLGR" Then
-            strEmailSubject = " (TEST) Amazon SDI Direct process Order Confirm Error(s)"
-        End If
         
         Dim strEmailBody As String = ""
         strEmailBody &= "<html><body><img src='https://www.sdiexchange.com/images/sdi_logo2017_yellow.jpg' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' />"
         strEmailBody &= "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI, Inc</span></center><center><span >Amazon SDI Direct process Order Confirm Error(s)</span></center>&nbsp;&nbsp;"
 
         strEmailBody &= "<table><tr><td>Amazon SDI Direct process Order Confirm has completed with error(s)"
-        ''If bolWarning = True Then
-        ''    email.Body &= "warnings."
-        ''Else
-        ''    email.Body &= "errors."
-        ''End If
+       
+        'get Buyer email
+        Dim strSqlBuyerEmail As String = ""
+        Dim strBuyerEmail As String = ""
+        If Trim(strOrderNum) <> "" Then
+            strOrderNum = Trim(strOrderNum)
+            strSqlBuyerEmail = "SELECT O.EMAILID FROM SYSADM8.PS_PO_HDR H, SYSADM8.PSOPRDEFN O " & vbCrLf & _
+            " WHERE O.OPRID = H.BUYER_ID AND H.BUSINESS_UNIT = 'ISA00' AND H.PO_ID = '" & strOrderNum & "'"
+
+            Try
+                strBuyerEmail = ORDBAccess.GetScalar(strSqlBuyerEmail, connectOR)
+                If Trim(strBuyerEmail) <> "" Then
+                    If Len(Trim(strBuyerEmail)) > 4 Then
+                        strBuyerEmail = Trim(strBuyerEmail)
+                        If strBuyerEmail.Contains("@") Then
+                            If strBuyerEmail.Contains(".") Then
+                                strEmailTo = strBuyerEmail
+                            End If
+                        End If
+                    End If
+                End If
+            Catch ex As Exception
+
+            End Try
+
+        End If  ' If Trim(strOrderNum) <> "" Then
+
+        'check is Production server
+        Dim strDbname As String = ""
+        strDbname = Right(connectOR.ConnectionString, 4)
+        If UCase(strDbname) = "STAR" Or UCase(strDbname) = "DEVL" Or UCase(strDbname) = "RPTG" Or UCase(strDbname) = "PLGR" Then
+            strEmailSubject = " (TEST) Amazon SDI Direct process Order Confirm Error(s)"
+            strEmailTo = "webdev@sdi.com"
+        End If
 
         'VR 12/18/2014 Adding file names and error descriptions in message body
         Dim sInfoErr As String = ""
-        Try
+        sInfoErr &= " XML file name(s) and Error Description(s) are below. Please review Logs.</td></tr>"
 
-            sInfoErr &= " XML file name(s) are below. Please review Logs.</td></tr>"
-            If Not m_arrXMLErrFiles Is Nothing Then
-                If Trim(m_arrXMLErrFiles) <> "" Then
-                    Dim arrErrFiles1() As String = Split(m_arrXMLErrFiles, ",")
-                    Dim arrErrDescr2() As String = Split(m_arrErrorsList, ",")
-                    If arrErrFiles1.Length > 0 Then
-                        For i1 As Integer = 0 To arrErrFiles1.Length - 1
-                            sInfoErr &= "<tr><td>" & arrErrFiles1(i1) & "</td><td>&nbsp;&nbsp" & arrErrDescr2(i1) & "</td></tr>"
-                        Next
+        If Trim(strBuyerEmail) <> "" And Trim(strXmlError) <> "" And Trim(strFileName) <> "" Then
+            Try
+                sInfoErr &= "<tr><td>" & Trim(strFileName) & "</td><td>&nbsp;&nbsp" & Trim(strXmlError) & "</td></tr>"
+                strEmailBody &= sInfoErr
+            Catch exBuyer As Exception
+                strEmailBody &= " Please review Logs.</td></tr>"
+            End Try
+        Else
+
+            Try
+
+                If Not m_arrXMLErrFiles Is Nothing Then
+                    If Trim(m_arrXMLErrFiles) <> "" Then
+                        Dim arrErrFiles1() As String = Split(m_arrXMLErrFiles, ",")
+                        Dim arrErrDescr2() As String = Split(m_arrErrorsList, ",")
+                        If arrErrFiles1.Length > 0 Then
+                            For i1 As Integer = 0 To arrErrFiles1.Length - 1
+                                sInfoErr &= "<tr><td>" & arrErrFiles1(i1) & "</td><td>&nbsp;&nbsp" & arrErrDescr2(i1) & "</td></tr>"
+                            Next
+                        End If
                     End If
                 End If
-            End If
-            strEmailBody &= sInfoErr
-        Catch ex As Exception
+                strEmailBody &= sInfoErr
+            Catch ex As Exception
 
-            strEmailBody &= " Please review Logs.</td></tr>"
-        End Try
+                strEmailBody &= " Please review Logs.</td></tr>"
+            End Try
+
+        End If  '  If Trim(strBuyerEmail) <> "" And Trim(strXmlError) <> "" And Trim(strFileName) <> "" Then
 
         strEmailBody &= "</table>"
 
@@ -1279,7 +1322,7 @@ Module Module1
 
         Dim bSend As Boolean = False
         Try
-            
+
             SendLogger(strEmailSubject, strEmailBody, "AMAZONORDRCONFIRMIN", "Mail", strEmailTo, strEmailCc, strEmailBcc)
             bSend = True
         Catch ex As Exception
