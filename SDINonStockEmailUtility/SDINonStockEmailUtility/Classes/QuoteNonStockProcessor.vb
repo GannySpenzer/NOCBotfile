@@ -1956,7 +1956,7 @@ Public Class QuoteNonStockProcessor
                             "<a href=""mailto:" & strBuyerEmail & """>" & strBuyerEmail & "</a> " & _
                          "<br />"
             cInfoHTML &= "" & _
-                            "Phone Number:  888-435-7734 opt. 7 " & _
+                            "Phone Number:  888-435-7734 " & _
                          ""
 
             Return cInfoHTML
