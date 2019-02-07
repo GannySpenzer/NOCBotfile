@@ -645,6 +645,7 @@ Module Module1
                                                                     Dim strVendorID As String = " "
                                                                     Dim strVendorITMID As String = " "
                                                                     Dim strMfdName As String = " "
+                                                                    Dim strMachineNoKla As String = " "
 
                                                                     '  PS_REQ_LINE  arrUnitPrice(iLn)
                                                                     ' no B.ISA_CUST_CHARGE_CD - will get it from XML
@@ -704,8 +705,18 @@ Module Module1
                                                                             strUnitPrice = CType(rdr("PRICE_REQ_BSE"), String)
                                                                             strVendorID = CType(rdr("VENDOR_ID"), String)
                                                                             strVendorITMID = CType(rdr("ITM_ID_VNDR"), String)
+                                                                            strMachineNoKla = " "
                                                                             If Trim(CType(rdr("DESCR254_MIXED"), String)) <> "" Then
                                                                                 arrDescr(iLn) = Trim(CType(rdr("DESCR254_MIXED"), String))
+                                                                                Dim strDescr254Mxd As String = Trim(CType(rdr("DESCR254_MIXED"), String))
+                                                                                Dim iIndx As Integer = 0
+                                                                                If strDescr254Mxd.Contains("SUPPLIER PART NUMBER:") Then
+                                                                                    iIndx = strDescr254Mxd.IndexOf("SUPPLIER PART NUMBER:")
+                                                                                    If iIndx > -1 Then
+                                                                                        strMachineNoKla = Mid(strDescr254Mxd, iIndx + 22)
+                                                                                    End If
+                                                                                End If
+
                                                                             End If
                                                                             strMfdName = " "
 
@@ -733,13 +744,13 @@ Module Module1
                                                                                 'get info form INTF Line table
                                                                                 If bIsLineNoSent Then
                                                                                     ' search using Line No
-                                                                                    strSqlString = "SELECT INV_ITEM_ID, UNIT_OF_MEASURE AS UNIT_MEASURE_STD, ISA_SELL_PRICE AS PRICE_REQ_BSE, VENDOR_ID, ITM_ID_VNDR, ISA_MFG_FREEFORM, DESCR254 FROM SYSADM8.PS_ISA_ORD_INTF_LN " & vbCrLf & _
+                                                                                    strSqlString = "SELECT INV_ITEM_ID, UNIT_OF_MEASURE AS UNIT_MEASURE_STD, ISA_SELL_PRICE AS PRICE_REQ_BSE, VENDOR_ID, ITM_ID_VNDR, ISA_MFG_FREEFORM, DESCR254, ISA_USER4 FROM SYSADM8.PS_ISA_ORD_INTF_LN " & vbCrLf & _
                                                                                         "WHERE ORDER_NO = '" & strOrigOrderQuoteNumber & "' AND ISA_INTFC_LN = '" & intLineNoFromSplit & "'" & vbCrLf & _
                                                                                         "" & vbCrLf & _
                                                                                         ""
                                                                                 Else
                                                                                     'search using Mfg Item Id
-                                                                                    strSqlString = "SELECT INV_ITEM_ID, UNIT_OF_MEASURE AS UNIT_MEASURE_STD, ISA_SELL_PRICE AS PRICE_REQ_BSE, VENDOR_ID, ITM_ID_VNDR, ISA_MFG_FREEFORM, DESCR254 FROM SYSADM8.PS_ISA_ORD_INTF_LN " & vbCrLf & _
+                                                                                    strSqlString = "SELECT INV_ITEM_ID, UNIT_OF_MEASURE AS UNIT_MEASURE_STD, ISA_SELL_PRICE AS PRICE_REQ_BSE, VENDOR_ID, ITM_ID_VNDR, ISA_MFG_FREEFORM, DESCR254, ISA_USER4 FROM SYSADM8.PS_ISA_ORD_INTF_LN " & vbCrLf & _
                                                                                         "WHERE ORDER_NO = '" & strOrigOrderQuoteNumber & "' AND MFG_ITM_ID = '" & arrSupplPartIDs(iLn) & "'" & vbCrLf & _
                                                                                         "" & vbCrLf & _
                                                                                         ""
@@ -765,6 +776,11 @@ Module Module1
                                                                                             If Trim(CType(rdrIntf1("DESCR254"), String)) <> "" Then
                                                                                                 arrDescr(iLn) = Trim(CType(rdrIntf1("DESCR254"), String))
                                                                                             End If
+                                                                                            Try
+                                                                                                strMachineNoKla = CType(rdrIntf1("ISA_USER4"), String)
+                                                                                            Catch exMNKla As Exception
+                                                                                                strMachineNoKla = " "
+                                                                                            End Try
 
                                                                                             rdrIntf1.Close()
                                                                                             rdrIntf1 = Nothing
@@ -899,6 +915,12 @@ Module Module1
                                                                         strMfdName = " "
                                                                     End If
 
+                                                                    If Trim(strMachineNoKla) = "" Then
+                                                                        strMachineNoKla = " "
+                                                                    Else
+                                                                        strMachineNoKla = Trim(strMachineNoKla)
+                                                                    End If
+
                                                                     strPartChargeCode = arrMatGroupTax(iLn)
 
                                                                     If Trim(strPartChargeCode) = "" Then
@@ -921,7 +943,7 @@ Module Module1
                                                                     "' ',' ',' ','" & strPartChargeCode & "','" & strOrigOrderQuoteNumber & "',' ',TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM'),'" & strDefaultUserId & "'," & _
                                                                     "'" & strShipto & "',' ',0,0,' ',' ','" & strPULINEFIELD & "','" & strRfqInd & "',' '," & _
                                                                     "' ',' ',' ',' ',' ',' ',' ',' '," & _
-                                                                    "' ',0,' ',' ',' ',' ',' ',0,0,0,'" & strAddToCtlg & "',' ',' ',' ',' ','" & arrAuxSupplPartIDs(iLn) & "',' ',' ',0"
+                                                                    "' ',0,' ',' ',' ',' ',' ',0,0,0,'" & strAddToCtlg & "',' ',' ',' ','" & strMachineNoKla & "','" & arrAuxSupplPartIDs(iLn) & "',' ',' ',0"
 
                                                                     If Not String.IsNullOrEmpty(StrDueDate) Then
                                                                         strSqlString = strSqlString + "," & StrDueDate
