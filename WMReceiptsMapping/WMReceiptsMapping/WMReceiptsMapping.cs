@@ -1,0 +1,37 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using WMMapping;
+
+namespace WMReceiptsMapping
+{
+    class WMReceiptsMapping
+    {
+        static void Main(string[] args)
+        {
+            var strResponse = "";
+
+            // InitializeLogger start here
+
+            Logger m_oLogger;
+            string sLogPath = Environment.CurrentDirectory;
+            if (!sLogPath.EndsWith(@"\"))
+                sLogPath += @"\";
+            sLogPath += "Logs";
+            m_oLogger = new Logger(sLogPath, "WMReceiptsMapping");
+            m_oLogger.LogMessage("Main", "Started utility WMReceiptsMapping");
+
+            WMReceiptsMappingAPIAccess objWMReceiptsMappingAPIAccess = new WMReceiptsMappingAPIAccess();
+            WMReceiptsMappingDAL objWMReceiptsMappingDAL = new WMReceiptsMappingDAL();
+            strResponse = objWMReceiptsMappingAPIAccess.postWMReceiptMappingData(m_oLogger);
+            if (strResponse == "SUCCESSFUL")
+            {
+                objWMReceiptsMappingDAL.UpdateWMReceiptMappingData(m_oLogger);
+            }
+            m_oLogger.LogMessage("Main", "WMReceiptsMapping End");
+        }
+    }
+}
+
