@@ -23,7 +23,7 @@ namespace WMReceiptsMapping
         string OracleConString = ConfigurationManager.AppSettings["OLEDBconString"];
 
         /// <summary>
-        /// Get the purchase order data whose process flag is 'N' and cust id is 'PMC'
+        /// Get the purchase order data whose process flag is 'N' and cust id is 'SOLVAY'
         /// </summary>
         /// <returns></returns>
         public DataTable getWMReceiptMappingData(Logger m_oLogger)
@@ -33,7 +33,8 @@ namespace WMReceiptsMapping
             try
             {
 
-                strSQLstring = "SELECT * FROM sysadm8.PS_ISA_O_MATR_MOVE WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'PMC' AND TRANS_TYPE = 'REC'";
+                //strSQLstring = "SELECT * FROM sysadm8.PS_ISA_O_MATR_MOVE WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'PMC' AND TRANS_TYPE = 'REC'";
+                strSQLstring = "SELECT * FROM sysadm8.PS_ISA_SV_MOV_OUT WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'SOLVAY'";
                 m_oLogger.LogMessage("getWMReceiptMappingData", "PeopleSoft connection string : " + OracleConString);
                 m_oLogger.LogMessage("getWMReceiptMappingData", "Query To get the PO mapping date : " + strSQLstring);
                 dtResponse = oleDBExecuteReader(strSQLstring);
@@ -48,7 +49,7 @@ namespace WMReceiptsMapping
         }
 
         /// <summary>
-        /// Update the process flag to I once the PMC service transaction successfully submited.
+        /// Update the process flag to I once the Solvay service transaction successfully submited.
         /// </summary>
         /// <returns></returns>
         public int UpdateWMReceiptMappingData(Logger m_oLogger)
@@ -59,7 +60,7 @@ namespace WMReceiptsMapping
             try
             {
 
-                strSQLstring = "UPDATE SYSADM8.PS_ISA_O_MATR_MOVE SET PROCESS_FLAG='I', DATE_PROCESSED = SYSDATE WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'PMC' AND TRANS_TYPE = 'REC'";
+                strSQLstring = "UPDATE SYSADM8.PS_ISA_SV_MOV_OUT SET PROCESS_FLAG='I', DATE_PROCESSED = SYSDATE WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'SOLVAY'";
 
                 m_oLogger.LogMessage("UpdateWMReceiptMappingData", "PeopleSoft connection string : " + OracleConString);
                 m_oLogger.LogMessage("UpdateWMReceiptMappingData", "Query To Update the PO Receipt mapping date : " + strSQLstring);

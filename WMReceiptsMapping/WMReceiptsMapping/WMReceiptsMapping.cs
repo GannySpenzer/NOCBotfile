@@ -26,7 +26,7 @@ namespace WMReceiptsMapping
             WMReceiptsMappingAPIAccess objWMReceiptsMappingAPIAccess = new WMReceiptsMappingAPIAccess();
             WMReceiptsMappingDAL objWMReceiptsMappingDAL = new WMReceiptsMappingDAL();
             strResponse = objWMReceiptsMappingAPIAccess.postWMReceiptMappingData(m_oLogger);
-            if (strResponse == "SUCCESSFUL")
+            if (strResponse.ToUpper() == "SUCCESS")
             {
                 objWMReceiptsMappingDAL.UpdateWMReceiptMappingData(m_oLogger);
             }
