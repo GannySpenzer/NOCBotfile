@@ -17,5 +17,11 @@
     <Setting Name="rootDirApp" Type="System.String" Scope="Application">
       <Value Profile="(Default)">C:\SendCustEmail</Value>
     </Setting>
+    <Setting Name="List911" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Scott.Doyle@sdi.com;Kelly.Kleinfelder@sdi.com</Value>
+    </Setting>
+    <Setting Name="Subject911" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">911 Needs Immediate Attention</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

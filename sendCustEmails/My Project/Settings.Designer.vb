@@ -102,6 +102,24 @@ Namespace My
                 Return CType(Me("rootDirApp"),String)
             End Get
         End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("Scott.Doyle@sdi.com;Kelly.Kleinfelder@sdi.com")>  _
+        Public ReadOnly Property List911() As String
+            Get
+                Return CType(Me("List911"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("911 Needs Immediate Attention")>  _
+        Public ReadOnly Property Subject911() As String
+            Get
+                Return CType(Me("Subject911"),String)
+            End Get
+        End Property
     End Class
 End Namespace
 

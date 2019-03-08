@@ -244,7 +244,8 @@ Module Module1
 
         strEmailEmpEmail = strEmailList
 
-        eMail.From = New MailAddress("SDIExchange@sdi.com", "SDI Exchange")
+        'dr.Item("EMAILFROM") 
+        eMail.From = New MailAddress(dr.Item("EMAILFROM"))  '  New MailAddress("SDIExchange@sdi.com", "SDI Exchange")
 
         eMail.Bcc.Add(New MailAddress("webdev@sdi.com", "WEBDEV Group"))
 
@@ -325,8 +326,36 @@ Module Module1
             'Mailer.Subject = dr.Item("EMAIL_SUBJECT_LONG")
             eMail.Subject = dr.Item("EMAILSUBJECT")
         End If
+        Dim strSubj911 As String = ""
+        Dim strList911 As String = ""
+        Dim i2 As Integer = 0
 
-        'Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
+        Try
+            strSubj911 = My.Settings("Subject911").ToString.Trim
+        Catch ex As Exception
+            strSubj911 = "911 Needs Immediate Attention"
+        End Try
+
+        If eMail.Subject.Contains(strSubj911) Then
+            Try
+                strList911 = My.Settings("List911").ToString.Trim
+            Catch ex As Exception
+                strList911 = "Scott.Doyle@sdi.com;Kelly.Kleinfelder@sdi.com"
+            End Try
+            If Trim(strList911) <> "" Then
+                strList911 = Trim(strList911)
+                Dim arrList911() As String = Split(strList911, ";")
+                If arrList911.Length > 0 Then
+                    For i2 = 0 To arrList911.Length - 1
+                        If Trim(arrList911(i2)) <> "" Then
+                            eMail.To.Add(arrList911(i2))
+                        End If
+                    Next
+                    'eMail.Subject = " (Test Run) " & eMail.Subject
+                End If
+            End If
+        End If
+        Dim strEmailToList As String = eMail.To.ToString()
 
         If connectOR.DataSource.ToUpper = "RPTG" Or _
                 connectOR.DataSource.ToUpper = "PLGR" Or _
@@ -336,8 +365,9 @@ Module Module1
             eMail.To.Clear()
             eMail.To.Add("webdev@sdi.com")
             eMail.Subject = " (Test Run) - " & eMail.Subject
+            eMail.Body = "Email.To - " & strEmailToList & eMail.Body
         Else
-
+            
             If Trim(strEmailEmpName) = "" Then
                 objStreamWriter.WriteLine("  email address problem for EmailKey: " & dr.Item("EMAILKEY") & " - e-mail address doesn't exist in Users table")
                 'bAreThereBadEmails = True
