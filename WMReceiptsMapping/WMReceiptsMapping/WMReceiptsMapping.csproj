@@ -108,6 +108,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="ZWIM_MBGMCR2-oneline-mapping2.Xml" />
+    <Content Include="ZWIM_MBGMCR2-oneline-mapping3.Xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

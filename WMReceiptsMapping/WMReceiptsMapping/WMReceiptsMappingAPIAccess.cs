@@ -40,7 +40,7 @@ namespace WMReceiptsMapping
                     DataRow rowInit;
                     rowInit = dtResponse.Rows[0];
 
-                    string DOC_NUM          = "0000000000000002"; //temp
+                    string DOC_NUM          = "0000000000000004"; //temp
                     string LOGDAT           = System.DateTime.Now.ToString("yyyyMMdd");
                     string LOGTIM           = System.DateTime.Now.ToString("HHmmss");
                     string REFGRP           = rowInit["PLANT"].ToString(); 
@@ -70,7 +70,7 @@ namespace WMReceiptsMapping
                     StringBuilder sbInit = new StringBuilder();
                     string xmlStr = string.Empty;
                     string xmlStringInit = string.Empty;
-                    using (StreamReader sr = new StreamReader(Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory())) + "/ZWIM_MBGMCR2-oneline-mapping2.xml"))
+                    using (StreamReader sr = new StreamReader(Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory())) + "/ZWIM_MBGMCR2-oneline-mapping3.xml"))
                     {
                         xmlStr = sr.ReadToEnd();
                         sbInit.AppendFormat(xmlStr, DOC_NUM, LOGDAT, LOGTIM, REFGRP, REFMES, PSTNG_DATE, MATERIAL, STGE_LOC, MOVE_TYPE, ENTRY_QNT, ENTRY_UOM, PO_NUMBER, PO_ITEM, ITEM_TEXT);
@@ -189,7 +189,7 @@ namespace WMReceiptsMapping
 
                         // Console.WriteLine(result);
                         var parsed = JObject.Parse(result);
-                        strResponse = parsed.SelectToken("REQUEST_STATUS").Value<string>();
+                        strResponse = parsed.SelectToken("RequestStatus").Value<string>();
                         m_oLogger.LogMessage("postWMReceiptMappingData", "POST WMReceiptMapping data to Solvay server status " + strResponse);
 
                         // strResponse = JsonConvert.SerializeObject(result);
