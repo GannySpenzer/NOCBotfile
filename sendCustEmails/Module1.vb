@@ -191,19 +191,28 @@ Module Module1
         Dim strEmailEmpName As String = ""
         Dim strEmailEmpEmail As String = ""
         Dim strBadEmailsList As String = ""
+        Dim strTimeStamp As String = ""  '  dr.Item("DT_TIMESTAMP")
+        Try
+            strTimeStamp = CType(dr.Item("DT_TIMESTAMP").ToString, String)
+        Catch ex As Exception
+            strTimeStamp = Now.ToString & "  ( current time )"
+        End Try
 
         Dim eMail As System.Net.Mail.MailMessage = New System.Net.Mail.MailMessage()
 
+        Dim strSingleEmail As String = ""
         For intCnt = 0 To intTotal - 1
             If Trim(strEmailTo(intCnt)) <> "" Then
-                If IsValidSingleAdd(Trim(strEmailTo(intCnt))) Then
-                    eMail.To.Add(strEmailTo(intCnt))
+                strSingleEmail = Trim(strEmailTo(intCnt))
+                strSingleEmail = Replace(strSingleEmail, ":", "")
+                If IsValidSingleAdd(strSingleEmail) Then
+                    eMail.To.Add(strSingleEmail)
 
                     strFirstName = ""
                     strLastName = ""
                     strSQLstring = "SELECT A.FIRST_NAME_SRCH, A.LAST_NAME_SRCH" & vbCrLf & _
                                 " FROM PS_ISA_USERS_TBL A" & vbCrLf & _
-                                " WHERE UPPER(A.ISA_EMPLOYEE_EMAIL) = UPPER('" & strEmailTo(intCnt) & "')" & vbCrLf & _
+                                " WHERE UPPER(A.ISA_EMPLOYEE_EMAIL) = UPPER('" & strSingleEmail & "')" & vbCrLf & _
                                 " AND ROWNUM < 2"
 
                     Dim drName As OleDbDataReader
@@ -227,9 +236,9 @@ Module Module1
                 Else
                     ' bad email address - need to find out for whom
                     If Trim(strBadEmailsList) = "" Then
-                        strBadEmailsList = Trim(strEmailTo(intCnt))
+                        strBadEmailsList = strSingleEmail
                     Else
-                        strBadEmailsList += " ; " & Trim(strEmailTo(intCnt))
+                        strBadEmailsList += " ; " & strSingleEmail
                     End If
                 End If  '  If IsValidSingleAdd(Trim(strEmailTo(intCnt))) Then
 
@@ -277,6 +286,7 @@ Module Module1
         'End If
 
         strbodydetl = strbodydetl & "<TABLE cellSpacing='1' cellPadding='1' width='100%' border='0'>" & vbCrLf
+        
         If Not Trim(dr.Item("EMAILBODY")) = "" Then  '  If Not Trim(dr.Item("EMAIL_TEXTLONG")) = "" Then
             'strbodydetl = strbodydetl + "<TR><TD Class='DetailRow' width='100%'>" & dr.Item("EMAIL_TEXTLONG") & "</TD></TR>"
             strbodydetl = strbodydetl + "<TR><TD Class='DetailRow' width='100%'>" & dr.Item("EMAILBODY") & "</TD></TR>"
@@ -292,6 +302,8 @@ Module Module1
 
         End If
 
+        strbodydetl = strbodydetl + "<TR><TD Class='DetailRow'>&nbsp;</TD></TR>"
+        strbodydetl = strbodydetl + "<TR><TD Class='DetailRow' width='100%'>" & "Email record was created: " & strTimeStamp & "</TD></TR>"
         strbodydetl = strbodydetl + "<TR><TD Class='DetailRow'>&nbsp;</TD></TR>"
         strbodydetl = strbodydetl & "</TABLE>" & vbCrLf
 
