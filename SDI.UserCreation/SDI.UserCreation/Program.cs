@@ -57,6 +57,7 @@ namespace SDI.UserCreation
             string CreatorUserID = string.Empty;
             string UserID = string.Empty;
             string strFullName40 = string.Empty;
+            string RoleID = string.Empty;
             int count = 0;
             string Logpath = ConfigurationManager.AppSettings["LogFilePath"];
             //string UploadPath = ConfigurationManager.AppSettings["UploadFilePath"];
@@ -180,6 +181,7 @@ namespace SDI.UserCreation
                                 BU = Convert.ToString(rows[4]);
                                 UserType = Convert.ToString(rows[5]).ToUpper().Trim();
                                 RoleType = Convert.ToString(rows[6]).ToUpper().Trim();
+                                RoleID  = Convert.ToString(rows[8]).Trim();
                                 VendorId = string.Empty;
                                 if (FirstName.Length > 30) 
                                 {
@@ -282,13 +284,13 @@ namespace SDI.UserCreation
                                             ISA_EMPLOYEE_EMAIL, ISA_EMPLOYEE_ACTYP,
                                             CUST_ID, ISA_SESSION,
                                             ISA_LAST_SYNC_DATE, ISA_SDI_EMPLOYEE, ISA_CUST_SERV_FLG,
-                                            LASTUPDOPRID, LASTUPDDTTM, ACTIVE_STATUS, PWDRESET, LAST_ACTIVITY, ISA_VENDOR_ID)
+                                            LASTUPDOPRID, LASTUPDDTTM, ACTIVE_STATUS, PWDRESET, LAST_ACTIVITY, ISA_VENDOR_ID,ROLENUM)
                                             VALUES(" + lngIsaUserId + ",'" + strFullName.ToUpper() + "','" + strPasswEncrp + "', '"
                                                          + FirstName.ToUpper() + "', '" + LastName.ToUpper() + "', '" + BU + "', '" + UserID + "', '"
                                                          + strFullName40.ToUpper() + "', '" + PhoneNo + "', 0, ' ', '"
                                                          + Email + "', '" + RoleType.ToUpper() + "', '0', 0, '', '" + UserType.ToUpper() + "', ' ', 'SYSLOAD', TO_DATE('" +
                                                          DateTime.Now.ToString() + "', 'MM/DD/YYYY HH:MI:SS AM'), 'A', 'N', TO_DATE('" +
-                                                         DateTime.Now.ToString() + "', 'MM/DD/YYYY HH:MI:SS AM'), '" + VendorId + "')";
+                                                         DateTime.Now.ToString() + "', 'MM/DD/YYYY HH:MI:SS AM'), '" + VendorId + "'," + RoleID  + ")";
 
                                 strSQLPW = @"INSERT INTO SDIX_ISOL_PW
                                         (ISA_USER_ID, ISA_EMPLOYEE_ID,
