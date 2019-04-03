@@ -31,7 +31,7 @@ namespace SDI.UserCreation
             {
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    
+
                 }
             }
             var excel = dialog.FileName;
@@ -46,7 +46,7 @@ namespace SDI.UserCreation
             FileInfo logFileInfo;
 
             string FirstName = string.Empty;
-            string LastName = string.Empty;            
+            string LastName = string.Empty;
             string Email = string.Empty;
             string PhoneNo = string.Empty;
             string BU = string.Empty;
@@ -156,14 +156,15 @@ namespace SDI.UserCreation
                             csvData.Rows.Add(fieldData);
                         }
                     }
-                    else {
+                    else
+                    {
                         log.WriteLine("Invalid File format.");
                         throw new Exception("Invalid File format.");
                     }
-                                                                                                  
+
                     string connectionString = ConfigurationManager.ConnectionStrings["ConString"].ConnectionString;
                     OleDbConnection cn = new OleDbConnection(connectionString);
-                    OleDbCommand com = new OleDbCommand();                   
+                    OleDbCommand com = new OleDbCommand();
                     cn.Open();
                     if (csvData.Rows.Count != 0)
                     {
@@ -178,12 +179,12 @@ namespace SDI.UserCreation
                                 PhoneNo = Convert.ToString(rows[3]).Trim();
                                 //Pwd = Convert.ToString(rows[4]);
                                 Pwd = "Welcome";
-                                BU = Convert.ToString(rows[4]);
+                                BU = Convert.ToString(rows[4]).Trim();
                                 UserType = Convert.ToString(rows[5]).ToUpper().Trim();
                                 RoleType = Convert.ToString(rows[6]).ToUpper().Trim();
-                                RoleID  = Convert.ToString(rows[8]).Trim();
+                                RoleID = Convert.ToString(rows[8]).Trim();
                                 VendorId = string.Empty;
-                                if (FirstName.Length > 30) 
+                                if (FirstName.Length > 30)
                                 {
                                     FirstName = FirstName.Substring(0, 30);
                                 }
@@ -195,6 +196,10 @@ namespace SDI.UserCreation
                                 {
                                     Email = Email.Substring(0, 60);
                                 }
+                                if (PhoneNo.Length == 0)
+                                {
+                                    PhoneNo = "111-111-1111";
+                                }
                                 if (PhoneNo.Length > 14)
                                 {
                                     PhoneNo = PhoneNo.Substring(0, 14);
@@ -202,6 +207,14 @@ namespace SDI.UserCreation
                                 if (BU.Length > 5)
                                 {
                                     BU = BU.Substring(0, 5);
+                                }
+                                if (UserType.Length == 0)
+                                {
+                                    UserType = "C";
+                                }
+                                if (RoleType.Length == 0)
+                                {
+                                    RoleType = "USER";
                                 }
                                 if (UserType.Length > 1)
                                 {
@@ -217,7 +230,7 @@ namespace SDI.UserCreation
                                 {
                                     strFullName = strFullName40.Substring(0, 40);
                                 }
-                                if (UserType == "C" || UserType == "S") 
+                                if (UserType == "C" || UserType == "S")
                                 {
                                     bool VerifyBU = CheckBU(BU.ToUpper());
                                     if (!VerifyBU)
@@ -225,12 +238,12 @@ namespace SDI.UserCreation
                                         throw new Exception("Business Unit does not exist");
                                     }
                                 }
-                                else if (UserType == "V") 
+                                else if (UserType == "V")
                                 {
                                     VendorId = Convert.ToString(rows[7]).Trim();
                                     if (BU == "ISA00" || BU == "SDM00")
                                     {
-                                       
+
                                     }
                                     else
                                     {
@@ -240,16 +253,16 @@ namespace SDI.UserCreation
                                     {
                                         throw new Exception("Vendor ID is required to create a New Vendor user");
                                     }
-                                    else 
+                                    else
                                     {
                                         bool vendrCheck = checkVendorId(VendorId);
-                                        if (!vendrCheck) 
+                                        if (!vendrCheck)
                                         {
                                             throw new Exception("Given Vendor ID is invalid");
                                         }
                                     }
-                                }                               
-                                
+                                }
+
                                 if (UserType == "S")
                                 {
                                     if (RoleType != "SUPER" && RoleType != "ADMIN" && RoleType != "USER")
@@ -290,7 +303,7 @@ namespace SDI.UserCreation
                                                          + strFullName40.ToUpper() + "', '" + PhoneNo + "', 0, ' ', '"
                                                          + Email + "', '" + RoleType.ToUpper() + "', '0', 0, '', '" + UserType.ToUpper() + "', ' ', 'SYSLOAD', TO_DATE('" +
                                                          DateTime.Now.ToString() + "', 'MM/DD/YYYY HH:MI:SS AM'), 'A', 'N', TO_DATE('" +
-                                                         DateTime.Now.ToString() + "', 'MM/DD/YYYY HH:MI:SS AM'), '" + VendorId + "'," + RoleID  + ")";
+                                                         DateTime.Now.ToString() + "', 'MM/DD/YYYY HH:MI:SS AM'), '" + VendorId + "','" + RoleID + "')";
 
                                 strSQLPW = @"INSERT INTO SDIX_ISOL_PW
                                         (ISA_USER_ID, ISA_EMPLOYEE_ID,
@@ -374,7 +387,7 @@ namespace SDI.UserCreation
                             }
                         }
                         cn.Close();
-                        
+
                     }
                     else
                     {
@@ -384,7 +397,7 @@ namespace SDI.UserCreation
             }
             catch (System.IndexOutOfRangeException e)  // CS0168
             {
-                log.WriteLine("Error while User creation, {0}", e);                
+                log.WriteLine("Error while User creation, {0}", e);
                 throw new System.ArgumentOutOfRangeException("index parameter is out of range.", e);
             }
             log.Close();
@@ -449,9 +462,10 @@ namespace SDI.UserCreation
             DataSet dsCustUserid = GetAdapter(strSQLstring);
             if (dsCustUserid.Tables[0].Rows.Count == 0)
             {
-                                
+
             }
-            else {
+            else
+            {
                 rslt = true;
             }
             return rslt;
@@ -522,7 +536,7 @@ namespace SDI.UserCreation
                     }
                 }
             }
-            
+
             return lngIsaUserId;
         }
 
@@ -599,7 +613,7 @@ namespace SDI.UserCreation
                     else if (usrid.Length == 2)
                         usrid = usrid + "0000";
                 }
-                
+
                 bool VerifiedUsrID = false;
 
                 // Dim dsUsertbl As DataSet
@@ -626,7 +640,25 @@ namespace SDI.UserCreation
                             {
                             }
 
+                            //int strAutoIDLen = 10 -  strUser_ID_Created.Length;
+                            //string strSliceUserID;
+
+
+                            //if (strAutoIDLen != usrid.Length ){
+                            //    strSliceUserID = usrid.Substring(0, strAutoIDLen);
+
+                            //}
+                           
+
                             string UserID_Created = usrid + strUser_ID_Created;
+                            int userIDLen = UserID_Created.Length;
+
+                            if (userIDLen > 10) {
+                                userIDLen = userIDLen - 10;
+                                usrid = usrid.Substring(0, usrid.Length - userIDLen);
+                                UserID_Created = usrid + strUser_ID_Created;
+                            }
+
                             AutoGenerateUserID = UserID_Created.ToUpper();
                             string strSQLstring = "Select ISA_USER_ID FROM SDIX_USERS_TBL WHERE isa_employee_id = '" + AutoGenerateUserID + "'";
                             DataSet dsUserid = GetAdapter(strSQLstring);
@@ -696,14 +728,14 @@ namespace SDI.UserCreation
 
         private static bool checkVendorId(string strvendorid)
         {
-            string strSQLString = @"SELECT DISTINCT ISA_VENDOR_ID FROM SDIX_USERS_TBL where ISA_VENDOR_ID = '"+ strvendorid +"'";
+            string strSQLString = @"SELECT DISTINCT ISA_VENDOR_ID FROM SDIX_USERS_TBL where ISA_VENDOR_ID = '" + strvendorid + "'";
 
             DataSet ds_vendorID = GetAdapter(strSQLString);
             if (ds_vendorID.Tables[0].Rows.Count == 0)
             {
                 return false;
             }
-            else 
+            else
             {
                 return true;
             }
@@ -722,7 +754,7 @@ namespace SDI.UserCreation
                 OleDbCommand Command = new OleDbCommand(p_strQuery, connection);
                 Command.CommandTimeout = 120;
                 connection.Open();
-                OleDbDataAdapter dataAdapter = new OleDbDataAdapter(Command);               
+                OleDbDataAdapter dataAdapter = new OleDbDataAdapter(Command);
 
                 dataAdapter.Fill(UserdataSet);
                 try
@@ -748,7 +780,7 @@ namespace SDI.UserCreation
                 {
                 }
                 // connection.close()               
-            }            
+            }
             catch (Exception objException)
             {
                 try
@@ -758,8 +790,8 @@ namespace SDI.UserCreation
                 }
                 catch (Exception ex)
                 {
-                    
-                }               
+
+                }
             }
             return UserdataSet;
         }
@@ -816,7 +848,7 @@ namespace SDI.UserCreation
                 {
 
                     // connection.close()
-                   
+
                 }
             }
 
@@ -860,7 +892,7 @@ namespace SDI.UserCreation
                 }
                 catch (Exception ex)
                 {
-                }                
+                }
             }
 
             return rowsAffected;
