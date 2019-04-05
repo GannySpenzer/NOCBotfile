@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using Microsoft.VisualBasic;
+using System.Configuration;
 
 namespace WMMapping
 {
@@ -83,7 +84,10 @@ namespace WMMapping
         {
             try
             {
-                const string cErrMsg = "Utility WMReceiptMapping had a critical error";
+                string testOrProd = ConfigurationManager.AppSettings["TestOrProd"].ToUpper() == "TEST" ? "(TEST) " : "";
+
+                //const string cErrMsg = testOrProd +  "Utility WMReceiptMapping had a critical error";
+                string cErrMsg = testOrProd + "Utility WMReceiptMapping had a critical error";
                 string strBodyhead = "";
                 string strbodydetl = "";
                 string strBody = "";
@@ -119,7 +123,7 @@ namespace WMMapping
                 strBody = strBodyhead + strbodydetl;
                 try
                 {
-                    SDIEmailService.EmailUtilityServices("Mail", "SDIExchADMIN@sdi.com", "webdev@sdi.com; Donna.Ciampoli@sdi.com; scott.doyle@sdi.com", "Error from WMReceiptMapping Utility", "", "", strBody, "SDIERRMAIL", MailAttachmentName, MailAttachmentbytes.ToArray());
+                    SDIEmailService.EmailUtilityServices("Mail", "SDIExchADMIN@sdi.com", "webdev@sdi.com; Donna.Ciampoli@sdi.com; scott.doyle@sdi.com", testOrProd + "Error from WMReceiptMapping Utility", "", "", strBody, "SDIERRMAIL", MailAttachmentName, MailAttachmentbytes.ToArray());
                 }
                 catch (Exception ex1)
                 {
