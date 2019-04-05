@@ -31,10 +31,11 @@ namespace SDI.UserCreation
             {
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-
+                    
                 }
             }
             var excel = dialog.FileName;
+            var fileName = System.IO.Path.GetFileNameWithoutExtension(dialog.FileName);
             if (Convert.ToString(dialog.FileName) == "")
             {
                 Environment.Exit(0);
@@ -46,7 +47,7 @@ namespace SDI.UserCreation
             FileInfo logFileInfo;
 
             string FirstName = string.Empty;
-            string LastName = string.Empty;
+            string LastName = string.Empty;            
             string Email = string.Empty;
             string PhoneNo = string.Empty;
             string BU = string.Empty;
@@ -63,7 +64,7 @@ namespace SDI.UserCreation
             //string UploadPath = ConfigurationManager.AppSettings["UploadFilePath"];
             string UploadPath = Convert.ToString(dialog.FileName);
             string logFilePath = "C:\\Logs\\";
-            logFilePath = Logpath + "UserCreationUtilityLog-" + string.Format("{0:yyyy-MM-dd_hh-mm-ss-tt}", DateTime.Now) + "." + "txt";
+            logFilePath = Logpath + "UserImport_" + fileName + "_" + string.Format("{0:yyyy-MM-dd_hh-mm-ss-tt}", DateTime.Now) + "." + "txt";
             logFileInfo = new FileInfo(logFilePath);
             logDirInfo = new DirectoryInfo(logFileInfo.DirectoryName);
             if (!logDirInfo.Exists) logDirInfo.Create();
@@ -76,7 +77,7 @@ namespace SDI.UserCreation
                 fileStream = new FileStream(logFilePath, FileMode.Append);
             }
             log = new StreamWriter(fileStream);
-            log.WriteLine("Started the User Creations");
+            log.WriteLine("User import results:");
 
             try
             {
@@ -89,79 +90,97 @@ namespace SDI.UserCreation
                         int sheeetcount = xlWorkbook.Sheets.Count;
                         Excel.Worksheet xlSheet = xlWorkbook.Sheets[1];
                         Excel.Range xlRange = xlSheet.UsedRange;
+                        try
+                        {
+                            int numberOfRows = xlRange.Rows.Count;
+                            int numberOfCols = xlRange.Columns.Count;
+                            List<int> columnsToRead = new List<int>();
+                            for (int i = 1; i <= numberOfCols; i++)
+                            {
+                                if (xlRange.Cells[1, i].Value2 != null) // ADDED IN EDIT
+                                {
+                                    csvData.Columns.Add(Convert.ToString(xlRange.Cells[1, i].Value2));
+                                    columnsToRead.Add(i);
 
-                        int numberOfRows = xlRange.Rows.Count;
-                        int numberOfCols = xlRange.Columns.Count;
-                        List<int> columnsToRead = new List<int>();
-                        for (int i = 1; i <= numberOfCols; i++)
-                        {
-                            if (xlRange.Cells[1, i].Value2 != null) // ADDED IN EDIT
+                                }
+                            }
+                            List<string> columnValue = new List<string>();
+                            // loop over each column number and add results to the list
+                            foreach (var c in xlRange.Rows)
                             {
-                                csvData.Columns.Add(Convert.ToString(xlRange.Cells[1, i].Value2));
-                                columnsToRead.Add(i);
+                                var val = c;
+                            }
+                            // start at 2 because the first row is 1 and the header row
+                            for (int r = 2; r <= numberOfRows; r++)
+                            {
+                                columnValue.Clear();
+                                foreach (int c in columnsToRead)
+                                {
+                                    columnValue.Add(Convert.ToString(xlRange.Cells[r, c].Value2));
+                                }
+                                DataRow rotw = csvData.NewRow();
+                                for (int i = 0; i < numberOfCols; i++)
+                                {
+                                    rotw[i] = columnValue[i];
+                                }
+                                csvData.Rows.Add(rotw);
+                            }
+                            xlWorkbook.Close(true);
+                            xlApp.Quit();
 
-                            }
                         }
-                        List<string> columnValue = new List<string>();
-                        // loop over each column number and add results to the list
-                        foreach (var c in xlRange.Rows)
+                        catch (Exception)
                         {
-                            var val = c;
-                        }
-                        // start at 2 because the first row is 1 and the header row
-                        for (int r = 2; r <= numberOfRows; r++)
-                        {
-                            columnValue.Clear();
-                            foreach (int c in columnsToRead)
-                            {
-                                columnValue.Add(Convert.ToString(xlRange.Cells[r, c].Value2));
-                            }
-                            DataRow rotw = csvData.NewRow();
-                            for (int i = 0; i < numberOfCols; i++)
-                            {
-                                rotw[i] = columnValue[i];
-                            }
-                            csvData.Rows.Add(rotw);
-                        }
+                            xlWorkbook.Close(true);
+                            xlApp.Quit();
+                        }  
                     }
                     else if (UploadPath.Contains(".csv"))
                     {
-                        csvReader.SetDelimiters(new string[] { "," });
-                        csvReader.HasFieldsEnclosedInQuotes = true;
-                        string[] colFields = csvReader.ReadFields();
-                        if (colFields != null)
+
+                        try
                         {
-                            foreach (string column in colFields)
+                            csvReader.SetDelimiters(new string[] { "," });
+                            csvReader.HasFieldsEnclosedInQuotes = true;
+                            string[] colFields = csvReader.ReadFields();
+                            if (colFields != null)
                             {
-                                DataColumn datecolumn = new DataColumn(column);
-                                datecolumn.AllowDBNull = true;
-                                csvData.Columns.Add(datecolumn);
-                            }
-                        }
-                        else
-                        {
-                            throw new Exception("File does not contain any datas");
-                        }
-                        while (!csvReader.EndOfData)
-                        {
-                            string[] fieldData = csvReader.ReadFields();
-                            //Making empty value as null
-                            for (int i = 0; i < fieldData.Length; i++)
-                            {
-                                if (fieldData[i] == "")
+                                foreach (string column in colFields)
                                 {
-                                    fieldData[i] = null;
+                                    DataColumn datecolumn = new DataColumn(column);
+                                    datecolumn.AllowDBNull = true;
+                                    csvData.Columns.Add(datecolumn);
                                 }
                             }
-                            csvData.Rows.Add(fieldData);
+                            else
+                            {
+                                throw new Exception("File does not contain any datas");
+                            }
+                            while (!csvReader.EndOfData)
+                            {
+                                string[] fieldData = csvReader.ReadFields();
+                                //Making empty value as null
+                                for (int i = 0; i < fieldData.Length; i++)
+                                {
+                                    if (fieldData[i] == "")
+                                    {
+                                        fieldData[i] = null;
+                                    }
+                                }
+                                csvData.Rows.Add(fieldData);
+                            }
+                            csvReader.Close();
                         }
+                        catch (Exception)
+                        {
+                            csvReader.Close();
+                        }
+                   
                     }
-                    else
-                    {
+                    else {
                         log.WriteLine("Invalid File format.");
                         throw new Exception("Invalid File format.");
                     }
-
                     string connectionString = ConfigurationManager.ConnectionStrings["ConString"].ConnectionString;
                     OleDbConnection cn = new OleDbConnection(connectionString);
                     OleDbCommand com = new OleDbCommand();
@@ -378,7 +397,7 @@ namespace SDI.UserCreation
                                         }
                                     }
                                 }
-                                log.WriteLine("{0}. User Name - '{1}' has been Created succesfully with UserID - {2} \n", count, strFullName40.ToUpper(), UserID);
+                                log.WriteLine("{0}. User Name - '{1}' has been created successfully with UserID - {2} - {3} \n", count, strFullName40.ToUpper(), UserID, BU);
                             }
                             catch (Exception e)
                             {
@@ -648,12 +667,13 @@ namespace SDI.UserCreation
                             //    strSliceUserID = usrid.Substring(0, strAutoIDLen);
 
                             //}
-                           
+
 
                             string UserID_Created = usrid + strUser_ID_Created;
                             int userIDLen = UserID_Created.Length;
 
-                            if (userIDLen > 10) {
+                            if (userIDLen > 10)
+                            {
                                 userIDLen = userIDLen - 10;
                                 usrid = usrid.Substring(0, usrid.Length - userIDLen);
                                 UserID_Created = usrid + strUser_ID_Created;
@@ -754,7 +774,7 @@ namespace SDI.UserCreation
                 OleDbCommand Command = new OleDbCommand(p_strQuery, connection);
                 Command.CommandTimeout = 120;
                 connection.Open();
-                OleDbDataAdapter dataAdapter = new OleDbDataAdapter(Command);
+                OleDbDataAdapter dataAdapter = new OleDbDataAdapter(Command);               
 
                 dataAdapter.Fill(UserdataSet);
                 try
@@ -780,7 +800,7 @@ namespace SDI.UserCreation
                 {
                 }
                 // connection.close()               
-            }
+            }            
             catch (Exception objException)
             {
                 try
@@ -790,8 +810,8 @@ namespace SDI.UserCreation
                 }
                 catch (Exception ex)
                 {
-
-                }
+                    
+                }               
             }
             return UserdataSet;
         }
@@ -848,7 +868,7 @@ namespace SDI.UserCreation
                 {
 
                     // connection.close()
-
+                   
                 }
             }
 
@@ -892,7 +912,7 @@ namespace SDI.UserCreation
                 }
                 catch (Exception ex)
                 {
-                }
+                }                
             }
 
             return rowsAffected;
