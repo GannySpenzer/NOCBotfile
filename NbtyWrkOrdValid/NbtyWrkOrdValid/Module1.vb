@@ -437,8 +437,8 @@ Module Module1
                                                                 strAssetId = Trim(strAssetId)
                                                                 strAssetId = Replace(Replace(strAssetId, "&", "&amp;"), "'", "&apos;")
                                                             End If
-                                                            If Len(Trim(strAssetId)) > 12 Then
-                                                                strAssetId = Microsoft.VisualBasic.Left(strAssetId, 12)
+                                                            If Len(Trim(strAssetId)) > 40 Then
+                                                                strAssetId = Microsoft.VisualBasic.Left(strAssetId, 40)
                                                             End If
                                                         Catch ex As Exception
                                                             strAssetId = " "
@@ -482,8 +482,8 @@ Module Module1
                                                                 strIsaCustChrcd = Trim(strIsaCustChrcd)
                                                                 strIsaCustChrcd = Replace(Replace(strIsaCustChrcd, "&", "&amp;"), "'", "&apos;")
                                                             End If
-                                                            If Len(Trim(strIsaCustChrcd)) > 40 Then
-                                                                strIsaCustChrcd = Microsoft.VisualBasic.Left(strIsaCustChrcd, 40)
+                                                            If Len(Trim(strIsaCustChrcd)) > 60 Then
+                                                                strIsaCustChrcd = Microsoft.VisualBasic.Left(strIsaCustChrcd, 60)
                                                             End If
                                                         Catch ex As Exception
                                                             strIsaCustChrcd = " "
@@ -632,10 +632,10 @@ Module Module1
 
                                             Next  '  For iItemMM = 0 To nodeMxItem.ChildNodes.Count - 1
 
-                                            'collected all info - starting insert
+                                            'collected all info - starting insert 
                                             rowsaffected = 0
                                             Dim strSQLstring As String = ""
-                                            strSQLstring = "INSERT INTO SYSADM8.PS_ISA_NB_WOVAL (PLANT,ISA_WORK_ORDER_NO,ASSET_ID,ISA_UNLOADING_PT" & vbCrLf & _
+                                            strSQLstring = "INSERT INTO SYSADM8.PS_ISA_NB_WOVAL (PLANT,ISA_WORK_ORDER_NO,ISA_ASSET_ID,ISA_UNLOADING_PT" & vbCrLf & _
                                                 ",ISA_WO_STATUS,ISA_CUST_CHARGE_CD,WAREHOUSE_ID,WO_DESCR" & vbCrLf & _
                                                 ",WO_TYPE,PRIORITY_CD,SUPERVISORS_NAME,SUPERVISOR" & vbCrLf & _
                                                 ",SCHED_DTTM,ADD_DTTM,ISA_PROCEDURE_ID) " & vbCrLf & _
