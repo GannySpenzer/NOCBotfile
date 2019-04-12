@@ -44,8 +44,8 @@ namespace WMReceiptsMapping
                     DOC_NUM                 = DOC_NUM.PadLeft(16, '0');//i.e. "0000000000000004"
                     string LOGDAT           = System.DateTime.Now.ToString("yyyyMMdd");
                     string LOGTIM           = System.DateTime.Now.ToString("HHmmss");
-                    string REFGRP           = rowInit["PLANT"].ToString(); 
-                    string REFMES           = rowInit["ISA_IDENTIFIER"].ToString();
+                    string REFGRP           = rowInit["PLANT"].ToString();
+                    string REFMES           = DOC_NUM; //rowInit["ISA_IDENTIFIER"].ToString();
                     DateTime PSTNG_DATEcnv  = Convert.ToDateTime(rowInit["TRANSACTION_DATE"]);
                     string PSTNG_DATE       = PSTNG_DATEcnv.ToString("yyyyMMdd");
                     string DOC_DATE         = PSTNG_DATEcnv.ToString("yyyyMMdd");
