@@ -41,7 +41,7 @@ namespace WMReceiptsMapping
                     rowInit = dtResponse.Rows[0];
 
                     string DOC_NUM          = rowInit["ISA_IDENTIFIER"].ToString();
-                    DOC_NUM                 = DOC_NUM.PadLeft(16, '0');//i.e. "0000000000000004"
+                    DOC_NUM                 = DOC_NUM.PadLeft(14, '0');//i.e. "0000000000000004"
                     string LOGDAT           = System.DateTime.Now.ToString("yyyyMMdd");
                     string LOGTIM           = System.DateTime.Now.ToString("HHmmss");
                     string REFGRP           = rowInit["PLANT"].ToString();
