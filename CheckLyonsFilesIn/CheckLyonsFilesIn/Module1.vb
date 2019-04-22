@@ -78,6 +78,11 @@ Module Module1
                                      " Version: " & System.Reflection.Assembly.GetExecutingAssembly.GetName.Version.ToString & _
                                      "")
 
+
+        Dim strDbName As String = ""
+        strDbName = connectOR.DataSource.ToUpper
+        m_logger.WriteInformationLog(rtn & " Database: " & strDbName)
+
         ' check processed files dates
         CheckProcessedFileDates()
 
@@ -122,17 +127,22 @@ Module Module1
         Dim I As Integer = 0
         Dim dLatestCreateDate As Date
         Dim lngDiffValue As Long = 0
+        Dim strLastFile As String = ""
 
         Try
             If aSrcFiles.Length > 0 Then
                 dLatestCreateDate = aSrcFiles(aSrcFiles.Length - 1).CreationTime
 
-                m_logger.WriteInformationLog(rtn & " - latest Processed file date: " & dLatestCreateDate.ToString)
+                strLastFile = "Latest Processed file date: " & dLatestCreateDate.ToString & ". "
+
+                m_logger.WriteInformationLog(rtn & " - " & strLastFile)
 
                 lngDiffValue = DateDiff(DateInterval.Hour, dLatestCreateDate, Now())
 
                 If lngDiffValue > 24 Then
-                    SendErrorEmail(True)
+                    SendErrorEmail(True, strLastFile)
+                    m_logger.WriteInformationLog(rtn & " - WARNING email sent ")
+
                 End If
             End If  '  If aSrcFiles.Length > 0 Then
         Catch ex As Exception
@@ -142,7 +152,7 @@ Module Module1
 
     End Sub
 
-    Private Sub SendErrorEmail(Optional ByVal bIsSendOut As Boolean = False)
+    Private Sub SendErrorEmail(Optional ByVal bIsSendOut As Boolean = False, Optional ByVal strLastFile As String = "")
 
         Dim rtn As String = "CheckLyonsFilesIn.SendErrorEmail"
         Dim strEmailFrom As String = ""
@@ -180,13 +190,16 @@ Module Module1
 
         Dim strAddSDILogo As String = ""
         strEmailBody = ""
-        strAddSDILogo = "<html><body><img src='https://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' />"
+        strAddSDILogo = "<html><body><img src='https://www.sdiexchange.com/images/SDI_Logo2017_yellow.jpg' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' />"
         strEmailBody &= "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI, Inc</span></center><center><span >Check for Lyons Files Sent to SDI</span></center>&nbsp;&nbsp;"
 
-        strEmailBody &= "<table><tr><td>No files from LYONS were received by SDI for the last 24 hours"
+        strEmailBody &= "<table><tr><td>No files from LYONS were received by SDI for the last 24 hours.</td></tr>" & vbCrLf
 
-        strEmailBody &= " " & vbCrLf
-        strEmailSubject = "LYONS Files were not received by SDI for the last 24 hours"
+        If Trim(strLastFile) <> "" Then
+            strEmailBody &= "<tr><td>" & Trim(strLastFile) & vbCrLf & "</td></tr>"
+        End If
+
+        strEmailSubject = "No LYONS files were received by SDI for the last 24 hours."
 
         ''VR 12/18/2014 Adding file names and error descriptions in message body
         'Dim sInfoErr As String = ""
@@ -212,7 +225,7 @@ Module Module1
         '    strEmailBody &= " review log.</td></tr>"
         'End Try
 
-        strEmailBody &= " Please check LYONS connection to SDI.</td></tr>"
+        strEmailBody &= " <tr><td>Please check LYONS connection to SDI.</td></tr>"
         strEmailBody &= "</table>"
 
         strEmailBody &= "&nbsp;<br>Sincerely,<br>&nbsp;<br>SDI Customer Care<br>&nbsp;<br></p></div><BR>"
