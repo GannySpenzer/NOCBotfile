@@ -147,46 +147,19 @@ Module CustInfoMail
 
         '' strbodyhead = "<span><B>**PRIORITY ORDER**</B></span>"
 
-        strbodydetl = strbodydetl & "<table width='100%' bgcolor='black'><tbody><tr><td><img src='https://www.sdiexchange.com/images/SDNewLogo_Email.png' alt='SDI' vspace='0' hspace='0' /></td><td width='100%'><center><span style='font-family: Arial; font-size: x-large; text-align: center; Color:White;'>SDI Marketplace</span></center><center><span style='text-align: center; margin: 0px auto;  Color:White;'>SDiExchange - Customer Info Notification</span></center></td></tr></tbody></table>" & vbCrLf
-        strbodydetl = strbodydetl & "<HR width='100%' SIZE='1'>" & vbCrLf
-        strbodydetl = strbodydetl & "&nbsp;" & vbCrLf
-        strbodydetl = strbodydetl & "<TABLE class='Email_Table' cellSpacing='1' cellPadding='1' width='100%' border='0'>" & vbCrLf
+        strbodyhead = "<table width='100%' bgcolor='black'><tbody><tr><td><img src='https://www.sdiexchange.com/images/SDNewLogo_Email.png' alt='SDI' vspace='0' hspace='0' /></td><td width='100%'><center><span style='font-family: Arial; font-size: x-large; text-align: center; Color:White;'>SDI Marketplace</span></center><center><span style='text-align: center; margin: 0px auto;  Color:White;'>SDiExchange - Customer Info Notification</span></center></td></tr></tbody></table>" & vbCrLf
+        strbodyhead = strbodyhead & "<HR width='100%' SIZE='1'>" & vbCrLf
+        strbodyhead = strbodyhead & "&nbsp;" & vbCrLf
+        strbodyhead = strbodyhead & "<TABLE class='Email_Table' cellSpacing='1' cellPadding='1' width='100%' border='0'>" & vbCrLf
         strbodydetl = strbodydetl & "<TR>" & vbCrLf
-        'strbodydetl = strbodydetl & "<TD>" & vbCrLf
-        'strbodydetl = strbodydetl & "<span >Item request from </span>&nbsp;"
-        'strbodydetl = strbodydetl & Session("CONAME") & "</td>" & vbCrLf
-        strbodydetl = strbodydetl & "<TD style='COLOR: red'>" & vbCrLf
+        strbodydetl = "<div>"
 
-        strbodydetl = strbodydetl & "<span>** CUSTOMER INFORMATION REQUIRED **</span></td></tr>" & vbCrLf
-
-        strbodydetl = strbodydetl & "<TD colspan=2>" & vbCrLf
-        strbodydetl = strbodydetl & "&nbsp;</td></tr>" & vbCrLf
-        'strbodydetl = strbodydetl & "<TD>" & vbCrLf
-        'strbodydetl = strbodydetl & "<span style='font-weight:bold;'>SDI Requisition Number:</span> <span 'width:128px;'>&nbsp;" & stritemid & "</span></td>"
-        strbodydetl = strbodydetl & "<tr><TD>" & vbCrLf
-        strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Employee Name:</span> <span>&nbsp;" & EmpNme & "</span></td>"
-        strbodydetl = strbodydetl & "<TD>" & vbCrLf
-        strbodydetl = strbodydetl & "<span>&nbsp;</span></td></tr>" & vbCrLf
-        strbodydetl = strbodydetl & "<TD>" & vbCrLf
-        strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Employee Email:</span> <span>&nbsp;" & EmpEmail & "</span></td>"
-        strbodydetl = strbodydetl & "<TD>" & vbCrLf
-        strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Employee Phone#:</span> <span>&nbsp;" & phoneNum & "</span></td>" & vbCrLf
-        strbodydetl = strbodydetl & "<TD>" & vbCrLf
-        strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Work Order #:</span> <span>&nbsp;" & workOrderNo & "</span></td>" & vbCrLf
-        strbodydetl = strbodydetl & "<TD>" & vbCrLf
-        strbodydetl = strbodydetl & "<span>&nbsp;</span></td></tr>" & vbCrLf
-        strbodydetl = strbodydetl & "<TD>" & vbCrLf
-        strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Request by Date:</span> <span>&nbsp;" & ReqDate & "</span></td>"
-        strbodydetl = strbodydetl & "<TD>" & vbCrLf
-        strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Submit Date:</span> <span>&nbsp;" & Now() & "</span></td></tr>"
-        'strbodydetl = strbodydetl & "<TD colspan='2'>" & vbCrLf
-        'strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Notes:</span><br>"
-        'strbodydetl = strbodydetl & "<textarea readonly='readonly' style='width:100%;'>" & dstcart2.Rows(0).Item(4) & "</textarea></td>" & vbCrLf
-        'strbodydetl = strbodydetl & "<span>&nbsp;</span></td></tr>" & vbCrLf
-        'strbodydetl = strbodydetl & "<TD>" & vbCrLf
-        'strbodydetl = strbodydetl & "<span style='font-weight:bold;'>OPR Entered By:</span> <span>&nbsp;" & OPREntBy & "</span></td></table>"
-        strbodydetl = strbodydetl & "&nbsp;<br>" & vbCrLf
-
+        strbodydetl = "&nbsp;" & vbCrLf
+        strbodydetl = strbodydetl & "<div>"
+        strbodydetl = strbodydetl & "<p >" & EmpNme & ":<br>"
+        strbodydetl = strbodydetl & "&nbsp;<br>"
+        
+        strbodydetl = strbodydetl & "<p>Processing for Order " & orderNum & " is currently on hold awaiting customer supplied information. Please provide the necessary information so processing can resume.</p>"
         Mailer.Body = strbodyhead & strbodydetl
 
         Mailer.Body = Mailer.Body & "<TABLE cellSpacing='1' cellPadding='1' width='100%' border='0'>" & vbCrLf
@@ -197,11 +170,12 @@ Module CustInfoMail
         Mailer.Body = Mailer.Body & "<HR width='100%' SIZE='1'>" & vbCrLf
         Mailer.Body = Mailer.Body & "<img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & vbCrLf
 
+
         If DbUrl.Substring(DbUrl.Length - 4).ToUpper = "PLGR" Or _
                    DbUrl.Substring(DbUrl.Length - 4).ToUpper = "STAR" Or _
                    DbUrl.Substring(DbUrl.Length - 4).ToUpper = "DEVL" Or _
                DbUrl.Substring(DbUrl.Length - 4).ToUpper = "RPTG" Then
-            Mailer.To = "WebDev@sdi.com;sdiportalsupport@avasoft.biz"
+            Mailer.To = "WebDev@sdi.com;avacorp@sdi.com"
             Mailer.Subject = "<<TEST SITE>> SDiExchange - Cust Info for the Item Status - CST - " & orderNum
         Else
             Mailer.To = EmpEmail
@@ -209,13 +183,15 @@ Module CustInfoMail
         End If
 
 
-        Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
+        Mailer.BodyFormat = MailFormat.Html
         '' Mailer.IsBodyHtml = True
         Dim connectionEmail As OleDbConnection = New OleDbConnection((Convert.ToString(ConfigurationManager.AppSettings("OLEDBconString"))))
         connectionEmail.Open()
         Try
+            Dim SDIEmailService As EmailService.EmailServices = New EmailService.EmailServices()
+            SDIEmailService.EmailUtilityServices("MailandStore", "SDIExchange@SDI.com", Mailer.To.ToString(), Mailer.Subject, "", "", Mailer.Body, "CustInfoMailer", Nothing, Nothing)
 
-            UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer.Subject, FromAddress, Mailer.To.ToString(), Mailcc, MailBcc, "CustInfoMailer", Mailer.Body, connectionEmail)
+            ''UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer.Subject, FromAddress, Mailer.To.ToString(), Mailcc, MailBcc, "CustInfoMailer", Mailer.Body, connectionEmail)
             Try
                 connectionEmail.Close()
             Catch ex As Exception
