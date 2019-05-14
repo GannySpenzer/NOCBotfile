@@ -371,6 +371,8 @@ Module Module1
                                         arrUOMs(0) = ""
                                         Dim arrTax(0) As String
                                         arrTax(0) = ""
+                                        Dim arrComnts(0) As String
+                                        arrComnts(0) = ""
                                         Dim arrMatGroupTax(0) As String
                                         arrMatGroupTax(0) = ""
 
@@ -396,6 +398,8 @@ Module Module1
                                             arrUOMs(0) = ""
                                             ReDim arrTax(0)
                                             arrTax(0) = ""
+                                            ReDim arrComnts(0)
+                                            arrComnts(0) = ""
                                             ReDim arrMatGroupTax(0)
                                             arrMatGroupTax(0) = ""
 
@@ -637,6 +641,13 @@ Module Module1
                                                                             End Select
                                                                         Next  '  For Each NodeChildItemID As XmlNode In ChildItemNode.ChildNodes()
                                                                     End If  ' If ChildItemNode.ChildNodes.Count > 0 Then  -  ITEMDETAIL
+                                                                Case "COMMENTS"
+                                                                    'comments
+                                                                    If j1 = 0 Then
+                                                                    Else
+                                                                        ReDim Preserve arrComnts(j1)
+                                                                    End If
+                                                                    arrComnts(j1) = ChildItemNode.InnerText
                                                                 Case Else
                                                                     'do nothing
                                                             End Select
@@ -682,11 +693,18 @@ Module Module1
                                                     strPathForLM = strFlatFileDir & strSrchFileName
                                                     writerLnsMagn = New StreamWriter(strPathForLM)
 
+                                                    Dim strLineComments As String = ""
                                                     'add headers
-                                                    writerLnsMagn.WriteLine("BUSUNIT" & "~" & "POID" & "~" & "POLINENUM" & "~" & "QUOTEID" & "~" & "QUOTELINENUM" & "~" & "PRODUCT_ID" & "~" & "DESCRIPTION" & "~" & "QUANTITY" & "~" & "UOM" & "~" & "ITEM_PRICE" & "~" & "CURRENCY" & "~" & "VENDOR" & "~" & "VENDORPARTNUM" & "~" & "MANFID" & "~" & "MANFPARTNUM" & "~" & "UNSPSC" & "~" & "DUEDATE" & "~" & "TAX")
+                                                    writerLnsMagn.WriteLine("BUSUNIT" & "~" & "POID" & "~" & "POLINENUM" & "~" & "QUOTEID" & "~" & "QUOTELINENUM" & "~" & "PRODUCT_ID" & "~" & "DESCRIPTION" & "~" & "QUANTITY" & "~" & "UOM" & "~" & "ITEM_PRICE" & "~" & "CURRENCY" & "~" & "VENDOR" & "~" & "VENDORPARTNUM" & "~" & "MANFID" & "~" & "MANFPARTNUM" & "~" & "UNSPSC" & "~" & "DUEDATE" & "~" & "TAX" & "~" & "COMMENTS")
                                                     For iLM = 0 To arrUnitPrice.Length - 1
+                                                        'check data
+                                                        strLineComments = arrComnts(iLM)
+                                                        strLineComments = Replace(strLineComments, vbTab, " ")
+                                                        strLineComments = Replace(strLineComments, vbCr, " ")
+                                                        strLineComments = Replace(strLineComments, vbCrLf, " ")
+                                                        strLineComments = Replace(strLineComments, vbLf, " ")
                                                         'add data
-                                                        writerLnsMagn.WriteLine(strSdiBusUnit & "~" & strOrderNum & "~" & arrLineNums(iLM) & "~" & strQuoteID & "~" & arrQuoteLineNum(iLM) & "~" & arrSupplPartIDs(iLM) & "~" & arrDescr(iLM) & "~" & arrLineQtys(iLM) & "~" & arrUOMs(iLM) & "~" & arrUnitPrice(iLM) & "~" & arrCurrency(iLM) & "~" & arrVendor(iLM) & "~" & arrVendPartNum(iLM) & "~" & arrMfgId(iLM) & "~" & arrMfgPartNum(iLM) & "~" & " " & "~" & arrDueDates(iLM) & "~" & arrTax(iLM))
+                                                        writerLnsMagn.WriteLine(strSdiBusUnit & "~" & strOrderNum & "~" & arrLineNums(iLM) & "~" & strQuoteID & "~" & arrQuoteLineNum(iLM) & "~" & arrSupplPartIDs(iLM) & "~" & arrDescr(iLM) & "~" & arrLineQtys(iLM) & "~" & arrUOMs(iLM) & "~" & arrUnitPrice(iLM) & "~" & arrCurrency(iLM) & "~" & arrVendor(iLM) & "~" & arrVendPartNum(iLM) & "~" & arrMfgId(iLM) & "~" & arrMfgPartNum(iLM) & "~" & " " & "~" & arrDueDates(iLM) & "~" & arrTax(iLM) & "~" & strLineComments)
 
                                                     Next  ' For iLM = 0 To Len(arrUnitPrice) - 1
 
