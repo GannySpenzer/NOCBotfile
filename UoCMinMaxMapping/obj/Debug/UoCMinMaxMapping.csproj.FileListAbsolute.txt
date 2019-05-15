@@ -1,0 +1,6 @@
+C:\Users\yury.arkadin\AppData\Local\Temporary Projects\UoCMinMaxMapping\bin\Debug\UoCMinMaxMapping.exe.config
+C:\A_UoCMinMaxMapping\UoCMinMaxMapping\bin\Debug\UoCMinMaxMapping.exe.config
+C:\A_UoCMinMaxMapping\UoCMinMaxMapping\bin\Debug\UoCMinMaxMapping.exe
+C:\A_UoCMinMaxMapping\UoCMinMaxMapping\bin\Debug\UoCMinMaxMapping.pdb
+C:\A_UoCMinMaxMapping\UoCMinMaxMapping\obj\Debug\UoCMinMaxMapping.exe
+C:\A_UoCMinMaxMapping\UoCMinMaxMapping\obj\Debug\UoCMinMaxMapping.pdb
