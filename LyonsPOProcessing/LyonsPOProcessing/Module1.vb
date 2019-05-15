@@ -6,6 +6,8 @@ Imports System.Web
 Imports System.Xml
 Imports System.Text
 Imports System.Net
+Imports System.Text.RegularExpressions
+Imports System.Security.Cryptography
 Imports System.Security.Cryptography.X509Certificates
 Imports System.Net.Mail
 Imports SDI.ApplicationLogger
@@ -338,7 +340,8 @@ Module Module1
                                         Dim j1 As Integer = 0
                                         Dim strChildNodeName As String = ""
                                         Dim strOrderNum As String = ""
-
+                                        Dim strCustomerEmail As String = " "
+                                        Dim strCustomerName As String = " "
                                         Dim strQuoteID As String = " "
                                         Dim arrQuoteLineNum(0) As String
                                         arrQuoteLineNum(0) = ""
@@ -473,7 +476,39 @@ Module Module1
                                                         Catch ex As Exception
                                                             strQuoteID = " "
                                                         End Try
+                                                        'get Customer ID to send notifications
+                                                        Dim nodeContact As System.Xml.XmlNode = nodeOrdrRefr.SelectSingleNode("Contact")
+                                                        Dim strChildNodeName1 As String = ""
+                                                        Try
+                                                            If Not nodeContact Is Nothing Then
+                                                                If nodeContact.ChildNodes.Count > 0 Then
+                                                                    Dim iCt1 As Integer = 0
+                                                                    For iCt1 = 0 To nodeContact.ChildNodes.Count - 1
 
+                                                                        strChildNodeName1 = UCase(nodeContact.ChildNodes(iCt1).Name)
+                                                                        Dim nodeContNode As XmlNode = nodeContact.ChildNodes(iCt1)
+
+                                                                        If strChildNodeName1 = "EMAIL" Then
+                                                                            strCustomerEmail = UCase(nodeContNode.InnerText)
+                                                                        End If
+
+                                                                        If strChildNodeName1 = "NAME" Then
+                                                                            strCustomerName = UCase(nodeContNode.InnerText)
+                                                                        End If
+
+                                                                    Next  ' For iCt1 = 0 To nodeContact.ChildNodes.Count - 1
+                                                                Else
+                                                                    strCustomerName = " "
+                                                                    strCustomerEmail = " "
+                                                                End If  ' If nodeContact.ChildNodes.Count > 0 Then
+                                                            Else
+                                                                strCustomerName = " "
+                                                                strCustomerEmail = " "
+                                                            End If  ' If Not nodeContact Is Nothing Then
+                                                        Catch ex As Exception
+                                                            strCustomerName = " "
+                                                            strCustomerEmail = " "
+                                                        End Try
                                                     End If  '  If nodeOrdrRefr.ChildNodes.Count > 0 Then
 
                                                 End If  '  If strChildNodeName = "ORDERREQUESTHEADER" Then
@@ -690,12 +725,16 @@ Module Module1
                                                         strFlatFileDir = "\\solaris4\EFISHARE\LYONS-MAGNUS\"
                                                     End Try
 
+                                                    'get Customer ID
+                                                    Dim strCustID As String = ""
+                                                    strCustID = GetCustomerId(strCustomerEmail, strCustomerName, strSdiBusUnit)
+
                                                     strPathForLM = strFlatFileDir & strSrchFileName
                                                     writerLnsMagn = New StreamWriter(strPathForLM)
 
                                                     Dim strLineComments As String = ""
                                                     'add headers
-                                                    writerLnsMagn.WriteLine("BUSUNIT" & "~" & "POID" & "~" & "POLINENUM" & "~" & "QUOTEID" & "~" & "QUOTELINENUM" & "~" & "PRODUCT_ID" & "~" & "DESCRIPTION" & "~" & "QUANTITY" & "~" & "UOM" & "~" & "ITEM_PRICE" & "~" & "CURRENCY" & "~" & "VENDOR" & "~" & "VENDORPARTNUM" & "~" & "MANFID" & "~" & "MANFPARTNUM" & "~" & "UNSPSC" & "~" & "DUEDATE" & "~" & "TAX" & "~" & "COMMENTS")
+                                                    writerLnsMagn.WriteLine("BUSUNIT" & "~" & "POID" & "~" & "POLINENUM" & "~" & "QUOTEID" & "~" & "QUOTELINENUM" & "~" & "PRODUCT_ID" & "~" & "DESCRIPTION" & "~" & "QUANTITY" & "~" & "UOM" & "~" & "ITEM_PRICE" & "~" & "CURRENCY" & "~" & "VENDOR" & "~" & "VENDORPARTNUM" & "~" & "MANFID" & "~" & "MANFPARTNUM" & "~" & "UNSPSC" & "~" & "DUEDATE" & "~" & "TAX" & "~" & "COMMENTS" & "~" & "ISA_EMPLOYEE_ID")
                                                     For iLM = 0 To arrUnitPrice.Length - 1
                                                         'check data
                                                         strLineComments = arrComnts(iLM)
@@ -704,7 +743,7 @@ Module Module1
                                                         strLineComments = Replace(strLineComments, vbCrLf, " ")
                                                         strLineComments = Replace(strLineComments, vbLf, " ")
                                                         'add data
-                                                        writerLnsMagn.WriteLine(strSdiBusUnit & "~" & strOrderNum & "~" & arrLineNums(iLM) & "~" & strQuoteID & "~" & arrQuoteLineNum(iLM) & "~" & arrSupplPartIDs(iLM) & "~" & arrDescr(iLM) & "~" & arrLineQtys(iLM) & "~" & arrUOMs(iLM) & "~" & arrUnitPrice(iLM) & "~" & arrCurrency(iLM) & "~" & arrVendor(iLM) & "~" & arrVendPartNum(iLM) & "~" & arrMfgId(iLM) & "~" & arrMfgPartNum(iLM) & "~" & " " & "~" & arrDueDates(iLM) & "~" & arrTax(iLM) & "~" & strLineComments)
+                                                        writerLnsMagn.WriteLine(strSdiBusUnit & "~" & strOrderNum & "~" & arrLineNums(iLM) & "~" & strQuoteID & "~" & arrQuoteLineNum(iLM) & "~" & arrSupplPartIDs(iLM) & "~" & arrDescr(iLM) & "~" & arrLineQtys(iLM) & "~" & arrUOMs(iLM) & "~" & arrUnitPrice(iLM) & "~" & arrCurrency(iLM) & "~" & arrVendor(iLM) & "~" & arrVendPartNum(iLM) & "~" & arrMfgId(iLM) & "~" & arrMfgPartNum(iLM) & "~" & " " & "~" & arrDueDates(iLM) & "~" & arrTax(iLM) & "~" & strLineComments & "~" & strCustID)
 
                                                     Next  ' For iLM = 0 To Len(arrUnitPrice) - 1
 
@@ -815,6 +854,314 @@ Module Module1
         End Try
 
         Return bolError
+
+    End Function
+
+    Private Function GetCustomerId(ByVal strCustEmail As String, ByVal strCustName As String, ByVal strBu As String) As String
+        Dim strCustId As String = ""
+        Dim strPasswEncrp As String = ""
+        Dim strSqlStrng As String = ""
+        strSqlStrng = "SELECT ISA_EMPLOYEE_ID FROM SDIX_USERS_TBL WHERE ACTIVE_STATUS = 'A' AND UPPER(ISA_EMPLOYEE_EMAIL) LIKE '%" & strCustEmail & "' "
+        Dim iC As Integer = 0
+        Dim strFullName As String = ""
+        strFullName = Trim(strCustName)
+        Dim strFirst As String = ""
+        Dim strLast As String = ""
+        Dim strFullName40 As String = ""
+        Dim iSpacePos As Integer = 0
+        Dim strSQLPW As String = ""
+
+        If Trim(strFullName) <> "" Then
+            strFullName = Trim(strFullName)
+            iSpacePos = strFullName.IndexOf(" ")
+            If iSpacePos > 0 Then
+                strFirst = Microsoft.VisualBasic.Left(strFullName, iSpacePos)
+                strLast = Mid(strFullName, iSpacePos + 1)
+            Else
+                strFirst = strFullName
+                strLast = strFullName
+            End If
+        Else
+            strFullName = " "
+            strFirst = " "
+            strLast = " "
+        End If
+        If Len(strFullName) > 40 Then
+            strFullName40 = Microsoft.VisualBasic.Left(strFullName, 40)
+        Else
+            strFullName40 = strFullName
+        End If
+        Dim dsCheck As DataSet
+        dsCheck = ORDBData.GetAdapter(strSqlStrng, False)
+
+        strCustId = " "
+        If Not dsCheck Is Nothing Then
+            If dsCheck.Tables.Count > 0 Then
+                If dsCheck.Tables(0).Rows.Count > 0 Then
+                    strCustId = dsCheck.Tables(0).Rows(0)("ISA_EMPLOYEE_ID")
+                End If
+
+            End If
+        End If
+
+        If Trim(strCustId) = "" Then
+            'USER ID is not eisting - creating one
+
+            strCustName = Replace(strCustName, " ", "")
+            strCustName = Replace(strCustName, ".", "")
+            strCustName = Regex.Replace(strCustName, "[^a-zA-Z0-9]", "")
+            If Len(strCustName) > 9 Then
+
+                strCustId = Microsoft.VisualBasic.Left(strCustName, 9) & "1"
+            Else
+                strCustId = strCustName & "1"
+            End If
+            Dim strUserIdAdd As String = "VROV1"
+            'get unique user ID 
+            Dim bUserIdExists As Boolean = False
+            bUserIdExists = checkUserid(strCustId, strBu)
+            'CHECK bUserIdExists
+            If Not bUserIdExists Then
+
+                strPasswEncrp = GenerateHash("3WEL1COME2")
+                'NOW WE HAVE user ID and PWD 
+                Dim strFromWhichScreen As String = "LyonsPOProcessing/GetCustomerID"
+                Dim lngIsaUserId As Long = GetNextUserId(strCustName, strBu, strFromWhichScreen)
+                strSqlStrng = "INSERT INTO SDIX_USERS_TBL" & vbCrLf & _
+                    " (ISA_USER_ID, ISA_USER_NAME," & vbCrLf & _
+                    " ISA_PASSWORD_ENCR, FIRST_NAME_SRCH," & vbCrLf & _
+                    " LAST_NAME_SRCH, BUSINESS_UNIT," & vbCrLf & _
+                    " ISA_EMPLOYEE_ID, ISA_EMPLOYEE_NAME, PHONE_NUM," & vbCrLf & _
+                    " ISA_DAILY_ALLOW, ISA_EMPLOYEE_PASSW," & vbCrLf & _
+                    " ISA_EMPLOYEE_EMAIL, ISA_EMPLOYEE_ACTYP," & vbCrLf & _
+                    " CUST_ID, ISA_SESSION," & vbCrLf & _
+                    " ISA_LAST_SYNC_DATE, ISA_SDI_EMPLOYEE, ISA_CUST_SERV_FLG," & vbCrLf & _
+                    " LASTUPDOPRID, LASTUPDDTTM, ACTIVE_STATUS, LAST_ACTIVITY " & vbCrLf & _
+                    ", ISA_TRACK_USR_NAME, ISA_TRACK_USR_PSSW, ISA_TRACK_USR_GUID, ISA_PROD_DISPLAY, TCKTASSGN, TCKTDEPT, PWDRESET, ISA_UDF1, ISA_UDF2, ISA_UDF3 " & vbCrLf & _
+                    ", ISA_PRICE_BLOCK, ISA_DEPT, ISA_ASSIGNEE, ISA_CRIB_IDENT, MULTI_SITE, BADCNT)" & vbCrLf & _
+                    " VALUES(" & lngIsaUserId & "," & vbCrLf & _
+                    " '" & strFullName.ToUpper & "'," & vbCrLf & _
+                    " '" & strPasswEncrp & "'," & vbCrLf & _
+                    " '" & strFirst.ToUpper & "'," & vbCrLf & _
+                    " '" & strLast.ToUpper & "'," & vbCrLf & _
+                    " '" & strBu & "'," & vbCrLf & _
+                    " '" & UCase(strCustId) & "'," & vbCrLf & _
+                    " '" & strFullName40.ToUpper & "'," & vbCrLf & _
+                    " '2223334455'," & vbCrLf & _
+                    " 0, ' ', '" & strCustEmail & "'," & vbCrLf & _
+                    " '" & "USER" & "'," & vbCrLf & _
+                    " '0', 0, '', 'C', ' '," & vbCrLf & _
+                    " '" & strUserIdAdd & "'," & vbCrLf & _
+                    " TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')," & vbCrLf & _
+                    " 'A', TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
+                    ", ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 0)"
+
+                strSQLPW = "INSERT INTO SDIX_ISOL_PW" & vbCrLf & _
+                        " (ISA_USER_ID, ISA_EMPLOYEE_ID," & vbCrLf & _
+                        " ISA_ISOL_PW1, ISA_ISOL_PW_DATE1," & vbCrLf & _
+                        " ISA_ISOL_PW2, ISA_ISOL_PW_DATE2," & vbCrLf & _
+                        " ISA_ISOL_PW3, ISA_ISOL_PW_DATE3)" & vbCrLf & _
+                        " VALUES (" & lngIsaUserId & "," & vbCrLf & _
+                        " '" & UCase(strCustId) & "'," & vbCrLf & _
+                        " '" & strPasswEncrp & "'," & vbCrLf & _
+                        " TO_DATE('" & Now().ToShortDateString & "', 'MM/DD/YYYY')," & vbCrLf & _
+                        " ' ', '', ' ','')"
+
+                Dim rowsaffected As Integer = ORDBData.ExecNonQuery(strSqlStrng, False)
+                If rowsaffected > 0 Then
+                    rowsaffected = 0
+                    rowsaffected = ORDBData.ExecNonQuery(strSQLPW, False)
+                    If rowsaffected > 0 Then
+                        rowsaffected = 0
+                        If checkCustEmpTbl(strBu, UCase(strCustId)) = False Then
+                            strSqlStrng = "Insert Into SYSADM8.PS_ISA_EMPL_TBL" & vbCrLf & _
+                                " ( BUSINESS_UNIT, ISA_EMPLOYEE_ID," & vbCrLf & _
+                                " ISA_EMPLOYEE_NAME, ISA_DAILY_ALLOW," & vbCrLf & _
+                                " ISA_EMPLOYEE_PASSW, ISA_EMPLOYEE_EMAIL," & vbCrLf & _
+                                " ISA_EMPLOYEE_ACTYP, CUST_ID, EFF_STATUS) " & vbCrLf & _
+                               " Values('" & strBu & "'," & vbCrLf & _
+                               "'" & UCase(strCustId) & "'," & vbCrLf & _
+                               "'" & strFullName40.ToUpper & "'" & vbCrLf & _
+                               ",0,' '," & vbCrLf & _
+                               "' '," & vbCrLf & _
+                               "' ', ' ', 'A')" & vbCrLf
+
+                            rowsaffected = ORDBData.ExecNonQuery(strSqlStrng, False)
+                        Else
+                            '  ???? send error message to fix it manually?
+                        End If
+                    Else
+                        '  ???? send error message to fix it manually?
+                    End If
+                Else
+                    '  ???? send error message to fix it manually?
+                End If
+            Else
+                '  ???
+            End If  '  If bUserIdExists Then
+
+        End If  '  If Trim(strCustId) = "" Then
+
+        Return strCustId
+
+    End Function
+
+    Private Function checkCustEmpTbl(ByVal strBU As String, ByVal strUserId As String) As Boolean
+        Dim dsCustUserid As DataSet = Nothing
+        Dim strSQLstring As String = "Select ISA_EMPLOYEE_ID" & vbCrLf & _
+                    " FROM SYSADM8.PS_ISA_EMPL_TBL" & vbCrLf & _
+                    " WHERE UPPER(isa_employee_id) = '" & UCase(strUserId) & "'" & vbCrLf & _
+                    " AND BUSINESS_UNIT = '" & strBU & "'"
+
+        Try
+            dsCustUserid = ORDBData.GetAdapter(strSQLstring, False)
+
+            If dsCustUserid.Tables(0).Rows.Count > 0 Then
+                checkCustEmpTbl = True
+            Else
+                checkCustEmpTbl = False
+            End If
+        Catch ex As Exception
+            checkCustEmpTbl = False
+        End Try
+        
+    End Function
+
+    Private Function GetNextUserId(ByVal strUserId As String, ByVal strBU As String, ByVal strFromWhichScreen As String) As Long
+        Dim lngIsaUserId As Long = 0
+        Dim lngPKNextVal As Long = 0
+        Dim lngMaxIsaUserId As Long = 0
+        Dim bSendErrorEmail As Boolean = True
+        Dim strSqlStr54 As String = "SELECT SDIX_SEQ_ISA_USER_ID_PK.NEXTVAL FROM DUAL"
+        ' get SEQ_ISA_USER_ID_PK.nextval 
+        Try
+            lngPKNextVal = CType(ORDBData.GetScalar(strSqlStr54, False), Long)
+        Catch ex As Exception
+            lngPKNextVal = 0
+        End Try
+        'get MAX(ISA_USER_ID) from PS_ISA_USERS_TBL
+        Dim strSqlStr54N As String = "SELECT MAX(ISA_USER_ID) FROM SDIX_USERS_TBL"
+        Try
+            lngMaxIsaUserId = CType(ORDBData.GetScalar(strSqlStr54N, False), Long)
+        Catch ex As Exception
+            lngMaxIsaUserId = 0
+        End Try
+        ' compare - if nextval less then max ISA_USER_ID then send email alert 
+        If lngMaxIsaUserId > 0 Then
+            If lngPKNextVal > 0 Then
+                If lngPKNextVal > lngMaxIsaUserId Then
+                    lngIsaUserId = lngPKNextVal
+                    bSendErrorEmail = False
+                Else
+                    Dim lngGap As Long = lngMaxIsaUserId - lngPKNextVal + 1
+                    lngIsaUserId = lngMaxIsaUserId + 1
+                    If lngGap > 0 Then
+                        Dim strIncreaseNextVal As String = ""
+                        Dim iCtr As Integer = 0
+                        For iCtr = 0 To lngGap - 1
+                            strIncreaseNextVal = ORDBData.GetScalar(strSqlStr54, False)
+                        Next
+
+                    End If
+
+                End If
+            End If
+        End If
+        'If bSendErrorEmail Then
+        '    Dim strError5467 As String = "Gap In PK Sequence. Error in Subroutine '" & strFromWhichScreen & "', when Adding new User (Selecting PK.NextVal problem). " & vbCrLf & _
+        '                            "User ID: = " & strUserId & " ;BUSINESS UNIT = " & strBU & vbCrLf & _
+        '                            "; PK.NextVal = " & lngPKNextVal.ToString() & vbCrLf & "; Max User ID = " & lngMaxIsaUserId.ToString() & vbCrLf
+        '    SendSDiExchErrorMail(strError5467, "Error when Adding new User in " & strFromWhichScreen & " - Gap in PK Sequence")
+        'End If
+
+        Return lngIsaUserId
+
+    End Function
+
+    Private Function GenerateHash(ByVal SourceText As String) As String
+        'Create an encoding object to ensure the encoding standard for the source text
+        Dim Ue As New UnicodeEncoding
+        'Retrieve a byte array based on the source text
+        Dim ByteSourceText() As Byte = Ue.GetBytes(SourceText)
+        'Instantiate an MD5 Provider object
+        Dim Md5 As New MD5CryptoServiceProvider
+        'Compute the hash value from the source
+        Dim ByteHash() As Byte = Md5.ComputeHash(ByteSourceText)
+        'And convert it to String format for return
+        Return Convert.ToBase64String(ByteHash)
+    End Function
+
+    Private Function checkUserid(ByRef strUserId As String, ByVal strBU As String) As Boolean
+        Dim bResult As Boolean = False
+        Dim strSQLstring As String = "Select isa_user_id" & vbCrLf & _
+                    " FROM SDIX_USERS_TBL" & vbCrLf & _
+                    " WHERE UPPER(isa_employee_id) = '" & UCase(strUserId) & "' AND business_unit = '" & strBU & "'" & vbCrLf & _
+                    " AND ACTIVE_STATUS = 'A'" & vbCrLf
+
+        Dim dsUserid As DataSet = ORDBData.GetAdapter(strSQLstring)
+
+        If dsUserid.Tables(0).Rows.Count = 0 Then
+            bResult = False
+        ElseIf dsUserid.Tables(0).Rows.Count > 1 Then
+            bResult = True
+        Else
+            bResult = True
+        End If
+
+        Dim strLastChar As String = ""
+        Dim iNumber As Integer = 0
+        Dim intIdLen As Integer = 0
+        If bResult Then
+            Dim iTryNum As Integer = 0
+            For iTryNum = 0 To 7
+                intIdLen = Len(strUserId) ' no more then 10 - we made sure it is not already
+                strLastChar = Right(strUserId, 1)
+                If IsNumeric(strLastChar) Then
+                    iNumber = CType(strLastChar, Integer)
+                    If iNumber = 9 Then
+                        'change user ID special way
+                        If intIdLen > 9 Then
+                            'length is 10
+                            strUserId = Microsoft.VisualBasic.Left(strUserId, intIdLen - 2) & "11"
+                        Else
+                            strUserId = strUserId & "1"
+                        End If
+                    Else
+                        iNumber = iNumber + 1
+                    End If
+                    strUserId = Microsoft.VisualBasic.Left(strUserId, intIdLen - 1) & iNumber.ToString
+                Else  ' last char is not Numeric
+                    If intIdLen > 9 Then
+                        'length is 10
+                        strUserId = Microsoft.VisualBasic.Left(strUserId, intIdLen - 1) & "1"
+                    Else
+                        strUserId = strUserId & "1"
+                    End If
+                End If
+                'check is just made user ID exists
+                strSQLstring = "Select isa_user_id" & vbCrLf & _
+                    " FROM SDIX_USERS_TBL" & vbCrLf & _
+                    " WHERE UPPER(isa_employee_id) = '" & UCase(strUserId) & "' AND business_unit = '" & strBU & "'" & vbCrLf & _
+                    " AND ACTIVE_STATUS = 'A'" & vbCrLf
+                dsUserid = ORDBData.GetAdapter(strSQLstring)
+                If dsUserid.Tables(0).Rows.Count = 0 Then
+                    bResult = False
+                    Exit For
+                Else
+                    bResult = True
+                End If
+            Next
+        End If
+
+        If bResult Then
+            ''send error e-mail
+            'Dim strErrMy1 As String = "Error trying to create new Punch In user ID. Last ID tried: " & strUserId & vbCrLf & _
+            '    " BU: " & strBU & " " & vbCrLf & _
+            '    ""
+            'SendSDiExchErrorMail(strErrMy1, "Error in AddNewPunchinUser.aspx.vb - tried to create new Punch In user ID")
+        End If
+
+        Return bResult
 
     End Function
 
