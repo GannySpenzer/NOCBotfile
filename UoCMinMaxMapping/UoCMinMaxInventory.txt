@@ -1,0 +1,13 @@
+            <INVENTORY>
+               <ITEMNUM>{0}</ITEMNUM>   
+               <ITEMSETID>ITEMSET1</ITEMSETID>
+               <LOCATION>{1}</LOCATION>     
+               <MAXLEVEL>{2}</MAXLEVEL>     
+               <MINLEVEL>{3}</MINLEVEL>     
+               <ORDERQTY>{4}</ORDERQTY>     
+               <ORDERUNIT>{5}</ORDERUNIT>   
+               <SITEID>{6}</SITEID>
+               <INVCOST>
+                  <AVGCOST>{7}</AVGCOST>                   
+               </INVCOST>
+            </INVENTORY>

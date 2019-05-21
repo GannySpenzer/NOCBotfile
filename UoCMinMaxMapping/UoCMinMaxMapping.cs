@@ -13,7 +13,7 @@ namespace UoCMinMaxMapping
         {
             var strResponse = "";
 
-            return;
+            //return;
  
             // InitializeLogger start here
 

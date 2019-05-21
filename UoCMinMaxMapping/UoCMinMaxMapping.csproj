@@ -122,6 +122,7 @@
     <Content Include="obj\Debug\UoCMinMaxMapping.csproj.FileListAbsolute.txt" />
     <Content Include="obj\Debug\UoCMinMaxMapping.exe" />
     <Content Include="obj\Debug\UoCMinMaxMapping.pdb" />
+    <Content Include="UoCMinMaxInventory.txt" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="bin\Release\" />
