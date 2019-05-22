@@ -24,6 +24,8 @@ namespace UoCMinMaxMapping
         {
             string testOrProd = " ";
             string authorization = " ";
+            string username = " ";
+            string password = " ";
             string serviceURL = " ";
             var strResponse = " ";
             string responseErrorText = " ";
@@ -171,7 +173,9 @@ namespace UoCMinMaxMapping
                            if (testOrProd == "TEST")
                            {
                                serviceURL = ConfigurationManager.AppSettings["testServiceURL"];
-                               authorization = ConfigurationManager.AppSettings["testAuthorization"];
+                               //authorization = ConfigurationManager.AppSettings["testAuthorization"];
+                               username = ConfigurationManager.AppSettings["testUsername"];
+                               password = ConfigurationManager.AppSettings["testPassword"];
                            }
                            else
                            {
@@ -186,7 +190,9 @@ namespace UoCMinMaxMapping
                            m_oLogger.LogMessage("postUoCMinMaxMappingData", "POST UoCMinMaxMapping Data URL : " + serviceURL);
 
                            string basicAuthBase641;
-                           basicAuthBase641 = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(String.Format("{0}:{1}", authorization, authorization)));
+                           //basicAuthBase641 = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(String.Format("{0}:{1}", authorization, authorization)));
+                           basicAuthBase641 = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(String.Format("{0}:{1}", username , password)));
+
                            //req.Headers.Add("Authorization", String.Format("Basic {0}", basicAuthBase641))
                            client.Headers.Add("Authorization", String.Format("Basic {0}", basicAuthBase641));
                            //client.Headers.Add("Authorization: Basic " + authorization);
@@ -195,7 +201,6 @@ namespace UoCMinMaxMapping
                            //System.Net.ServicePointManager.CertificatePolicy = new AlwaysIgnoreCertPolicy();
                            //System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 
-                           //var result = client.UploadString("https://10.118.13.27:8243/SDIOutboundWMReceiptAPI/v1_0", resultSet.ToString());
                            var result = client.UploadString(serviceURL, resultSet.ToString());
 
                            // Console.WriteLine(result);
