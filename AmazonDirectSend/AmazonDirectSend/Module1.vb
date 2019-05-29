@@ -6,6 +6,8 @@ Imports System.Web
 Imports System.Data
 Imports System.Data.OleDb
 Imports System.Xml
+Imports System.Text
+Imports System.Text.Encoding
 
 Module Module1
 
@@ -510,10 +512,28 @@ Module Module1
         '  "https://https.amazonsedi.com/c47fcf9d-286d-498a-ba9f-df390c2757a2"  '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"    '  "http://192.168.253.46:8011/sdiwebin/CytecMatMastIn.aspx"  '   "http://ims.sdi.com:8913/sdiwebinSvc/CytecNstkPoRecpts.aspx"   ' "http://ims.sdi.com:8913/sdiwebinSvc/CytecPurchReqs.aspx"    '  "http://ims.sdi.com:8913/sdiwebinSvc/CytecStkReservIn.aspx"    '  "http://ims.sdi.com:8913/sdiwebinSvc/CytecMatMastIn.aspx"    '  "http://localhost/SDIWebProcessors/CytecMatMastIn.aspx"    '    "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"  '    "http://localhost/SDIWebProcessors/XmlInSDI.aspx"   '  "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx" 
         '   "https://https.amazonsedi.com/073dbe31-c230-403f-990c-6f74eeed1510"  '    "https://www.amazon.com/eprocurement/punchout"  '    "https://supplydev.hajoca.com/hajomid/eclipse.ecl"
 
+        Dim strUserNm1 As String = "SDIOrdering"
+        Dim strPass12wd As String = "SDIZeus2019"
+
+        Try
+            strUserNm1 = My.Settings("UsNam1").ToString.Trim
+        Catch ex As Exception
+            strUserNm1 = "SDIOrdering"
+        End Try
+
+        Try
+            strPass12wd = My.Settings("AmznPsswd").ToString.Trim
+        Catch ex As Exception
+            strPass12wd = "SDIZeus2019"
+        End Try
+
+        Dim basicAuthBase641 As String = System.Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(String.Format("{0}:{1}", strUserNm1, strPass12wd)))
+
         httpSession.DataToPost = strBox1
         httpSession.ContentType = "text/xml"
         httpSession.Method = easyHttp.HTTPMethod.HTTP_POST
         httpSession.IgnoreServerCertificate = True
+        httpSession.HeaderAttributes.Add(name:="Authorization", value:=String.Format("Basic {0}", basicAuthBase641))
         httpSession.HeaderAttributes.Add(name:="SOAPAction", value:="https://schemas.microsoft.com/crm/2006/WebServices/Retrieve")
 
         sHttpResponse = ""
