@@ -2,11 +2,17 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="My" GeneratedClassName="MySettings" UseMySettingsClassName="true">
   <Profiles />
   <Settings>
-    <Setting Name="UrlToSend" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">https://https.amazonsedi.com/c47fcf9d-286d-498a-ba9f-df390c2757a2</Value>
-    </Setting>
     <Setting Name="AmazonDirectSend_AmazonSDIDirectEmailSvc_EmailServices" Type="(Web Service URL)" Scope="Application">
       <Value Profile="(Default)">http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx</Value>
+    </Setting>
+    <Setting Name="UrlToSend" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">https://https-ats.amazonsedi.com/c47fcf9d-286d-498a-ba9f-df390c2757a2</Value>
+    </Setting>
+    <Setting Name="UsNam1" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">SDIOrdering</Value>
+    </Setting>
+    <Setting Name="AmznPsswd" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">SDIZeus2019</Value>
     </Setting>
   </Settings>
 </SettingsFile>

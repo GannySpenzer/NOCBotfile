@@ -15,7 +15,7 @@ Option Explicit On
 Namespace My
     
     <Global.System.Runtime.CompilerServices.CompilerGeneratedAttribute(),  _
-     Global.System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "10.0.0.0"),  _
+     Global.System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "11.0.0.0"),  _
      Global.System.ComponentModel.EditorBrowsableAttribute(Global.System.ComponentModel.EditorBrowsableState.Advanced)>  _
     Partial Friend NotInheritable Class MySettings
         Inherits Global.System.Configuration.ApplicationSettingsBase
@@ -56,7 +56,17 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("https://https.amazonsedi.com/c47fcf9d-286d-498a-ba9f-df390c2757a2")>  _
+         Global.System.Configuration.SpecialSettingAttribute(Global.System.Configuration.SpecialSetting.WebServiceUrl),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx")>  _
+        Public ReadOnly Property AmazonDirectSend_AmazonSDIDirectEmailSvc_EmailServices() As String
+            Get
+                Return CType(Me("AmazonDirectSend_AmazonSDIDirectEmailSvc_EmailServices"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("https://https-ats.amazonsedi.com/c47fcf9d-286d-498a-ba9f-df390c2757a2")>  _
         Public ReadOnly Property UrlToSend() As String
             Get
                 Return CType(Me("UrlToSend"),String)
@@ -65,11 +75,19 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.SpecialSettingAttribute(Global.System.Configuration.SpecialSetting.WebServiceUrl),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx")>  _
-        Public ReadOnly Property AmazonDirectSend_AmazonSDIDirectEmailSvc_EmailServices() As String
+         Global.System.Configuration.DefaultSettingValueAttribute("SDIOrdering")>  _
+        Public ReadOnly Property UsNam1() As String
             Get
-                Return CType(Me("AmazonDirectSend_AmazonSDIDirectEmailSvc_EmailServices"),String)
+                Return CType(Me("UsNam1"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("SDIZeus2019")>  _
+        Public ReadOnly Property AmznPsswd() As String
+            Get
+                Return CType(Me("AmznPsswd"),String)
             End Get
         End Property
     End Class
