@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Groups>
+  <Group id="sdi_nacco" desc="NACCO">
+    <site id="I0075" custId="90029" desc="NACCO Berea" />
+    <site id="I0076" custId="90105" desc="NACCO Greenville" />
+    <site id="I0903" custId="40016" desc="NACCO Saltillo Mexico" />
+  </Group>
+  <Group id="sdi_cytec" desc="CYTEC">
+    <site id="I0275" custId="90450" desc="Cytec Harve de Grace" />
+    <site id="I0276" custId="90452" desc="Cytec Winona" />
+    <site id="I0278" custId="90453" desc="Cytec Greenville" />
+    <site id="I0405" custId="90455" desc="Cytec Orange" />
+  </Group>
+  <Group id="sdi_nbty" desc="NBTY">
+    <site id="I0469" custId="90548" desc="Bayport" />
+  </Group>
+  <Group id="sdi_ascend" desc="ASCEND">
+    <site id="I0440" custId="90523" desc="Ascend Pensacola" />
+    <site id="I0441" custId="90524" desc="Ascend Choco Bayou" />
+    <site id="I0442" custId="90525" desc="Ascend Decatur" />
+    <site id="I0443" custId="90526" desc="Ascend Greenwood" />
+    <site id="I0444" custId="90527" desc="Ascend Foley" />
+  </Group>
+  <Group id="nyc" desc="New York City">
+    <site id="I0230" custId="NY00001" desc="NYC DOE Maintenance" />
+    <site id="I0231" custId="NY00002" desc="NYC DOE Custodial" />
+    <site id="I0257" custId="NY00005" desc="NYC Pest Control" />
+    <site id="I0258" custId="NY00007" desc="NYC Foods" />
+    <site id="I0260" custId="90451" desc="NYC SDI Warehouse" />
+  </Group>
+  <Group id="sdi_UofPenn" desc="UPENN">
+    <site id="I0206" custId="90321" desc="University of Penn" />
+  </Group>
+  <Group id="kelloggs" desc="Kelloggs">
+    <site id="I0304" custId="90428" desc="Kelloggs Grand Rapids" />
+    <site id="I0359" custId="90428" desc="Kelloggs Pikeville" />
+    <site id="I0369" custId="90428" desc="Kelloggs Zanesville" />
+    <site id="I0376" custId="90428" desc="Kelloggs Blue Anchor" />
+    <site id="I0377" custId="90428" desc="Kelloggs Atlanta" />
+    <site id="I0378" custId="90428" desc="Kelloggs Rossville" />
+    <site id="I0379" custId="90428" desc="Kelloggs San Jose" />
+    <site id="I0390" custId="90428" desc="Kelloggs Battle Creek" />
+    <site id="I0392" custId="90428" desc="Kelloggs Omaha" />
+    <site id="I0393" custId="90428" desc="Kelloggs Lancaster" />
+    <site id="I0394" custId="90428" desc="Kelloggs Memphis" />
+    <site id="I0395" custId="90428" desc="Kelloggs Muncy" />
+    <site id="I0397" custId="90428" desc="Kelloggs Chicago" />
+    <site id="I0398" custId="90428" desc="Kelloggs Wyoming 3300" />
+  </Group>
+
+  <Group id="sdi_MillerCoors" desc="Miller Coors">
+    <site id="I0022" custId="90052" desc="Coors Golden Brewery" />
+    <site id="I0425" custId="90500" desc="MillerCoors - Milwaukee" />
+    <site id="I0426" custId="90499" desc="MillerCoors - Irwindale" />
+    <site id="I0427" custId="90498" desc="MillerCoors - Ft. Worth" />
+  </Group>
+</Groups>

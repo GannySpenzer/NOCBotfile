@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Groups>
+	<Group id="sdi_MillerCoors" desc="Miller Coors">
+		<site id="I0022" custId="90052" desc="Coors Golden Brewery" />
+		<site id="I0425" custId="90500" desc="MillerCoors - Milwaukee" />
+		<site id="I0426" custId="90499" desc="MillerCoors - Irwindale" />
+		<site id="I0427" custId="90498" desc="MillerCoors - Ft. Worth" />
+	</Group>
+	<Group id="sdi_advanceturnbine" desc="Advanced Turbine">
+	        <site id="I0227" custId="90322" desc="Advanced Turbine" />
+        </Group>
+        <Group id="sdi_aladdinnashville" desc="Aladdin Nashville">
+		        <site id="I0151" custId="90114" desc="Aladdin Nashville" />
+        </Group>
+        <Group id="sdi_honeywell" desc="honeywell">
+			        <site id="I0901" custId="40000" desc="HONEYWELL AUTOMOTRIC, MEXICALI" />
+			        <site id="I0912" custId="40019" desc="SDM-Calexico-Honeywell" />
+        </Group>
+        <Group id="sdi_ascend" desc="Ascend">
+				        <site id="I0440" custId="90523" desc="Ascend Perf Mat - Pensacola" />
+				        <site id="I0442" custId="90525" desc="Ascend Perf Mat - Decatur" />
+				        <site id="I0443" custId="90526" desc="Ascend Perf Mat - Greenwood" />
+				        <site id="I0444" custId="90527" desc="Ascend Perf Mat - Foley" />
+				        <site id="I0441" custId="90524" desc="Ascend Perf Mat - Choco Bayou" />
+        </Group>
+        <Group id="sdi_brooks" desc="Brooks">
+				        <site id="I0250" custId="90412" desc="Brooks" />
+        </Group>
+        <Group id="sdi_deere" desc="John Deere Lwn and Gdn Horicon">
+				        <site id="I0046" custId="90037" desc="John Deere Lwn and Gdn Horicon" />
+        </Group>
+        <Group id="sdi_knoll" desc="Knoll">
+					 <site id="I0046" custId="90044" desc="Knoll" />
+        </Group>
+        <Group id="sdi_siemens" desc="siemens">
+						 <site id="I0097" custId="90092" desc="siemens" />
+						 <site id="I0259" custId="90029" desc="siemens" />
+        </Group>
+         <Group id="sdi_smith" desc="Smith and Nephew">
+							 <site id="I0450" custId="90529" desc="Smith and Nephew" />
+        </Group>
+        <Group id="sdi_kelloggs" desc="Kelloggs">
+				<site id="I0304" custId="90428" desc="Kellogg's Grand Rapids" />
+				<site id="I0359" custId="90428" desc="Kellogg's Pikeville" />
+				<site id="I0368" custId="90428" desc="Kellogg - Clearfield" />
+				<site id="I0369" custId="90428" desc="Kellogg's Zanesville" />
+		                <site id="I0375" custId="90428" desc="Kellogg's Wyoming 3750" />
+				<site id="I0376" custId="90428" desc="Kellogg's Blue Anchor" />
+				<site id="I0377" custId="90428" desc="Kellogg's Atlanta" />
+				<site id="I0378" custId="90428" desc="Kellogg's Rossville" />
+		                <site id="I0379" custId="90428" desc="Kellogg's San Jose" />
+				<site id="I0390" custId="90428" desc="Kellogg's Battle Creek" />
+				<site id="I0392" custId="90428" desc="Kellogg's Omaha" />
+				<site id="I0393" custId="90428" desc="Kellogg's Lancaster" />
+		                <site id="I0394" custId="90428" desc="Kellogg's Memphis" />
+				<site id="I0395" custId="90428" desc="Kellogg's Muncy" />
+				<site id="I0397" custId="90428" desc="Kellogg's Chicago" />
+				<site id="I0398" custId="90428" desc="Kellogg's Wyoming 3300 " />
+				<site id="I0927" custId="40035" desc="Kellogg's Queretaro" />	  
+		   		<site id="I0928" custId="40036" desc="Kellogg's Toluca" />
+		   		<site id="I0929" custId="40037" desc="Kellogg's Linares" />
+		  		<site id="I0930" custId="40038" desc="Kellogg's Mexicali" />
+	</Group>
+	<Group id="sdi_hersey" Desc="Hershey">
+	                        <site id="I1001" custId="90493" desc="Hershey 19 East" />
+	                        <site id="I1004" custId="90494" desc="Hershey Lancaster" />
+	                        <site id="I1007" custId="90495" desc="Hershey Stuarts Draft" />
+	                        <site id="I1009" custId="90492" desc="Hershey Hazelton" />
+	                        <site id="I1013" custId="90491" desc="Hershey West" />
+	                        <site id="I1016" custId="90497" desc="Hershey Robinson" />
+	                        <site id="I1017" custId="90496" desc="Hershey Memphis" />
+	</Group>
+	<Group id="sdi_cytec" Desc="cytec">
+		                        <site id="I0275" custId="90450" desc="Cytec Havre de Grace, MD" />
+		                        <site id="I0276" custId="90452" desc="Cytec Winona" />
+		                        <site id="I0278" custId="90453" desc="Cytec Greenville" />
+		                        <site id="I0405" custId="90455" desc="cytec Orange" />
+		                        <site id="I0277" custId="90454" desc="Cytec Anaheim" />
+		                        <site id="I0406" custId="90480" desc="cytec D'Aicraft" />
+		                        <site id="I0436" custId="90517" desc="cytec Mount Pleasant" />
+	</Group>
+	<Group id="sdi_diageo" Desc="Diageo">
+			                <site id="I0413" custId="90507" desc="Diageo-Pacines" />
+			                <site id="I0414" custId="90508" desc="Diageo-Rosenblum" />
+			                <site id="I0415" custId="90509" desc="Diageo-Sterling" />
+			                <site id="I0430" custId="90511" desc="Diageo-Edna Valley Vineyard" />
+			                <site id="I0713" custId="70007" desc="Diageo-Amherstburg" />
+			                <site id="I0431" custId="90512" desc="Diageo-Chalone Vineyard" />
+			                <site id="I0432" custId="90513" desc="Diageo-Echelon Vineyards" />
+			                <site id="I0434" custId="90515" desc="Diageo-Canoe Ridge Vineyard" />
+				        <site id="I0435" custId="90516" desc="Diageo USVI" />
+				        <site id="I0437" custId="90518" desc="Diageo-Venezuela" />
+				        <site id="I0281" custId="90457" desc="Diageo - Baltimore" />
+				        <site id="I0404" custId="90479" desc="Diageo - Menlo Park" />
+				        <site id="I0708" custId="70002" desc="Diageo - Valleyfield" />
+			                <site id="I0404" custId="90479" desc="Diageo - Menlo Park" />
+			                <site id="I0410" custId="90504" desc="Diageo-Provenance" />
+			                <site id="I0411" custId="90505" desc="Diageo-Beaulieu Vineyards" />
+			                <site id="I0412" custId="90506" desc="Diageo-Moon Mountai9" />
+			                <site id="I0416" custId="90510" desc="Diageo-Acacia" />
+			                <site id="I0709" custId="70003" desc="Diageo - Gimli" />
+			                <site id="I0409" custId="90504" desc="Diageo - Plainfield" />
+			                <site id="I0403" custId="90478" desc="Diageo - Sonoma" />
+      	</Group>
+	<Group id="SDI_safeway" desc="Safeway">
+                         <site id="I0454" custId="90541" desc="Safeway City of Commerce" />
+                         <site id="I0455" custId="90542" desc="Safeway San Leandro" />
+        </Group> 
+        <Group id="sdi_sandeninternational" desc="Sanden International">
+	                <site id="I0202" custId="90309" desc="Sanden International" />
+        </Group> 
+        <Group id="sdi_uncc" desc="UNCC">
+		                <site id="I0256" custId="90425" desc="UNCC" />
+        </Group>
+         <Group id="sdi_upenn" desc="University Of Pennsylvania">
+			                <site id="I0206" custId="90321" desc="University Of Pennsylvania" />
+        </Group>
+         <Group id="sdi_sdivisteon" desc="Visteon">
+				                <site id="I0905" custId="40008" desc="Visteon" />
+				                <site id="I0906" custId="40009" desc="Visteon" />
+				                <site id="I0907" custId="40010" desc="Visteon" />
+				                <site id="I0908" custId="40011" desc="Visteon" />
+        </Group>
+        <Group id="sdi_webco" desc="Webco">
+					                <site id="I0254" custId="90422" desc="Webco" />
+	</Group>
+	<Group id="sdi_nycdoe" desc="NYCDOE">
+						<site id="I0232" custId="NY00002" desc="NYCDOE" />
+                                                <site id="I0230" custId="NY00001" desc="NYCDOE" />
+                                                <site id="I0260" custId="90451"   desc="NYCDOE" />
+	</Group>
+	<Group id="sdi_lennox" desc="lennox">
+							<site id="I0451" custId="90537" desc="Lennox Internt'l Case Plant" />
+	                                                <site id="IA451" custId="90545" desc="Lennox Internt'l System Plant" />
+       </Group>
+</Groups>

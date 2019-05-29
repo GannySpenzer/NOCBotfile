@@ -23,7 +23,7 @@
     <DebugType>full</DebugType>
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>bin\</OutputPath>
     <DocumentationFile>SendInvoiceToUnivOfChcgo.xml</DocumentationFile>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
   </PropertyGroup>
@@ -53,6 +53,8 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="System.Web.Services" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -70,6 +72,16 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AlwaysIgnoreCertPolicy.vb" />
+    <Compile Include="ApplicationLogger.vb" />
+    <Compile Include="appVarCollection.vb" />
+    <Compile Include="Buyer.vb" />
+    <Compile Include="CColumn.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Common.vb" />
+    <Compile Include="easyHttp.vb" />
+    <Compile Include="Interface\IValidator.vb" />
     <Compile Include="Module1.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
@@ -85,6 +97,22 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Include="punchOutGroupIdentifier.vb" />
+    <Compile Include="punchOutGrpSite.vb" />
+    <Compile Include="punchOutIdentity.vb" />
+    <Compile Include="punchOutSetupRequestDoc.vb" />
+    <Compile Include="punchOutUser.vb" />
+    <Compile Include="punchoutVendorConfig.vb" />
+    <Compile Include="ShipTo.vb" />
+    <Compile Include="theStringer.vb" />
+    <Compile Include="userCredential.vb" />
+    <Compile Include="ValidateAgaintsDTD.vb" />
+    <Compile Include="Validator.vb" />
+    <Compile Include="Web References\SDIEmailSvc\Reference.vb">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.map</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -106,6 +134,45 @@
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
     <None Include="App.config" />
+    <None Include="PunchOutcXML\cXML.dtd" />
+    <None Include="Web References\SDIEmailSvc\EmailServices.wsdl" />
+    <None Include="Web References\SDIEmailSvc\Reference.map">
+      <Generator>MSDiscoCodeGenerator</Generator>
+      <LastGenOutput>Reference.vb</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <WebReferences Include="Web References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <WebReferenceUrl Include="http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx">
+      <UrlBehavior>Dynamic</UrlBehavior>
+      <RelPath>Web References\SDIEmailSvc\</RelPath>
+      <UpdateFromURL>http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx</UpdateFromURL>
+      <ServiceLocationURL>
+      </ServiceLocationURL>
+      <CachedDynamicPropName>
+      </CachedDynamicPropName>
+      <CachedAppSettingsObjectName>MySettings</CachedAppSettingsObjectName>
+      <CachedSettingsPropName>SendInvoiceToUnivOfChcgo_SDIEmailSvc_EmailServices</CachedSettingsPropName>
+    </WebReferenceUrl>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Web References\SDIEmailSvc\EmailServices.disco" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="configSetting.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="PunchOutcXML\Grainger.PriceGrpIdentifier.xml" />
+    <Content Include="PunchOutcXML\GraybaR.PriceGrpIdentifier.xml" />
+    <Content Include="PunchOutcXML\OrderRequestTemplate.xml" />
+    <Content Include="PunchOutcXML\orig.PunchOut.xml" />
+    <Content Include="PunchOutcXML\PunchOut.xml" />
+    <Content Include="PunchOutcXML\punchOutSetupRequestTemplate.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+	<!-- DATABASE CONNECTION
+	*** for PRODUCTION access
+	<sourceDB cnstring="Provider=MSDAORA.1;Data Source=PROD;User ID=einternet;Password=einternet;"
+		type="oracle8" />
+	*** for TEST DB access
+	<sourceDB cnstring="Provider=MSDAORA.1;Data Source=PLGR;User ID=ewindows;Password=ewindows;"
+		type="oracle8" />
+	//-->
+	<sourceDB cnString="Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=RPTG"
+		type="oracle8" />
+	<!-- TIMER
+		 timer object properties for checking newly added quoted non-stock items on the database.  this
+		 parameter (as for the moment) doesn't recognize other units other than "secs" so don't change
+		 it yet.
+	//-->
+	<settingTimer interval="300" unit="secs" desc="300 secs or 5 mins" />
+	<!-- SECURITY
+		 please DO NOT change this element without approval from Bob Dougherty.  this parameter
+		 should be EXACTLY the same as the web page that was linked for generated emails
+	//-->
+	<s id="b?50$#@!" />
+	<!-- SERVICE NOTIFICATION
+		 notify the following individuals on every event of this service program
+		<statusNotify name="Erwin Bautista" addy="erwin.bautista@sdi.com" />
+		<statusNotify name="Bob Dougherty" addy="bob.dougherty@isacs.com" />
+		<statusNotify name="John Waters" addy="john.waters@isacs.com" />
+	//-->
+	<serviceNotification notifySubject="SDI Quoted Non-Stock Email Service Notification" notifyFrom="service.notification@sdi.com">
+		<statusNotify name="Erwin Bautista" addy="erwin.bautista@sdi.com" />
+	</serviceNotification>
+	<!-- EMAIL DEFAULT AND/OR INCLUDES
+		<subject defaultText="SDI Quoted Non-Stock Email Service" />
+	//-->
+	<email desc="default and additional settings for sending email messages">
+		<defaultFrom name="SDI Helpdesk" addy="helpdesk@sdi.com" desc="default sender for messages generated using this service." />
+		<!-- for testing
+			<toItem name="Erwin Bautista" addy="erwin.bautista@sdi.com" />
+		//-->
+		<additionalTo desc="individuals that will be added in the TO field of emails sent through this service">
+      <toItem name="Matthew Adams" addy="Matthew.Adams@sdi.com" />
+      <toItem name="Donna Ciampoli" addy="Donna.Ciampoli@sdi.com" />
+		</additionalTo>
+		<!-- for testing
+			<ccItem name="Erwin Bautista" addy="erwin.bautista@sdi.com" />
+		//-->
+		<additionalCc desc="individuals that will be added in the CC field of emails sent through this service">
+		</additionalCc>
+		<!--
+			<bccItem name="Erwin Bautista" addy="erwin.bautista@sdi.com" />
+			<bccItem name="John Waters" addy="john.waters@isacs.com" />
+			<bccItem name="Bob Dougherty" addy="bob.dougherty@isacs.com" />
+			<bccItem name="Ronald Fijalkowski" addy="ronald.fijalkowski@isacs.com" />
+		//-->
+		<additionalBcc desc="individuals that will be added in the BCC field of emails sent through this service">
+			<bccItem name="WebDev" addy="WebDev@sdi.com" />
+		</additionalBcc>
+		<defaultSubject text="Check Auto Crib Transactions (TESTING PHASE)" />
+		<!-- for TESTING or PRODUCTION web page
+		*** for PRODUCTION access
+		<body linkURL="http://InSiteOnLine.isacs.com/ApproveQuote.aspx" />
+		*** for TEST access
+		<body linkURL="http://localhost/webpartnerplus/ApproveQuote.aspx" />
+		//-->
+		<body linkURL="http://localhost/webpartnerplus/ApproveQuote.aspx" />
+	</email>
+</configuration>
