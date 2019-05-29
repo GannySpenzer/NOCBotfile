@@ -592,7 +592,7 @@ Public Class punchOutSetupRequestDoc
                                         End Try
                                     End If
                                     If Trim(strEmail) = "" Then
-                                        strEmail = "michael.randall@isacs.com"
+                                        strEmail = "michael.randall@sdi.com"
                                     End If
                                     nodeEmail.InnerText = strEmail
 
@@ -862,7 +862,6 @@ Public Class punchOutSetupRequestDoc
                                 'End If
                                 node.InnerText = strSupplierPartID
                                 '          SupplierPartAuxiliaryID under ItemID under ItemOut
-                                node = nodeItemID.AppendChild(docXML.CreateElement(name:="SupplierPartAuxiliaryID"))
                                 Dim strSupplierPartAuxiliaryID As String = ""
                                 If IsDBNull(OrderDataSet.Tables(0).Rows(iOrd).Item("ISA_ATTRVAL30").ToString()) Then
                                     strSupplierPartAuxiliaryID = ""
@@ -884,6 +883,26 @@ Public Class punchOutSetupRequestDoc
                                 'If strSupplierPartAuxiliaryID = "" Then
                                 '    strSupplierPartAuxiliaryID = "184-2574155-1031518"
                                 'End If
+                                If Trim(strSupplierPartAuxiliaryID) <> "" Then
+                                    strSupplierPartAuxiliaryID = Trim(strSupplierPartAuxiliaryID)
+                                    If Len(strSupplierPartAuxiliaryID) > 60 Then
+                                        'line came from Amazon Search
+                                        '           Extrinsic 
+                                        node = nodeItemID.AppendChild(docXML.CreateElement(name:="Extrinsic"))
+                                        '                 (1) name - under Extrinsic
+                                        attrib = node.Attributes.Append(docXML.CreateAttribute(name:="name"))
+                                        attrib.Value = "OfferId"
+
+                                    Else
+                                        'line came from Amazon Punch Out
+                                        '   SupplierPartAuxiliaryID 
+                                        node = nodeItemID.AppendChild(docXML.CreateElement(name:="SupplierPartAuxiliaryID"))
+                                    End If
+                                Else
+                                    'line came from Amazon Punch Out
+                                    '   SupplierPartAuxiliaryID 
+                                    node = nodeItemID.AppendChild(docXML.CreateElement(name:="SupplierPartAuxiliaryID"))
+                                End If
 
                                 node.InnerText = strSupplierPartAuxiliaryID
 
