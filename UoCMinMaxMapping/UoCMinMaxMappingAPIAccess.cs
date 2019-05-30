@@ -171,11 +171,13 @@ namespace UoCMinMaxMapping
                            parCostRow.AVGCOST = mxdouble;
                            //parRow.INVCOST.SetValue(parCostRow, 0);
                            //parRow.INVCOST.SetValue(parCost, iRowIndex); ///?????
-
+                           Array.Resize(ref parCost, 1); //iRowIndex + 1);
+                           //parCost[iRowIndex] = parCostRow;
+                           parCost[0] = parCostRow;
+                           parRow.INVCOST = parCost;
                            //par[iRowIndex] = new UCSDIINVENTORY.UCSDIINVENTORY_INVENTORYType[0];
 
                            Array.Resize(ref par, iRowIndex+1);
-                           Array.Resize(ref parCost, iRowIndex+1);
 
                            par[iRowIndex] =  parRow; //new UCSDIINVENTORY.UCSDIINVENTORY_INVENTORYType(); //new
                            //parCost[iRowIndex] = new UCSDIINVENTORY.UCSDIINVENTORY_INVCOSTType(); //new
@@ -294,16 +296,23 @@ namespace UoCMinMaxMapping
                            //client.Headers.Add("Authorization: Basic " + authorization);
                            client.Headers.Add("Content-Type:application/json");
 
+                           //req.Credentials = String.Format("Basic {0}", basicAuthBase641);
+                           //req.UserAgent = "maxadmin";
+                           //req.ConnectionGroupName = String.Format("Basic {0}", basicAuthBase641);
+                           NetworkCredential myCredentials = new NetworkCredential(username,password);
+                           // Create a webrequest with the specified URL. 
+                           //WebRequest myWebRequest = WebRequest.Create(serviceURL ); 
+                           //myWebRequest.Credentials = myCredentials.GetCredential(new Uri(serviceURL),"");
+                           req.Credentials = myCredentials; // myCredentials.GetCredential(new Uri(serviceURL), "");
+
                            DateTime creationDateTime = DateTime.Now;
-                           bool creationDateTimeSpec = false;
-                           string baseLang = "";
-                           string transLang = "";
-                           string msgID = "";
-                           string maximoVer = "";
+                           bool creationDateTimeSpec = true;
+                           string baseLang = "EN";
+                           string transLang = "EN";
+                           string msgID = "c";
+                           string maximoVer = "d";
                            //req.UpdateUCSDIINVENTORY(param, t, true, "english", "eng", "eng", "","");
                            //req.UpdateUCSDIINVENTORYAsync(par,t,z,a,b,c,d);
-                           // 
-
                            req.UpdateUCSDIINVENTORY(par, ref creationDateTime, ref creationDateTimeSpec, ref baseLang, ref transLang, ref msgID, ref maximoVer);                 
                            
                            //ServiceReference1.UpdateUCSDIINVENTORYRequest res = new ServiceReference1.UpdateUCSDIINVENTORYRequest(param, DateTime.Now, "test", "test", "test", "test");
@@ -315,6 +324,7 @@ namespace UoCMinMaxMapping
                            //System.Net.ServicePointManager.CertificatePolicy = new AlwaysIgnoreCertPolicy();
                            //System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 
+                           //old method
                            var result = client.UploadString(serviceURL, resultSet.ToString());
                            
                            // Console.WriteLine(result);
