@@ -60,7 +60,7 @@ namespace UoCMinMaxMapping
             try
             {
 
-                strSQLstring = "UPDATE SYSADM8.PS_ISA_MXM_ITM_OUT SET PROCESS_FLAG='I', DATE_PROCESSED = SYSDATE WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'SOLVAY'"; // AND ROWNUM < 2";
+                strSQLstring = "UPDATE SYSADM8.PS_ISA_MXM_ITM_OUT SET PROCESS_FLAG='I', PROCESS_DTTM = SYSDATE WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'UOC'"; // AND ROWNUM < 2";
 
                 m_oLogger.LogMessage("UpdateUoCMinMaxMappingData", "PeopleSoft connection string : " + OracleConString);
                 m_oLogger.LogMessage("UpdateUoCMinMaxMappingData", "Query To Update the PO Receipt mapping date : " + strSQLstring);

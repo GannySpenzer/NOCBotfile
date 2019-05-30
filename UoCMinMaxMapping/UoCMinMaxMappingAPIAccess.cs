@@ -11,6 +11,8 @@ using System.Configuration;
 using System.IO;
 using UoCMapping;
 using UoCMinMaxMapping;
+using System.Web.Services.Protocols;
+using System.Text.RegularExpressions;
 
 
 namespace UoCMinMaxMapping
@@ -31,6 +33,7 @@ namespace UoCMinMaxMapping
             var strResponse = " ";
             string responseErrorText = " ";
             int iRowIndex = 0;
+            string strFailureMsg = "";
 
             StringBuilder sbInit = new StringBuilder();
             string xmlStr = string.Empty;
@@ -42,11 +45,12 @@ namespace UoCMinMaxMapping
 
                 string carriagereturn = "\r\n";
 
-                string header = @"<soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns=""http://www.ibm.com/maximo"">" + carriagereturn +
-                                 "<soapenv:Header/>" + carriagereturn +
-                                 "   <soapenv:Body>" + carriagereturn +
-                                 "<UpdateUCSDIINVENTORY>" + carriagereturn +
-                                 "<UCSDIINVENTORYSet>" + carriagereturn;
+                //old method
+                //string header = @"<soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns=""http://www.ibm.com/maximo"">" + carriagereturn +
+                //                 "<soapenv:Header/>" + carriagereturn +
+                //                 "   <soapenv:Body>" + carriagereturn +
+                //                 "<UpdateUCSDIINVENTORY>" + carriagereturn +
+                //                 "<UCSDIINVENTORYSet>" + carriagereturn;
 
                 UCSDIINVENTORY.UCSDIINVENTORY req = new UCSDIINVENTORY.UCSDIINVENTORY(); //new
                 UCSDIINVENTORY.UCSDIINVENTORY_INVENTORYType[] par = new UCSDIINVENTORY.UCSDIINVENTORY_INVENTORYType[0]; //new
@@ -63,7 +67,6 @@ namespace UoCMinMaxMapping
                 dtResponse = objUoCMinMaxMappingDAL.getUoCMinMaxMappingData(m_oLogger);
                 if (dtResponse.Rows.Count != 0)
                 {
-
 
                    for (int i = 0; i < dtResponse.Rows.Count; i++)
                    {
@@ -94,15 +97,13 @@ namespace UoCMinMaxMapping
                            string ORDERUNIT = rowInit["ISA_CUSTOMER_UOM"].ToString();
                            string AVGCOST = rowInit["TL_COST"].ToString();
 
-                           //string ITEM_TEXT = rowInit["DESCR254"].ToString();
-                           //string MVT_IND = "B";
-
-                           using (StreamReader sr = new StreamReader(Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory())) + "/UoCMinMaxInventory.txt"))
-                           {
-                               xmlStr = sr.ReadToEnd();
-                               sbInit.AppendFormat(xmlStr, ITEMNUM, LOCATION, MAXLEVEL, MINLEVEL, ORDERQTY, ORDERUNIT, SITEID, AVGCOST);
-                               xmlStringInit = sbInit.ToString() + carriagereturn;
-                           }
+                           //old method
+                           //using (StreamReader sr = new StreamReader(Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory())) + "/UoCMinMaxInventory.txt"))
+                           //{
+                           //    xmlStr = sr.ReadToEnd();
+                           //    sbInit.AppendFormat(xmlStr, ITEMNUM, LOCATION, MAXLEVEL, MINLEVEL, ORDERQTY, ORDERUNIT, SITEID, AVGCOST);
+                           //    xmlStringInit = sbInit.ToString() + carriagereturn;
+                           //}
 
                            //mxstring.Value = ITEMNUM;
                            //par[iRowIndex].ITEMNUM = mxstring;
@@ -169,30 +170,27 @@ namespace UoCMinMaxMapping
                            mxdouble.changedSpecified = true;
                            mxdouble.Value = Convert.ToDouble(AVGCOST);
                            parCostRow.AVGCOST = mxdouble;
-                           //parRow.INVCOST.SetValue(parCostRow, 0);
-                           //parRow.INVCOST.SetValue(parCost, iRowIndex); ///?????
                            Array.Resize(ref parCost, 1); //iRowIndex + 1);
-                           //parCost[iRowIndex] = parCostRow;
+                           parCost = new UCSDIINVENTORY.UCSDIINVENTORY_INVCOSTType[1]; //new
                            parCost[0] = parCostRow;
                            parRow.INVCOST = parCost;
-                           //par[iRowIndex] = new UCSDIINVENTORY.UCSDIINVENTORY_INVENTORYType[0];
+                           //parRow.INVCOST.SetValue(parCost, 0);
 
                            Array.Resize(ref par, iRowIndex+1);
 
-                           par[iRowIndex] =  parRow; //new UCSDIINVENTORY.UCSDIINVENTORY_INVENTORYType(); //new
+                           par[iRowIndex] =  parRow; 
                            //parCost[iRowIndex] = new UCSDIINVENTORY.UCSDIINVENTORY_INVCOSTType(); //new
 
-                       
-                           //ServiceReference1.UpdateUCSDIINVENTORYRequest() = paramCost;
                            iRowIndex += 1;
 
                    }
                 }
 
-                string footer = @"         </UCSDIINVENTORYSet>" + carriagereturn +
-                                       "</UpdateUCSDIINVENTORY>" + carriagereturn +
-                                       "</soapenv:Body>" + carriagereturn +
-                                       "</soapenv:Envelope>" + carriagereturn;
+                //old method
+                //string footer = @"         </UCSDIINVENTORYSet>" + carriagereturn +
+                //                       "</UpdateUCSDIINVENTORY>" + carriagereturn +
+                //                       "</soapenv:Body>" + carriagereturn +
+                //                       "</soapenv:Envelope>" + carriagereturn;
 
                        //List<UoCMinMaxMappingBO> target = dtResponse.AsEnumerable()
                        //    .Select(row => new UoCMinMaxMappingBO
@@ -262,7 +260,8 @@ namespace UoCMinMaxMapping
                        //JObject resultSet = JObject.Parse(sb.ToString());
                        //string resultSet = jsontest;
 
-                       string resultSet = header + xmlStringInit + footer;
+                       //old method
+                       //string resultSet = header + xmlStringInit + footer;
 
                        //JObject resultSet = JObject.Parse(jsonSampleData);
                        using (var client = new WebClient())
@@ -283,7 +282,7 @@ namespace UoCMinMaxMapping
 
 
                            m_oLogger.LogMessage("postUoCMinMaxMappingData", "POST UoCMinMax Mapping Data to Solvay starts here");
-                           m_oLogger.LogMessage("postUoCMinMaxMappingData", "POST UoCMinMaxMapping Data" + resultSet.ToString());
+                           //m_oLogger.LogMessage("postUoCMinMaxMappingData", "POST UoCMinMaxMapping Data" + resultSet.ToString());
                            //m_oLogger.LogMessage("postUoCMinMaxMappingData", "POST WMMapping Data URL : https://10.118.13.27:8243/SDIOutboundWMReceiptAPI/v1_0");
                            m_oLogger.LogMessage("postUoCMinMaxMappingData", "POST UoCMinMaxMapping Data URL : " + serviceURL);
 
@@ -296,9 +295,6 @@ namespace UoCMinMaxMapping
                            //client.Headers.Add("Authorization: Basic " + authorization);
                            client.Headers.Add("Content-Type:application/json");
 
-                           //req.Credentials = String.Format("Basic {0}", basicAuthBase641);
-                           //req.UserAgent = "maxadmin";
-                           //req.ConnectionGroupName = String.Format("Basic {0}", basicAuthBase641);
                            NetworkCredential myCredentials = new NetworkCredential(username,password);
                            // Create a webrequest with the specified URL. 
                            //WebRequest myWebRequest = WebRequest.Create(serviceURL ); 
@@ -311,25 +307,62 @@ namespace UoCMinMaxMapping
                            string transLang = "EN";
                            string msgID = "c";
                            string maximoVer = "d";
-                           //req.UpdateUCSDIINVENTORY(param, t, true, "english", "eng", "eng", "","");
                            //req.UpdateUCSDIINVENTORYAsync(par,t,z,a,b,c,d);
-                           req.UpdateUCSDIINVENTORY(par, ref creationDateTime, ref creationDateTimeSpec, ref baseLang, ref transLang, ref msgID, ref maximoVer);                 
-                           
-                           //ServiceReference1.UpdateUCSDIINVENTORYRequest res = new ServiceReference1.UpdateUCSDIINVENTORYRequest(param, DateTime.Now, "test", "test", "test", "test");
+                           try
+                           {
+                               req.UpdateUCSDIINVENTORY(par, ref creationDateTime, ref creationDateTimeSpec, ref baseLang, ref transLang, ref msgID, ref maximoVer);
+                           }
+                           catch (SoapHeaderException ex)
+                           {
+
+                               var responseStream = ex.Message; // ex.Response.GetResponseStream();
+                               strFailureMsg = responseStream;
+                               //if (responseStream != null)
+                               //{
+                               //    using (var reader = new StreamReader(responseStream))
+                               //    {
+                               //        responseErrorText = reader.ReadToEnd();
+                               //    }
+                               //}
+
+                               //m_oLogger.LogMessageWeb("postUoCMinMaxMapping", "Error trying to POST data to UoC server.", responseErrorText); //ex
+                               m_oLogger.LogMessageWeb("postUoCMinMaxMapping", "Error trying to POST data to UoC server.", responseStream);
+                           }
+
                            req.Dispose();
                            
-                           
-
                            //client.Headers.Add("Accept:application/json");
                            //System.Net.ServicePointManager.CertificatePolicy = new AlwaysIgnoreCertPolicy();
                            //System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 
                            //old method
-                           var result = client.UploadString(serviceURL, resultSet.ToString());
+                           //var result = client.UploadString(serviceURL, resultSet.ToString());
                            
+                           //old method
                            // Console.WriteLine(result);
-                           var parsed = JObject.Parse(result);
-                           strResponse = parsed.SelectToken("RequestStatus").Value<string>();
+                           //var parsed = JObject.Parse(result);
+                           //strResponse = parsed.SelectToken("RequestStatus").Value<string>();
+
+                          
+                           double myNum = 0;
+                           if (strFailureMsg != "")
+                           {
+                               strResponse = "FAILURE: " + strFailureMsg;
+                           }
+                           else
+                           {
+                               if (Double.TryParse(msgID, out myNum))
+                               {
+                                   strResponse = "SUCCESS";
+                               }
+                               else
+                               {
+                                   strResponse = "FAILURE: " + msgID;
+                               }
+                           }
+
+                           //strResponse = msgID;
+
                            m_oLogger.LogMessage("postUoCMinMaxMappingData", "POST UoCMinMaxMapping data to Solvay server status " + strResponse);
 
                            // strResponse = JsonConvert.SerializeObject(result);
