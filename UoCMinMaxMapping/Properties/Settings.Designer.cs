@@ -32,5 +32,15 @@ namespace UoCMinMaxMapping.Properties {
                 return ((string)(this["UoCMinMaxMapping_SDiEmailUtilityService_EmailServices"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.WebServiceUrl)]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://fsmax-sdi-vip.uchicago.edu:6443/meaweb/services/UCSDIINVENTORY")]
+        public string UoCMinMaxMapping_UCSDIINVENTORY_UCSDIINVENTORY {
+            get {
+                return ((string)(this["UoCMinMaxMapping_UCSDIINVENTORY_UCSDIINVENTORY"]));
+            }
+        }
     }
 }

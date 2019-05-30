@@ -10,6 +10,7 @@ using Newtonsoft.Json.Linq;
 using System.Configuration;
 using System.IO;
 using UoCMapping;
+using UoCMinMaxMapping;
 
 
 namespace UoCMinMaxMapping
@@ -29,6 +30,7 @@ namespace UoCMinMaxMapping
             string serviceURL = " ";
             var strResponse = " ";
             string responseErrorText = " ";
+            int iRowIndex = 0;
 
             StringBuilder sbInit = new StringBuilder();
             string xmlStr = string.Empty;
@@ -46,15 +48,28 @@ namespace UoCMinMaxMapping
                                  "<UpdateUCSDIINVENTORY>" + carriagereturn +
                                  "<UCSDIINVENTORYSet>" + carriagereturn;
 
+                UCSDIINVENTORY.UCSDIINVENTORY req = new UCSDIINVENTORY.UCSDIINVENTORY(); //new
+                UCSDIINVENTORY.UCSDIINVENTORY_INVENTORYType[] par = new UCSDIINVENTORY.UCSDIINVENTORY_INVENTORYType[0]; //new
+                UCSDIINVENTORY.UCSDIINVENTORY_INVCOSTType[] parCost = new UCSDIINVENTORY.UCSDIINVENTORY_INVCOSTType[0]; //new
+                
+                UCSDIINVENTORY.UCSDIINVENTORY_INVENTORYType parRow = new UCSDIINVENTORY.UCSDIINVENTORY_INVENTORYType(); //new
+                UCSDIINVENTORY.UCSDIINVENTORY_INVCOSTType parCostRow = new UCSDIINVENTORY.UCSDIINVENTORY_INVCOSTType(); //new
+
+                UCSDIINVENTORY.MXStringType mxstring = new UCSDIINVENTORY.MXStringType();
+                UCSDIINVENTORY.MXDoubleType mxdouble = new UCSDIINVENTORY.MXDoubleType();
+
                 UoCMinMaxMappingDAL objUoCMinMaxMappingDAL = new UoCMinMaxMappingDAL();
                 m_oLogger.LogMessage("getUoCMinMaxMappingData", "Getting UoC MinMax Mapping Data starts here");
                 dtResponse = objUoCMinMaxMappingDAL.getUoCMinMaxMappingData(m_oLogger);
                 if (dtResponse.Rows.Count != 0)
                 {
 
+
                    for (int i = 0; i < dtResponse.Rows.Count; i++)
                    {
-                       
+
+                           parRow = new UCSDIINVENTORY.UCSDIINVENTORY_INVENTORYType(); //new
+                           parCostRow = new UCSDIINVENTORY.UCSDIINVENTORY_INVCOSTType(); //new
 
                            DataRow rowInit;
                            rowInit = dtResponse.Rows[i];
@@ -88,6 +103,87 @@ namespace UoCMinMaxMapping
                                sbInit.AppendFormat(xmlStr, ITEMNUM, LOCATION, MAXLEVEL, MINLEVEL, ORDERQTY, ORDERUNIT, SITEID, AVGCOST);
                                xmlStringInit = sbInit.ToString() + carriagereturn;
                            }
+
+                           //mxstring.Value = ITEMNUM;
+                           //par[iRowIndex].ITEMNUM = mxstring;
+                           //par[iRowIndex].ITEMSETID.Value  = "ITEMSET1";
+                           //par[iRowIndex].LOCATION.Value = LOCATION;
+                           //par[iRowIndex].MAXLEVEL.Value = Convert.ToDouble(MAXLEVEL);
+                           //par[iRowIndex].MINLEVEL.Value = Convert.ToDouble(MINLEVEL);
+                           //par[iRowIndex].ORDERQTY.Value = Convert.ToDouble(ORDERQTY);
+                           //par[iRowIndex].ORDERUNIT.Value = ORDERUNIT;
+                           //par[iRowIndex].SITEID.Value= SITEID;
+                           //parCost[iRowIndex].AVGCOST.Value = Convert.ToDouble(AVGCOST);
+                           //par[iRowIndex].INVCOST.SetValue(parCost,0);
+
+                           mxstring = new UCSDIINVENTORY.MXStringType();
+                           mxstring.changed = true;
+                           mxstring.changedSpecified = true;
+                           mxstring.Value = ITEMNUM;
+                           parRow.ITEMNUM = mxstring;
+
+                           mxstring = new UCSDIINVENTORY.MXStringType();
+                           mxstring.changed = true;
+                           mxstring.changedSpecified = true;
+                           mxstring.Value = "ITEMSET1";
+                           parRow.ITEMSETID = mxstring;
+
+                           mxstring = new UCSDIINVENTORY.MXStringType();
+                           mxstring.changed = true;
+                           mxstring.changedSpecified = true;
+                           mxstring.Value = LOCATION;
+                           parRow.LOCATION = mxstring;
+
+                           mxdouble = new UCSDIINVENTORY.MXDoubleType();
+                           mxdouble.Value = Convert.ToDouble(MAXLEVEL);
+                           mxdouble.changed = true;
+                           mxdouble.changedSpecified = true;
+                           parRow.MAXLEVEL = mxdouble;
+
+                           mxdouble = new UCSDIINVENTORY.MXDoubleType();
+                           mxdouble.Value = Convert.ToDouble(MINLEVEL);
+                           mxdouble.changed = true;
+                           mxdouble.changedSpecified = true;
+                           parRow.MINLEVEL = mxdouble;
+
+                           mxdouble = new UCSDIINVENTORY.MXDoubleType();
+                           mxdouble.Value = Convert.ToDouble(ORDERQTY);
+                           mxdouble.changed = true;
+                           mxdouble.changedSpecified = true;
+                           parRow.ORDERQTY = mxdouble;
+
+                           mxstring = new UCSDIINVENTORY.MXStringType();
+                           mxstring.Value = ORDERUNIT;
+                           mxstring.changed = true;
+                           mxstring.changedSpecified = true;
+                           parRow.ORDERUNIT = mxstring;
+
+                           mxstring = new UCSDIINVENTORY.MXStringType();
+                           mxstring.Value = SITEID;
+                           mxstring.changed = true;
+                           mxstring.changedSpecified = true;
+                           parRow.SITEID = mxstring;
+
+                           mxdouble = new UCSDIINVENTORY.MXDoubleType();
+                           mxdouble.changed = true;
+                           mxdouble.changedSpecified = true;
+                           mxdouble.Value = Convert.ToDouble(AVGCOST);
+                           parCostRow.AVGCOST = mxdouble;
+                           //parRow.INVCOST.SetValue(parCostRow, 0);
+                           //parRow.INVCOST.SetValue(parCost, iRowIndex); ///?????
+
+                           //par[iRowIndex] = new UCSDIINVENTORY.UCSDIINVENTORY_INVENTORYType[0];
+
+                           Array.Resize(ref par, iRowIndex+1);
+                           Array.Resize(ref parCost, iRowIndex+1);
+
+                           par[iRowIndex] =  parRow; //new UCSDIINVENTORY.UCSDIINVENTORY_INVENTORYType(); //new
+                           //parCost[iRowIndex] = new UCSDIINVENTORY.UCSDIINVENTORY_INVCOSTType(); //new
+
+                       
+                           //ServiceReference1.UpdateUCSDIINVENTORYRequest() = paramCost;
+                           iRowIndex += 1;
+
                    }
                 }
 
@@ -197,12 +293,30 @@ namespace UoCMinMaxMapping
                            client.Headers.Add("Authorization", String.Format("Basic {0}", basicAuthBase641));
                            //client.Headers.Add("Authorization: Basic " + authorization);
                            client.Headers.Add("Content-Type:application/json");
+
+                           DateTime creationDateTime = DateTime.Now;
+                           bool creationDateTimeSpec = false;
+                           string baseLang = "";
+                           string transLang = "";
+                           string msgID = "";
+                           string maximoVer = "";
+                           //req.UpdateUCSDIINVENTORY(param, t, true, "english", "eng", "eng", "","");
+                           //req.UpdateUCSDIINVENTORYAsync(par,t,z,a,b,c,d);
+                           // 
+
+                           req.UpdateUCSDIINVENTORY(par, ref creationDateTime, ref creationDateTimeSpec, ref baseLang, ref transLang, ref msgID, ref maximoVer);                 
+                           
+                           //ServiceReference1.UpdateUCSDIINVENTORYRequest res = new ServiceReference1.UpdateUCSDIINVENTORYRequest(param, DateTime.Now, "test", "test", "test", "test");
+                           req.Dispose();
+                           
+                           
+
                            //client.Headers.Add("Accept:application/json");
                            //System.Net.ServicePointManager.CertificatePolicy = new AlwaysIgnoreCertPolicy();
                            //System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 
                            var result = client.UploadString(serviceURL, resultSet.ToString());
-
+                           
                            // Console.WriteLine(result);
                            var parsed = JObject.Parse(result);
                            strResponse = parsed.SelectToken("RequestStatus").Value<string>();

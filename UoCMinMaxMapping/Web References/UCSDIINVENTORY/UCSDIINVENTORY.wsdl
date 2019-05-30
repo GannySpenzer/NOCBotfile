@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<definitions xmlns:mx="http://www.ibm.com/maximo" xmlns:mxws="http://www.ibm.com/maximo/wsdl/UCSDIINVENTORY" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" name="UCSDIINVENTORY" targetNamespace="http://www.ibm.com/maximo/wsdl/UCSDIINVENTORY" xmlns="http://schemas.xmlsoap.org/wsdl/">
+  <types>
+    <xsd:schema>
+      <xsd:import schemaLocation="https://fsmax-sdi-vip.uchicago.edu:6443/meaweb/schema/service/UCSDIINVENTORYService.xsd" namespace="http://www.ibm.com/maximo" />
+    </xsd:schema>
+  </types>
+  <message name="QueryUCSDIINVENTORYRequest">
+    <part name="parameters" element="mx:QueryUCSDIINVENTORY" />
+  </message>
+  <message name="QueryUCSDIINVENTORYResponse">
+    <part name="parameters" element="mx:QueryUCSDIINVENTORYResponse" />
+  </message>
+  <message name="SyncUCSDIINVENTORYRequest">
+    <part name="parameters" element="mx:SyncUCSDIINVENTORY" />
+  </message>
+  <message name="SyncUCSDIINVENTORYResponse">
+    <part name="parameters" element="mx:SyncUCSDIINVENTORYResponse" />
+  </message>
+  <message name="UpdateUCSDIINVENTORYRequest">
+    <part name="parameters" element="mx:UpdateUCSDIINVENTORY" />
+  </message>
+  <message name="UpdateUCSDIINVENTORYResponse">
+    <part name="parameters" element="mx:UpdateUCSDIINVENTORYResponse" />
+  </message>
+  <message name="CreateUCSDIINVENTORYRequest">
+    <part name="parameters" element="mx:CreateUCSDIINVENTORY" />
+  </message>
+  <message name="CreateUCSDIINVENTORYResponse">
+    <part name="parameters" element="mx:CreateUCSDIINVENTORYResponse" />
+  </message>
+  <message name="DeleteUCSDIINVENTORYRequest">
+    <part name="parameters" element="mx:DeleteUCSDIINVENTORY" />
+  </message>
+  <message name="DeleteUCSDIINVENTORYResponse">
+    <part name="parameters" element="mx:DeleteUCSDIINVENTORYResponse" />
+  </message>
+  <portType name="UCSDIINVENTORYPortType">
+    <operation name="QueryUCSDIINVENTORY">
+      <input message="mxws:QueryUCSDIINVENTORYRequest" />
+      <output message="mxws:QueryUCSDIINVENTORYResponse" />
+    </operation>
+    <operation name="SyncUCSDIINVENTORY">
+      <input message="mxws:SyncUCSDIINVENTORYRequest" />
+      <output message="mxws:SyncUCSDIINVENTORYResponse" />
+    </operation>
+    <operation name="UpdateUCSDIINVENTORY">
+      <input message="mxws:UpdateUCSDIINVENTORYRequest" />
+      <output message="mxws:UpdateUCSDIINVENTORYResponse" />
+    </operation>
+    <operation name="CreateUCSDIINVENTORY">
+      <input message="mxws:CreateUCSDIINVENTORYRequest" />
+      <output message="mxws:CreateUCSDIINVENTORYResponse" />
+    </operation>
+    <operation name="DeleteUCSDIINVENTORY">
+      <input message="mxws:DeleteUCSDIINVENTORYRequest" />
+      <output message="mxws:DeleteUCSDIINVENTORYResponse" />
+    </operation>
+  </portType>
+  <binding name="UCSDIINVENTORYSOAP11Binding" type="mxws:UCSDIINVENTORYPortType">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <operation name="QueryUCSDIINVENTORY">
+      <soap:operation soapAction="urn:processDocument" style="document" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+    </operation>
+    <operation name="SyncUCSDIINVENTORY">
+      <soap:operation soapAction="urn:processDocument" style="document" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+    </operation>
+    <operation name="UpdateUCSDIINVENTORY">
+      <soap:operation soapAction="urn:processDocument" style="document" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+    </operation>
+    <operation name="CreateUCSDIINVENTORY">
+      <soap:operation soapAction="urn:processDocument" style="document" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+    </operation>
+    <operation name="DeleteUCSDIINVENTORY">
+      <soap:operation soapAction="urn:processDocument" style="document" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+    </operation>
+  </binding>
+  <service name="UCSDIINVENTORY">
+    <port name="UCSDIINVENTORYSOAP11Port" binding="mxws:UCSDIINVENTORYSOAP11Binding">
+      <soap:address location="https://fsmax-sdi-vip.uchicago.edu:6443/meaweb/services/UCSDIINVENTORY" />
+    </port>
+  </service>
+</definitions>

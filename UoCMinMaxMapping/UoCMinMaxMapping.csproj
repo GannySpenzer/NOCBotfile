@@ -74,6 +74,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.map</DependentUpon>
     </Compile>
+    <Compile Include="Web References\UCSDIINVENTORY\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.map</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -85,10 +90,28 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <None Include="UCSDINVENTORY\UCSDIINVENTORY.wsdl" />
+    <None Include="UCSDINVENTORY\UCSDIIVENTORYService.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Web References\SDiEmailUtilityService\EmailServices.wsdl" />
     <None Include="Web References\SDiEmailUtilityService\Reference.map">
       <Generator>MSDiscoCodeGenerator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Web References\UCSDIINVENTORY\INVENTORYKeyType.datasource">
+      <DependentUpon>Reference.map</DependentUpon>
+    </None>
+    <None Include="Web References\UCSDIINVENTORY\Reference.map">
+      <Generator>MSDiscoCodeGenerator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Web References\UCSDIINVENTORY\UCSDIINVENTORY.wsdl" />
+    <None Include="Web References\UCSDIINVENTORY\UCSDIINVENTORYService.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Web References\UCSDIINVENTORY\UCSDIINVENTORY_INVENTORYType.datasource">
+      <DependentUpon>Reference.map</DependentUpon>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -98,6 +121,17 @@
     <WebReferences Include="Web References\" />
   </ItemGroup>
   <ItemGroup>
+    <WebReferenceUrl Include="C:\Users\yury.arkadin\Desktop\UCSDIINVENTORY\UCSDIINVENTORY.wsdl">
+      <UrlBehavior>Dynamic</UrlBehavior>
+      <RelPath>Web References\UCSDIINVENTORY\</RelPath>
+      <UpdateFromURL>C:\Users\yury.arkadin\Desktop\UCSDIINVENTORY\UCSDIINVENTORY.wsdl</UpdateFromURL>
+      <ServiceLocationURL>
+      </ServiceLocationURL>
+      <CachedDynamicPropName>
+      </CachedDynamicPropName>
+      <CachedAppSettingsObjectName>Settings</CachedAppSettingsObjectName>
+      <CachedSettingsPropName>UoCMinMaxMapping_UCSDIINVENTORY_UCSDIINVENTORY</CachedSettingsPropName>
+    </WebReferenceUrl>
     <WebReferenceUrl Include="http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx">
       <UrlBehavior>Dynamic</UrlBehavior>
       <RelPath>Web References\SDiEmailUtilityService\</RelPath>
