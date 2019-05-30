@@ -138,14 +138,15 @@ Public Class easyHttp
                 End If
             End If
 
-            ' check if we need to ignore the server certificate (invalid or expired or something ...)
-            '   need to create the policy for this!
-            If m_ignoreServerCert Then
-                System.Net.ServicePointManager.CertificatePolicy = New AlwaysIgnoreCertPolicy
-            End If
+            '' check if we need to ignore the server certificate (invalid or expired or something ...)
+            ''   need to create the policy for this!
+            'If m_ignoreServerCert Then
 
+            'End If
+
+            System.Net.ServicePointManager.CertificatePolicy = New AlwaysIgnoreCertPolicy
             'System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3
-            System.Net.ServicePointManager.SecurityProtocol = 3072 ' SecurityProtocolType.Tls
+            System.Net.ServicePointManager.SecurityProtocol = 3072 ' SecurityProtocolType.Tls12
 
             ' action type
             'request.Headers.Add(name:="SOAPAction", value:="https://schemas.microsoft.com/crm/2006/WebServices/Retrieve")
@@ -169,12 +170,19 @@ Public Class easyHttp
                         sw.Write(Me.DataToPost)
                     End If
                     sw.Flush()
-                Catch Ex As Exception
-                    Throw New ApplicationException(message:=rtn & Ex.Message, innerException:=Ex)
-                Finally
-                    ' need to close this writer before even trying
-                    '   to read the response!
                     sw.Close()
+                Catch Ex As Exception
+                    Dim strEx As String = ""
+                    strEx = Ex.ToString()
+                    strEx = "Error: " & strEx
+                    Try
+                        sw.Close()
+                    Catch ex21 As Exception
+
+                    End Try
+                    Return strEx
+                    Throw New ApplicationException(message:=rtn & strEx, innerException:=Ex)
+                    
                 End Try
             End If
 

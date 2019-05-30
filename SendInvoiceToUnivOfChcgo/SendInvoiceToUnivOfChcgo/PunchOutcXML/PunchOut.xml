@@ -411,4 +411,15 @@
     <VendorURL>https://www.amazon.com/eprocurement/punchout</VendorURL>
     <PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
   </Catalog>
+  <Catalog id="UNIVCHICAGO.default" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="0000045910" securityProtocol="3072">
+    <Identities>
+      <From domain="DUNS" userId="153531108" />
+      <To domain="DUNS" userId="XXXXXXXXX" />
+      <Sender domain="DUNS" userId="153531108" userPw="XXXXXXXXX">
+        <UserAgentOverride>test</UserAgentOverride>
+      </Sender>
+    </Identities>
+    <VendorURL>https://www.amazon.com/eprocurement/punchout</VendorURL>
+    <PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+  </Catalog>
 </xmlData>

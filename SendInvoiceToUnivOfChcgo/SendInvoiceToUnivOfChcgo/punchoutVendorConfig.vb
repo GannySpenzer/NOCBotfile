@@ -229,7 +229,7 @@ Public Class punchoutVendorConfig
                 ' config path/file
 
                 Dim xmlDir As String = ""  '  System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly.GetModules()(0).FullyQualifiedName) & "\PunchOutcXML\PunchOut.xml"
-                xmlDir = "C:\Program Files\SDI\AmazonClient\PublishedVersion\PunchOutcXML\PunchOut.xml"
+                xmlDir = "C:\Program Files\SDI\SendInvoiceUnivChcgo\Published\PunchOutcXML\PunchOut.xml"
 
                 vendorConfig.ConfigFile = xmlDir
 

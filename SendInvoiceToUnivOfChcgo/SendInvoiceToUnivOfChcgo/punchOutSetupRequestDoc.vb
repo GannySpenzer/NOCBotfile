@@ -17,7 +17,7 @@ Public Class punchOutSetupRequestDoc
     Private m_docType As String = "http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd"
     Private m_payloadId As String = ""
     Private m_timeStamp As String = Now.ToString
-    Private m_cXMLversion As String = "1.2.017"
+    Private m_cXMLversion As String = "1.2.013"
     Private m_identityFrom As punchOutIdentity = Nothing
     Private m_identityTo As punchOutIdentity = Nothing
     Private m_identitySender As punchOutIdentity = Nothing
@@ -36,7 +36,7 @@ Public Class punchOutSetupRequestDoc
                              FILE_SETUP_REQUEST_TEMPLATE
     End Sub
 
-    Public Sub New(ByVal strType As String)
+    Public Sub New(ByVal strType As String, Optional ByVal strInvoiceNo As String = "")
         Dim randomId As Single
         Randomize()
         randomId = (100000001 * Rnd())
@@ -48,7 +48,11 @@ Public Class punchOutSetupRequestDoc
                 Dim sNow As String = ""
                 Dim dateOffset As New DateTimeOffset(Now, TimeZoneInfo.Local.GetUtcOffset(Now))
                 sNow = dateOffset.ToString("o")
-                m_payloadId = sNow & "." & randomId.ToString("000000000") & "." & "OrderRequest@sdi.com"
+                If Trim(strInvoiceNo) = "" Then
+                    m_payloadId = sNow & ".cXML." & randomId.ToString("000000000") & "." & "OrderRequest@sdi.com"
+                Else
+                    m_payloadId = sNow & ".cXML." & strInvoiceNo & "." & randomId.ToString("000000000") & "." & "OrderRequest@sdi.com"
+                End If
             Case Else
                 m_templatePathFile = System.AppDomain.CurrentDomain.BaseDirectory.ToString & _
                                      FILE_SETUP_REQUEST_TEMPLATE
@@ -330,10 +334,10 @@ Public Class punchOutSetupRequestDoc
         Return doc
     End Function
 
-    Public Shared Function CreateOrderRequestDoc(ByVal vendorSettings As punchoutVendorConfig) As punchOutSetupRequestDoc
+    Public Shared Function CreateOrderRequestDoc(ByVal vendorSettings As punchoutVendorConfig, Optional ByVal strInvoiceNo As String = "") As punchOutSetupRequestDoc
         Dim doc As punchOutSetupRequestDoc = Nothing
         If Not (vendorSettings Is Nothing) Then
-            doc = New punchOutSetupRequestDoc("OrderRequest")
+            doc = New punchOutSetupRequestDoc("OrderRequest", strInvoiceNo)
 
             doc.DOCType = vendorSettings.DOCType
             doc.cXMLVersion = vendorSettings.cXMLVersion
@@ -456,47 +460,86 @@ Public Class punchOutSetupRequestDoc
                 If Not OrderDataSet Is Nothing Then
                     If OrderDataSet.Tables.Count > 0 Then
                         If OrderDataSet.Tables(0).Rows.Count > 0 Then
-
-                            ' create order top node
-                            Dim nodeOrder As XmlNode = nodeOrderReq.AppendChild(docXML.CreateElement(name:="OrderRequest"))
+                            '' Here we are starting changes for UNIV CHICAGO (not AMAZON)
+                            ' create invoice top node
+                            Dim nodeOrder As XmlNode = nodeOrderReq.AppendChild(docXML.CreateElement(name:="InvoiceDetailRequest"))
 
                             Dim iOrd As Integer = 0
                             For iOrd = 0 To OrderDataSet.Tables(0).Rows.Count - 1
 
                                 If iOrd = 0 Then
                                     'create order header node
-                                    Dim nodeOrderHeader As XmlNode = nodeOrder.AppendChild(docXML.CreateElement(name:="OrderRequestHeader"))
+                                    Dim nodeOrderHeader As XmlNode = nodeOrder.AppendChild(docXML.CreateElement(name:="InvoiceDetailRequestHeader"))
 
-                                    'add attributes
-                                    Dim strPoDate As String = OrderDataSet.Tables(0).Rows(iOrd).Item("PO_DT").ToString()
+                                    'add attributes: InvoiceID, purpose="standard", operation="new", InvoiceDate 
+                                    Dim strPoDate As String = OrderDataSet.Tables(0).Rows(iOrd).Item("PO_DT").ToString() ' this should be InvoiceDate
                                     Dim dDate1 As DateTime = CType(strPoDate, DateTime)
                                     Dim dateOffset1 As New DateTimeOffset(dDate1, TimeZoneInfo.Local.GetUtcOffset(dDate1))
                                     strPoDate = dateOffset1.ToString("o")
-                                    ' (1) orderDate
-                                    attrib = nodeOrderHeader.Attributes.Append(docXML.CreateAttribute(name:="orderDate"))
-                                    attrib.Value = strPoDate ' get from dataset
+                                    ' (1) InvoiceID
+                                    attrib = nodeOrderHeader.Attributes.Append(docXML.CreateAttribute(name:="invoiceID"))
+                                    attrib.Value = strOrder
 
-                                    Dim strPoId As String = OrderDataSet.Tables(0).Rows(iOrd).Item("PO_ID").ToString()
-                                    '(2) orderID
-                                    attrib = nodeOrderHeader.Attributes.Append(docXML.CreateAttribute(name:="orderID"))
-                                    attrib.Value = strPoId ' get from dataset
+                                    'Dim strPoId As String = OrderDataSet.Tables(0).Rows(iOrd).Item("PO_ID").ToString()
+                                    '(2) purpose
+                                    attrib = nodeOrderHeader.Attributes.Append(docXML.CreateAttribute(name:="purpose"))
+                                    attrib.Value = "standard"
 
-                                    Dim strPoOrderType As String = OrderDataSet.Tables(0).Rows(iOrd).Item("ORDER_TYPE").ToString()
-                                    '(3) orderType
-                                    attrib = nodeOrderHeader.Attributes.Append(docXML.CreateAttribute(name:="orderType"))
-                                    attrib.Value = LCase(strPoOrderType)  '  "regular"
+                                    'Dim strPoOrderType As String = OrderDataSet.Tables(0).Rows(iOrd).Item("ORDER_TYPE").ToString()
+                                    '(3) operation
+                                    attrib = nodeOrderHeader.Attributes.Append(docXML.CreateAttribute(name:="operation"))
+                                    attrib.Value = "new"
 
                                     Dim strPoVersion As String = OrderDataSet.Tables(0).Rows(iOrd).Item("ORDER_VERSION").ToString()
-                                    ' (4) orderVersion
-                                    attrib = nodeOrderHeader.Attributes.Append(docXML.CreateAttribute(name:="orderVersion"))
-                                    attrib.Value = strPoVersion  '  "1"
+                                    ' (4) invoiceDate
+                                    attrib = nodeOrderHeader.Attributes.Append(docXML.CreateAttribute(name:="invoiceDate"))
+                                    attrib.Value = strPoDate
 
-                                    Dim strPoType As String = OrderDataSet.Tables(0).Rows(iOrd).Item("TYPE").ToString()
-                                    '(5) type
-                                    attrib = nodeOrderHeader.Attributes.Append(docXML.CreateAttribute(name:="type"))
-                                    attrib.Value = LCase(strPoType)  '  "new"
+                                    ' adding nodes under nodeOrderHeader ("InvoiceDetailRequestHeader")
+                                    '2 empty nodes
+                                    Dim nodeEmpt1 As XmlNode = nodeOrderHeader.AppendChild(docXML.CreateElement(name:="InvoiceDetailHeaderIndicator"))
+                                    Dim nodeEmpt2 As XmlNode = nodeOrderHeader.AppendChild(docXML.CreateElement(name:="InvoiceDetailLineIndicator"))
+                                    ' InvoicePartner - 1st time - remit to
+                                    Dim nodeInvPartnr1 As XmlNode = nodeOrderHeader.AppendChild(docXML.CreateElement(name:="InvoicePartner"))
+                                    ' node Contact1 - under InvoicePartner1
+                                    Dim nodeContct1 As XmlNode = nodeInvPartnr1.AppendChild(docXML.CreateElement(name:="Contact"))
+                                    ' attrib  - for node Contact1 - under InvoicePartner1
+                                    attrib = nodeContct1.Attributes.Append(docXML.CreateAttribute(name:="role"))
+                                    attrib.Value = "remitTo"
+                                    ' node Name - under node Contact1 - under InvoicePartner1
+                                    Dim nodeName1 As XmlNode = nodeContct1.AppendChild(docXML.CreateElement(name:="Name"))
+                                    ' attrib  - for  node Name1 - under node Contact1 - under InvoicePartner1
+                                    attrib = nodeName1.Attributes.Append(docXML.CreateAttribute(name:="xml:lang"))
+                                    attrib.Value = "en-US"
+                                    'Name for "remitTo" NEEDS TO DETERMUNE where from get
+                                    Dim strNameRemitTo As String = " " ' OrderDataSet.Tables(0).Rows(iOrd).Item("TOTAL").ToString()
+                                    nodeName1.InnerText = strNameRemitTo ' get from dataset Name for "remitTo"
 
-                                    ' Total
+                                    ' node PostalAddress - under node Contact1 - under InvoicePartner1
+                                    Dim nodePostalAddress1 As XmlNode = nodeContct1.AppendChild(docXML.CreateElement(name:="PostalAddress"))
+
+                                    ' InvoicePartner - 2nd time - sold to
+                                    Dim nodeInvPartnr2 As XmlNode = nodeOrderHeader.AppendChild(docXML.CreateElement(name:="InvoicePartner"))
+                                    ' node Contact2 - under InvoicePartner2
+                                    Dim nodeContct2 As XmlNode = nodeInvPartnr2.AppendChild(docXML.CreateElement(name:="Contact"))
+                                    ' attrib  - for node Contact2 - under InvoicePartner2
+                                    attrib = nodeContct2.Attributes.Append(docXML.CreateAttribute(name:="role"))
+                                    attrib.Value = "soldTo"
+                                    ' node Name - under node Contact2 - under InvoicePartner2
+                                    Dim nodeName2 As XmlNode = nodeContct2.AppendChild(docXML.CreateElement(name:="Name"))
+                                    ' attrib  - for  node Name2 - under node Contact1 - under InvoicePartner1
+                                    attrib = nodeName2.Attributes.Append(docXML.CreateAttribute(name:="xml:lang"))
+                                    attrib.Value = "en-US"
+                                    'Name for "soldTo" NEEDS TO DETERMUNE where from get
+                                    Dim strNameSoldTo As String = " " ' OrderDataSet.Tables(0).Rows(iOrd).Item("TOTAL").ToString()
+                                    nodeName2.InnerText = strNameSoldTo ' get from dataset Name for "soldTo"
+
+                                    ' node PostalAddress - under node Contact2 - under InvoicePartner2
+                                    Dim nodePostalAddress2 As XmlNode = nodeContct2.AppendChild(docXML.CreateElement(name:="PostalAddress"))
+
+
+
+                                    'below is an old code
                                     Dim nodeTotal As XmlNode = nodeOrderHeader.AppendChild(docXML.CreateElement(name:="Total"))
                                     ' Money - under Total
                                     node = nodeTotal.AppendChild(docXML.CreateElement(name:="Money"))
@@ -813,7 +856,7 @@ Public Class punchOutSetupRequestDoc
 
                                     'Dim nodeURL As XmlNode = node.AppendChild(docXML.CreateElement(name:="URL"))
                                     'nodeURL.InnerText = m_postbackURL
-                                End If
+                                End If  '  END Header Nodes
 
                                 ' create line top node ItemOut
                                 Dim nodeLine As XmlNode = nodeOrder.AppendChild(docXML.CreateElement(name:="ItemOut"))
