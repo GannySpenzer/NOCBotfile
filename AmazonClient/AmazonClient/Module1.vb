@@ -9,7 +9,7 @@ Imports System.Xml
 
 Module Module1
 
-    'WARNING!!! This test project is configured right now to test KLATENCOR - VR 01/10/2018
+    'WARNING!!! This test project is configured right now to test LYONS - VR 08/23/2018
 
     Private strVendorURL As String
     Private m_setupReqDoc As punchOutSetupRequestDoc = Nothing
@@ -83,12 +83,12 @@ Module Module1
 
     Sub Main()
 
-        'WARNING!!! This test project is configured right now to test NEW_AMAZON - VR 04/02/2018 '  KLATENCOR - VR 01/10/2018
+        'WARNING!!! This test project is configured right now to test LM 531/LM 532 VR 08/13/2018  ' NEW_AMAZON - VR 04/02/2018 '  KLATENCOR - VR 01/10/2018
 
         Dim strInput As String = ""  '  <?xml version=""1.0"" encoding=""UTF-8""?><!DOCTYPE cXML SYSTEM ""http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd""[]><cXML payloadID=""3/30/2015 11:56:16 AM 019768490@sdi.com"" xml:lang=""en-US"" timestamp=""3/30/2015 11:56:16 AM""><Header><From><Credential domain=""NetworkId""><Identity>SDIINC</Identity></Credential></From><To><Credential domain=""NetworkId""><Identity>Amazon</Identity></Credential></To><Sender><Credential domain=""DUNS""><Identity>SDIINC</Identity><SharedSecret>Y2XN7SefSxpPAoD5i6OtYix4w5TK402d</SharedSecret></Credential><UserAgent>Ariba Network 1.2</UserAgent></Sender></Header><Request><PunchOutSetupRequest operation=""create""><BuyerCookie>3xx1vu5dn5sttwrc2zqspprl</BuyerCookie><Extrinsic name=""UniqueName"">ROVENSKY,VITALY</Extrinsic><Extrinsic name=""UserEmail"">vitaly.rovensky@sdi.com</Extrinsic><Extrinsic name=""CostCenter"">I0256</Extrinsic><BrowserFormPost><URL>http://localhost/InsiteOnline/shopredirect.aspx?PUNOUT=YES</URL></BrowserFormPost><ShipTo><Address addressID=""L0256-01""><Name xml:lang=""en-US"">UNCC Facility Maint. Shop</Name><PostalAddress><DeliverTo>SDI c/o UNCC Facility Maint Shop</DeliverTo><Street>9201 University City Blvd.</Street><City>Charlotte</City><State>NC</State><PostalCode>28223</PostalCode><Country isoCountryCode=""US"">United States</Country></PostalAddress></Address></ShipTo></PunchOutSetupRequest></Request></cXML>"
         Dim strOutput As String = ""
-        Dim strWhatToTest As String = "NEW_AMAZON"  '  "KLATENCOR"  '   "AMAZON"   ' "NEW_AMAZON"  '    "CYTECMXM" 
-        Dim Response_Doc As String
+        Dim strWhatToTest As String = "LYONS"  '  "NEW_AMAZON"  '  "KLATENCOR"  '   "AMAZON"   ' "NEW_AMAZON"  '    "CYTECMXM" 
+        Dim Response_Doc As String = ""
         Dim msgEx As String = ""
         Dim strMsgVendConfig As String = ""
         objStreamWriter = File.CreateText(logpath)
@@ -320,6 +320,45 @@ Module Module1
                 'KLATencor.aspx
 
                 '  </OrderRequest></Request></cXML>
+            Case "LYONS"
+                Console.WriteLine("Started to test LYONS ")
+                Console.WriteLine("")
+
+                objStrmWrtrXMLRspns = File.CreateText(filePathResponse)
+                objStreamWriterXML = File.CreateText(filePath)
+                'objStreamWriter = File.CreateText(logpath)
+                objStreamWriter.WriteLine("Started LYONS Test " & Now())
+
+                'just define sInput for Send1 procedure
+
+                strInput = ""
+
+                'strInput = "<?xml version=""1.0"" encoding=""UTF-8""?>"
+                'strInput &= "<cXML version=""1.2.011"" payloadID=""2018-02-0208:11:11.00505693074C1ED7B7D4E18A75C502BC"" timestamp=""2017-12-11T11:11:11"">"
+                'strInput &= "<Header><From><Credential domain=""NetworkId""><Identity>kla-tencor</Identity></Credential></From>"
+                'strInput &= "<To><Credential domain=""DUNS""><Identity>128293714</Identity></Credential></To>"
+                'strInput &= "<Sender><Credential domain=""NetworkId""><Identity>kla-tencor</Identity><SharedSecret>KIZId67wndDZCuer8kzoqA==</SharedSecret></Credential><UserAgent>ERP</UserAgent></Sender></Header>"
+                'strInput &= "<Request deploymentMode=""production""><OrderRequest><OrderRequestHeader orderID=""0021018850"" orderDate=""20171211"" type=""new""><ShipTo><Address><Name>KLA-TENCOR</Name><PostalAddress><DeliverTo>J.K.LEONG</DeliverTo><Street>KLA -Tencor-J.K. Leong</Street><Street>5 Technology Drive</Street><City>Milpitas</City><State>CA</State><PostalCode>95035</PostalCode><Country isoCountryCode=""US""></Country></PostalAddress><Email>Jack.pop@noone.com</Email><Phone><TelephoneNumber><Number>999 999 9999</Number></TelephoneNumber></Phone></Address></ShipTo><BillTo><Address><Name xml:lang=""en"">KLA-Tencor Corporation</Name><PostalAddress><Street>Santa Clara, CA  95056-4970</Street><City>Santa Clara</City><State>CA</State><PostalCode>95056-4970</PostalCode><Country>United States</Country></PostalAddress></Address></BillTo></OrderRequestHeader><ItemOut quantity=""1.000"" lineNumber=""00010""><ItemID><SupplierPartID>1027111837003\1</SupplierPartID><SupplierPartAuxiliaryID>1027111837003\1</SupplierPartAuxiliaryID></ItemID><ItemDetail><UnitPrice><Money currency=""USD"">2552.16</Money></UnitPrice><Description xml:lang=""en""> Dell Mobile Precision Workstation</Description></ItemDetail></ItemOut></OrderRequest></Request></cXML>"
+
+                strInput = "<?xml version=""1.0"" encoding=""UTF-8""?>"
+                strInput &= "<cXML version=""1.2.011"" payloadID=""2018-08-0208:11:11.00505693074C1ED7B7D4E18A75C502BC"" timestamp=""2017-12-11T11:11:11"">"
+                strInput &= "<Header>"
+                strInput &= "<From><Credential domain=""NetworkId""><Identity>LYONSMAGNUS</Identity></Credential>"
+                strInput &= "</From>"
+                strInput &= "<To><Credential domain=""DUNS""><Identity>128293954</Identity></Credential>"
+                strInput &= "</To>"
+                strInput &= "<Sender>"
+                strInput &= "<Credential domain=""NetworkId"">"
+                strInput &= "<Identity>LYONSMAGNUS</Identity>"
+                strInput &= "<SharedSecret>zETBrEmMvuUgcEnRHuYZaQ==</SharedSecret>"
+                strInput &= "</Credential>"
+                strInput &= "<UserAgent>ERP</UserAgent>"
+                strInput &= "</Sender>"
+                strInput &= "</Header>"
+                strInput &= "<Request>"
+                strInput &= "<OrderRequest>"
+                strInput &= "</OrderRequest>"
+                strInput &= "</Request></cXML>"
 
             Case Else
                 Exit Sub
@@ -1154,9 +1193,11 @@ Module Module1
     Private Sub Send1(ByRef strBox1 As String, ByRef strBox2 As String)
 
         strBox2 = ""
+        System.Net.ServicePointManager.CertificatePolicy = New AlwaysIgnoreCertPolicy
+        System.Net.ServicePointManager.SecurityProtocol = 3072
 
         'Amazon SDI Direct Order Conf
-        ' new secure on SDIX (Production): "https://www.sdiexchange.com/websdi/xmlinsdi.aspx"
+        ' new secure on SDIX (Production): "https://www.sdiexchange.com/WebSvcSDI/xmlinsdi.aspx"
         ' new secure on IMS -   "https://sdiexchtest.sdi.com/WebSvcSDI/xmlinsdi.aspx"
 
         '  my test URL: "http://ims.sdi.com:8913/sdiwebinSvc/xmlinsdi.aspx"   ' not seen outside: "http://websrv.sdi.com/sdiwebin/xmlinsdi.aspx"   '  
@@ -1169,8 +1210,14 @@ Module Module1
 
         ' for KLA-Tencor: "https://www.sdiexchange.com/WebSvcSDI/KLATencor.aspx "  '  "http://sdixbatch.sdi.com:8084/SDIWebSvcIn/KLATencor.aspx"
 
+        ' for Lyons Magnus: "http://localhost/SDIWebProcessors/InboundPOSvc.aspx"
+        ' "https://sdiexchtest.sdi.com/WebSvcSDI/InboundPOSvc.aspx"
+        ' "https://www.sdiexchange.com/WebSvcSDI/InboundPOSvc.aspx"
+
         ' httpSession.URL = strUrlToSend 
-        httpSession.URL = "https://www.sdiexchange.com/WebSvcSDI/xmlinsdi.aspx"  '   "https://sdiexchtest.sdi.com/WebSvcSDI/KLATencor.aspx "
+        httpSession.URL = "https://sdiexchtest.sdi.com/WebSvcSDI/InboundPOSvc.aspx"  '   "http://localhost/SDIWebProcessors/InboundPOSvc.aspx"  ' "https://www.sdiexchange.com/WebSvcSDI/xmlinsdi.aspx"
+
+        '   "https://sdiexchtest.sdi.com/WebSvcSDI/KLATencor.aspx "
 
         '   "https://www.sdiexchange.com/WebSvcSDI/KLATencor.aspx"
 
@@ -1180,7 +1227,7 @@ Module Module1
         '   "https://https.amazonsedi.com/073dbe31-c230-403f-990c-6f74eeed1510"  '    "https://www.amazon.com/eprocurement/punchout"  '    "https://supplydev.hajoca.com/hajomid/eclipse.ecl"
 
         httpSession.DataToPost = strBox1
-        httpSession.ContentType = "text/xml; charset=utf-8"
+        httpSession.ContentType = "text/xml"
         httpSession.Method = easyHttp.HTTPMethod.HTTP_POST
         httpSession.IgnoreServerCertificate = True
         httpSession.HeaderAttributes.Add(name:="SOAPAction", value:="https://schemas.microsoft.com/crm/2006/WebServices/Retrieve")
