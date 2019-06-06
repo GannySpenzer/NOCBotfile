@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DiscoveryClientResultsFile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Results>
+    <DiscoveryClientResult referenceType="System.Web.Services.Discovery.ContractReference" url="file:///C:/a_UoCPOChgMapping/UoCPOChgMapping/UoCPOChgMapping/UCSDIPO/UCSDIPO.wsdl" filename="UCSDIPO.wsdl" />
+    <DiscoveryClientResult referenceType="System.Web.Services.Discovery.SchemaReference" url="https://fsmax-sdi-vip.uchicago.edu:6443/meaweb/schema/service/UCSDIPOService.xsd" filename="UCSDIPOService.xsd" />
+  </Results>
+</DiscoveryClientResultsFile>

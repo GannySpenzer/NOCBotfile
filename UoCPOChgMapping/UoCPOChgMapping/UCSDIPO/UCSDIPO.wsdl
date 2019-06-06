@@ -1,0 +1,112 @@
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:mx="http://www.ibm.com/maximo" xmlns:mxws="http://www.ibm.com/maximo/wsdl/UCSDIPO" targetNamespace="http://www.ibm.com/maximo/wsdl/UCSDIPO" name="UCSDIPO">
+<types>
+<xsd:schema>
+<xsd:import namespace="http://www.ibm.com/maximo" schemaLocation="https://fsmax-sdi-vip.uchicago.edu:6443/meaweb/schema/service/UCSDIPOService.xsd"/>
+</xsd:schema>
+</types>
+<portType name="UCSDIPOPortType">
+<operation name="QueryUCSDIPO">
+<input message="mxws:QueryUCSDIPORequest"/>
+<output message="mxws:QueryUCSDIPOResponse"/>
+</operation>
+<operation name="SyncUCSDIPO">
+<input message="mxws:SyncUCSDIPORequest"/>
+<output message="mxws:SyncUCSDIPOResponse"/>
+</operation>
+<operation name="UpdateUCSDIPO">
+<input message="mxws:UpdateUCSDIPORequest"/>
+<output message="mxws:UpdateUCSDIPOResponse"/>
+</operation>
+<operation name="CreateUCSDIPO">
+<input message="mxws:CreateUCSDIPORequest"/>
+<output message="mxws:CreateUCSDIPOResponse"/>
+</operation>
+<operation name="DeleteUCSDIPO">
+<input message="mxws:DeleteUCSDIPORequest"/>
+<output message="mxws:DeleteUCSDIPOResponse"/>
+</operation>
+</portType>
+<binding name="UCSDIPOSOAP11Binding" type="mxws:UCSDIPOPortType">
+<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+<operation name="QueryUCSDIPO">
+<soap:operation soapAction="urn:processDocument" style="document"/>
+<input>
+<soap:body use="literal"/>
+</input>
+<output>
+<soap:body use="literal"/>
+</output>
+</operation>
+<operation name="SyncUCSDIPO">
+<soap:operation soapAction="urn:processDocument" style="document"/>
+<input>
+<soap:body use="literal"/>
+</input>
+<output>
+<soap:body use="literal"/>
+</output>
+</operation>
+<operation name="UpdateUCSDIPO">
+<soap:operation soapAction="urn:processDocument" style="document"/>
+<input>
+<soap:body use="literal"/>
+</input>
+<output>
+<soap:body use="literal"/>
+</output>
+</operation>
+<operation name="CreateUCSDIPO">
+<soap:operation soapAction="urn:processDocument" style="document"/>
+<input>
+<soap:body use="literal"/>
+</input>
+<output>
+<soap:body use="literal"/>
+</output>
+</operation>
+<operation name="DeleteUCSDIPO">
+<soap:operation soapAction="urn:processDocument" style="document"/>
+<input>
+<soap:body use="literal"/>
+</input>
+<output>
+<soap:body use="literal"/>
+</output>
+</operation>
+</binding>
+<message name="QueryUCSDIPORequest">
+<part name="parameters" element="mx:QueryUCSDIPO"/>
+</message>
+<message name="QueryUCSDIPOResponse">
+<part name="parameters" element="mx:QueryUCSDIPOResponse"/>
+</message>
+<message name="SyncUCSDIPORequest">
+<part name="parameters" element="mx:SyncUCSDIPO"/>
+</message>
+<message name="SyncUCSDIPOResponse">
+<part name="parameters" element="mx:SyncUCSDIPOResponse"/>
+</message>
+<message name="UpdateUCSDIPORequest">
+<part name="parameters" element="mx:UpdateUCSDIPO"/>
+</message>
+<message name="UpdateUCSDIPOResponse">
+<part name="parameters" element="mx:UpdateUCSDIPOResponse"/>
+</message>
+<message name="CreateUCSDIPORequest">
+<part name="parameters" element="mx:CreateUCSDIPO"/>
+</message>
+<message name="CreateUCSDIPOResponse">
+<part name="parameters" element="mx:CreateUCSDIPOResponse"/>
+</message>
+<message name="DeleteUCSDIPORequest">
+<part name="parameters" element="mx:DeleteUCSDIPO"/>
+</message>
+<message name="DeleteUCSDIPOResponse">
+<part name="parameters" element="mx:DeleteUCSDIPOResponse"/>
+</message>
+<service name="UCSDIPO">
+<port name="UCSDIPOSOAP11Port" binding="mxws:UCSDIPOSOAP11Binding">
+<soap:address location="https://fsmax-sdi-vip.uchicago.edu:6443/meaweb/services/UCSDIPO"/>
+</port>
+</service>
+</definitions>
