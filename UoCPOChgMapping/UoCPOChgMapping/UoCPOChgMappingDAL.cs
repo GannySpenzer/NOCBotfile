@@ -37,7 +37,7 @@ namespace UoCPOChgMapping
                 m_oLogger.LogMessage("getUoCPOChgMappingData", "PeopleSoft connection string : " + OracleConString);
                 m_oLogger.LogMessage("getUoCPOChgMappingData", "Query To get the PO mapping date : " + strSQLstring);
                 dtResponse = oleDBExecuteReader(strSQLstring);
-                m_oLogger.LogMessage("getUoCPOChgMappingData", "Number of rows Seleted " + dtResponse.Rows.Count);
+                m_oLogger.LogMessage("getUoCPOChgMappingData", "Number of rows Selected " + dtResponse.Rows.Count);
             }
             catch (Exception ex)
             {

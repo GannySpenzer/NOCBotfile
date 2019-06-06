@@ -64,7 +64,7 @@ namespace UoCPOChgMapping
                 UCSDIPO.MXBooleanType mxboolean = new UCSDIPO.MXBooleanType();
                 UCSDIPO.MXDateTimeType mxdate = new UCSDIPO.MXDateTimeType();
                 UCSDIPO.MXLongType mxlong = new UCSDIPO.MXLongType();
-                UCSDIPO.MXStringType mxstring = new UCSDIPO.MXStringType();
+                UCSDIPO.MXStringType mxstring = new UCSDIPO.MXStringType(); 
 
                 //UCSDIINVENTORY.MXStringType mxstring = new UCSDIINVENTORY.MXStringType();
                 //UCSDIINVENTORY.MXDoubleType mxdouble = new UCSDIINVENTORY.MXDoubleType();
@@ -95,14 +95,15 @@ namespace UoCPOChgMapping
                         string DOC_DATE = PSTNG_DATEcnv.ToString("yyyyMMdd");
                         string REF_DOC_NO = DOC_NUM;                              //?
                         //string GM_CODE = "01";
-                        string ITEMNUM = rowInit["ISA_ITEM"].ToString();
+                        string PONUM = rowInit["PO_ID"].ToString();
                         //string PLANT = REFGRP;
-                        string LOCATION = rowInit["IN_STOR_LOCATION"].ToString();
-                        string MAXLEVEL = rowInit["QTY_MAXIMUM"].ToString();
-                        string MINLEVEL = rowInit["REORDER_POINT"].ToString();
-                        string ORDERQTY = rowInit["REORDER_QTY"].ToString();
-                        string ORDERUNIT = rowInit["ISA_CUSTOMER_UOM"].ToString();
-                        string AVGCOST = rowInit["TL_COST"].ToString();
+                        string LINENUM = rowInit["LINE_NBR"].ToString();
+                        string VENDELIVERYDATE = rowInit["DUE_DT"].ToString();
+                        //string MAXLEVEL = rowInit["QTY_MAXIMUM"].ToString();
+                        //string MINLEVEL = rowInit["REORDER_POINT"].ToString();
+                        //string ORDERQTY = rowInit["REORDER_QTY"].ToString();
+                        //string ORDERUNIT = rowInit["ISA_CUSTOMER_UOM"].ToString();
+                        //string AVGCOST = rowInit["TL_COST"].ToString();
 
                         //old method
                         //using (StreamReader sr = new StreamReader(Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory())) + "/UoCMinMaxInventory.txt"))
@@ -123,6 +124,30 @@ namespace UoCPOChgMapping
                         //par[iRowIndex].SITEID.Value= SITEID;
                         //parCost[iRowIndex].AVGCOST.Value = Convert.ToDouble(AVGCOST);
                         //par[iRowIndex].INVCOST.SetValue(parCost,0);
+
+                        mxstring = new UCSDIPO.MXStringType();
+                        mxstring.changed = true;
+                        mxstring.changedSpecified = true;
+                        mxstring.Value = PONUM;
+                        parRow.PONUM = mxstring;
+
+                        mxstring = new UCSDIPO.MXStringType();
+                        mxstring.changed = true;
+                        mxstring.changedSpecified = true;
+                        mxstring.Value = SITEID ;
+                        parRow.SITEID  = mxstring;
+
+                        mxlong = new UCSDIPO.MXLongType();
+                        mxlong.changed = true;
+                        mxlong.changedSpecified = true;
+                        mxlong.Value = Convert.ToInt64 ( LINENUM);
+                        parRowLine.POLINENUM = mxlong;
+
+                        mxdate = new UCSDIPO.MXDateTimeType();
+                        mxdate.changed = true;
+                        mxdate.changedSpecified = true;
+                        mxdate.Value = Convert.ToDateTime(VENDELIVERYDATE);
+                        parRowLine.VENDELIVERYDATE = mxdate;
 
                         //mxstring = new UCSDIINVENTORY.MXStringType();
                         //mxstring.changed = true;
@@ -317,7 +342,7 @@ namespace UoCPOChgMapping
                     //req.UpdateUCSDIINVENTORYAsync(par,t,z,a,b,c,d);
                     try
                     {
-                       // req.UpdateUCSDIINVENTORY(par, ref creationDateTime, ref creationDateTimeSpec, ref baseLang, ref transLang, ref msgID, ref maximoVer);
+                        req.UpdateUCSDIPO(par, ref creationDateTime, ref creationDateTimeSpec, ref baseLang, ref transLang, ref msgID, ref maximoVer);
                     }
                     catch (SoapHeaderException ex)
                     {
