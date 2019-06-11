@@ -146,7 +146,7 @@ Public Class easyHttp
 
             System.Net.ServicePointManager.CertificatePolicy = New AlwaysIgnoreCertPolicy
             'System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3
-            System.Net.ServicePointManager.SecurityProtocol = 3072 ' SecurityProtocolType.Tls12
+            System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12  '  3072 ' 
 
             ' action type
             'request.Headers.Add(name:="SOAPAction", value:="https://schemas.microsoft.com/crm/2006/WebServices/Retrieve")
