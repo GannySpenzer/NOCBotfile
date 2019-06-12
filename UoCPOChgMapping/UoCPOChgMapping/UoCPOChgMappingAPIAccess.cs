@@ -125,97 +125,61 @@ namespace UoCPOChgMapping
                         //parCost[iRowIndex].AVGCOST.Value = Convert.ToDouble(AVGCOST);
                         //par[iRowIndex].INVCOST.SetValue(parCost,0);
 
-                        mxstring = new UCSDIPO.MXStringType();
-                        mxstring.changed = true;
-                        mxstring.changedSpecified = true;
-                        mxstring.Value = PONUM;
-                        parRow.PONUM = mxstring;
+                        if (i == 0)
+                        {
+                            mxstring = new UCSDIPO.MXStringType();
+                            mxstring.changed = true;
+                            mxstring.changedSpecified = true;
+                            mxstring.Value = PONUM;
+                            parRow.PONUM = mxstring;
 
-                        mxstring = new UCSDIPO.MXStringType();
-                        mxstring.changed = true;
-                        mxstring.changedSpecified = true;
-                        mxstring.Value = SITEID ;
-                        parRow.SITEID  = mxstring;
+                            mxstring = new UCSDIPO.MXStringType();
+                            mxstring.changed = true;
+                            mxstring.changedSpecified = true;
+                            mxstring.Value = SITEID;
+                            parRow.SITEID = mxstring;
+
+                            mxlong = new UCSDIPO.MXLongType();
+                            mxlong.changed = true;
+                            mxlong.changedSpecified = true;
+                            mxlong.Value = Convert.ToInt64("0"); //revision num always 0
+                            parRow.REVISIONNUM = mxlong;
+
+                            Array.Resize(ref par, iRowIndex + 1);
+                            par[0] = parRow;
+
+                        }
+
+                        parRowLine = new UCSDIPO.UCSDIPO_POLINEType();
 
                         mxlong = new UCSDIPO.MXLongType();
                         mxlong.changed = true;
                         mxlong.changedSpecified = true;
                         mxlong.Value = Convert.ToInt64 ( LINENUM);
                         parRowLine.POLINENUM = mxlong;
-
+                        
                         mxdate = new UCSDIPO.MXDateTimeType();
                         mxdate.changed = true;
                         mxdate.changedSpecified = true;
                         mxdate.Value = Convert.ToDateTime(VENDELIVERYDATE);
                         parRowLine.VENDELIVERYDATE = mxdate;
 
-                        //mxstring = new UCSDIINVENTORY.MXStringType();
-                        //mxstring.changed = true;
-                        //mxstring.changedSpecified = true;
-                        //mxstring.Value = ITEMNUM;
-                        //parRow.ITEMNUM = mxstring;
+                        //if (i == 0)
+                        //{
+                        //    Array.Resize(ref par, iRowIndex + 1);
+                        //    par[0] = parRow;
+                        //}
 
-                        //mxstring = new UCSDIINVENTORY.MXStringType();
-                        //mxstring.changed = true;
-                        //mxstring.changedSpecified = true;
-                        //mxstring.Value = "ITEMSET1";
-                        //parRow.ITEMSETID = mxstring;
-
-                        //mxstring = new UCSDIINVENTORY.MXStringType();
-                        //mxstring.changed = true;
-                        //mxstring.changedSpecified = true;
-                        //mxstring.Value = LOCATION;
-                        //parRow.LOCATION = mxstring;
-
-                        //mxdouble = new UCSDIINVENTORY.MXDoubleType();
-                        //mxdouble.Value = Convert.ToDouble(MAXLEVEL);
-                        //mxdouble.changed = true;
-                        //mxdouble.changedSpecified = true;
-                        //parRow.MAXLEVEL = mxdouble;
-
-                        //mxdouble = new UCSDIINVENTORY.MXDoubleType();
-                        //mxdouble.Value = Convert.ToDouble(MINLEVEL);
-                        //mxdouble.changed = true;
-                        //mxdouble.changedSpecified = true;
-                        //parRow.MINLEVEL = mxdouble;
-
-                        //mxdouble = new UCSDIINVENTORY.MXDoubleType();
-                        //mxdouble.Value = Convert.ToDouble(ORDERQTY);
-                        //mxdouble.changed = true;
-                        //mxdouble.changedSpecified = true;
-                        //parRow.ORDERQTY = mxdouble;
-
-                        //mxstring = new UCSDIINVENTORY.MXStringType();
-                        //mxstring.Value = ORDERUNIT;
-                        //mxstring.changed = true;
-                        //mxstring.changedSpecified = true;
-                        //parRow.ORDERUNIT = mxstring;
-
-                        //mxstring = new UCSDIINVENTORY.MXStringType();
-                        //mxstring.Value = SITEID;
-                        //mxstring.changed = true;
-                        //mxstring.changedSpecified = true;
-                        //parRow.SITEID = mxstring;
-
-                        //mxdouble = new UCSDIINVENTORY.MXDoubleType();
-                        //mxdouble.changed = true;
-                        //mxdouble.changedSpecified = true;
-                        //mxdouble.Value = Convert.ToDouble(AVGCOST);
-                        //parCostRow.AVGCOST = mxdouble;
-                        //Array.Resize(ref parCost, 1); //iRowIndex + 1);
-                        //parCost = new UCSDIINVENTORY.UCSDIINVENTORY_INVCOSTType[1]; //new
-                        //parCost[0] = parCostRow;
-                        //parRow.INVCOST = parCost;
-                        //parRow.INVCOST.SetValue(parCost, 0);
-
-                        Array.Resize(ref par, iRowIndex + 1);
-
-                        par[iRowIndex] = parRow;
-                        //parCost[iRowIndex] = new UCSDIINVENTORY.UCSDIINVENTORY_INVCOSTType(); //new
+                        Array.Resize(ref parLine, iRowIndex + 1);
+                        parLine[i] = parRowLine;
+                        par[0].POLINE = parLine ; 
 
                         iRowIndex += 1;
 
                     }
+
+                   //par[0] = parRow;
+
                 }
 
                 //old method
