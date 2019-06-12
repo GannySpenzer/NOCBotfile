@@ -28,7 +28,9 @@ namespace UoCPOChgMapping
             string serviceURL = " ";
             var strResponse = " ";
             string responseErrorText = " ";
+            int iLineIndex = 0;
             int iRowIndex = 0;
+            string strlastPO = "";
             string strFailureMsg = "";
 
             StringBuilder sbInit = new StringBuilder();
@@ -39,7 +41,7 @@ namespace UoCPOChgMapping
             try
             {
 
-                string carriagereturn = "\r\n";
+                //string carriagereturn = "\r\n";
 
                 //old method
                 //string header = @"<soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"" xmlns=""http://www.ibm.com/maximo"">" + carriagereturn +
@@ -113,19 +115,19 @@ namespace UoCPOChgMapping
                         //    xmlStringInit = sbInit.ToString() + carriagereturn;
                         //}
 
-                        //mxstring.Value = ITEMNUM;
-                        //par[iRowIndex].ITEMNUM = mxstring;
-                        //par[iRowIndex].ITEMSETID.Value  = "ITEMSET1";
-                        //par[iRowIndex].LOCATION.Value = LOCATION;
-                        //par[iRowIndex].MAXLEVEL.Value = Convert.ToDouble(MAXLEVEL);
-                        //par[iRowIndex].MINLEVEL.Value = Convert.ToDouble(MINLEVEL);
-                        //par[iRowIndex].ORDERQTY.Value = Convert.ToDouble(ORDERQTY);
-                        //par[iRowIndex].ORDERUNIT.Value = ORDERUNIT;
-                        //par[iRowIndex].SITEID.Value= SITEID;
-                        //parCost[iRowIndex].AVGCOST.Value = Convert.ToDouble(AVGCOST);
-                        //par[iRowIndex].INVCOST.SetValue(parCost,0);
 
-                        if (i == 0)
+                        //check to see if new PO encountered; if so, set counters and stamp out new row
+                        if (PONUM != strlastPO & strlastPO != "")
+                        {
+                            iLineIndex = 0;
+                            iRowIndex += 1;
+                            //Array.Resize(ref parRow, iRowIndex + 1);
+                            parRow = new UCSDIPO.UCSDIPO_POType();
+
+                        }
+                        strlastPO  = PONUM ;
+
+                        if (iLineIndex == 0)
                         {
                             mxstring = new UCSDIPO.MXStringType();
                             mxstring.changed = true;
@@ -146,7 +148,7 @@ namespace UoCPOChgMapping
                             parRow.REVISIONNUM = mxlong;
 
                             Array.Resize(ref par, iRowIndex + 1);
-                            par[0] = parRow;
+                            par[iRowIndex] = parRow;
 
                         }
 
@@ -164,17 +166,11 @@ namespace UoCPOChgMapping
                         mxdate.Value = Convert.ToDateTime(VENDELIVERYDATE);
                         parRowLine.VENDELIVERYDATE = mxdate;
 
-                        //if (i == 0)
-                        //{
-                        //    Array.Resize(ref par, iRowIndex + 1);
-                        //    par[0] = parRow;
-                        //}
+                        Array.Resize(ref parLine, iLineIndex + 1);
+                        parLine[iLineIndex] = parRowLine;
+                        par[iRowIndex].POLINE = parLine ; 
 
-                        Array.Resize(ref parLine, iRowIndex + 1);
-                        parLine[i] = parRowLine;
-                        par[0].POLINE = parLine ; 
-
-                        iRowIndex += 1;
+                        iLineIndex += 1;
 
                     }
 
