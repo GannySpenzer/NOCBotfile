@@ -97,9 +97,11 @@ namespace UoCPOChgMapping
                         string DOC_DATE = PSTNG_DATEcnv.ToString("yyyyMMdd");
                         string REF_DOC_NO = DOC_NUM;                              //?
                         //string GM_CODE = "01";
-                        string PONUM = rowInit["PO_ID"].ToString();
+                        //string PONUM = rowInit["PO_ID"].ToString();
+                        string PONUM = rowInit["ISA_CUST_PO_ID"].ToString();
                         //string PLANT = REFGRP;
-                        string LINENUM = rowInit["LINE_NBR"].ToString();
+                        //string LINENUM = rowInit["LINE_NBR"].ToString();
+                        string LINENUM = rowInit["ISA_CUST_PO_LINE"].ToString();
                         string VENDELIVERYDATE = rowInit["DUE_DT"].ToString();
                         //string MAXLEVEL = rowInit["QTY_MAXIMUM"].ToString();
                         //string MINLEVEL = rowInit["REORDER_POINT"].ToString();
