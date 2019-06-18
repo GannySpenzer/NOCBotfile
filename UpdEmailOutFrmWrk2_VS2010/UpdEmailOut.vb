@@ -16,9 +16,14 @@ Public Class UpdEmailOut
 
         Dim objStreamWriterLogs As StreamWriter
 
-        Dim rootDir As String = "C:\UpdEmailOut"
-        Dim logpath As String = "C:\UpdEmailOut\LOGS\UpdEmailOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-        Dim filepath As String = "C:\UpdEmailOut\FILES\UpdEmailOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+        Dim rootDir As String = "\\sdicwsvsp\UpdEmailOut"
+        Try
+            rootDir = My.Settings("RootDirString").ToString.Trim
+        Catch ex As Exception
+            rootDir = "\\sdicwsvsp\UpdEmailOut"
+        End Try
+        Dim logpath As String = rootDir & "\LOGS\UpdEmailOutLog" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+        Dim filepath As String = rootDir & "\FILES\UpdEmailOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
 
         If Trim(strSubject) = "" Then
             strSubject = "Email from SDiExchange"  '  "Email from SDI, Inc."
