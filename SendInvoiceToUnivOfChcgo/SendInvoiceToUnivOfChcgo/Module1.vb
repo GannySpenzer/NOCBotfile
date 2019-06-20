@@ -18,8 +18,8 @@ Module Module1
     Private m_xmlConfig As XmlDocument
     Private m_configFile As String = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly.GetModules()(0).FullyQualifiedName) & "\configSetting.xml"
     Dim objStreamWriter As StreamWriter
-    Dim objStreamWriterXML As StreamWriter
-    Dim objStrmWrtrXMLRspns As StreamWriter
+    'Dim objStreamWriterXML As StreamWriter
+    'Dim objStrmWrtrXMLRspns As StreamWriter
 
     Dim objStreamWriterXMLN1 As StreamWriter
     Dim objStrmWrtrXMLRspnsN1 As StreamWriter
@@ -42,285 +42,285 @@ Module Module1
         Dim msgEx As String = ""
         Dim strMsgVendConfig As String = ""
         objStreamWriter = File.CreateText(logpath)
-        objStrmWrtrXMLRspns = File.CreateText(filePathResponse)
-        objStreamWriterXML = File.CreateText(filePath)
+        'objStrmWrtrXMLRspns = File.CreateText(filePathResponse)
+        'objStreamWriterXML = File.CreateText(filePath)
 
        
-        'sample code to test connection - start (ends at line 350)
-        strInput += "<?xml version=""1.0"" encoding=""UTF-8""?>"
-        strInput += "<!DOCTYPE cXML SYSTEM ""http://xml.cXML.org/schemas/cXML/1.2.013/cXML.dtd"">"
-        strInput += "<cXML version=""1.2.013"" payloadID=""0422201920245.cXML.305238401001.YqjnxXCfdF2Nwpf3@officedepot.com"" timestamp=""2019-05-30T01:04:20-05:00"" xml:lang=""en-US"">"
-        strInput += "<Header>"
-        strInput += "<From>"
-        strInput += "<Credential domain=""DUNS"">"
-        strInput += "<Identity>UNIVCHICAGO</Identity>"
-        strInput += "</Credential>"
-        strInput += "</From>"
-        strInput += "<To>"
-        strInput += "<Credential domain=""DUNS"">"
-        strInput += "<Identity>UNIVCHICAGO</Identity>"
-        strInput += "</Credential>"
-        strInput += "</To>"
-        strInput += "<Sender>"
-        strInput += "<Credential domain=""DUNS"">"
-        strInput += "<Identity>153531108</Identity>"
-        strInput += "<SharedSecret>wvPG5L1cuiQhsHZuxC8k9Q</SharedSecret>"
-        strInput += "</Credential>"
-        strInput += "<UserAgent>UoCtest</UserAgent>"
-        strInput += "</Sender>"
-        strInput += "</Header>"
-        strInput += "<Request deploymentMode=""test"">"
-        strInput += "<InvoiceDetailRequest>"
-        strInput += "<InvoiceDetailRequestHeader invoiceID=""305238401001"" purpose=""standard"" operation=""new"" invoiceDate=""2019-04-22T12:00:00-05:00"">"
-        strInput += "<InvoiceDetailHeaderIndicator />"
-        strInput += "<InvoiceDetailLineIndicator />"
-        strInput += "<InvoicePartner>"
-        strInput += "<Contact role=""remitTo"">"
-        strInput += "<Name xml:lang=""en-US"">XXXXXXXX</Name>"
-        strInput += "<PostalAddress>"
-        strInput += "<Street>PO BOX 88040</Street>"
-        strInput += "<City>CHICAGO</City>"
-        strInput += "<State>IL</State>"
-        strInput += "<PostalCode>60680-1040</PostalCode>"
-        strInput += "<Country isoCountryCode=""US"">United States</Country>"
-        strInput += "</PostalAddress>"
-        strInput += "</Contact>"
-        strInput += "</InvoicePartner>"
-        strInput += "<InvoicePartner>"
-        strInput += "<Contact role=""soldTo"">"
-        strInput += "<Name xml:lang=""en-US"">UNIVERSITY OF CHICAGO</Name>"
-        strInput += "<PostalAddress>"
-        strInput += "<Street>5640 S ELLIS AVE</Street>"
-        strInput += "<City>CHICAGO</City>"
-        strInput += "<State>IL</State>"
-        strInput += "<PostalCode>606371433</PostalCode>"
-        strInput += "<Country isoCountryCode=""US"">United States</Country>"
-        strInput += "</PostalAddress>"
-        strInput += "</Contact>"
-        strInput += "</InvoicePartner>"
-        strInput += "<InvoiceDetailShipping>"
-        strInput += "<Contact role=""shipTo"" addressID="" "">"
-        strInput += "<Name xml:lang=""en-US"">UNIVERSITY OF CHICAGO</Name>"
-        strInput += "<PostalAddress>"
-        strInput += "<Street>5640 S ELLIS AVE</Street>"
-        strInput += "<City>CHICAGO</City>"
-        strInput += "<State>IL</State>"
-        strInput += "<PostalCode>606371433</PostalCode>"
-        strInput += "<Country isoCountryCode=""US"">United States</Country>"
-        strInput += "</PostalAddress>"
-        strInput += "</Contact>"
-        strInput += "<Contact role=""shipFrom"">"
-        strInput += "<Name xml:lang=""en-US"">XXXXXXXX</Name>"
-        strInput += "</Contact>"
-        strInput += "</InvoiceDetailShipping>"
-        strInput += "<Extrinsic name=""invoice due date"">20190621</Extrinsic>"
-        strInput += "</InvoiceDetailRequestHeader>"
-        strInput += "<InvoiceDetailOrder>"
-        strInput += "<InvoiceDetailOrderInfo>"
-        strInput += "<OrderReference orderID=""G513966"" orderDate=""2019-04-19"">"
-        strInput += "<DocumentReference payloadID=""1555679072617.4524791495200750534@sciquest.com"" />"
-        strInput += "</OrderReference>"
-        strInput += "<SupplierOrderInfo orderID=""305238401001"" />"
-        strInput += "</InvoiceDetailOrderInfo>"
-        strInput += "<InvoiceDetailItem invoiceLineNumber=""1"" quantity=""1"">"
-        strInput += "<UnitOfMeasure>DZ</UnitOfMeasure>"
-        strInput += "<UnitPrice>"
-        strInput += "<Money currency=""USD"">9.160</Money>"
-        strInput += "</UnitPrice>"
-        strInput += "<InvoiceDetailItemReference lineNumber=""1"">"
-        strInput += "<ItemID>"
-        strInput += "<SupplierPartID>375923</SupplierPartID>"
-        strInput += "</ItemID>"
-        strInput += "<Description xml:lang=""en-US"">PEN,BALL,XFINE,PRECISE,PV5,BLU</Description>"
-        strInput += "</InvoiceDetailItemReference>"
-        strInput += "<Extrinsic name=""UNSPSC"">44121701</Extrinsic>"
-        strInput += "</InvoiceDetailItem>"
-        strInput += "<InvoiceDetailItem invoiceLineNumber=""2"" quantity=""1"">"
-        strInput += "<UnitOfMeasure>DZ</UnitOfMeasure>"
-        strInput += "<UnitPrice>"
-        strInput += "<Money currency=""USD"">9.180</Money>"
-        strInput += "</UnitPrice>"
-        strInput += "<InvoiceDetailItemReference lineNumber=""2"">"
-        strInput += "<ItemID>"
-        strInput += "<SupplierPartID>375931</SupplierPartID>"
-        strInput += "</ItemID>"
-        strInput += "<Description xml:lang=""en-US"">PEN,BALL,XFINE,PRECISE,PV5,BLK</Description>"
-        strInput += "</InvoiceDetailItemReference>"
-        strInput += "<Extrinsic name=""UNSPSC"">44121701</Extrinsic>"
-        strInput += "</InvoiceDetailItem>"
-        strInput += "</InvoiceDetailOrder>"
-        strInput += "<InvoiceDetailSummary>"
-        strInput += "<SubtotalAmount>"
-        strInput += "<Money currency=""USD"">18.34</Money>"
-        strInput += "</SubtotalAmount>"
-        strInput += "<Tax>"
-        strInput += "<Money currency=""USD"">0.00</Money>"
-        strInput += "<Description xml:lang=""en-US"">Tax</Description>"
-        strInput += "<TaxDetail purpose=""tax"" category=""sales"">"
-        strInput += "<TaxAmount>"
-        strInput += "<Money currency=""USD"">0.00</Money>"
-        strInput += "</TaxAmount>"
-        strInput += "</TaxDetail>"
-        strInput += "</Tax>"
-        strInput += "<GrossAmount>"
-        strInput += "<Money currency=""USD"">18.34</Money>"
-        strInput += "</GrossAmount>"
-        strInput += "<NetAmount>"
-        strInput += "<Money currency=""USD"">18.34</Money>"
-        strInput += "</NetAmount>"
-        strInput += "</InvoiceDetailSummary>"
-        strInput += "</InvoiceDetailRequest>"
-        strInput += "</Request>"
-        strInput += "</cXML>"
+        ''sample code to test connection - start (ends at line 323)
+        'strInput += "<?xml version=""1.0"" encoding=""UTF-8""?>"
+        'strInput += "<!DOCTYPE cXML SYSTEM ""http://xml.cXML.org/schemas/cXML/1.2.013/cXML.dtd"">"
+        'strInput += "<cXML version=""1.2.013"" payloadID=""0422201920245.cXML.305238401001.YqjnxXCfdF2Nwpf3@officedepot.com"" timestamp=""2019-05-30T01:04:20-05:00"" xml:lang=""en-US"">"
+        'strInput += "<Header>"
+        'strInput += "<From>"
+        'strInput += "<Credential domain=""DUNS"">"
+        'strInput += "<Identity>UNIVCHICAGO</Identity>"
+        'strInput += "</Credential>"
+        'strInput += "</From>"
+        'strInput += "<To>"
+        'strInput += "<Credential domain=""DUNS"">"
+        'strInput += "<Identity>UNIVCHICAGO</Identity>"
+        'strInput += "</Credential>"
+        'strInput += "</To>"
+        'strInput += "<Sender>"
+        'strInput += "<Credential domain=""DUNS"">"
+        'strInput += "<Identity>153531108</Identity>"
+        'strInput += "<SharedSecret>wvPG5L1cuiQhsHZuxC8k9Q</SharedSecret>"
+        'strInput += "</Credential>"
+        'strInput += "<UserAgent>UoCtest</UserAgent>"
+        'strInput += "</Sender>"
+        'strInput += "</Header>"
+        'strInput += "<Request deploymentMode=""test"">"
+        'strInput += "<InvoiceDetailRequest>"
+        'strInput += "<InvoiceDetailRequestHeader invoiceID=""305238401001"" purpose=""standard"" operation=""new"" invoiceDate=""2019-04-22T12:00:00-05:00"">"
+        'strInput += "<InvoiceDetailHeaderIndicator />"
+        'strInput += "<InvoiceDetailLineIndicator />"
+        'strInput += "<InvoicePartner>"
+        'strInput += "<Contact role=""remitTo"">"
+        'strInput += "<Name xml:lang=""en-US"">XXXXXXXX</Name>"
+        'strInput += "<PostalAddress>"
+        'strInput += "<Street>PO BOX 88040</Street>"
+        'strInput += "<City>CHICAGO</City>"
+        'strInput += "<State>IL</State>"
+        'strInput += "<PostalCode>60680-1040</PostalCode>"
+        'strInput += "<Country isoCountryCode=""US"">United States</Country>"
+        'strInput += "</PostalAddress>"
+        'strInput += "</Contact>"
+        'strInput += "</InvoicePartner>"
+        'strInput += "<InvoicePartner>"
+        'strInput += "<Contact role=""soldTo"">"
+        'strInput += "<Name xml:lang=""en-US"">UNIVERSITY OF CHICAGO</Name>"
+        'strInput += "<PostalAddress>"
+        'strInput += "<Street>5640 S ELLIS AVE</Street>"
+        'strInput += "<City>CHICAGO</City>"
+        'strInput += "<State>IL</State>"
+        'strInput += "<PostalCode>606371433</PostalCode>"
+        'strInput += "<Country isoCountryCode=""US"">United States</Country>"
+        'strInput += "</PostalAddress>"
+        'strInput += "</Contact>"
+        'strInput += "</InvoicePartner>"
+        'strInput += "<InvoiceDetailShipping>"
+        'strInput += "<Contact role=""shipTo"" addressID="" "">"
+        'strInput += "<Name xml:lang=""en-US"">UNIVERSITY OF CHICAGO</Name>"
+        'strInput += "<PostalAddress>"
+        'strInput += "<Street>5640 S ELLIS AVE</Street>"
+        'strInput += "<City>CHICAGO</City>"
+        'strInput += "<State>IL</State>"
+        'strInput += "<PostalCode>606371433</PostalCode>"
+        'strInput += "<Country isoCountryCode=""US"">United States</Country>"
+        'strInput += "</PostalAddress>"
+        'strInput += "</Contact>"
+        'strInput += "<Contact role=""shipFrom"">"
+        'strInput += "<Name xml:lang=""en-US"">XXXXXXXX</Name>"
+        'strInput += "</Contact>"
+        'strInput += "</InvoiceDetailShipping>"
+        'strInput += "<Extrinsic name=""invoice due date"">20190621</Extrinsic>"
+        'strInput += "</InvoiceDetailRequestHeader>"
+        'strInput += "<InvoiceDetailOrder>"
+        'strInput += "<InvoiceDetailOrderInfo>"
+        'strInput += "<OrderReference orderID=""G513966"" orderDate=""2019-04-19"">"
+        'strInput += "<DocumentReference payloadID=""1555679072617.4524791495200750534@sciquest.com"" />"
+        'strInput += "</OrderReference>"
+        'strInput += "<SupplierOrderInfo orderID=""305238401001"" />"
+        'strInput += "</InvoiceDetailOrderInfo>"
+        'strInput += "<InvoiceDetailItem invoiceLineNumber=""1"" quantity=""1"">"
+        'strInput += "<UnitOfMeasure>DZ</UnitOfMeasure>"
+        'strInput += "<UnitPrice>"
+        'strInput += "<Money currency=""USD"">9.160</Money>"
+        'strInput += "</UnitPrice>"
+        'strInput += "<InvoiceDetailItemReference lineNumber=""1"">"
+        'strInput += "<ItemID>"
+        'strInput += "<SupplierPartID>375923</SupplierPartID>"
+        'strInput += "</ItemID>"
+        'strInput += "<Description xml:lang=""en-US"">PEN,BALL,XFINE,PRECISE,PV5,BLU</Description>"
+        'strInput += "</InvoiceDetailItemReference>"
+        'strInput += "<Extrinsic name=""UNSPSC"">44121701</Extrinsic>"
+        'strInput += "</InvoiceDetailItem>"
+        'strInput += "<InvoiceDetailItem invoiceLineNumber=""2"" quantity=""1"">"
+        'strInput += "<UnitOfMeasure>DZ</UnitOfMeasure>"
+        'strInput += "<UnitPrice>"
+        'strInput += "<Money currency=""USD"">9.180</Money>"
+        'strInput += "</UnitPrice>"
+        'strInput += "<InvoiceDetailItemReference lineNumber=""2"">"
+        'strInput += "<ItemID>"
+        'strInput += "<SupplierPartID>375931</SupplierPartID>"
+        'strInput += "</ItemID>"
+        'strInput += "<Description xml:lang=""en-US"">PEN,BALL,XFINE,PRECISE,PV5,BLK</Description>"
+        'strInput += "</InvoiceDetailItemReference>"
+        'strInput += "<Extrinsic name=""UNSPSC"">44121701</Extrinsic>"
+        'strInput += "</InvoiceDetailItem>"
+        'strInput += "</InvoiceDetailOrder>"
+        'strInput += "<InvoiceDetailSummary>"
+        'strInput += "<SubtotalAmount>"
+        'strInput += "<Money currency=""USD"">18.34</Money>"
+        'strInput += "</SubtotalAmount>"
+        'strInput += "<Tax>"
+        'strInput += "<Money currency=""USD"">0.00</Money>"
+        'strInput += "<Description xml:lang=""en-US"">Tax</Description>"
+        'strInput += "<TaxDetail purpose=""tax"" category=""sales"">"
+        'strInput += "<TaxAmount>"
+        'strInput += "<Money currency=""USD"">0.00</Money>"
+        'strInput += "</TaxAmount>"
+        'strInput += "</TaxDetail>"
+        'strInput += "</Tax>"
+        'strInput += "<GrossAmount>"
+        'strInput += "<Money currency=""USD"">18.34</Money>"
+        'strInput += "</GrossAmount>"
+        'strInput += "<NetAmount>"
+        'strInput += "<Money currency=""USD"">18.34</Money>"
+        'strInput += "</NetAmount>"
+        'strInput += "</InvoiceDetailSummary>"
+        'strInput += "</InvoiceDetailRequest>"
+        'strInput += "</Request>"
+        'strInput += "</cXML>"
 
-        If Trim(strInput) <> "" Then
-            objStreamWriter.WriteLine("Saving XML file to send " & Now())
-            objStreamWriterXML.WriteLine(strInput)
+        'If Trim(strInput) <> "" Then
+        '    objStreamWriter.WriteLine("Saving XML file to send " & Now())
+        '    objStreamWriterXML.WriteLine(strInput)
 
-            Call Send1(strInput, strOutput)
+        '    Call Send1(strInput, strOutput)
 
-            objStreamWriter.WriteLine("Saving Response XML file " & Now())
-            objStrmWrtrXMLRspns.WriteLine(strOutput)
-        Else
+        '    objStreamWriter.WriteLine("Saving Response XML file " & Now())
+        '    objStrmWrtrXMLRspns.WriteLine(strOutput)
+        'Else
 
-            objStreamWriter.WriteLine("Input string is empty. Possible cause: " & strMsgVendConfig)
-            objStreamWriter.Flush()
-            objStreamWriter.Close()
+        '    objStreamWriter.WriteLine("Input string is empty. Possible cause: " & strMsgVendConfig)
+        '    objStreamWriter.Flush()
+        '    objStreamWriter.Close()
 
-            objStreamWriterXML.Flush()
-            objStreamWriterXML.Close()
+        '    objStreamWriterXML.Flush()
+        '    objStreamWriterXML.Close()
 
-            objStrmWrtrXMLRspns.Flush()
-            objStrmWrtrXMLRspns.Close()
-            Exit Sub
-        End If
+        '    objStrmWrtrXMLRspns.Flush()
+        '    objStrmWrtrXMLRspns.Close()
+        '    Exit Sub
+        'End If
 
-        objStreamWriter.WriteLine("Checking Response XML file " & Now())
-        ' check strOutput 
-        Dim bIsOK As Boolean = False
-        Response_Doc = Common.RemoveCrLf(strOutput)
-        If Trim(Response_Doc) <> "" Then
+        'objStreamWriter.WriteLine("Checking Response XML file " & Now())
+        '' check strOutput 
+        'Dim bIsOK As Boolean = False
+        'Response_Doc = Common.RemoveCrLf(strOutput)
+        'If Trim(Response_Doc) <> "" Then
 
-            '-----------------------------------------------------------------------
-            ' Parse the Server response and retrieve XML file
-            '-----------------------------------------------------------------------
+        '    '-----------------------------------------------------------------------
+        '    ' Parse the Server response and retrieve XML file
+        '    '-----------------------------------------------------------------------
 
-            Dim xmlResponse As New XmlDocument
-            Dim root As XmlElement = Nothing
-            Try
-                xmlResponse.LoadXml(Response_Doc)
-                root = xmlResponse.DocumentElement
-                bIsOK = True
-            Catch ex As Exception
-                objStreamWriter.WriteLine("Response XML file is NOT checked OK - 'LoadXml' area  " & Now())
-                bIsOK = False
-            End Try
+        '    Dim xmlResponse As New XmlDocument
+        '    Dim root As XmlElement = Nothing
+        '    Try
+        '        xmlResponse.LoadXml(Response_Doc)
+        '        root = xmlResponse.DocumentElement
+        '        bIsOK = True
+        '    Catch ex As Exception
+        '        objStreamWriter.WriteLine("Response XML file is NOT checked OK - 'LoadXml' area  " & Now())
+        '        bIsOK = False
+        '    End Try
 
-            If bIsOK Then
-                Try
-                    Try
-                        If Not root.SelectNodes("Response/Status").Item(0).Attributes(name:="code").Value Is Nothing Then
-                            Try
-                                bIsOK = (root.SelectNodes("Response/Status").Item(0).Attributes(name:="code").Value = "200")
-                            Catch ex As Exception
-                                bIsOK = False
-                            End Try
-                        End If
+        '    If bIsOK Then
+        '        Try
+        '            Try
+        '                If Not root.SelectNodes("Response/Status").Item(0).Attributes(name:="code").Value Is Nothing Then
+        '                    Try
+        '                        bIsOK = (root.SelectNodes("Response/Status").Item(0).Attributes(name:="code").Value = "200")
+        '                    Catch ex As Exception
+        '                        bIsOK = False
+        '                    End Try
+        '                End If
 
-                        If Not bIsOK Then
-                            If Not root.SelectNodes("Response/Status").Item(0).Attributes(name:="text").Value Is Nothing Then
-                                Try
-                                    bIsOK = (root.SelectNodes("Response/Status").Item(0).Attributes(name:="text").Value.ToUpper = "SUCCESS")
-                                Catch ex As Exception
-                                    bIsOK = False
-                                End Try
-                            End If
+        '                If Not bIsOK Then
+        '                    If Not root.SelectNodes("Response/Status").Item(0).Attributes(name:="text").Value Is Nothing Then
+        '                        Try
+        '                            bIsOK = (root.SelectNodes("Response/Status").Item(0).Attributes(name:="text").Value.ToUpper = "SUCCESS")
+        '                        Catch ex As Exception
+        '                            bIsOK = False
+        '                        End Try
+        '                    End If
 
-                        End If '  If Not bIsOK Then
+        '                End If '  If Not bIsOK Then
 
-                        If Not bIsOK Then
-                            If Not root.SelectNodes("Response/Status").Item(0).Attributes(name:="text").Value Is Nothing Then
-                                Try
-                                    bIsOK = (root.SelectNodes("Response/Status").Item(0).Attributes(name:="text").Value.ToUpper = "OK")
-                                Catch ex As Exception
-                                    bIsOK = False
-                                End Try
-                            End If
-                        End If  '  If Not bIsOK Then
+        '                If Not bIsOK Then
+        '                    If Not root.SelectNodes("Response/Status").Item(0).Attributes(name:="text").Value Is Nothing Then
+        '                        Try
+        '                            bIsOK = (root.SelectNodes("Response/Status").Item(0).Attributes(name:="text").Value.ToUpper = "OK")
+        '                        Catch ex As Exception
+        '                            bIsOK = False
+        '                        End Try
+        '                    End If
+        '                End If  '  If Not bIsOK Then
 
-                    Catch ex As Exception
-                        bIsOK = False
-                    End Try
-                Catch ex As Exception
+        '            Catch ex As Exception
+        '                bIsOK = False
+        '            End Try
+        '        Catch ex As Exception
 
-                End Try
+        '        End Try
 
-            End If  '  If Trim(Response_Doc) <> "" Then
+        '    End If  '  If Trim(Response_Doc) <> "" Then
 
-            If bIsOK Then
-                objStreamWriter.WriteLine("Response XML file checked OK.  " & Now())
+        '    If bIsOK Then
+        '        objStreamWriter.WriteLine("Response XML file checked OK.  " & Now())
 
-            Else
-                Dim msg As String = ""
-                Try
-                    If Not root.SelectNodes("Response/Status").Item(0).Attributes(0) Is Nothing Then
-                        If Not root.SelectNodes("Response/Status").Item(0).Attributes(0).Value Is Nothing Then
-                            Try
-                                msg += "'Code' = " & root.SelectNodes("Response/Status").Item(0).Attributes(0).Value '  & _
-                            Catch ex As Exception
-                                msg += "'Code' retrieving Error (inner): " & ex.Message
-                            End Try
-                        Else
-                            msg += vbCrLf & " 'Code': root.SelectNodes('Response/Status').Item(0).Attributes(0).Value is Nothing"
-                        End If
-                    Else
-                        msg += vbCrLf & " 'Code': root.SelectNodes('Response/Status').Item(0).Attributes(0) is Nothing"
-                    End If
-                Catch ex As Exception
-                    msg += vbCrLf & "'Code' retrieving Error (outer): " & ex.Message
-                End Try
+        '    Else
+        '        Dim msg As String = ""
+        '        Try
+        '            If Not root.SelectNodes("Response/Status").Item(0).Attributes(0) Is Nothing Then
+        '                If Not root.SelectNodes("Response/Status").Item(0).Attributes(0).Value Is Nothing Then
+        '                    Try
+        '                        msg += "'Code' = " & root.SelectNodes("Response/Status").Item(0).Attributes(0).Value '  & _
+        '                    Catch ex As Exception
+        '                        msg += "'Code' retrieving Error (inner): " & ex.Message
+        '                    End Try
+        '                Else
+        '                    msg += vbCrLf & " 'Code': root.SelectNodes('Response/Status').Item(0).Attributes(0).Value is Nothing"
+        '                End If
+        '            Else
+        '                msg += vbCrLf & " 'Code': root.SelectNodes('Response/Status').Item(0).Attributes(0) is Nothing"
+        '            End If
+        '        Catch ex As Exception
+        '            msg += vbCrLf & "'Code' retrieving Error (outer): " & ex.Message
+        '        End Try
 
-                Try
-                    If Not root.SelectNodes("Response/Status").Item(0).Attributes(1) Is Nothing Then
-                        If Not root.SelectNodes("Response/Status").Item(0).Attributes(1).Value Is Nothing Then
-                            Try
-                                msg += "'Reason' = " & root.SelectNodes("Response/Status").Item(0).Attributes(1).Value '  & _
-                            Catch ex As Exception
-                                msg += "'Reason' retrieving Error (inner): " & ex.Message
-                            End Try
-                        Else
-                            msg += vbCrLf & " 'Reason': root.SelectNodes('Response/Status').Item(0).Attributes(1).Value is Nothing"
-                        End If
-                    Else
-                        msg += vbCrLf & " 'Reason': root.SelectNodes('Response/Status').Item(0).Attributes(1) is Nothing"
-                    End If
-                Catch ex As Exception
-                    msg += vbCrLf & "'Reason' retrieving Error (outer): " & ex.Message
-                End Try
+        '        Try
+        '            If Not root.SelectNodes("Response/Status").Item(0).Attributes(1) Is Nothing Then
+        '                If Not root.SelectNodes("Response/Status").Item(0).Attributes(1).Value Is Nothing Then
+        '                    Try
+        '                        msg += "'Reason' = " & root.SelectNodes("Response/Status").Item(0).Attributes(1).Value '  & _
+        '                    Catch ex As Exception
+        '                        msg += "'Reason' retrieving Error (inner): " & ex.Message
+        '                    End Try
+        '                Else
+        '                    msg += vbCrLf & " 'Reason': root.SelectNodes('Response/Status').Item(0).Attributes(1).Value is Nothing"
+        '                End If
+        '            Else
+        '                msg += vbCrLf & " 'Reason': root.SelectNodes('Response/Status').Item(0).Attributes(1) is Nothing"
+        '            End If
+        '        Catch ex As Exception
+        '            msg += vbCrLf & "'Reason' retrieving Error (outer): " & ex.Message
+        '        End Try
 
-                msg += "" & vbCrLf
-                objStreamWriter.WriteLine(msg & "  Timestamp: " & Now())
+        '        msg += "" & vbCrLf
+        '        objStreamWriter.WriteLine(msg & "  Timestamp: " & Now())
 
-            End If  '  If bIsOK Then - inner
-        Else
-            ' output is empty - send is unsuccessful at all
-            objStreamWriter.WriteLine("Received empty Output string. " & Now())
-            bIsOK = False
+        '    End If  '  If bIsOK Then - inner
+        'Else
+        '    ' output is empty - send is unsuccessful at all
+        '    objStreamWriter.WriteLine("Received empty Output string. " & Now())
+        '    bIsOK = False
 
-        End If  '  If bIsOK Then  - outer
+        'End If  '  If bIsOK Then  - outer
 
-        objStreamWriter.WriteLine("End of Univ. of Chicago send TEST XML " & Now())
+        'objStreamWriter.WriteLine("End of Univ. of Chicago send TEST XML " & Now())
 
-        objStreamWriter.Flush()
-        objStreamWriter.Close()
+        'objStreamWriter.Flush()
+        'objStreamWriter.Close()
 
-        objStreamWriterXML.Flush()
-        objStreamWriterXML.Close()
+        'objStreamWriterXML.Flush()
+        'objStreamWriterXML.Close()
 
-        objStrmWrtrXMLRspns.Flush()
-        objStrmWrtrXMLRspns.Close()
+        'objStrmWrtrXMLRspns.Flush()
+        'objStrmWrtrXMLRspns.Close()
 
-        Exit Sub
+        'Exit Sub
 
         Console.WriteLine("Started to check Univ. of Chicago ready to send Invoices ")
         Console.WriteLine("")
@@ -404,7 +404,7 @@ Module Module1
                     objStreamWriter.WriteLine("Got VendorConfig " & Now())
 
                     'get list of invoices
-                    Dim strListOrders As String = "select distinct "  ' to be determined
+                    Dim strListOrders As String = "SELECT A.*, B.DUE_DT FROM sysadm8.PS_ISA_XEEV_INV_HB A, sysadm8.ps_BI_HDR B where B.BILL_TO_CUST_ID = '90584'  AND A.SHIP_CUST_NAME = 'University of Chicago'  and A.ISA_GST_TAX_AMT = 1 and A.INVOICE_ID=B.INVOICE AND A.BUSINESS_UNIT=B.BUSINESS_UNIT and INVOICE_ID = '11011082'"
 
                     Try
                         Dim Command As OleDbCommand = New OleDbCommand(strListOrders, connectOR)
@@ -422,14 +422,16 @@ Module Module1
                             If OrderListDataSet.Tables.Count > 0 Then
                                 If OrderListDataSet.Tables(0).Rows.Count > 0 Then
                                     Dim iLst As Integer = 0
+                                    Dim rowMy1 As DataRow
 
                                     objStreamWriter.WriteLine("Have data " & Now())
                                     For iLst = 0 To OrderListDataSet.Tables(0).Rows.Count - 1
-                                        ' !!! NEED TO CHANGE line below - to invoice ID
-                                        strOrderNo = OrderListDataSet.Tables(0).Rows(iLst).Item("po_id").ToString()
-                                        'If iLst = 1 Then
-                                        '    Exit For
-                                        'End If
+                                        rowMy1 = OrderListDataSet.Tables(0).Rows(iLst)
+                                        strOrderNo = OrderListDataSet.Tables(0).Rows(iLst).Item("INVOICE_ID").ToString()
+                                        'for test only
+                                        If iLst = 2 Then
+                                            Exit For
+                                        End If
 
                                         objStreamWriter.WriteLine("Before CreateText " & Now())
                                         Dim filePathN1 As String = "C:\Program Files\SDI\SendInvoiceUnivChcgo\XMLFiles\UnivChcgoClientXMLOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".xml"
@@ -442,9 +444,8 @@ Module Module1
                                         m_setupReqDoc = punchOutSetupRequestDoc.CreateOrderRequestDoc(m_vendorConfig, strOrderNo)
 
                                         objStreamWriter.WriteLine("Before CreateOrderRequestXML " & Now())
-                                        ' put header info based on info already collected, and build same XML Header as in Punchout; 
-                                        ' read view to get Order(s) info, and build XML based on XML order structure supplied
-                                        cXML = m_setupReqDoc.CreateOrderRequestXML(connectOR, strOrderNo)
+                                        
+                                        cXML = m_setupReqDoc.CreateOrderRequestXML(connectOR, strOrderNo, rowMy1)
 
                                         objStreamWriter.WriteLine("Finished building XML out for this OrderNo: " & strOrderNo & " ; Date/Time: " & Now())
                                         Dim doc As New XmlDocument
@@ -469,17 +470,17 @@ Module Module1
                                         ' start processing strInput
                                         Dim strOutput As String = ""
                                         If Trim(strInput) <> "" Then
-                                            objStreamWriter.WriteLine("Saving XML file to send for this OrderNo: " & strOrderNo & " ; Date/Time: " & Now())
+                                            objStreamWriter.WriteLine("Saving XML file to send for this Invoice No: " & strOrderNo & " ; Date/Time: " & Now())
                                             objStreamWriterXMLN1.WriteLine(strInput)
 
                                             Call Send1(strInput, strOutput)
 
-                                            objStreamWriter.WriteLine("Saving Response XML file for this OrderNo: " & strOrderNo & " ; Date/Time: " & Now())
+                                            objStreamWriter.WriteLine("Saving Response XML file for this Invoice No: " & strOrderNo & " ; Date/Time: " & Now())
                                             objStrmWrtrXMLRspnsN1.WriteLine(strOutput)
 
                                             'start analysing Output string
 
-                                            objStreamWriter.WriteLine("Checking Response XML file for this OrderNo: " & strOrderNo & " ; Date/Time: " & Now())
+                                            objStreamWriter.WriteLine("Checking Response XML file for this Invoice No: " & strOrderNo & " ; Date/Time: " & Now())
                                             ' check strOutput 
                                             Dim Response_Doc As String
                                             Dim bIsOK As Boolean = False
@@ -506,7 +507,7 @@ Module Module1
                                                         Try
                                                             If Not root.SelectNodes("Response/Status").Item(0).Attributes(name:="code").Value Is Nothing Then
                                                                 Try
-                                                                    bIsOK = (root.SelectNodes("Response/Status").Item(0).Attributes(name:="code").Value = "200")
+                                                                    bIsOK = (root.SelectNodes("Response/Status").Item(0).Attributes(name:="code").Value = "200") Or (root.SelectNodes("Response/Status").Item(0).Attributes(name:="code").Value = "201")
                                                                 Catch ex As Exception
                                                                     bIsOK = False
                                                                 End Try
@@ -515,7 +516,7 @@ Module Module1
                                                             If Not bIsOK Then
                                                                 If Not root.SelectNodes("Response/Status").Item(0).Attributes(name:="text").Value Is Nothing Then
                                                                     Try
-                                                                        bIsOK = (root.SelectNodes("Response/Status").Item(0).Attributes(name:="text").Value.ToUpper = "SUCCESS")
+                                                                        bIsOK = (root.SelectNodes("Response/Status").Item(0).Attributes(name:="text").Value.ToUpper = "SUCCESS") Or (root.SelectNodes("Response/Status").Item(0).Attributes(name:="text").Value.ToUpper = "ACKNOWLEDGED")
                                                                     Catch ex As Exception
                                                                         bIsOK = False
                                                                     End Try
@@ -546,62 +547,60 @@ Module Module1
                                                             'Else
                                                             '    intNumberToWrite = Now.GetHashCode
                                                             'End If
-                                                            'Dim bNoErrors As Boolean = True
+                                                            Dim bNoErrors As Boolean = True
+                                                            If Not connectOR.State = ConnectionState.Open Then
+                                                                connectOR.Open()
+                                                            End If
+                                                            Try
+                                                                Dim iOrdCount As Integer = OrderListDataSet.Tables(0).Rows.Count
+                                                                ' run query for every order sent
+                                                                If connectOR.State = ConnectionState.Open Then
+                                                                Else
+                                                                    connectOR.Open()
+                                                                End If
+                                                                Dim rowsAffected As Integer = 0
+                                                                Dim iCnt As Integer = 0
+                                                                For iCnt = 0 To iOrdCount - 1
+                                                                    ' for testing ONLY!
+                                                                    If iCnt = 1 Then Exit For
+                                                                    rowsAffected = 0
+                                                                    strOrderNo = OrderListDataSet.Tables(0).Rows(iCnt).Item("po_id").ToString()
+                                                                    'run query
+                                                                    Dim strUpdateQuery As String = "UPDATE SYSADM8.PS_ISA_XEEV_INV_HB SET ISA_GST_TAX_AMT = 0 WHERE INVOICE_ID = '" & strOrderNo & "' and ISA_GST_TAX_AMT = 1;"
 
-                                                            'connectOR.Open()
-                                                            'Try
-                                                            '    Dim iOrdCount As Integer = OrderListDataSet.Tables(0).Rows.Count
-                                                            '    ' run query for every order sent
-                                                            '    If connectOR.State = ConnectionState.Open Then
-                                                            '    Else
-                                                            '        connectOR.Open()
-                                                            '    End If
-                                                            '    Dim rowsAffected As Integer = 0
-                                                            '    Dim iCnt As Integer = 0
-                                                            '    For iCnt = 0 To iOrdCount - 1
-                                                            '        'If iCnt = 1 Then Exit For ' for testing ONLY!
-                                                            '        rowsAffected = 0
-                                                            '        strOrderNo = OrderListDataSet.Tables(0).Rows(iCnt).Item("po_id").ToString()
-                                                            '        'run query
-                                                            '        Dim strToWrite As String = intNumberToWrite.ToString()
-                                                            '        If Microsoft.VisualBasic.Left(strToWrite, 1) = "-" Then
-                                                            '            strToWrite = Mid(strToWrite, 2)
-                                                            '        End If
-                                                            '        Dim strUpdateQuery As String = "update SYSADM8.PS_PO_DISPATCHED set EIP_CTL_ID='" & intNumberToWrite.ToString() & "' where po_id='" & strOrderNo & "'"
+                                                                    Dim UpdCommand As OleDbCommand = New OleDbCommand(strUpdateQuery, connectOR)
+                                                                    UpdCommand.CommandTimeout = 120
+                                                                    rowsAffected = UpdCommand.ExecuteNonQuery()
+                                                                    Try
+                                                                        UpdCommand.Dispose()
+                                                                    Catch ex As Exception
 
-                                                            '        Dim UpdCommand As OleDbCommand = New OleDbCommand(strUpdateQuery, connectOR)
-                                                            '        UpdCommand.CommandTimeout = 120
-                                                            '        rowsAffected = UpdCommand.ExecuteNonQuery()
-                                                            '        Try
-                                                            '            UpdCommand.Dispose()
-                                                            '        Catch ex As Exception
+                                                                    End Try
+                                                                    If rowsAffected = 0 Then
+                                                                        bNoErrors = False
+                                                                        objStreamWriter.WriteLine("Order status change returned: 'rowsAffected = 0' for Invoice ID: " & strOrderNo)
+                                                                    End If
+                                                                Next
+                                                            Catch ex As Exception
+                                                                bNoErrors = False
+                                                                objStreamWriter.WriteLine("Error trying to update HB record for the Invoice ID: " & strOrderNo & " Error Message: " & ex.Message)
+                                                                Try
+                                                                    connectOR.Close()
+                                                                Catch ex1 As Exception
 
-                                                            '        End Try
-                                                            '        If rowsAffected = 0 Then
-                                                            '            bNoErrors = False
-                                                            '            objStreamWriter.WriteLine("Order status change returned: 'rowsAffected = 0' for Order: " & strOrderNo)
-                                                            '        End If
-                                                            '    Next
-                                                            'Catch ex As Exception
-                                                            '    bNoErrors = False
-                                                            '    objStreamWriter.WriteLine("Error trying to update Order: " & strOrderNo & " Error Message: " & ex.Message)
-                                                            '    Try
-                                                            '        connectOR.Close()
-                                                            '    Catch ex1 As Exception
+                                                                End Try
+                                                            End Try
+                                                            Try
+                                                                connectOR.Close()
+                                                            Catch ex As Exception
 
-                                                            '    End Try
-                                                            'End Try
-                                                            'Try
-                                                            '    connectOR.Close()
-                                                            'Catch ex As Exception
-
-                                                            'End Try
-                                                            'If bNoErrors Then
-                                                            '    objStreamWriter.WriteLine("Order statuses changed without errors " & Now())
-                                                            'Else
-                                                            'End If
+                                                            End Try
+                                                            If bNoErrors Then
+                                                                objStreamWriter.WriteLine("Invoice statuses changed without errors " & Now())
+                                                            Else
+                                                            End If
                                                         Else
-                                                            objStreamWriter.WriteLine("Response XML file is NOT checked OK for this OrderNo: " & strOrderNo & " ; Date/Time: " & Now())
+                                                            objStreamWriter.WriteLine("Response XML file is NOT checked OK for this Invoice ID: " & strOrderNo & " ; Date/Time: " & Now())
                                                             Dim msg As String = ""
                                                             Try
                                                                 If Not root.SelectNodes("Response/Status").Item(0).Attributes(0) Is Nothing Then
@@ -667,10 +666,8 @@ Module Module1
 
                                         End If
 
-                                        objStreamWriterXMLN1.Flush()
                                         objStreamWriterXMLN1.Close()
 
-                                        objStrmWrtrXMLRspnsN1.Flush()
                                         objStrmWrtrXMLRspnsN1.Close()
 
                                     Next  '  For iLst = 0 To OrderListDataSet.Tables(0).Rows.Count - 1
@@ -726,7 +723,6 @@ Module Module1
 
         End Try
 
-        objStreamWriter.Flush()
         objStreamWriter.Close()
 
         Return cXML

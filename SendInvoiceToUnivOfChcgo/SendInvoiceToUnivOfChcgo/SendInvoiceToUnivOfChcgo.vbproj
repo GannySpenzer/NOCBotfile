@@ -134,7 +134,9 @@
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
     <None Include="App.config" />
-    <None Include="PunchOutcXML\cXML.dtd" />
+    <None Include="PunchOutcXML\cXML.dtd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Web References\SDIEmailSvc\EmailServices.wsdl" />
     <None Include="Web References\SDIEmailSvc\Reference.map">
       <Generator>MSDiscoCodeGenerator</Generator>
@@ -169,9 +171,15 @@
     </Content>
     <Content Include="PunchOutcXML\Grainger.PriceGrpIdentifier.xml" />
     <Content Include="PunchOutcXML\GraybaR.PriceGrpIdentifier.xml" />
-    <Content Include="PunchOutcXML\OrderRequestTemplate.xml" />
-    <Content Include="PunchOutcXML\orig.PunchOut.xml" />
-    <Content Include="PunchOutcXML\PunchOut.xml" />
+    <Content Include="PunchOutcXML\OrderRequestTemplate.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="PunchOutcXML\orig.PunchOut.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="PunchOutcXML\PunchOut.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="PunchOutcXML\punchOutSetupRequestTemplate.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
