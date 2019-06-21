@@ -271,17 +271,18 @@ Public Class SiteUpload
         Try
 
             strMessage = "Will performing the following tasks:" & vbCrLf & vbCrLf
-            strMessage += "1. Copy {0}\sdi.pickingreports.dll.config to " & vbCrLf & "{1}\bin\" & vbCrLf & vbCrLf
-            strMessage += "2. Copy {0}\web.config to " & vbCrLf & "{1}" & vbCrLf & vbCrLf
+            strMessage += "1. Copy {0}\web.config to " & vbCrLf & txtSource.Text & vbCrLf & vbCrLf
+            strMessage += "2. Copy {0}\Punchout.xml to " & vbCrLf & txtSource.Text & "\PunchOutcXML" & vbCrLf & vbCrLf
 
             strMessage += "3. Copy {0}\" & vbCrLf
             For i = 0 To 7
                 strMessage += strProdUpdateFiles(i) + " to " & vbCrLf & txtSource.Text & "\bin" & vbCrLf
             Next i
+            strMessage += vbCrLf
 
-            strMessage += "4. Delete everything in {0}\c$\inetpub\wwwroot\{1}" & vbCrLf & vbCrLf
-            strMessage += "5. STOP IIS Services with a 3 second pause" & vbCrLf & vbCrLf
-            strMessage += "6. Copy all content of " & txtSource.Text & " to {0}\c$\inetpub\wwwroot\{1}" & vbCrLf & vbCrLf
+            strMessage += "4. STOP IIS Services with a 3 second pause" & vbCrLf & vbCrLf
+            strMessage += "5. Delete everything in " & cmbServer.Text & "\c$\inetpub\wwwroot\{1}" & vbCrLf & vbCrLf
+            strMessage += "6. Copy all content of " & cmbServer.Text & " to " & txtSource.Text & "\c$\inetpub\wwwroot\{1}" & vbCrLf & vbCrLf
             strMessage += "7. START IIS Services with a 3 second pause" & vbCrLf & vbCrLf
             strMessage += "8. Update SDIX_DEPLOY_SITES with new deployment information"
             Dim strBuilder As New System.Text.StringBuilder
@@ -326,35 +327,13 @@ Public Class SiteUpload
                 btnGo.Enabled = False
 
                 Try
-
-                    'copyFrom = "\\" & cmbServer.Text & "\c$\copyforvr\backup\sdi.pickingreports.dll.config"
-                    copyFrom = strConfigSource & "\sdi.pickingreports.dll.config"
-                    copyTo = txtSource.Text & "\bin\sdi.pickingreports.dll.config"
-                    lblMessage.Text = "Copying " & copyFrom & " to " & copyTo & "..." & vbCrLf
-                    Me.Refresh()
-                    Application.DoEvents()
-                    My.Computer.FileSystem.CopyFile(copyFrom, copyTo, True)
-
-                    If Not My.Computer.FileSystem.FileExists(copyTo) Then
-                        lblMessage.Text = copyTo + " was not copied.  Stopping process"
-                        lblMessage.ForeColor = Color.Red
-                        Exit Sub
-                    End If
-
-                Catch ex As Exception
-                    lblMessage.Text = ex.ToString
-                    lblMessage.ForeColor = Color.Red
-                    Exit Sub
-                End Try
-
-                Try
                     copyFrom = strConfigSource & "\web.config"
                     copyTo = txtSource.Text & "\web.config"
                     'lblMessage.Text += "Copying " & copyFrom & " to " & copyTo & "..." & vbCrLf
                     lblMessage.AppendText("Copying " & copyFrom & " to " & copyTo & "..." & vbCrLf)
                     Me.Refresh()
                     Application.DoEvents()
-                    My.Computer.FileSystem.CopyFile(copyFrom, copyTo, True)
+                    'My.Computer.FileSystem.CopyFile(copyFrom, copyTo, True)
 
                     Dim strtest As String = System.IO.File.GetLastWriteTime(copyTo)
 
@@ -370,15 +349,38 @@ Public Class SiteUpload
                     Exit Sub
                 End Try
 
+                Exit Sub
+
+                Try
+
+                    'copyFrom = "\\" & cmbServer.Text & "\c$\copyforvr\backup\sdi.pickingreports.dll.config"
+                    copyFrom = strConfigSource & "\Punchout.xml"
+                    copyTo = txtSource.Text & "\PunchoutcXML\Punchout.xml"
+                    lblMessage.Text = "Copying " & copyFrom & " to " & copyTo & "..." & vbCrLf
+                    Me.Refresh()
+                    Application.DoEvents()
+                    'My.Computer.FileSystem.CopyFile(copyFrom, copyTo, True)
+
+                    If Not My.Computer.FileSystem.FileExists(copyTo) Then
+                        lblMessage.Text = copyTo + " was not copied.  Stopping process"
+                        lblMessage.ForeColor = Color.Red
+                        Exit Sub
+                    End If
+
+                Catch ex As Exception
+                    lblMessage.Text = ex.ToString
+                    lblMessage.ForeColor = Color.Red
+                    Exit Sub
+                End Try
 
                 Try
                     For i = 0 To 7
                         copyFrom = strConfigSource & "\" & strProdUpdateFiles(i)
-                        copyTo = txtSource.Text & "\" & strProdUpdateFiles(i)
+                        copyTo = txtSource.Text & "\Bin\" & strProdUpdateFiles(i)
                         lblMessage.AppendText("Copying " & copyFrom & " to " & copyTo & "..." & vbCrLf)
                         Me.Refresh()
                         Application.DoEvents()
-                        My.Computer.FileSystem.CopyFile(copyFrom, copyTo, True)
+                        'My.Computer.FileSystem.CopyFile(copyFrom, copyTo, True)
 
                         If Not My.Computer.FileSystem.FileExists(copyTo) Then
                             lblMessage.Text = copyTo + " was not copied.  Stopping process"
@@ -393,6 +395,12 @@ Public Class SiteUpload
                     Exit Sub
                 End Try
 
+                Sleep(3000)
+                lblMessage.AppendText("STOPPING IIS" & vbCrLf)
+                Me.Refresh()
+                Application.DoEvents()
+                System.Diagnostics.Process.Start("iisreset /stop") 'Stop IIS
+                Sleep(3000)
 
                 Try
                     Dim delDir As String = "\\" & cmbServer.Text & "\c$\inetpub\wwwroot\" & strServerFolder
@@ -440,7 +448,6 @@ Public Class SiteUpload
                 End Try
 
                 Try
-
                     copyFrom = txtSource.Text
                     copyTo = "\\" & cmbServer.Text & "\c$\inetpub\wwwroot\" & strServerFolder
                     'lblMessage.Text += "Copying " & copyFrom & " to " & copyTo & "..." & vbCrLf
@@ -464,6 +471,13 @@ Public Class SiteUpload
                     lblMessage.ForeColor = Color.Red
                     Exit Sub
                 End Try
+
+                Sleep(3000)
+                Me.Refresh()
+                Application.DoEvents()
+                lblMessage.AppendText("RESTARTING IIS" & vbCrLf)
+                System.Diagnostics.Process.Start("iisreset /start") 'Restart IIS
+                Sleep(3000)
 
                 'lblMessage.ForeColor = Color.Green
                 'lblMessage.Text += "Process complete!"
