@@ -403,8 +403,16 @@ Module Module1
                    m_vendorConfig.VendorPunchoutSetupURL.Length > 0 Then
                     objStreamWriter.WriteLine("Got VendorConfig " & Now())
 
+                    '  Cust ID
+                    Dim strCustIDParam As String = "90584"
+                    Try
+                        strCustIDParam = My.Settings("CustID").ToString.Trim
+                    Catch ex As Exception
+                        strCustIDParam = "90584"
+                    End Try
+                    
                     'get list of invoices
-                    Dim strListOrders As String = "SELECT A.*, B.DUE_DT FROM sysadm8.PS_ISA_XEEV_INV_HB A, sysadm8.ps_BI_HDR B where B.BILL_TO_CUST_ID = '90584'  AND A.SHIP_CUST_NAME = 'University of Chicago'  and A.ISA_GST_TAX_AMT = 1 and A.INVOICE_ID=B.INVOICE AND A.BUSINESS_UNIT=B.BUSINESS_UNIT and INVOICE_ID = '11011082'"
+                    Dim strListOrders As String = "SELECT A.*, B.DUE_DT FROM sysadm8.PS_ISA_XEEV_INV_HB A, sysadm8.ps_BI_HDR B where B.BILL_TO_CUST_ID = '" & strCustIDParam & "'  AND A.SHIP_CUST_NAME = 'University of Chicago'  and A.ISA_GST_TAX_AMT = 1 and A.INVOICE_ID=B.INVOICE AND A.BUSINESS_UNIT=B.BUSINESS_UNIT"  '  and INVOICE_ID = '11011082'"
 
                     Try
                         Dim Command As OleDbCommand = New OleDbCommand(strListOrders, connectOR)
@@ -428,10 +436,10 @@ Module Module1
                                     For iLst = 0 To OrderListDataSet.Tables(0).Rows.Count - 1
                                         rowMy1 = OrderListDataSet.Tables(0).Rows(iLst)
                                         strOrderNo = OrderListDataSet.Tables(0).Rows(iLst).Item("INVOICE_ID").ToString()
-                                        'for test only
-                                        If iLst = 2 Then
-                                            Exit For
-                                        End If
+                                        ''for test only
+                                        'If iLst = 2 Then
+                                        '    Exit For
+                                        'End If
 
                                         objStreamWriter.WriteLine("Before CreateText " & Now())
                                         Dim filePathN1 As String = "C:\Program Files\SDI\SendInvoiceUnivChcgo\XMLFiles\UnivChcgoClientXMLOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".xml"
@@ -539,48 +547,33 @@ Module Module1
                                                         If bIsOK Then
                                                             objStreamWriter.WriteLine("Response XML file checked OK. Changing Order statuses " & Now())
 
-                                                            '' TEMPORARILY commented out
-                                                            'Dim strValueToWrite As String = Now.Year.ToString() & Now.Month.ToString() & Now.Day.ToString() & Now.GetHashCode.ToString()
-                                                            'Dim intNumberToWrite As Long = 0
-                                                            'If IsNumeric(strValueToWrite) Then
-                                                            '    intNumberToWrite = CType(strValueToWrite, Long)
-                                                            'Else
-                                                            '    intNumberToWrite = Now.GetHashCode
-                                                            'End If
                                                             Dim bNoErrors As Boolean = True
                                                             If Not connectOR.State = ConnectionState.Open Then
                                                                 connectOR.Open()
                                                             End If
                                                             Try
-                                                                Dim iOrdCount As Integer = OrderListDataSet.Tables(0).Rows.Count
-                                                                ' run query for every order sent
-                                                                If connectOR.State = ConnectionState.Open Then
-                                                                Else
-                                                                    connectOR.Open()
-                                                                End If
+
                                                                 Dim rowsAffected As Integer = 0
-                                                                Dim iCnt As Integer = 0
-                                                                For iCnt = 0 To iOrdCount - 1
-                                                                    ' for testing ONLY!
-                                                                    If iCnt = 1 Then Exit For
-                                                                    rowsAffected = 0
-                                                                    strOrderNo = OrderListDataSet.Tables(0).Rows(iCnt).Item("po_id").ToString()
-                                                                    'run query
-                                                                    Dim strUpdateQuery As String = "UPDATE SYSADM8.PS_ISA_XEEV_INV_HB SET ISA_GST_TAX_AMT = 0 WHERE INVOICE_ID = '" & strOrderNo & "' and ISA_GST_TAX_AMT = 1;"
 
-                                                                    Dim UpdCommand As OleDbCommand = New OleDbCommand(strUpdateQuery, connectOR)
-                                                                    UpdCommand.CommandTimeout = 120
-                                                                    rowsAffected = UpdCommand.ExecuteNonQuery()
-                                                                    Try
-                                                                        UpdCommand.Dispose()
-                                                                    Catch ex As Exception
+                                                                rowsAffected = 0
 
-                                                                    End Try
-                                                                    If rowsAffected = 0 Then
-                                                                        bNoErrors = False
-                                                                        objStreamWriter.WriteLine("Order status change returned: 'rowsAffected = 0' for Invoice ID: " & strOrderNo)
-                                                                    End If
-                                                                Next
+                                                                'run query
+                                                                Dim strUpdateQuery As String = "UPDATE SYSADM8.PS_ISA_XEEV_INV_HB SET ISA_GST_TAX_AMT = 0 WHERE INVOICE_ID = '" & strOrderNo & "' and ISA_GST_TAX_AMT = 1"
+                                                                'objStreamWriter.WriteLine("Query: " & strUpdateQuery)
+
+                                                                Dim UpdCommand As OleDbCommand = New OleDbCommand(strUpdateQuery, connectOR)
+                                                                UpdCommand.CommandTimeout = 120
+                                                                rowsAffected = UpdCommand.ExecuteNonQuery()
+                                                                Try
+                                                                    UpdCommand.Dispose()
+                                                                Catch ex As Exception
+
+                                                                End Try
+                                                                If rowsAffected = 0 Then
+                                                                    bNoErrors = False
+                                                                    objStreamWriter.WriteLine("Order status change returned: 'rowsAffected = 0' for Invoice ID: " & strOrderNo)
+                                                                End If
+
                                                             Catch ex As Exception
                                                                 bNoErrors = False
                                                                 objStreamWriter.WriteLine("Error trying to update HB record for the Invoice ID: " & strOrderNo & " Error Message: " & ex.Message)
@@ -596,9 +589,10 @@ Module Module1
 
                                                             End Try
                                                             If bNoErrors Then
-                                                                objStreamWriter.WriteLine("Invoice statuses changed without errors " & Now())
-                                                            Else
+                                                                objStreamWriter.WriteLine("Invoice statuses changed without errors for the Invoice ID: " & strOrderNo & "  ; Date/Time: " & Now())
+
                                                             End If
+
                                                         Else
                                                             objStreamWriter.WriteLine("Response XML file is NOT checked OK for this Invoice ID: " & strOrderNo & " ; Date/Time: " & Now())
                                                             Dim msg As String = ""
@@ -671,6 +665,8 @@ Module Module1
                                         objStrmWrtrXMLRspnsN1.Close()
 
                                     Next  '  For iLst = 0 To OrderListDataSet.Tables(0).Rows.Count - 1
+                                Else
+                                    objStreamWriter.WriteLine("No Invoices to process. Date/Time: " & Now().ToString())
 
                                 End If
                             End If

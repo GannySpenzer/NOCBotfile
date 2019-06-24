@@ -447,7 +447,7 @@ Public Class punchOutSetupRequestDoc
                 Dim nodeOrderReq As XmlNode = docXML.SelectSingleNode(xpath:="//cXML//Request")
 
                 ' for each order get all order info including lines info
-                Dim strOrder As String = "SELECT * FROM sysadm8.PS_ISA_XEEV_INV_LB where INVOICE_ID = '" & strOrderNo & "' and ITM_ID_VNDR != 'N/A'"  '   "''"
+                Dim strOrder As String = "SELECT A.* FROM sysadm8.PS_ISA_XEEV_INV_LB A, sysadm8.PS_ISA_XEEV_INV_HB B where A.INVOICE_ID = '" & strOrderNo & "' and ITM_ID_VNDR != 'N/A' AND A.INVOICE_ID=B.INVOICE_ID AND A.BUSINESS_UNIT=B.BUSINESS_UNIT AND A.PROCESS_INSTANCE=B.PROCESS_INSTANCE"
                 If Not connectOR.State = ConnectionState.Open Then
                     connectOR.Open()
                 End If
@@ -693,8 +693,8 @@ Public Class punchOutSetupRequestDoc
                             attrib = nodeOrderReference.Attributes.Append(docXML.CreateAttribute(name:="orderID"))
                             Dim strReferncOrdId As String = " "
                             strReferncOrdId = rowMy1.Item("CUSTOMER_PO").ToString()
-                            'for test ONLY
-                            strReferncOrdId = "G003656"
+                            ''for test ONLY
+                            'strReferncOrdId = "G003656"
                             attrib.Value = strReferncOrdId
 
                             Dim nodeDocumentReference As XmlNode = nodeOrderReference.AppendChild(docXML.CreateElement(name:="DocumentReference"))

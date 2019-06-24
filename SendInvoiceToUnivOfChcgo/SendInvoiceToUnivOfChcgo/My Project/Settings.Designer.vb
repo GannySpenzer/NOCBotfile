@@ -72,6 +72,15 @@ Namespace My
                 Return CType(Me("UrlToSend"),String)
             End Get
         End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("90584")>  _
+        Public ReadOnly Property CustID() As String
+            Get
+                Return CType(Me("CustID"),String)
+            End Get
+        End Property
     End Class
 End Namespace
 
