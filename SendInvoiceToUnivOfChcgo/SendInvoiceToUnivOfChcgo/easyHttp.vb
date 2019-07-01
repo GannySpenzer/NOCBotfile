@@ -161,28 +161,30 @@ Public Class easyHttp
             ' Send request, If request
             If (m_httpMethod = HTTPMethod.HTTP_POST) Then
                 Try
-                    sw = New StreamWriter(request.GetRequestStream())
-                    If SendAsArrayOfBytes Then
-                        For Each b As Byte In Me.DataToPostAsBytes
-                            sw.Write(Chr(b))
-                        Next
-                    Else
-                        sw.Write(Me.DataToPost)
-                    End If
-                    sw.Flush()
-                    sw.Close()
+                    Using sw1 As StreamWriter = New StreamWriter(request.GetRequestStream())
+                        'sw = New StreamWriter(request.GetRequestStream())
+                        If SendAsArrayOfBytes Then
+                            For Each b As Byte In Me.DataToPostAsBytes
+                                sw1.Write(Chr(b))
+                            Next
+                        Else
+                            sw1.Write(Me.DataToPost)
+                        End If
+                        'sw.Flush()
+                        'sw.Close()
+                    End Using
                 Catch Ex As Exception
                     Dim strEx As String = ""
                     strEx = Ex.ToString()
                     strEx = "Error: " & strEx
                     Try
-                        sw.Close()
+                        'sw1.Close()
                     Catch ex21 As Exception
 
                     End Try
                     Return strEx
                     Throw New ApplicationException(message:=rtn & strEx, innerException:=Ex)
-                    
+
                 End Try
             End If
 
