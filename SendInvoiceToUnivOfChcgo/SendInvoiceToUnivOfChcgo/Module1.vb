@@ -412,7 +412,9 @@ Module Module1
                     End Try
                     
                     'get list of invoices
-                    Dim strListOrders As String = "SELECT A.*, B.DUE_DT FROM sysadm8.PS_ISA_XEEV_INV_HB A, sysadm8.ps_BI_HDR B where B.BILL_TO_CUST_ID = '" & strCustIDParam & "'  AND A.SHIP_CUST_NAME = 'University of Chicago'  and A.ISA_GST_TAX_AMT = 1 and A.INVOICE_ID=B.INVOICE AND A.BUSINESS_UNIT=B.BUSINESS_UNIT"  '  and INVOICE_ID = '11011082'"
+                    'Dim strListOrders As String = "SELECT A.*, B.DUE_DT FROM sysadm8.PS_ISA_XEEV_INV_HB A, sysadm8.ps_BI_HDR B where B.BILL_TO_CUST_ID = '" & strCustIDParam & "'  AND A.SHIP_CUST_NAME = 'University of Chicago'  and A.ISA_GST_TAX_AMT = 1 and A.INVOICE_ID=B.INVOICE AND A.BUSINESS_UNIT=B.BUSINESS_UNIT"  '  and INVOICE_ID = '11011082'"
+                    Dim strListOrders As String = "SELECT A.*, B.DUE_DT FROM sysadm8.PS_ISA_XEEV_INV_HB A, sysadm8.ps_BI_HDR B where B.BILL_TO_CUST_ID = '" & strCustIDParam & "' " & vbCrLf & _
+                          " AND A.ISA_GST_TAX_AMT = 1 and A.INVOICE_ID=B.INVOICE AND A.BUSINESS_UNIT=B.BUSINESS_UNIT"  '  and INVOICE_ID = '11011082'"
 
                     Try
                         Dim Command As OleDbCommand = New OleDbCommand(strListOrders, connectOR)
