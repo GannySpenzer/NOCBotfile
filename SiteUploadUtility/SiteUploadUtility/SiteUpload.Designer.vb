@@ -237,13 +237,12 @@ Partial Class SiteUpload
         '
         'Button1
         '
-        Me.Button1.Location = New System.Drawing.Point(505, 390)
+        Me.Button1.Location = New System.Drawing.Point(182, 238)
         Me.Button1.Name = "Button1"
         Me.Button1.Size = New System.Drawing.Size(75, 23)
         Me.Button1.TabIndex = 23
         Me.Button1.Text = "test"
         Me.Button1.UseVisualStyleBackColor = True
-        Me.Button1.Visible = False
         '
         'Timer1
         '

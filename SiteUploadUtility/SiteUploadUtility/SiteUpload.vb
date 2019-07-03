@@ -405,12 +405,22 @@ Public Class SiteUpload
 
                 Exit Sub
 
-                Sleep(3000)
+                'Sleep(3000)
                 lblMessage.AppendText("STOPPING IIS" & vbCrLf)
                 Me.Refresh()
                 Application.DoEvents()
-                System.Diagnostics.Process.Start("iisreset /stop") 'Stop IIS
-                Sleep(3000)
+                'System.Diagnostics.Process.Start("iisreset /stop") 'Stop IIS
+                'Sleep(3000)
+
+                Dim stopinfo As New ProcessStartInfo("cmd", "iisreset /stop")
+                stopinfo.WindowStyle = ProcessWindowStyle.Normal
+                'Process.Start(stopinfo)
+                Dim p1 As New Process
+                p1.StartInfo = stopinfo
+                p1.Start()
+                p1.WaitForExit()
+                p1.Close()
+
 
                 Try
                     Dim delDir As String = "\\" & cmbServer.Text & "\c$\inetpub\wwwroot\" & strServerFolder
@@ -482,12 +492,22 @@ Public Class SiteUpload
                     Exit Sub
                 End Try
 
-                Sleep(3000)
+                'Sleep(3000)
+
+                lblMessage.AppendText("RESTARTING IIS" & vbCrLf)
                 Me.Refresh()
                 Application.DoEvents()
-                lblMessage.AppendText("RESTARTING IIS" & vbCrLf)
-                System.Diagnostics.Process.Start("iisreset /start") 'Restart IIS
-                Sleep(3000)
+                'System.Diagnostics.Process.Start("iisreset /start") 'Restart IIS
+                'Sleep(3000)
+
+                Dim startinfo As New ProcessStartInfo("cmd", "iisreset /start")
+                startinfo.WindowStyle = ProcessWindowStyle.Normal
+                'Process.Start(startinfo)
+                Dim p2 As New Process
+                p2.StartInfo = startinfo
+                p2.Start()
+                p2.WaitForExit()
+                p2.Close()
 
                 'lblMessage.ForeColor = Color.Green
                 'lblMessage.Text += "Process complete!"
@@ -659,25 +679,59 @@ Public Class SiteUpload
     'End Sub
 
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+
+        Dim result As Integer = MessageBox.Show("Test IIS Reset on local machine?  Are you sure?!?!?!!", "Test IIS Reset", MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation)
+        If result = DialogResult.Cancel Then
+            Exit Sub
+        End If
         'for test only
+
+        lblMessage.AppendText("STOPPING IIS" & vbCrLf)
+        Me.Refresh()
+        Application.DoEvents()
+
+        Dim stopinfo As New ProcessStartInfo("cmd", "iisreset /stop")
+        stopinfo.WindowStyle = ProcessWindowStyle.Normal
+        'Process.Start(stopinfo)
+        Dim p1 As New Process
+        p1.StartInfo = stopinfo
+        p1.Start()
+        p1.WaitForExit()
+        p1.Close()
+
+        MsgBox("Stopped IIS")
+
+        lblMessage.AppendText("RESTARTING IIS" & vbCrLf)
+        Me.Refresh()
+        Application.DoEvents()
+
+        Dim startinfo As New ProcessStartInfo("cmd", "iisreset /start")
+        startinfo.WindowStyle = ProcessWindowStyle.Normal
+        Dim p2 As New Process
+        p2.StartInfo = startinfo
+        p2.Start()
+        p2.WaitForExit()
+        p2.Close()
+
+        MsgBox("Re-Started IIS")
 
         'Process.Start("\\" & cmbServer.Text & "\c$\inetpub\wwwroot\" & strServerFolder)
 
-        Exit Sub
+        'Exit Sub
 
 
-        copyFrom = txtSource.Text
-        copyTo = "C:\temp\siteuploadutility_temp\"
+        'copyFrom = txtSource.Text
+        'copyTo = "C:\temp\siteuploadutility_temp\"
 
-        Dim cnt As Integer
-        cnt = Directory.GetFiles(copyFrom, "*.*", SearchOption.AllDirectories).Count '100
-        ProgressBar1.Maximum = cnt
-        ProgressBar1.Step = 1
-        ProgressBar1.Value = 0
-        lblProgress.Visible = True
-        BackgroundWorker1.RunWorkerAsync()
+        'Dim cnt As Integer
+        'cnt = Directory.GetFiles(copyFrom, "*.*", SearchOption.AllDirectories).Count '100
+        'ProgressBar1.Maximum = cnt
+        'ProgressBar1.Step = 1
+        'ProgressBar1.Value = 0
+        'lblProgress.Visible = True
+        'BackgroundWorker1.RunWorkerAsync()
 
-        Timer1.Enabled = True
+        'Timer1.Enabled = True
 
         'While doneReplace = False
         '    Me.Refresh()
