@@ -447,7 +447,7 @@ Public Class punchOutSetupRequestDoc
                 Dim nodeOrderReq As XmlNode = docXML.SelectSingleNode(xpath:="//cXML//Request")
 
                 ' for each order get all order info including lines info
-                Dim strOrder As String = "SELECT A.* FROM sysadm8.PS_ISA_XEEV_INV_LB A, sysadm8.PS_ISA_XEEV_INV_HB B where A.INVOICE_ID = '" & strOrderNo & "' and ITM_ID_VNDR != 'N/A' AND A.INVOICE_ID=B.INVOICE_ID AND A.BUSINESS_UNIT=B.BUSINESS_UNIT AND A.PROCESS_INSTANCE=B.PROCESS_INSTANCE"
+                Dim strOrder As String = "SELECT A.* FROM sysadm8.PS_ISA_XEEV_INV_LB A, sysadm8.PS_ISA_XEEV_INV_HB B where A.INVOICE_ID = '" & strOrderNo & "' AND A.INVOICE_ID=B.INVOICE_ID AND A.BUSINESS_UNIT=B.BUSINESS_UNIT AND A.PROCESS_INSTANCE=B.PROCESS_INSTANCE"
                 If Not connectOR.State = ConnectionState.Open Then
                     connectOR.Open()
                 End If
