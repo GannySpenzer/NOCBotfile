@@ -693,6 +693,13 @@ Public Class punchOutSetupRequestDoc
                             attrib = nodeOrderReference.Attributes.Append(docXML.CreateAttribute(name:="orderID"))
                             Dim strReferncOrdId As String = " "
                             strReferncOrdId = rowMy1.Item("CUSTOMER_PO").ToString()
+                            If Trim(strReferncOrdId) <> "" Then
+                                If Len(Trim(strReferncOrdId)) > 3 Then
+                                    If strReferncOrdId.StartsWith("C35") Then
+                                        strReferncOrdId = Mid(strReferncOrdId, 4)
+                                    End If
+                                End If
+                            End If
                             ''for test ONLY
                             'strReferncOrdId = "G003656"
                             attrib.Value = strReferncOrdId
