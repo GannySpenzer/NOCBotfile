@@ -1317,11 +1317,9 @@ Module Module1
             connectOR.Close()
         End If
 
-        If strBU <> "I0256" Then
-            bolerror1 = updateEnterprise(strBU, dteEndDate)
-        End If
-
-
+        'If strBU <> "I0256" Then
+        bolerror1 = updateEnterprise(strBU, dteEndDate)
+        'End If
 
     End Function
 
