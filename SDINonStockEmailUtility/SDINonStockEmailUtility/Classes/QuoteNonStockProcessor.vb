@@ -859,7 +859,7 @@ Public Class QuoteNonStockProcessor
                                  "  AND I.BUSINESS_UNIT_OM = L.BUSINESS_UNIT_OM" & vbCrLf & _
                                  "  AND A.REQ_ID = L.ORDER_NO" & vbCrLf & _
                                  "  AND A1.line_nbr = L.ISA_INTFC_LN" & vbCrLf & _
-                                 "  AND A4.ORIGIN IN ('IOL','MOB','RFQ','IAP','PCH')" & vbCrLf & _
+                                 "  AND A4.ORIGIN IN ('IOL','MOB','RFQ','IAP','PCH','INT')" & vbCrLf & _
                                  "  AND L.BUSINESS_UNIT_OM = A2.BUSINESS_UNIT (+)" & vbCrLf & _
                                  "  AND L.ISA_EMPLOYEE_ID = A2.ISA_EMPLOYEE_ID (+) " & vbCrLf & _
                                  "  AND 'MAIN1' = A3.SETID (+)" & vbCrLf & _
