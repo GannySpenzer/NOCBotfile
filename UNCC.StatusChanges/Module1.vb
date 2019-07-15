@@ -200,7 +200,7 @@ Module Module1
                             " ,A.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(A.ISA_LINE_STATUS,'CRE','1','NEW','2','DSP','3','ORD','3','RSV','3','PKA','4','PKP','4','DLP','5','RCP','5','RCF','6','PKQ','5','DLO','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','1') AS OLD_ORDER_STATUS" & vbCrLf & _
                             " FROM PS_ISAORDSTATUSLOG A, SYSADM8.PS_ISA_ORD_INTF_HD B" & vbCrLf & _
                             " WHERE A.BUSINESS_UNIT_OM = 'I0256'" & vbCrLf & _
-                            " AND B.ORIGIN = 'IOL'" & vbCrLf & _
+                            " AND B.ORIGIN IN ('INT','IOL') " & vbCrLf & _
                             " AND A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf & _
                             " AND A.ORDER_NO = B.ORDER_NO " & vbCrLf & _
                             " AND A.DTTM_STAMP > TO_DATE('" & dteStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
