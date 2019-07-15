@@ -272,7 +272,7 @@ Public Class orderProcessor
                                 Dim rdr As OleDbDataReader = cmd.ExecuteReader()
                                 If Not (rdr Is Nothing) Then
                                     If rdr.Read Then
-                                        Me.OrderRequest.Id = CInt(rdr("ORDER_NO"))
+                                        Me.OrderRequest.Id = CType(rdr("ORDER_NO"), Long)
                                     End If
                                 End If
                                 rdr.Close()
@@ -1264,7 +1264,7 @@ Public Class orderProcessor
                                     ", PS_ISA_ORD_INTF_LN B " & vbCrLf & _
                                     "WHERE A.BUSINESS_UNIT_OM = '" & bu & "' " & vbCrLf & _
                                     "  AND A.ORDER_NO IN (" & sOrderList & ") " & vbCrLf & _
-                                    "  AND A.ORIGIN = 'IOL' " & vbCrLf & _
+                                    "  AND A.ORIGIN IN ('INT','IOL') " & vbCrLf & _
                                     "  AND A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM " & vbCrLf & _
                                     "  AND A.ORDER_NO = B.ORDER_NO " & vbCrLf & _
                                     "ORDER BY A.BUSINESS_UNIT_OM, A.ORDER_NO, B.ISA_INTFC_LN" & vbCrLf & _
@@ -1489,7 +1489,7 @@ Public Class orderProcessor
               " '" & orderReq.BusinessUnit & "' " & vbCrLf & _
               ",'" & orderReq.OrderNo_SDI & "' " & vbCrLf & _
               ",'" & orderReq.SiteInfo.CustID & "' " & vbCrLf & _
-              ",'IOL' " & vbCrLf & _
+              ",'INT' " & vbCrLf & _
               ",' ' " & vbCrLf & _
               ",TO_DATE('" & Now.ToString & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
               ",'1' " & vbCrLf & _

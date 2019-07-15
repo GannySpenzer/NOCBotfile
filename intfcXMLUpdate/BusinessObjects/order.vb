@@ -2,7 +2,7 @@ Public Class order
 
     Implements IDisposable
 
-    Private m_id As Integer = -1
+    Private m_id As Long = -1
 
     Private m_grpOrderNo As String = ""
     Private m_sdiOrderNo As String = ""
@@ -35,11 +35,11 @@ Public Class order
         End Set
     End Property
 
-    Public Property [Id]() As Integer
+    Public Property [Id]() As Long
         Get
             Return m_id
         End Get
-        Set(ByVal Value As Integer)
+        Set(ByVal Value As Long)
             m_id = Value
         End Set
     End Property
