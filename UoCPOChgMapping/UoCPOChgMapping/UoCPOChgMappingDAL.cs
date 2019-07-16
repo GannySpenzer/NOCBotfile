@@ -59,7 +59,7 @@ namespace UoCPOChgMapping
             try
             {
 
-                strSQLstring = "UPDATE sysadm8.PS_ISA_MXM_POCHG SET PROCESS_FLAG='I', LAST_UPDATE_DTTM = SYSDATE WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'UCHICAGO'"; // AND ROWNUM < 2";
+                strSQLstring = "UPDATE sysadm8.PS_ISA_MXM_POCHG SET PROCESS_FLAG='Y', LAST_UPDATE_DTTM = SYSDATE WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'UCHICAGO'"; // AND ROWNUM < 2";
 
                 m_oLogger.LogMessage("UpdateUoCPOChgMappingData", "PeopleSoft connection string : " + OracleConString);
                 m_oLogger.LogMessage("UpdateUoCPOChgMappingData", "Query To Update the PO Chg mapping date : " + strSQLstring);
