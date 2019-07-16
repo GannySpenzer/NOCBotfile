@@ -23,7 +23,7 @@ namespace UoCMinMaxMapping
         string OracleConString = ConfigurationManager.AppSettings["OLEDBconString"];
 
         /// <summary>
-        /// Get the purchase order data whose process flag is 'N' and cust id is 'SOLVAY'
+        /// Get the purchase order data whose process flag is 'N' and cust id is 'UOC'
         /// </summary>
         /// <returns></returns>
         public DataTable getUoCMinMaxMappingData(Logger m_oLogger)
@@ -49,7 +49,7 @@ namespace UoCMinMaxMapping
         }
 
         /// <summary>
-        /// Update the process flag to I once the Solvay service transaction successfully submited.
+        /// Update the process flag to Y once the UOC service transaction successfully submited.
         /// </summary>
         /// <returns></returns>
         public int UpdateUoCMinMaxMappingData(Logger m_oLogger)
@@ -60,10 +60,10 @@ namespace UoCMinMaxMapping
             try
             {
 
-                strSQLstring = "UPDATE SYSADM8.PS_ISA_MXM_ITM_OUT SET PROCESS_FLAG='I', PROCESS_DTTM = SYSDATE WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'UOC'"; // AND ROWNUM < 2";
+                strSQLstring = "UPDATE SYSADM8.PS_ISA_MXM_ITM_OUT SET PROCESS_FLAG='Y', PROCESS_DTTM = SYSDATE WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'UOC'"; // AND ROWNUM < 2";
 
                 m_oLogger.LogMessage("UpdateUoCMinMaxMappingData", "PeopleSoft connection string : " + OracleConString);
-                m_oLogger.LogMessage("UpdateUoCMinMaxMappingData", "Query To Update the PO Receipt mapping date : " + strSQLstring);
+                m_oLogger.LogMessage("UpdateUoCMinMaxMappingData", "Query To Update the MinMax mapping date : " + strSQLstring);
 
                 rowsAffected = OleDBExecuteNonQuery(strSQLstring);
 
@@ -72,7 +72,7 @@ namespace UoCMinMaxMapping
             }
             catch (Exception ex)
             {
-                m_oLogger.LogMessage("UpdateUoCMinMaxMappingData", "Error trying to Update the PO Receipt Mapping data.", ex); throw;
+                m_oLogger.LogMessage("UpdateUoCMinMaxMappingData", "Error trying to Update the MinMax Mapping data.", ex); throw;
             }
             return rowsAffected;
         }

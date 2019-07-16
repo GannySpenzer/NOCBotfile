@@ -20,7 +20,7 @@ namespace UoCMinMaxMapping
     class UoCMinMaxMappingAPIAccess
     {
         /// <summary>
-        /// POST Receiving data to the Solvay service
+        /// POST Receiving data to the UOC service
         /// </summary>
         /// <returns></returns>
         public string postUoCMinMaxMappingData(Logger m_oLogger)
@@ -281,7 +281,7 @@ namespace UoCMinMaxMapping
                            }
 
 
-                           m_oLogger.LogMessage("postUoCMinMaxMappingData", "POST UoCMinMax Mapping Data to Solvay starts here");
+                           m_oLogger.LogMessage("postUoCMinMaxMappingData", "POST UoCMinMax Mapping Data to UOC starts here");
                            //m_oLogger.LogMessage("postUoCMinMaxMappingData", "POST UoCMinMaxMapping Data" + resultSet.ToString());
                            //m_oLogger.LogMessage("postUoCMinMaxMappingData", "POST WMMapping Data URL : https://10.118.13.27:8243/SDIOutboundWMReceiptAPI/v1_0");
                            m_oLogger.LogMessage("postUoCMinMaxMappingData", "POST UoCMinMaxMapping Data URL : " + serviceURL);
@@ -363,7 +363,7 @@ namespace UoCMinMaxMapping
 
                            //strResponse = msgID;
 
-                           m_oLogger.LogMessage("postUoCMinMaxMappingData", "POST UoCMinMaxMapping data to Solvay server status " + strResponse);
+                           m_oLogger.LogMessage("postUoCMinMaxMappingData", "POST UoCMinMaxMapping data to UOC server status " + strResponse);
 
                            // strResponse = JsonConvert.SerializeObject(result);
                        }
@@ -384,7 +384,7 @@ namespace UoCMinMaxMapping
                     }
                 }
 
-                m_oLogger.LogMessageWeb("postUoCMinMaxMappingData", "Error trying to POST data to Solvay server.", responseErrorText); //ex
+                m_oLogger.LogMessageWeb("postUoCMinMaxMappingData", "Error trying to POST data to UOC server.", responseErrorText); //ex
             }
             return strResponse;
         }
