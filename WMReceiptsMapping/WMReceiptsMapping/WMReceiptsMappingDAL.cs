@@ -52,7 +52,7 @@ namespace WMReceiptsMapping
         /// Update the process flag to I once the Solvay service transaction successfully submited.
         /// </summary>
         /// <returns></returns>
-        public int UpdateWMReceiptMappingData(Logger m_oLogger)
+        public int UpdateWMReceiptMappingData(Logger m_oLogger, string ProcFlag)
         {
 
             DataTable dtResponse = new DataTable();
@@ -60,7 +60,7 @@ namespace WMReceiptsMapping
             try
             {
 
-                strSQLstring = "UPDATE SYSADM8.PS_ISA_SV_MOV_OUT SET PROCESS_FLAG='I', DATE_PROCESSED = SYSDATE WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'SOLVAY' AND ROWNUM < 2";
+                strSQLstring = "UPDATE SYSADM8.PS_ISA_SV_MOV_OUT SET PROCESS_FLAG='" + ProcFlag + "', DATE_PROCESSED = SYSDATE WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'SOLVAY' AND ROWNUM < 2";
 
                 m_oLogger.LogMessage("UpdateWMReceiptMappingData", "PeopleSoft connection string : " + OracleConString);
                 m_oLogger.LogMessage("UpdateWMReceiptMappingData", "Query To Update the PO Receipt mapping date : " + strSQLstring);

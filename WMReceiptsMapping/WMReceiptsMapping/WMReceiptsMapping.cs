@@ -12,6 +12,7 @@ namespace WMReceiptsMapping
         static void Main(string[] args)
         {
             var strResponse = "";
+            string processFlag = " ";
 
             // InitializeLogger start here
 
@@ -28,8 +29,14 @@ namespace WMReceiptsMapping
             strResponse = objWMReceiptsMappingAPIAccess.postWMReceiptMappingData(m_oLogger);
             if (strResponse.ToUpper() == "SUCCESS")
             {
-                objWMReceiptsMappingDAL.UpdateWMReceiptMappingData(m_oLogger);
+                processFlag = "Y";
             }
+            else
+            {
+                processFlag = "E"; //error
+            }
+            objWMReceiptsMappingDAL.UpdateWMReceiptMappingData(m_oLogger, processFlag);
+
             m_oLogger.LogMessage("Main", "WMReceiptsMapping End");
         }
     }
