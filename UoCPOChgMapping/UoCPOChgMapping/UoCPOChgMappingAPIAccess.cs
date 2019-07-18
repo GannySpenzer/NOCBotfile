@@ -74,7 +74,11 @@ namespace UoCPOChgMapping
 
                 m_oLogger.LogMessage("getUoCPOChgMappingData", "Getting UoC POChg Mapping Data starts here");
                 dtResponse = objUoCPOChgMappingDAL.getUoCPOChgMappingData(m_oLogger);
-                if (dtResponse.Rows.Count != 0)
+                if (dtResponse.Rows.Count == 0)
+                {
+                    return strResponse;
+                }
+                else
                 {
 
                     for (int i = 0; i < dtResponse.Rows.Count; i++)
@@ -127,7 +131,7 @@ namespace UoCPOChgMapping
                             parRow = new UCSDIPO.UCSDIPO_POType();
 
                         }
-                        strlastPO  = PONUM ;
+                        strlastPO = PONUM;
 
                         if (iLineIndex == 0)
                         {
@@ -159,9 +163,9 @@ namespace UoCPOChgMapping
                         mxlong = new UCSDIPO.MXLongType();
                         mxlong.changed = true;
                         mxlong.changedSpecified = true;
-                        mxlong.Value = Convert.ToInt64 ( LINENUM);
+                        mxlong.Value = Convert.ToInt64(LINENUM);
                         parRowLine.POLINENUM = mxlong;
-                        
+
                         mxdate = new UCSDIPO.MXDateTimeType();
                         mxdate.changed = true;
                         mxdate.changedSpecified = true;
@@ -170,13 +174,13 @@ namespace UoCPOChgMapping
 
                         Array.Resize(ref parLine, iLineIndex + 1);
                         parLine[iLineIndex] = parRowLine;
-                        par[iRowIndex].POLINE = parLine ; 
+                        par[iRowIndex].POLINE = parLine;
 
                         iLineIndex += 1;
 
                     }
 
-                   //par[0] = parRow;
+                    //par[0] = parRow;
 
                 }
 

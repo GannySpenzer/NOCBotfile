@@ -22,7 +22,7 @@ namespace UoCPOChgMapping
         string OracleConString = ConfigurationManager.AppSettings["OLEDBconString"];
 
         /// <summary>
-        /// Get the purchase order data whose process flag is 'N' and cust id is 'UOC'
+        /// Get the purchase order data whose process flag is 'N' and cust id is 'UCHICAGO'
         /// </summary>
         /// <returns></returns>
         public DataTable getUoCPOChgMappingData(Logger m_oLogger)
@@ -51,7 +51,7 @@ namespace UoCPOChgMapping
         /// Update the process flag to I once the UOC service transaction successfully submited.
         /// </summary>
         /// <returns></returns>
-        public int UpdateUoCPOChgMappingData(Logger m_oLogger)
+        public int UpdateUoCPOChgMappingData(Logger m_oLogger, string procFlag)
         {
 
             DataTable dtResponse = new DataTable();
@@ -59,7 +59,7 @@ namespace UoCPOChgMapping
             try
             {
 
-                strSQLstring = "UPDATE sysadm8.PS_ISA_MXM_POCHG SET PROCESS_FLAG='Y', LAST_UPDATE_DTTM = SYSDATE WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'UCHICAGO'"; // AND ROWNUM < 2";
+                strSQLstring = "UPDATE sysadm8.PS_ISA_MXM_POCHG SET PROCESS_FLAG='" + procFlag + "', LAST_UPDATE_DTTM = SYSDATE WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'UCHICAGO'"; // AND ROWNUM < 2";
 
                 m_oLogger.LogMessage("UpdateUoCPOChgMappingData", "PeopleSoft connection string : " + OracleConString);
                 m_oLogger.LogMessage("UpdateUoCPOChgMappingData", "Query To Update the PO Chg mapping date : " + strSQLstring);

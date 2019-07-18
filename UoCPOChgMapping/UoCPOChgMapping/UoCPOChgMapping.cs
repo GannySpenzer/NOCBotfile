@@ -13,6 +13,7 @@ namespace UoCPOChgMapping
         {
 
             var strResponse = "";
+            string processFlag = " ";
 
             //return;
 
@@ -32,8 +33,14 @@ namespace UoCPOChgMapping
             strResponse = objUoCPOChgMappingAPIAccess.postUoCPOChgMappingData(m_oLogger);
             if (strResponse.ToUpper() == "SUCCESS")
             {
-                objUoCPOChgMappingDAL.UpdateUoCPOChgMappingData(m_oLogger);
+                processFlag = "Y";
             }
+            else
+            {
+                processFlag = "E"; //error
+            }
+            objUoCPOChgMappingDAL.UpdateUoCPOChgMappingData(m_oLogger, processFlag );
+
             m_oLogger.LogMessage("Main", "UoCPOChgMapping End");
 
         }
