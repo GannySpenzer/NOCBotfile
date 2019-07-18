@@ -23,7 +23,7 @@ namespace UoCMinMaxMapping
         string OracleConString = ConfigurationManager.AppSettings["OLEDBconString"];
 
         /// <summary>
-        /// Get the purchase order data whose process flag is 'N' and cust id is 'UOC'
+        /// Get the purchase order data whose process flag is 'N' and cust id is 'UCHICAGO'
         /// </summary>
         /// <returns></returns>
         public DataTable getUoCMinMaxMappingData(Logger m_oLogger)
@@ -34,7 +34,7 @@ namespace UoCMinMaxMapping
             {
 
                 //strSQLstring = "SELECT * FROM sysadm8.PS_ISA_O_MATR_MOVE WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'PMC' AND TRANS_TYPE = 'REC'";
-                strSQLstring = "SELECT * FROM sysadm8.PS_ISA_MXM_ITM_OUT WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'UOC'"; //AND ROWNUM < 2";
+                strSQLstring = "SELECT * FROM sysadm8.PS_ISA_MXM_ITM_OUT WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'UCHICAGO'"; //AND ROWNUM < 2";
                 m_oLogger.LogMessage("getUoCMinMaxMappingData", "PeopleSoft connection string : " + OracleConString);
                 m_oLogger.LogMessage("getUoCMinMaxMappingData", "Query To get the PO mapping date : " + strSQLstring);
                 dtResponse = oleDBExecuteReader(strSQLstring);
@@ -52,7 +52,7 @@ namespace UoCMinMaxMapping
         /// Update the process flag to Y once the UOC service transaction successfully submited.
         /// </summary>
         /// <returns></returns>
-        public int UpdateUoCMinMaxMappingData(Logger m_oLogger)
+        public int UpdateUoCMinMaxMappingData(Logger m_oLogger, string ProcFlag)
         {
 
             DataTable dtResponse = new DataTable();
@@ -60,7 +60,7 @@ namespace UoCMinMaxMapping
             try
             {
 
-                strSQLstring = "UPDATE SYSADM8.PS_ISA_MXM_ITM_OUT SET PROCESS_FLAG='Y', PROCESS_DTTM = SYSDATE WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'UOC'"; // AND ROWNUM < 2";
+                strSQLstring = "UPDATE SYSADM8.PS_ISA_MXM_ITM_OUT SET PROCESS_FLAG='" + ProcFlag + "', PROCESS_DTTM = SYSDATE WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'UCHICAGO'"; // AND ROWNUM < 2";
 
                 m_oLogger.LogMessage("UpdateUoCMinMaxMappingData", "PeopleSoft connection string : " + OracleConString);
                 m_oLogger.LogMessage("UpdateUoCMinMaxMappingData", "Query To Update the MinMax mapping date : " + strSQLstring);

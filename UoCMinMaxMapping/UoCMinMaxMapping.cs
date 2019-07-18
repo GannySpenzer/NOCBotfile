@@ -12,6 +12,7 @@ namespace UoCMinMaxMapping
         static void Main(string[] args)
         {
             var strResponse = "";
+            string processFlag = " ";
 
             //return;
  
@@ -30,8 +31,14 @@ namespace UoCMinMaxMapping
             strResponse = objUoCMinMaxMappingAPIAccess.postUoCMinMaxMappingData(m_oLogger);
             if (strResponse.ToUpper() == "SUCCESS")
             {
-                objUoCMinMaxMappingDAL.UpdateUoCMinMaxMappingData(m_oLogger);
+                processFlag = "Y";
             }
+            else
+            {
+                processFlag = "E"; //error
+            }
+            objUoCMinMaxMappingDAL.UpdateUoCMinMaxMappingData(m_oLogger, processFlag );
+
             m_oLogger.LogMessage("Main", "UoCMinMaxMapping End");
 
         }

@@ -65,125 +65,129 @@ namespace UoCMinMaxMapping
                 UoCMinMaxMappingDAL objUoCMinMaxMappingDAL = new UoCMinMaxMappingDAL();
                 m_oLogger.LogMessage("getUoCMinMaxMappingData", "Getting UoC MinMax Mapping Data starts here");
                 dtResponse = objUoCMinMaxMappingDAL.getUoCMinMaxMappingData(m_oLogger);
-                if (dtResponse.Rows.Count != 0)
+                if (dtResponse.Rows.Count == 0)
+                {
+                    return strResponse;
+                }
+                else
                 {
 
-                   for (int i = 0; i < dtResponse.Rows.Count; i++)
-                   {
+                    for (int i = 0; i < dtResponse.Rows.Count; i++)
+                    {
 
-                           parRow = new UCSDIINVENTORY.UCSDIINVENTORY_INVENTORYType(); //new
-                           parCostRow = new UCSDIINVENTORY.UCSDIINVENTORY_INVCOSTType(); //new
+                        parRow = new UCSDIINVENTORY.UCSDIINVENTORY_INVENTORYType(); //new
+                        parCostRow = new UCSDIINVENTORY.UCSDIINVENTORY_INVCOSTType(); //new
 
-                           DataRow rowInit;
-                           rowInit = dtResponse.Rows[i];
+                        DataRow rowInit;
+                        rowInit = dtResponse.Rows[i];
 
-                           string DOC_NUM = rowInit["ISA_IDENTIFIER"].ToString();
-                           DOC_NUM = DOC_NUM.PadLeft(14, '0');//i.e. "0000000000000004"
-                           string LOGDAT = System.DateTime.Now.ToString("yyyyMMdd");
-                           string LOGTIM = System.DateTime.Now.ToString("HHmmss");
-                           string SITEID = rowInit["PLANT"].ToString();
-                           //string REFMES = DOC_NUM; //rowInit["ISA_IDENTIFIER"].ToString();
-                           DateTime PSTNG_DATEcnv = Convert.ToDateTime(rowInit["ADD_DTTM"]);
-                           string PSTNG_DATE = PSTNG_DATEcnv.ToString("yyyyMMdd");
-                           string DOC_DATE = PSTNG_DATEcnv.ToString("yyyyMMdd");
-                           string REF_DOC_NO = DOC_NUM;                              //?
-                           //string GM_CODE = "01";
-                           string ITEMNUM = rowInit["ISA_ITEM"].ToString();
-                           //string PLANT = REFGRP;
-                           string LOCATION = rowInit["IN_STOR_LOCATION"].ToString();
-                           string MAXLEVEL = rowInit["QTY_MAXIMUM"].ToString();
-                           string MINLEVEL = rowInit["REORDER_POINT"].ToString();
-                           string ORDERQTY = rowInit["REORDER_QTY"].ToString();
-                           string ORDERUNIT = rowInit["ISA_CUSTOMER_UOM"].ToString();
-                           string AVGCOST = rowInit["TL_COST"].ToString();
+                        string DOC_NUM = rowInit["ISA_IDENTIFIER"].ToString();
+                        DOC_NUM = DOC_NUM.PadLeft(14, '0');//i.e. "0000000000000004"
+                        string LOGDAT = System.DateTime.Now.ToString("yyyyMMdd");
+                        string LOGTIM = System.DateTime.Now.ToString("HHmmss");
+                        string SITEID = rowInit["PLANT"].ToString();
+                        //string REFMES = DOC_NUM; //rowInit["ISA_IDENTIFIER"].ToString();
+                        DateTime PSTNG_DATEcnv = Convert.ToDateTime(rowInit["ADD_DTTM"]);
+                        string PSTNG_DATE = PSTNG_DATEcnv.ToString("yyyyMMdd");
+                        string DOC_DATE = PSTNG_DATEcnv.ToString("yyyyMMdd");
+                        string REF_DOC_NO = DOC_NUM;                              //?
+                        //string GM_CODE = "01";
+                        string ITEMNUM = rowInit["ISA_ITEM"].ToString();
+                        //string PLANT = REFGRP;
+                        string LOCATION = rowInit["IN_STOR_LOCATION"].ToString();
+                        string MAXLEVEL = rowInit["QTY_MAXIMUM"].ToString();
+                        string MINLEVEL = rowInit["REORDER_POINT"].ToString();
+                        string ORDERQTY = rowInit["REORDER_QTY"].ToString();
+                        string ORDERUNIT = rowInit["ISA_CUSTOMER_UOM"].ToString();
+                        string AVGCOST = rowInit["TL_COST"].ToString();
 
-                           //old method
-                           //using (StreamReader sr = new StreamReader(Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory())) + "/UoCMinMaxInventory.txt"))
-                           //{
-                           //    xmlStr = sr.ReadToEnd();
-                           //    sbInit.AppendFormat(xmlStr, ITEMNUM, LOCATION, MAXLEVEL, MINLEVEL, ORDERQTY, ORDERUNIT, SITEID, AVGCOST);
-                           //    xmlStringInit = sbInit.ToString() + carriagereturn;
-                           //}
+                        //old method
+                        //using (StreamReader sr = new StreamReader(Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory())) + "/UoCMinMaxInventory.txt"))
+                        //{
+                        //    xmlStr = sr.ReadToEnd();
+                        //    sbInit.AppendFormat(xmlStr, ITEMNUM, LOCATION, MAXLEVEL, MINLEVEL, ORDERQTY, ORDERUNIT, SITEID, AVGCOST);
+                        //    xmlStringInit = sbInit.ToString() + carriagereturn;
+                        //}
 
-                           //mxstring.Value = ITEMNUM;
-                           //par[iRowIndex].ITEMNUM = mxstring;
-                           //par[iRowIndex].ITEMSETID.Value  = "ITEMSET1";
-                           //par[iRowIndex].LOCATION.Value = LOCATION;
-                           //par[iRowIndex].MAXLEVEL.Value = Convert.ToDouble(MAXLEVEL);
-                           //par[iRowIndex].MINLEVEL.Value = Convert.ToDouble(MINLEVEL);
-                           //par[iRowIndex].ORDERQTY.Value = Convert.ToDouble(ORDERQTY);
-                           //par[iRowIndex].ORDERUNIT.Value = ORDERUNIT;
-                           //par[iRowIndex].SITEID.Value= SITEID;
-                           //parCost[iRowIndex].AVGCOST.Value = Convert.ToDouble(AVGCOST);
-                           //par[iRowIndex].INVCOST.SetValue(parCost,0);
+                        //mxstring.Value = ITEMNUM;
+                        //par[iRowIndex].ITEMNUM = mxstring;
+                        //par[iRowIndex].ITEMSETID.Value  = "ITEMSET1";
+                        //par[iRowIndex].LOCATION.Value = LOCATION;
+                        //par[iRowIndex].MAXLEVEL.Value = Convert.ToDouble(MAXLEVEL);
+                        //par[iRowIndex].MINLEVEL.Value = Convert.ToDouble(MINLEVEL);
+                        //par[iRowIndex].ORDERQTY.Value = Convert.ToDouble(ORDERQTY);
+                        //par[iRowIndex].ORDERUNIT.Value = ORDERUNIT;
+                        //par[iRowIndex].SITEID.Value= SITEID;
+                        //parCost[iRowIndex].AVGCOST.Value = Convert.ToDouble(AVGCOST);
+                        //par[iRowIndex].INVCOST.SetValue(parCost,0);
 
-                           mxstring = new UCSDIINVENTORY.MXStringType();
-                           mxstring.changed = true;
-                           mxstring.changedSpecified = true;
-                           mxstring.Value = ITEMNUM;
-                           parRow.ITEMNUM = mxstring;
+                        mxstring = new UCSDIINVENTORY.MXStringType();
+                        mxstring.changed = true;
+                        mxstring.changedSpecified = true;
+                        mxstring.Value = ITEMNUM;
+                        parRow.ITEMNUM = mxstring;
 
-                           mxstring = new UCSDIINVENTORY.MXStringType();
-                           mxstring.changed = true;
-                           mxstring.changedSpecified = true;
-                           mxstring.Value = "ITEMSET1";
-                           parRow.ITEMSETID = mxstring;
+                        mxstring = new UCSDIINVENTORY.MXStringType();
+                        mxstring.changed = true;
+                        mxstring.changedSpecified = true;
+                        mxstring.Value = "ITEMSET1";
+                        parRow.ITEMSETID = mxstring;
 
-                           mxstring = new UCSDIINVENTORY.MXStringType();
-                           mxstring.changed = true;
-                           mxstring.changedSpecified = true;
-                           mxstring.Value = LOCATION;
-                           parRow.LOCATION = mxstring;
+                        mxstring = new UCSDIINVENTORY.MXStringType();
+                        mxstring.changed = true;
+                        mxstring.changedSpecified = true;
+                        mxstring.Value = LOCATION;
+                        parRow.LOCATION = mxstring;
 
-                           mxdouble = new UCSDIINVENTORY.MXDoubleType();
-                           mxdouble.Value = Convert.ToDouble(MAXLEVEL);
-                           mxdouble.changed = true;
-                           mxdouble.changedSpecified = true;
-                           parRow.MAXLEVEL = mxdouble;
+                        mxdouble = new UCSDIINVENTORY.MXDoubleType();
+                        mxdouble.Value = Convert.ToDouble(MAXLEVEL);
+                        mxdouble.changed = true;
+                        mxdouble.changedSpecified = true;
+                        parRow.MAXLEVEL = mxdouble;
 
-                           mxdouble = new UCSDIINVENTORY.MXDoubleType();
-                           mxdouble.Value = Convert.ToDouble(MINLEVEL);
-                           mxdouble.changed = true;
-                           mxdouble.changedSpecified = true;
-                           parRow.MINLEVEL = mxdouble;
+                        mxdouble = new UCSDIINVENTORY.MXDoubleType();
+                        mxdouble.Value = Convert.ToDouble(MINLEVEL);
+                        mxdouble.changed = true;
+                        mxdouble.changedSpecified = true;
+                        parRow.MINLEVEL = mxdouble;
 
-                           mxdouble = new UCSDIINVENTORY.MXDoubleType();
-                           mxdouble.Value = Convert.ToDouble(ORDERQTY);
-                           mxdouble.changed = true;
-                           mxdouble.changedSpecified = true;
-                           parRow.ORDERQTY = mxdouble;
+                        mxdouble = new UCSDIINVENTORY.MXDoubleType();
+                        mxdouble.Value = Convert.ToDouble(ORDERQTY);
+                        mxdouble.changed = true;
+                        mxdouble.changedSpecified = true;
+                        parRow.ORDERQTY = mxdouble;
 
-                           mxstring = new UCSDIINVENTORY.MXStringType();
-                           mxstring.Value = ORDERUNIT;
-                           mxstring.changed = true;
-                           mxstring.changedSpecified = true;
-                           parRow.ORDERUNIT = mxstring;
+                        mxstring = new UCSDIINVENTORY.MXStringType();
+                        mxstring.Value = ORDERUNIT;
+                        mxstring.changed = true;
+                        mxstring.changedSpecified = true;
+                        parRow.ORDERUNIT = mxstring;
 
-                           mxstring = new UCSDIINVENTORY.MXStringType();
-                           mxstring.Value = SITEID;
-                           mxstring.changed = true;
-                           mxstring.changedSpecified = true;
-                           parRow.SITEID = mxstring;
+                        mxstring = new UCSDIINVENTORY.MXStringType();
+                        mxstring.Value = SITEID;
+                        mxstring.changed = true;
+                        mxstring.changedSpecified = true;
+                        parRow.SITEID = mxstring;
 
-                           mxdouble = new UCSDIINVENTORY.MXDoubleType();
-                           mxdouble.changed = true;
-                           mxdouble.changedSpecified = true;
-                           mxdouble.Value = Convert.ToDouble(AVGCOST);
-                           parCostRow.AVGCOST = mxdouble;
-                           Array.Resize(ref parCost, 1); //iRowIndex + 1);
-                           parCost = new UCSDIINVENTORY.UCSDIINVENTORY_INVCOSTType[1]; //new
-                           parCost[0] = parCostRow;
-                           parRow.INVCOST = parCost;
-                           //parRow.INVCOST.SetValue(parCost, 0);
+                        mxdouble = new UCSDIINVENTORY.MXDoubleType();
+                        mxdouble.changed = true;
+                        mxdouble.changedSpecified = true;
+                        mxdouble.Value = Convert.ToDouble(AVGCOST);
+                        parCostRow.AVGCOST = mxdouble;
+                        Array.Resize(ref parCost, 1); //iRowIndex + 1);
+                        parCost = new UCSDIINVENTORY.UCSDIINVENTORY_INVCOSTType[1]; //new
+                        parCost[0] = parCostRow;
+                        parRow.INVCOST = parCost;
+                        //parRow.INVCOST.SetValue(parCost, 0);
 
-                           Array.Resize(ref par, iRowIndex+1);
+                        Array.Resize(ref par, iRowIndex + 1);
 
-                           par[iRowIndex] =  parRow; 
-                           //parCost[iRowIndex] = new UCSDIINVENTORY.UCSDIINVENTORY_INVCOSTType(); //new
+                        par[iRowIndex] = parRow;
+                        //parCost[iRowIndex] = new UCSDIINVENTORY.UCSDIINVENTORY_INVCOSTType(); //new
 
-                           iRowIndex += 1;
+                        iRowIndex += 1;
 
-                   }
+                    }
                 }
 
                 //old method
