@@ -35,7 +35,7 @@ Public Class QuoteNonStockProcessor
     Private Const LETTER_CONTENT As String = "<p style=""TEXT-INDENT: 25pt"">" & _
                                              "The above referenced order contains items that required a price " & _
                                              "quote before processing.&nbsp;&nbsp;To view the quoted price either " & _
-                                             "click the link below or select the ""Requestor Approval"" menu option " & _
+                                             "click the link or select the ""Requestor Approval"" menu option " & _
                                              "in In-Site&reg; Online to approve or decline the order." & _
                                              "<br></p>Sincerely,</p>" & _
                                              "<p>SDI Customer Care</p>"
@@ -43,7 +43,7 @@ Public Class QuoteNonStockProcessor
     Private Const LETTER_CONTENT_SDiExchange As String = "<p style=""TEXT-INDENT: 25pt"">" & _
                                              "The above referenced order contains items that required a price " & _
                                              "quote before processing.&nbsp;&nbsp;To view the quoted price either " & _
-                                             "click the link below or select the ""Requestor Approval"" menu option " & _
+                                             "click the link or select the ""Requestor Approval"" menu option " & _
                                              "in SDiExchange to approve or decline the order." & _
                                              "<br></p>Sincerely,</p>" & _
                                              "<p>SDI Customer Care</p>"
@@ -417,57 +417,6 @@ Public Class QuoteNonStockProcessor
 
                     dr("LN") = CType(dataRowMain("ISA_INTFC_LN"), String).Trim()
 
-                    'Dim strCplusItemid As String = String.Empty
-                    'If IsDBNull(dr("Manuf.")) And Not String.IsNullOrEmpty(dr("Item ID").ToString()) Then
-                    '    Try
-                    '        Dim strSQLString As String = "SELECT A.ISA_CP_PROD_ID" & vbCrLf & _
-                    '                                     " FROM PS_ISA_CP_JUNCTION A" & vbCrLf & _
-                    '                                     " WHERE A.INV_ITEM_ID = '" & dr("Item ID") & "'"
-                    '        Dim OrcRdr1 As OleDb.OleDbDataReader = GetReader(strSQLString)
-                    '        If OrcRdr1.HasRows Then
-                    '            Try
-                    '                OrcRdr1.Read()
-                    '                strCplusItemid = OrcRdr1.GetString(0)
-                    '            Catch ex As Exception
-                    '                strCplusItemid = ""
-                    '            End Try
-                    '        End If
-                    '    Catch ex As Exception
-                    '        strCplusItemid = ""
-                    '    End Try
-                    '    If strCplusItemid.Trim.Length > 0 Then
-                    '        If Convert.ToInt32(strCplusItemid) > 0 Then
-                    '            Dim strSQLstring As String
-                    '            strSQLstring = "SELECT ScottsDaleItemTable.manufacturerPartNumber," & vbCrLf & _
-                    '                            " ScottsDaleItemTable.manufacturerName," & vbCrLf & _
-                    '                            " ScottsDaleItemTable.shippableUnitOfMeasure," & vbCrLf & _
-                    '                            " classes.classname" & vbCrLf & _
-                    '                            " FROM ScottsDaleItemTable, classes" & vbCrLf & _
-                    '                            " WHERE ScottsDaleItemTable.ItemID = " & strCplusItemid.Trim() & vbCrLf & _
-                    '                            " AND ScottsDaleItemTable.classid = classes.classid"
-                    '            SqlRdr = GetSQLReaderDazzle(strSQLstring)
-                    '            If SqlRdr.Read() Then
-                    '                If IsDBNull(SqlRdr.Item("manufacturerName")) Then
-                    '                    dr("Manuf.") = " "
-                    '                Else
-                    '                    dr("Manuf.") = SqlRdr.Item("manufacturerName")
-                    '                End If
-
-                    '                If IsDBNull(SqlRdr.Item("manufacturerPartNumber")) Then
-                    '                    dr("Manuf. Partnum") = " "
-                    '                Else
-                    '                    dr("Manuf. Partnum") = SqlRdr.Item("manufacturerPartNumber")
-                    '                End If
-                    '                If IsDBNull(SqlRdr.Item("shippableUnitOfMeasure")) Then
-                    '                    dr("UOM") = " "
-                    '                Else
-                    '                    dr("UOM") = SqlRdr.Item("shippableUnitOfMeasure")
-                    '                End If
-                    '            End If
-                    '        End If
-                    '    End If
-                    'End If
-
                     dstcart.Rows.Add(dr)
                 Next
             End If
@@ -558,7 +507,7 @@ Public Class QuoteNonStockProcessor
                             Else
                                 SendMessages(itmQuoted)
                             End If
-                            
+
                         Else
                             If itmQuoted.ApprovalLimit > 0 Then
                                 If TtlPrice > itmQuoted.ApprovalLimit Then
@@ -569,7 +518,7 @@ Public Class QuoteNonStockProcessor
                             Else
                                 PriceUpdate(itmQuoted.OrderID, "QTW")
                             End If
-                            
+
                             UpdateReqEmailLog(itmQuoted)
                             buildNotifyApprover(itmQuoted)
                         End If
@@ -755,7 +704,7 @@ Public Class QuoteNonStockProcessor
                 DbUrl.Substring(DbUrl.Length - 4).ToUpper = "RPTG" Or _
                 DbUrl.Substring(DbUrl.Length - 4).ToUpper = "PLGR" Or _
                 DbUrl.Substring(DbUrl.Length - 4).ToUpper = "DEVL" Then
-                EmailTo = "webdev@sdi.com;SDIportalsupport@avasoft.biz"
+                EmailTo = "webdev@sdi.com;avacorp@sdi.com"
             End If
 
             SDIEmailService.EmailUtilityServices(MailType, "SDIExchADMIN@sdi.com", EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
@@ -985,7 +934,7 @@ Public Class QuoteNonStockProcessor
                     If Trim(priceBlock) = "" Then
                         priceBlock = "N"
                     End If
-                    
+
                     boItem.PriceBlockFlag = priceBlock
                     'Session("PriceBlockFlag") = boItem.PriceBlockFlag
 
@@ -1269,7 +1218,7 @@ Public Class QuoteNonStockProcessor
 
     End Function
 
-    Public Shared Function GetURL() As String
+    Public Shared Function GetURL(ByVal strBU As String) As String
         Dim sRet As String = ""
         Dim sWebAppName As String = "ims.sdi.com:8080/sdiconnect/"
         Dim sCNString As String = m_CN.ConnectionString
@@ -1286,16 +1235,50 @@ Public Class QuoteNonStockProcessor
             sWebAppName = "ims.sdi.com:8080/sdiconnect/"
         End Try
 
-        Select Case strDBase
-            Case "PROD"
-                sRet = "https://www.sdiexchange.com/"
-            Case "STAR", "PLGR"
-                sRet = "https://sdix92.sdi.com/"
-            Case Else
-                sRet = "http://" & sWebAppName
-        End Select
+        Dim strZeusChk As String = String.Empty
+        strZeusChk = ChkZeusSite(strBU)
+        If Not String.IsNullOrEmpty(strZeusChk) Then
+            Select Case strDBase
+                Case "PROD"
+                    sRet = "https://www.sdizeus.com/"
+                Case Else
+                    sRet = "http://zeustest.sdi.com/"
+            End Select
+        Else
+            Select Case strDBase
+                Case "PROD"
+                    sRet = "https://www.sdiexchange.com/"
+                Case "STAR", "PLGR"
+                    sRet = "https://sdix92.sdi.com/"
+                Case Else
+                    sRet = "http://" & sWebAppName
+            End Select
+        End If
+
 
         Return sRet
+    End Function
+
+    Public Shared Function ChkZeusSite(ByVal strBU As String) As String
+        Dim strZeusChk As String = String.Empty
+        Try
+            Dim strQueryChkZeus As String = "SELECT * FROM PS_ISA_ENTERPRISE WHERE ZEUS_SITE = 'Y' AND ISA_BUSINESS_UNIT = '" & strBU & "'"
+            Dim ZeusChk As DataSet = ORDBData.GetAdapter(strQueryChkZeus)
+
+            If Not ZeusChk Is Nothing Then
+                If ZeusChk.Tables(0).Rows.Count > 0 Then
+                    strZeusChk = "Y"
+                Else
+                    strZeusChk = ""
+                End If
+            Else
+                strZeusChk = ""
+            End If
+
+        Catch ex As Exception
+            strZeusChk = ""
+        End Try
+        Return strZeusChk
     End Function
 
     Private Sub CheckSearchPrimaryRecipient()
@@ -1481,7 +1464,7 @@ Public Class QuoteNonStockProcessor
                         eml.To = Trim(eml.To) & ";"
                     End If
                 End If
-                
+
                 If m_extendedTO.Count > 0 Then
                     For Each sTo As String In m_extendedTO
                         If Utility.IsValidEmailAdd(sTo) Then
@@ -1591,228 +1574,508 @@ Public Class QuoteNonStockProcessor
                 Dim PI As String = String.Empty
                 Dim ContentSDI As String = String.Empty
                 Dim Content As String = String.Empty
-                If bIsPunchInBU Then
-                    If bIsBusUnitSDiExch Then
-                        'SdiExchange
-                        If IsAscend(itmQuoted.BusinessUnitOM) Then
-                            'PI_SDI = LETTER_CONTENT_PI_SDiExchange.Replace("Requestor Approval", "Approve Quotes (Ascend)")
-                            bShowWorkOrderNo = True
-                        Else
-                        End If
-                        PI_SDI = LETTER_CONTENT_PI_SDiExchange
-                        eml.Body = "<HTML>" & _
-                                    "<HEAD></HEAD>" & _
-                                    "<BODY>" & _
-                                        AddNoRecepientExistNote(eml.To) & _
-                                        LETTER_HEAD_SdiExch & _
-                                        FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder) & _
-                                        PositionGrid(dataGridHTML) & _
-                                        PI_SDI & _
-                                        AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
-                                        AddVersionNumber() & _
-                                        "<HR width='100%' SIZE='1'>" & _
-                                        "<img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
-                                    "</BODY>" & _
-                               "</HTML>"
-                    Else
-                        'InsiteOnline
-                        If IsAscend(itmQuoted.BusinessUnitOM) Then
-                            PI = LETTER_CONTENT_PI.Replace("Requestor Approval", "Approve Quotes (Ascend)")
-                            bShowWorkOrderNo = True
-                        Else
-                            PI = LETTER_CONTENT_PI
-                        End If
-                        eml.Body = "<HTML>" & _
-                                        "<HEAD></HEAD>" & _
-                                        "<BODY>" & _
-                                            AddNoRecepientExistNote(eml.To) & _
-                                            LETTER_HEAD & _
-                                            FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder) & _
-                                            PositionGrid(dataGridHTML) & _
-                                            PI & _
-                                            AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
-                                            AddVersionNumber() & _
-                                            "<HR width='100%' SIZE='1'>" & _
-                                            "<img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
-                                        "</BODY>" & _
-                                   "</HTML>"
-                    End If
 
-                Else
-                    If bIsBusUnitSDiExch Then
-                        bShowApproveViaEmailLink = True
-                        'SdiExchange
-                        If IsAscend(itmQuoted.BusinessUnitOM) Then
-                            'ContentSDI = LETTER_CONTENT_SDiExchange.Replace("Requestor Approval", "Approve Quotes (Ascend)")
-                            bShowWorkOrderNo = True
-                        Else
-                        End If
-                        ContentSDI = LETTER_CONTENT_SDiExchange
-                        eml.Body = "<HTML>" & _
-                                    "<HEAD></HEAD>" & _
-                                    "<BODY>" & _
-                                        AddNoRecepientExistNote(eml.To) & _
-                                        LETTER_HEAD_SdiExch & _
-                                        FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder) &
-                                        PositionGrid(dataGridHTML) & _
-                                        ContentSDI & _
-                                        FormHTMLLinkSDiExchange(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, bShowApproveViaEmailLink) & _
-                                        AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
-                                        AddVersionNumber() & _
-                                        "<HR width='100%' SIZE='1'>" & _
-                                            "<img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
-                                    "</BODY>" & _
-                               "</HTML>"
-                    Else
-                        'InsiteOnline
-                        If IsAscend(itmQuoted.BusinessUnitOM) Then
-                            Content = LETTER_CONTENT.Replace("Requestor Approval", "Approve Quotes (Ascend)")
-                            bShowWorkOrderNo = True
-                        Else
-                            Content = LETTER_CONTENT
-                        End If
-                        eml.Body = "<HTML>" & _
-                                        "<HEAD></HEAD>" & _
-                                        "<BODY>" & _
-                                            AddNoRecepientExistNote(eml.To) & _
-                                            LETTER_HEAD & _
-                                            FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder) & _
-                                            PositionGrid(dataGridHTML) & _
-                                            Content & _
-                                            FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, bShowApproveViaEmailLink) & _
-                                            AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
-                                            AddVersionNumber() & _
-                                            "<HR width='100%' SIZE='1'>" & _
-                                            "<img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
-                                        "</BODY>" & _
-                                   "</HTML>"
-                    End If
-
+                Dim Apprlst As New List(Of String)
+                Dim FullName_str As String = ""
+                Dim setAltApproverID As String
+                Apprlst.Add(itmQuoted.EmployeeID)
+                'Check for the Req Alternate appr is Availiable
+                setAltApproverID = GetReqAltApprover(itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, "ReqAltApproverUserID")
+                If Not String.IsNullOrWhiteSpace(setAltApproverID) Then
+                    Apprlst.Add("&REQ&" + setAltApproverID)
                 End If
 
-                cHdr = cHdr & "VR End my code.  'eml.Body' is: " & eml.Body.ToString()
-                ' we need to check for a blank TO field and should return (send) this
-                ' auto mail to the sender's attention.  Besides we already added the notice for
-                ' the body of message
-                If Not (eml.To.Trim.Length > 0) Then
-                    eml.To = eml.From
-                End If
-
-                ' check if there's no valid recepient still, then we need to send this to 
-                '   the default "no valid recepient" recepient based off of our config file.
-                If Not (eml.To.Trim.Length > 0) Then
-                    If m_defaultToRecepient.Count > 0 Then
-                        If Trim(eml.To) <> "" Then
-                            If Right(Trim(eml.To), 1) = ";" Then
-                                ' OK, do nothing
+                If Apprlst.Count > 1 Then
+                    For Each strApprID As String In Apprlst
+                        If strApprID.StartsWith("&REQ&") Then
+                            FullName_str = GetUN(strApprID.ToUpper, "GetUN")
+                        End If
+                        If bIsPunchInBU Then
+                            If bIsBusUnitSDiExch Then
+                                'SdiExchange
+                                If IsAscend(itmQuoted.BusinessUnitOM) Then
+                                    'PI_SDI = LETTER_CONTENT_PI_SDiExchange.Replace("Requestor Approval", "Approve Quotes (Ascend)")
+                                    bShowWorkOrderNo = True
+                                Else
+                                End If
+                                PI_SDI = LETTER_CONTENT_PI_SDiExchange
+                                eml.Body = "<HTML>" & _
+                                            "<HEAD></HEAD>" & _
+                                            "<BODY>" & _
+                                                AddNoRecepientExistNote(eml.To) & _
+                                                LETTER_HEAD_SdiExch & _
+                                                FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, FullName_str, bShowWorkOrderNo, sWorkOrder) & _
+                                                PositionGrid(dataGridHTML) & _
+                                                PI_SDI & _
+                                                AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
+                                                AddVersionNumber() & _
+                                                "<HR width='100%' SIZE='1'>" & _
+                                                "<img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
+                                            "</BODY>" & _
+                                       "</HTML>"
                             Else
-                                eml.To = Trim(eml.To) & ";"
+                                'InsiteOnline
+                                If IsAscend(itmQuoted.BusinessUnitOM) Then
+                                    PI = LETTER_CONTENT_PI.Replace("Requestor Approval", "Approve Quotes (Ascend)")
+                                    bShowWorkOrderNo = True
+                                Else
+                                    PI = LETTER_CONTENT_PI
+                                End If
+                                eml.Body = "<HTML>" & _
+                                                "<HEAD></HEAD>" & _
+                                                "<BODY>" & _
+                                                    AddNoRecepientExistNote(eml.To) & _
+                                                    LETTER_HEAD & _
+                                                    FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, FullName_str, bShowWorkOrderNo, sWorkOrder) & _
+                                                    PositionGrid(dataGridHTML) & _
+                                                    PI & _
+                                                    AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
+                                                    AddVersionNumber() & _
+                                                    "<HR width='100%' SIZE='1'>" & _
+                                                    "<img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
+                                                "</BODY>" & _
+                                           "</HTML>"
+                            End If
+
+                        Else
+                            If bIsBusUnitSDiExch Then
+                                bShowApproveViaEmailLink = True
+                                'SdiExchange
+                                If IsAscend(itmQuoted.BusinessUnitOM) Then
+                                    'ContentSDI = LETTER_CONTENT_SDiExchange.Replace("Requestor Approval", "Approve Quotes (Ascend)")
+                                    bShowWorkOrderNo = True
+                                Else
+                                End If
+                                ContentSDI = LETTER_CONTENT_SDiExchange
+                                eml.Body = "<HTML>" & _
+                                            "<HEAD></HEAD>" & _
+                                            "<BODY>" & _
+                                                AddNoRecepientExistNote(eml.To) & _
+                                                LETTER_HEAD_SdiExch & _
+                                                FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, FullName_str, bShowWorkOrderNo, sWorkOrder) &
+                                                PositionGrid(dataGridHTML) & _
+                                                ContentSDI & _
+                                                AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
+                                                AddVersionNumber() & _
+                                                "<HR width='100%' SIZE='1'>" & _
+                                                    "<img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
+                                            "</BODY>" & _
+                                       "</HTML>"
+                                Dim strLink As String = FormHTMLLinkSDiExchange(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, strApprID, bShowApproveViaEmailLink)
+                                eml.Body = eml.Body.Replace("link", strLink)
+                            Else
+                                'InsiteOnline
+                                If IsAscend(itmQuoted.BusinessUnitOM) Then
+                                    Content = LETTER_CONTENT.Replace("Requestor Approval", "Approve Quotes (Ascend)")
+                                    bShowWorkOrderNo = True
+                                Else
+                                    Content = LETTER_CONTENT
+                                End If
+                                eml.Body = "<HTML>" & _
+                                                "<HEAD></HEAD>" & _
+                                                "<BODY>" & _
+                                                    AddNoRecepientExistNote(eml.To) & _
+                                                    LETTER_HEAD & _
+                                                    FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, FullName_str, bShowWorkOrderNo, sWorkOrder) & _
+                                                    PositionGrid(dataGridHTML) & _
+                                                    Content & _
+                                                    AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
+                                                    AddVersionNumber() & _
+                                                    "<HR width='100%' SIZE='1'>" & _
+                                                    "<img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
+                                                "</BODY>" & _
+                                           "</HTML>"
+                                Dim strLink As String = FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, strApprID, bShowApproveViaEmailLink)
+                                eml.Body = eml.Body.Replace("link", strLink)
+                            End If
+
+                        End If
+
+                        If strApprID.StartsWith("&REQ&") Then
+                            If eml.Body.Contains("The above referenced order") Then
+                                eml.Body = eml.Body.Replace("The above referenced order", "The above referenced order requested by <b>'" & itmQuoted.Addressee & "'</b> ")
                             End If
                         End If
-                        For Each sTo As String In m_defaultToRecepient
-                            If Utility.IsValidEmailAdd(sTo) Then
-                                eml.To &= sTo & ";"
+
+                        cHdr = cHdr & "VR End my code.  'eml.Body' is: " & eml.Body.ToString()
+                        ' we need to check for a blank TO field and should return (send) this
+                        ' auto mail to the sender's attention.  Besides we already added the notice for
+                        ' the body of message
+                        If Not (eml.To.Trim.Length > 0) Then
+                            eml.To = eml.From
+                        End If
+
+                        ' check if there's no valid recepient still, then we need to send this to 
+                        '   the default "no valid recepient" recepient based off of our config file.
+                        If Not (eml.To.Trim.Length > 0) Then
+                            If m_defaultToRecepient.Count > 0 Then
+                                If Trim(eml.To) <> "" Then
+                                    If Right(Trim(eml.To), 1) = ";" Then
+                                        ' OK, do nothing
+                                    Else
+                                        eml.To = Trim(eml.To) & ";"
+                                    End If
+                                End If
+                                For Each sTo As String In m_defaultToRecepient
+                                    If Utility.IsValidEmailAdd(sTo) Then
+                                        eml.To &= sTo & ";"
+                                    End If
+                                Next
                             End If
-                        Next
-                    End If
-                End If
+                        End If
 
-                ' email is of HTML format
-                eml.BodyFormat = Web.Mail.MailFormat.Html
+                        ' email is of HTML format
+                        eml.BodyFormat = Web.Mail.MailFormat.Html
 
-                ' quick fix for Ascend
-                '   take off CC since Ascend orders were being put in into INTFC table as "ASCENDCA" and it's email address is the CC
-                '   that customer is complaining about - erwin 2014.04.29
-                If (itmQuoted.OrderOrigin = "RFQ") Then
-                    eml.Cc = ""
-                End If
+                        ' quick fix for Ascend
+                        '   take off CC since Ascend orders were being put in into INTFC table as "ASCENDCA" and it's email address is the CC
+                        '   that customer is complaining about - erwin 2014.04.29
+                        If (itmQuoted.OrderOrigin = "RFQ") Then
+                            eml.Cc = ""
+                        End If
 
-                Dim sCNString As String = m_CN.ConnectionString
-                Dim strDBase As String = "STAR"
-                If Len(sCNString) > 4 Then
-                    strDBase = UCase(Right(sCNString, 4))
-                End If
+                        Dim sCNString As String = m_CN.ConnectionString
+                        Dim strDBase As String = "STAR"
+                        If Len(sCNString) > 4 Then
+                            strDBase = UCase(Right(sCNString, 4))
+                        End If
 
-                Select Case strDBase
-                    Case "STAR", "PLGR", "RPTG", "DEVL"
-                        eml.Subject = " TEST SDIX92 - " & eml.Subject
-                        eml.To = "webdev@sdi.com;Benjamin.Heinzerling@sdi.com;SDIportalsupport@avasoft.biz"
-                        eml.Cc = "webdev@sdi.com;Benjamin.Heinzerling@sdi.com;SDIportalsupport@avasoft.biz"
-                    Case Else
+                        Select Case strDBase
+                            Case "STAR", "PLGR", "RPTG", "DEVL"
+                                eml.Subject = " TEST SDIX92 - " & eml.Subject
+                                'eml.To = "avacorp@sdi.com"
+                                eml.Cc = ""
+                            Case Else
 
-                End Select
+                        End Select
 
-                ' send this email
-                Try
+                        'Get the Requestor Approver email id and  set the value in To address
+                        Dim strApproverEmailID = String.Empty
+                        Try
+                            If strApprID.StartsWith("&REQ&") Then
+                                strApproverEmailID = GetReqAltApprover(itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, "ReqAltApproverEmailID")
+                                If Not String.IsNullOrWhiteSpace(strApproverEmailID) Then
+                                    eml.To = strApproverEmailID
+                                End If
+                            End If
+                        Catch ex As Exception
 
-                    SendLogger(eml.Subject, eml.Body, "QUOTEAPPROVAL", "Mail", eml.To, eml.Cc, eml.Bcc)
-                Catch ex As Exception
+                        End Try
 
-                End Try
 
-                ' build insert SQL command
-                cSQL = _
-                "INSERT INTO PS_ISA_REQ_EML_LOG " & _
-                "(BUSINESS_UNIT, REQ_ID, ISA_RECIPIENT, ISA_SENDER, ISA_SUBJECT, EMAIL_DATETIME) " & _
-                "VALUES " & _
-                "(" & _
-                    "'" & CType(IIf(itmQuoted.BusinessUnitID.Length > 0, itmQuoted.BusinessUnitID, "."), String) & "', " & _
-                    "'" & CType(IIf(itmQuoted.OrderID.Length > 0, itmQuoted.OrderID, "."), String) & "', " & _
-                    "'" & "TO=" & eml.To & "CC=" & eml.Cc & "BCC=" & eml.Bcc & "', " & _
-                    "'" & CType(IIf(eml.From.Length > 0, eml.From, "."), String) & "', " & _
-                    "'" & CType(IIf(eml.Subject.Length > 0, eml.Subject, "."), String) & "', " & _
-                    "TO_DATE('" & System.DateTime.Now.ToString & "','MM/DD/YYYY HH:MI:SS AM') " & _
-                ")"
+                        ' send this email
+                        Try
 
-                If m_CN.State = ConnectionState.Open Then
+                            SendLogger(eml.Subject, eml.Body, "QUOTEAPPROVAL", "Mail", eml.To, eml.Cc, eml.Bcc)
+                        Catch ex As Exception
 
+                        End Try
+
+                        ' build insert SQL command
+                        cSQL = _
+                        "INSERT INTO PS_ISA_REQ_EML_LOG " & _
+                        "(BUSINESS_UNIT, REQ_ID, ISA_RECIPIENT, ISA_SENDER, ISA_SUBJECT, EMAIL_DATETIME) " & _
+                        "VALUES " & _
+                        "(" & _
+                            "'" & CType(IIf(itmQuoted.BusinessUnitID.Length > 0, itmQuoted.BusinessUnitID, "."), String) & "', " & _
+                            "'" & CType(IIf(itmQuoted.OrderID.Length > 0, itmQuoted.OrderID, "."), String) & "', " & _
+                            "'" & "TO=" & eml.To & "CC=" & eml.Cc & "BCC=" & eml.Bcc & "', " & _
+                            "'" & CType(IIf(eml.From.Length > 0, eml.From, "."), String) & "', " & _
+                            "'" & CType(IIf(eml.Subject.Length > 0, eml.Subject, "."), String) & "', " & _
+                            "TO_DATE('" & System.DateTime.Now.ToString & "','MM/DD/YYYY HH:MI:SS AM') " & _
+                        ")"
+
+                        If m_CN.State = ConnectionState.Open Then
+
+                        Else
+                            m_CN.Open()
+                        End If
+                        ' create a new instance of the command object
+                        cmd = New OleDbCommand(cmdText:=cSQL, connection:=m_CN)
+                        cmd.CommandType = CommandType.Text
+
+                        ' execute SQL statement againts the connection object
+                        Try
+                            cmd.ExecuteNonQuery()
+                        Catch ex As Exception
+                            'm_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+                            Try
+                                m_CN.Close()
+                            Catch exErr2 As Exception
+
+                            End Try
+                            m_logger.WriteVerboseLog(cHdr & ".  Error:  " & ex.ToString)
+                        End Try
+
+                        ' this code is for UNCC buyer tracking purposes
+                        '   let's create a copy and send it to sender.
+                        '   - erwin 20081022
+                        Try
+                            ' look for this email address for the sender - FacilityMaintNonStoc@sdi.com
+                            '   recipient will be sender, CC will be blank, but BCC will stay as is
+                            If eml.From.ToUpper.IndexOf("FACILITYMAINTNONSTOC") > -1 Then
+                                eml.To = eml.From
+                                eml.Cc = ""
+                                eml.Subject &= " (copy)"
+                                ''System.Web.Mail.SmtpMail.Send(message:=eml)
+                                ''SDIEmailService.EmailUtilityServices("MailandStore", "madhuvanthy.u@avasoft.biz", "madhuvanthy.u@avasoft.biz", eml.Subject, String.Empty, String.Empty, eml.Body, "SDIERR", MailAttachmentName, MailAttachmentbytes.ToArray())
+                                SendLogger(eml.Subject, eml.Body, "QUOTEAPPROVAL", "Mail", eml.To, eml.Cc, eml.Bcc)
+                            End If
+                        Catch ex As Exception
+                            ' just ignore
+                        End Try
+                        'Next
+
+                        If Not (cmd Is Nothing) Then
+                            cmd.Dispose()
+                        End If
+                        Try
+                            m_CN.Close()
+                        Catch ex111 As Exception
+
+                        End Try
+                    Next
                 Else
-                    m_CN.Open()
-                End If
-                ' create a new instance of the command object
-                cmd = New OleDbCommand(cmdText:=cSQL, connection:=m_CN)
-                cmd.CommandType = CommandType.Text
+                    'If Not contains Req Alt appr
+                    If bIsPunchInBU Then
+                        If bIsBusUnitSDiExch Then
+                            'SdiExchange
+                            If IsAscend(itmQuoted.BusinessUnitOM) Then
+                                'PI_SDI = LETTER_CONTENT_PI_SDiExchange.Replace("Requestor Approval", "Approve Quotes (Ascend)")
+                                bShowWorkOrderNo = True
+                            Else
+                            End If
+                            PI_SDI = LETTER_CONTENT_PI_SDiExchange
+                            eml.Body = "<HTML>" & _
+                                        "<HEAD></HEAD>" & _
+                                        "<BODY>" & _
+                                            AddNoRecepientExistNote(eml.To) & _
+                                            LETTER_HEAD_SdiExch & _
+                                            FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, FullName_str, bShowWorkOrderNo, sWorkOrder) & _
+                                            PositionGrid(dataGridHTML) & _
+                                            PI_SDI & _
+                                            AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
+                                            AddVersionNumber() & _
+                                            "<HR width='100%' SIZE='1'>" & _
+                                            "<img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
+                                        "</BODY>" & _
+                                   "</HTML>"
+                        Else
+                            'InsiteOnline
+                            If IsAscend(itmQuoted.BusinessUnitOM) Then
+                                PI = LETTER_CONTENT_PI.Replace("Requestor Approval", "Approve Quotes (Ascend)")
+                                bShowWorkOrderNo = True
+                            Else
+                                PI = LETTER_CONTENT_PI
+                            End If
+                            eml.Body = "<HTML>" & _
+                                            "<HEAD></HEAD>" & _
+                                            "<BODY>" & _
+                                                AddNoRecepientExistNote(eml.To) & _
+                                                LETTER_HEAD & _
+                                                FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, FullName_str, bShowWorkOrderNo, sWorkOrder) & _
+                                                PositionGrid(dataGridHTML) & _
+                                                PI & _
+                                                AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
+                                                AddVersionNumber() & _
+                                                "<HR width='100%' SIZE='1'>" & _
+                                                "<img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
+                                            "</BODY>" & _
+                                       "</HTML>"
+                        End If
 
-                ' execute SQL statement againts the connection object
-                Try
-                    cmd.ExecuteNonQuery()
-                Catch ex As Exception
-                    'm_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+                    Else
+                        If bIsBusUnitSDiExch Then
+                            bShowApproveViaEmailLink = True
+                            'SdiExchange
+                            If IsAscend(itmQuoted.BusinessUnitOM) Then
+                                'ContentSDI = LETTER_CONTENT_SDiExchange.Replace("Requestor Approval", "Approve Quotes (Ascend)")
+                                bShowWorkOrderNo = True
+                            Else
+                            End If
+                            ContentSDI = LETTER_CONTENT_SDiExchange
+                            eml.Body = "<HTML>" & _
+                                        "<HEAD></HEAD>" & _
+                                        "<BODY>" & _
+                                            AddNoRecepientExistNote(eml.To) & _
+                                            LETTER_HEAD_SdiExch & _
+                                            FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, FullName_str, bShowWorkOrderNo, sWorkOrder) &
+                                            PositionGrid(dataGridHTML) & _
+                                            ContentSDI & _
+                                            AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
+                                            AddVersionNumber() & _
+                                            "<HR width='100%' SIZE='1'>" & _
+                                                "<img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
+                                        "</BODY>" & _
+                                   "</HTML>"
+                            Dim strLink As String = FormHTMLLinkSDiExchange(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, "", bShowApproveViaEmailLink)
+                            eml.Body = eml.Body.Replace("link", strLink)
+                        Else
+                            'InsiteOnline
+                            If IsAscend(itmQuoted.BusinessUnitOM) Then
+                                Content = LETTER_CONTENT.Replace("Requestor Approval", "Approve Quotes (Ascend)")
+                                bShowWorkOrderNo = True
+                            Else
+                                Content = LETTER_CONTENT
+                            End If
+                            eml.Body = "<HTML>" & _
+                                            "<HEAD></HEAD>" & _
+                                            "<BODY>" & _
+                                                AddNoRecepientExistNote(eml.To) & _
+                                                LETTER_HEAD & _
+                                                FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, FullName_str, bShowWorkOrderNo, sWorkOrder) & _
+                                                PositionGrid(dataGridHTML) & _
+                                                Content & _
+                                                AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
+                                                AddVersionNumber() & _
+                                                "<HR width='100%' SIZE='1'>" & _
+                                                "<img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
+                                            "</BODY>" & _
+                                       "</HTML>"
+                            Dim strLink As String = FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, "", bShowApproveViaEmailLink)
+                            eml.Body = eml.Body.Replace("link", strLink)
+                        End If
+
+                    End If
+
+                    cHdr = cHdr & "VR End my code.  'eml.Body' is: " & eml.Body.ToString()
+                    ' we need to check for a blank TO field and should return (send) this
+                    ' auto mail to the sender's attention.  Besides we already added the notice for
+                    ' the body of message
+                    If Not (eml.To.Trim.Length > 0) Then
+                        eml.To = eml.From
+                    End If
+
+                    ' check if there's no valid recepient still, then we need to send this to 
+                    '   the default "no valid recepient" recepient based off of our config file.
+                    If Not (eml.To.Trim.Length > 0) Then
+                        If m_defaultToRecepient.Count > 0 Then
+                            If Trim(eml.To) <> "" Then
+                                If Right(Trim(eml.To), 1) = ";" Then
+                                    ' OK, do nothing
+                                Else
+                                    eml.To = Trim(eml.To) & ";"
+                                End If
+                            End If
+                            For Each sTo As String In m_defaultToRecepient
+                                If Utility.IsValidEmailAdd(sTo) Then
+                                    eml.To &= sTo & ";"
+                                End If
+                            Next
+                        End If
+                    End If
+
+                    ' email is of HTML format
+                    eml.BodyFormat = Web.Mail.MailFormat.Html
+
+                    ' quick fix for Ascend
+                    '   take off CC since Ascend orders were being put in into INTFC table as "ASCENDCA" and it's email address is the CC
+                    '   that customer is complaining about - erwin 2014.04.29
+                    If (itmQuoted.OrderOrigin = "RFQ") Then
+                        eml.Cc = ""
+                    End If
+
+                    Dim sCNString As String = m_CN.ConnectionString
+                    Dim strDBase As String = "STAR"
+                    If Len(sCNString) > 4 Then
+                        strDBase = UCase(Right(sCNString, 4))
+                    End If
+
+                    Select Case strDBase
+                        Case "STAR", "PLGR", "RPTG", "DEVL"
+                            eml.Subject = " TEST SDIX92 - " & eml.Subject
+                            eml.To = "webdev@sdi.com;Benjamin.Heinzerling@sdi.com;SDIportalsupport@avasoft.biz"
+                            eml.Cc = "webdev@sdi.com;Benjamin.Heinzerling@sdi.com;SDIportalsupport@avasoft.biz"
+                        Case Else
+
+                    End Select
+
+                    'Get the Requestor Approver email id and  set the value in To address
+                    Dim strApproverEmailID = String.Empty
                     Try
-                        m_CN.Close()
-                    Catch exErr2 As Exception
+                        strApproverEmailID = GetReqAltApprover(itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, "ReqAltApproverEmailID")
+                        If Not String.IsNullOrWhiteSpace(strApproverEmailID) Then
+                            eml.To = strApproverEmailID
+                        End If
+                    Catch ex As Exception
 
                     End Try
-                    m_logger.WriteVerboseLog(cHdr & ".  Error:  " & ex.ToString)
-                End Try
 
-                ' this code is for UNCC buyer tracking purposes
-                '   let's create a copy and send it to sender.
-                '   - erwin 20081022
-                Try
-                    ' look for this email address for the sender - FacilityMaintNonStoc@sdi.com
-                    '   recipient will be sender, CC will be blank, but BCC will stay as is
-                    If eml.From.ToUpper.IndexOf("FACILITYMAINTNONSTOC") > -1 Then
-                        eml.To = eml.From
-                        eml.Cc = ""
-                        eml.Subject &= " (copy)"
-                        ''System.Web.Mail.SmtpMail.Send(message:=eml)
-                        ''SDIEmailService.EmailUtilityServices("MailandStore", "madhuvanthy.u@avasoft.biz", "madhuvanthy.u@avasoft.biz", eml.Subject, String.Empty, String.Empty, eml.Body, "SDIERR", MailAttachmentName, MailAttachmentbytes.ToArray())
+
+                    ' send this email
+                    Try
+
                         SendLogger(eml.Subject, eml.Body, "QUOTEAPPROVAL", "Mail", eml.To, eml.Cc, eml.Bcc)
+                    Catch ex As Exception
+
+                    End Try
+
+                    ' build insert SQL command
+                    cSQL = _
+                    "INSERT INTO PS_ISA_REQ_EML_LOG " & _
+                    "(BUSINESS_UNIT, REQ_ID, ISA_RECIPIENT, ISA_SENDER, ISA_SUBJECT, EMAIL_DATETIME) " & _
+                    "VALUES " & _
+                    "(" & _
+                        "'" & CType(IIf(itmQuoted.BusinessUnitID.Length > 0, itmQuoted.BusinessUnitID, "."), String) & "', " & _
+                        "'" & CType(IIf(itmQuoted.OrderID.Length > 0, itmQuoted.OrderID, "."), String) & "', " & _
+                        "'" & "TO=" & eml.To & "CC=" & eml.Cc & "BCC=" & eml.Bcc & "', " & _
+                        "'" & CType(IIf(eml.From.Length > 0, eml.From, "."), String) & "', " & _
+                        "'" & CType(IIf(eml.Subject.Length > 0, eml.Subject, "."), String) & "', " & _
+                        "TO_DATE('" & System.DateTime.Now.ToString & "','MM/DD/YYYY HH:MI:SS AM') " & _
+                    ")"
+
+                    If m_CN.State = ConnectionState.Open Then
+
+                    Else
+                        m_CN.Open()
                     End If
-                Catch ex As Exception
-                    ' just ignore
-                End Try
-                'Next
+                    ' create a new instance of the command object
+                    cmd = New OleDbCommand(cmdText:=cSQL, connection:=m_CN)
+                    cmd.CommandType = CommandType.Text
 
-                If Not (cmd Is Nothing) Then
-                    cmd.Dispose()
+                    ' execute SQL statement againts the connection object
+                    Try
+                        cmd.ExecuteNonQuery()
+                    Catch ex As Exception
+                        'm_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+                        Try
+                            m_CN.Close()
+                        Catch exErr2 As Exception
+
+                        End Try
+                        m_logger.WriteVerboseLog(cHdr & ".  Error:  " & ex.ToString)
+                    End Try
+
+                    ' this code is for UNCC buyer tracking purposes
+                    '   let's create a copy and send it to sender.
+                    '   - erwin 20081022
+                    Try
+                        ' look for this email address for the sender - FacilityMaintNonStoc@sdi.com
+                        '   recipient will be sender, CC will be blank, but BCC will stay as is
+                        If eml.From.ToUpper.IndexOf("FACILITYMAINTNONSTOC") > -1 Then
+                            eml.To = eml.From
+                            eml.Cc = ""
+                            eml.Subject &= " (copy)"
+                            ''System.Web.Mail.SmtpMail.Send(message:=eml)
+                            ''SDIEmailService.EmailUtilityServices("MailandStore", "madhuvanthy.u@avasoft.biz", "madhuvanthy.u@avasoft.biz", eml.Subject, String.Empty, String.Empty, eml.Body, "SDIERR", MailAttachmentName, MailAttachmentbytes.ToArray())
+                            SendLogger(eml.Subject, eml.Body, "QUOTEAPPROVAL", "Mail", eml.To, eml.Cc, eml.Bcc)
+                        End If
+                    Catch ex As Exception
+                        ' just ignore
+                    End Try
+                    'Next
+
+                    If Not (cmd Is Nothing) Then
+                        cmd.Dispose()
+                    End If
+                    Try
+                        m_CN.Close()
+                    Catch ex111 As Exception
+
+                    End Try
                 End If
-                Try
-                    m_CN.Close()
-                Catch ex111 As Exception
 
-                End Try
+
             End If
 
         Catch ex As Exception
@@ -1829,15 +2092,21 @@ Public Class QuoteNonStockProcessor
         End Try
     End Sub
 
-    Private Function FormHTMLQouteInfo(ByVal cAddressee As String, ByVal cOrderID As String, Optional ByVal bIsShowWorkOrderNo As Boolean = False, Optional ByVal cWorkOrderNo As String = "") As String
+    Private Function FormHTMLQouteInfo(ByVal cAddressee As String, ByVal cOrderID As String, ByVal ReqAltAppr As String, Optional ByVal bIsShowWorkOrderNo As Boolean = False, Optional ByVal cWorkOrderNo As String = "") As String
         Dim cHdr As String = "QuoteNonStockProcessor.FormHTMLQouteInfo: "
         Try
             Dim cInfoHTML As String = ""
+            Dim toAddress As String = ""
+            If ReqAltAppr <> "" Then
+                toAddress = ReqAltAppr
+            Else
+                toAddress = cAddressee
+            End If
 
             cInfoHTML &= "<TABLE id=""Table1"" cellSpacing=""1"" cellPadding=""1"" width=""100%"" border=""0"">"
             cInfoHTML &= "       <TR>" & _
                                     "<TD style=""WIDTH: 110px;Font-Weight:Bold"">TO:</TD>" & _
-                                    "<TD><B>" & cAddressee & "</B></TD>" & _
+                                    "<TD><B>" & toAddress & "</B></TD>" & _
                                 "</TR>" & _
                                 "<TR>" & _
                                     "<TD style=""WIDTH: 110px;Font-Weight:Bold"">Date:</TD>" & _
@@ -1866,25 +2135,93 @@ Public Class QuoteNonStockProcessor
         Return ""
     End Function
 
-    Private Function FormHTMLLink(ByVal cOrderID As String, ByVal cEmployeeID As String, ByVal cBusinessUnitOM As String, Optional ByVal bShowLink As Boolean = True) As String
+    Private Function GetReqAltApprover(ByVal strUserid As String, ByVal strBU As String, ByVal Req_type As String) As String
+        Try
+            Dim strReqApprSet As String = "SELECT ISA_REQ_APR_ALT FROM SDIX_USERS_REQ_APPRV WHERE ISA_EMPLOYEE_ID = '" & strUserid & "' AND BUSINESS_UNIT = '" & strBU & "'"
+            Dim ListOfReqApprSet As DataSet = ORDBData.GetAdapter(strReqApprSet)
+            Dim getemailID_altAppr As DataSet
+            'Dim listReqApprSet As New List(Of String)
+            Dim strReqApprEmailID As String = String.Empty
+            If Not ListOfReqApprSet Is Nothing Then
+                If ListOfReqApprSet.Tables(0).Rows.Count = 1 Then
+                    Dim strReqAltApprEmailID As String = "SELECT * FROM SDIX_USERS_TBL WHERE ISA_EMPLOYEE_ID = '" & Convert.ToString(ListOfReqApprSet.Tables(0).Rows(0).Item("ISA_REQ_APR_ALT")) & "'"
+                    getemailID_altAppr = ORDBData.GetAdapter(strReqAltApprEmailID)
+                    If Not getemailID_altAppr Is Nothing Then
+                        If getemailID_altAppr.Tables(0).Rows.Count = 1 Then
+                            If Req_type = "ReqAltApproverEmailID" Then
+                                strReqApprEmailID = Convert.ToString(getemailID_altAppr.Tables(0).Rows(0).Item("ISA_EMPLOYEE_EMAIL"))
+                            Else
+                                strReqApprEmailID = Convert.ToString(getemailID_altAppr.Tables(0).Rows(0).Item("ISA_EMPLOYEE_ID"))
+                            End If
+                        Else
+                            strReqApprEmailID = ""
+                        End If
+                    Else
+                        strReqApprEmailID = ""
+                    End If
+                Else
+                    strReqApprEmailID = ""
+                End If
+            Else
+                strReqApprEmailID = ""
+            End If
+            Return strReqApprEmailID
+        Catch ex As Exception
+
+        End Try
+    End Function
+
+
+
+    Private Function GetUN(ByVal strUserid As String, ByVal Req_type As String) As String
+        Try
+            Dim strReqApprUN As String = String.Empty
+            Dim strReqApprSet As String = "SELECT * FROM SDIX_USERS_TBL WHERE ISA_EMPLOYEE_ID = '" & strUserid.Replace("&REQ&", "") & "'"
+            Dim ListOfReqApprSet As DataSet = ORDBData.GetAdapter(strReqApprSet)
+            If Not ListOfReqApprSet Is Nothing Then
+                If ListOfReqApprSet.Tables(0).Rows.Count > 0 Then
+                    If Req_type = "GetUN" Then
+                        strReqApprUN = ListOfReqApprSet.Tables(0).Rows(0).Item("ISA_EMPLOYEE_NAME")
+                    Else
+
+                    End If
+                End If
+            End If
+            Return strReqApprUN
+        Catch ex As Exception
+
+        End Try
+    End Function
+
+    Private Function FormHTMLLink(ByVal cOrderID As String, ByVal cEmployeeID As String, ByVal cBusinessUnitOM As String, ByVal ReqAltAppr As String, Optional ByVal bShowLink As Boolean = True) As String
         Dim cLink As String = ""
         Dim cHdr As String = "QuoteNonStockProcessor.FormHTMLLink: "
         If bShowLink Then
             Try
                 'Dim m_cURL1 As String = "http://" & ConfigurationManager.AppSettings("WebAppName") & "Approvequote.aspx"
-                Dim m_cURL1 As String = GetURL() & "Approvequote.aspx"
+                Dim m_cURL1 As String = GetURL(cBusinessUnitOM) & "Approvequote.aspx"
                 Dim boEncrypt As New Encryption64
+
+                Dim setAltApproverID As String
+
+                If ReqAltAppr.StartsWith("&REQ&") Then
+                    setAltApproverID = "&alt=" & boEncrypt.Encrypt(ReqAltAppr.Replace("&REQ&", ""), m_cEncryptionKey)
+                Else
+                    setAltApproverID = "&alt="
+                End If
 
                 Dim cParam As String = "?fer=" & boEncrypt.Encrypt(cOrderID, m_cEncryptionKey) & _
                                        "&op=" & boEncrypt.Encrypt(cEmployeeID, m_cEncryptionKey) & _
                                        "&xyz=" & boEncrypt.Encrypt(cBusinessUnitOM, m_cEncryptionKey) & _
+                                       setAltApproverID & _
                                        "&HOME=N"
 
-                cLink &= "<p>" & _
-                            "Click this " & _
-                            "<a href=""" & m_cURL1 & cParam & """ target=""_blank"">link</a> " & _
-                            " to APPROVE or DECLINE order." & _
-                         "</p>"
+                'cLink &= "<p>" & _
+                '            "Click this " & _
+                '            "<a href=""" & m_cURL1 & cParam & """ target=""_blank"">link</a> " & _
+                '            " to APPROVE or DECLINE order." & _
+                '         "</p>"
+                cLink = "<a href=""" & m_cURL1 & cParam & """ target=""_blank"">link</a>"
 
                 boEncrypt = Nothing
 
@@ -1900,26 +2237,44 @@ Public Class QuoteNonStockProcessor
         Return (cLink)
     End Function
 
-    Private Function FormHTMLLinkSDiExchange(ByVal cOrderID As String, ByVal cEmployeeID As String, ByVal cBusinessUnitOM As String, Optional ByVal bShowLink As Boolean = True) As String
+    Private Function FormHTMLLinkSDiExchange(ByVal cOrderID As String, ByVal cEmployeeID As String, ByVal cBusinessUnitOM As String, ByVal ReqAltAppr As String, Optional ByVal bShowLink As Boolean = True) As String
         Dim cLink As String = ""
         Dim cHdr As String = "QuoteNonStockProcessor.FormHTMLLink: "
         If bShowLink Then
             Try
                 'Dim m_cURL1 As String = "http://" & ConfigurationManager.AppSettings("WebAppName") & "Approvequote.aspx"
-                Dim m_cURL1 As String = GetURL() & "Approvequote.aspx"
+                Dim m_cURL1 As String = GetURL(cBusinessUnitOM) & "Approvequote.aspx"
                 Dim boEncrypt As New Encryption64
+
+                Dim setAltApproverID As String
+                If ReqAltAppr.StartsWith("&REQ&") Then
+                    setAltApproverID = "&alt=" & boEncrypt.Encrypt(ReqAltAppr.Replace("&REQ&", ""), m_cEncryptionKey)
+                Else
+                    setAltApproverID = "&alt="
+                End If
 
                 Dim cParam As String = "?fer=" & boEncrypt.Encrypt(cOrderID, m_cEncryptionKey) & _
                                        "&op=" & boEncrypt.Encrypt(cEmployeeID, m_cEncryptionKey) & _
                                        "&xyz=" & boEncrypt.Encrypt(cBusinessUnitOM, m_cEncryptionKey) & _
+                                       setAltApproverID & _
                                        "&HOME=N" & _
                                        "&ExchHome23=N"
 
-                cLink &= "<p>" & _
-                            "Click this " & _
-                            "<a href=""" & m_cURL1 & cParam & """ target=""_blank"">link</a> " & _
-                            " to APPROVE or DECLINE order." & _
-                         "</p>"
+                'cLink &= "<p>" & _
+                '            "Click this " & _
+                '            "<a href=""" & m_cURL1 & cParam & """ target=""_blank"">link</a> " & _
+                '            " to APPROVE or DECLINE order." & _
+                '         "</p>"
+
+                cLink = "<a href=""" & m_cURL1 & cParam & """ target=""_blank"">link</a>"
+
+
+
+                'cLink &= "<p>" & _
+                '            "Click this " & _
+                '            "<a href=""" & m_cURL1 & cParam & """ target=""_blank"">link</a> " & _
+                '            " to APPROVE or DECLINE order." & _
+                '         "</p>"
 
                 boEncrypt = Nothing
 
@@ -2140,7 +2495,7 @@ Public Class QuoteNonStockProcessor
                 ", TO_DATE('" & Now.ToString("MM/dd/yyyy HH:mm:ss") & "', 'MM/DD/YYYY HH24:MI:SS') " & vbCrLf & _
                 ", '" & sBU & "', ' ', ' ', ' ' " & vbCrLf & _
                 " )"
-            
+
             rowsaffected = ORDBData.ExecNonQuery(strInsertQuery)
 
         Catch ex As Exception
@@ -2513,8 +2868,8 @@ Public Class QuoteNonStockProcessor
         'strhref = "http://" & ConfigurationManager.AppSettings("WebAppName") & "approveorder.aspx?fer=" & streOrdnum & "&op=" & streApper & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
         'strhrefAlt = "http://" & ConfigurationManager.AppSettings("WebAppName") & "approveorder.aspx?fer=" & streOrdnum & "&op=" & streApperAlt & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
 
-        strhref = GetURL() & "NeedApprove.aspx?fer=" & streOrdnum & "&op=" & streApper & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
-        strhrefAlt = GetURL() & "NeedApprove.aspx?fer=" & streOrdnum & "&op=" & streApperAlt & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
+        strhref = GetURL(itmQuoted.BusinessUnitOM) & "NeedApprove.aspx?fer=" & streOrdnum & "&op=" & streApper & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
+        strhrefAlt = GetURL(itmQuoted.BusinessUnitOM) & "NeedApprove.aspx?fer=" & streOrdnum & "&op=" & streApperAlt & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
 
         If String.Equals(strAppAltUserid.Trim(), strAppUserid.Trim()) Then
             NotifyApprover(strAppUserid, strappName, strreqID, itmQuoted.WorkOrderNumber, stritemid, dataGridHTML, strhref, strHldSts, itmQuoted.BusinessUnitOM)
@@ -7114,7 +7469,7 @@ Public Class clsSDIAudit
             ' want to abort the primary function (interunit receipts, etc) 
             ' just for an audit record.
 
-         
+
             sServer = "SDIMOBILE03"
 
             If TruncateData(sSourceProgram, sFunctionDesc, sTableName, sOprID, sBU, sColumnChg, sOldValue, _
@@ -7561,11 +7916,3 @@ Public Class ApprovalHistory
 
 
 End Class
-
-
-
-
-
-
-
-
