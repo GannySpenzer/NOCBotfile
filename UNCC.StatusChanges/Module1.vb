@@ -140,6 +140,7 @@ Module Module1
         ' set the end date time
         Dim strSQLstring As String
         Dim dteEndDate As DateTime
+        'Dim dteEndDatePlus1 As DateTime
         Dim format As New System.Globalization.CultureInfo("en-US", True)
         strSQLstring = "SELECT" & vbCrLf & _
                     " to_char(MAX( A.DTTM_STAMP), 'MM/DD/YY HH24:MI:SS') as MAXDATE" & vbCrLf & _
@@ -193,6 +194,7 @@ Module Module1
         Dim dteStartDate As DateTime = objEnterprise.SendStartDate
         connectOR.Close()
 
+        'dteEndDatePlus1 = DateAdd(DateInterval.Second, 1, dteEndDate)
         Dim ds As New DataSet
         Dim bolerror As Boolean
         strSQLstring = "SELECT A.ORDER_NO, A.ISA_INTFC_LN AS LINE_NBR," & vbCrLf & _
@@ -203,8 +205,8 @@ Module Module1
                             " AND B.ORIGIN IN ('INT','IOL') " & vbCrLf & _
                             " AND A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf & _
                             " AND A.ORDER_NO = B.ORDER_NO " & vbCrLf & _
-                            " AND A.DTTM_STAMP > TO_DATE('" & dteStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
-                            " AND A.DTTM_STAMP <= TO_DATE('" & dteEndDate & "', 'MM/DD/YYYY HH:MI:SS AM')"
+                            " AND TO_DATE(TO_CHAR(A.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM'), 'MM/DD/YYYY HH:MI:SS AM') > TO_DATE('" & dteStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
+                            " AND TO_DATE(TO_CHAR(A.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM'), 'MM/DD/YYYY HH:MI:SS AM') <= TO_DATE('" & dteEndDate & "', 'MM/DD/YYYY HH:MI:SS AM')"
 
         Try
             ds = ORDBAccess.GetAdapter(strSQLstring, connectOR)
