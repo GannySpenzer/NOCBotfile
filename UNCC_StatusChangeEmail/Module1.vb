@@ -154,7 +154,7 @@ Module Module1
             Return True
         End Try
 
-        strSQLstring = "SELECT DISTINCT A.ORDER_NO, B.ISA_INTFC_LN AS LINE_NBR, E.RECEIVER_ID," & vbCrLf & _
+        strSQLstring = "SELECT /*+ USE_NL(A B C D E) */ A.ORDER_NO, B.ISA_INTFC_LN AS LINE_NBR, E.RECEIVER_ID," & vbCrLf & _
                 " E.RECV_LN_NBR, A.BUSINESS_UNIT_OM, B.ISA_EMPLOYEE_ID AS EMPLID, E.DESCR254_MIXED" & vbCrLf & _
                 " FROM PS_ISA_ORD_INTF_HD A, PS_ISA_ORD_INTF_LN B," & vbCrLf & _
                 " PS_ISA_USERS_TBL C, PS_PO_LINE_DISTRIB D," & vbCrLf & _
@@ -180,7 +180,7 @@ Module Module1
                 " AND F.LINE_NBR = D.LINE_NBR" & vbCrLf & _
                 " AND F.QTY_LN_RETRN_SUOM = E.QTY_SH_ACCPT" & vbCrLf & _
                 " AND F.RETURN_REASON = 'MTX')" & vbCrLf & _
-                " AND NOT EXISTS (SELECT 'X'" & vbCrLf & _
+                " AND NOT EXISTS (SELECT /*+ USE_NL(A G) */ 'X'" & vbCrLf & _
                 " FROM PS_ISA_ORDSTAT_EML G" & vbCrLf & _
                 " WHERE A.BUSINESS_UNIT_OM = G.BUSINESS_UNIT_OM" & vbCrLf & _
                 " AND A.ORDER_NO = G.ORDER_NO" & vbCrLf & _
@@ -272,7 +272,7 @@ Module Module1
         Dim dteStrDate As DateTime
         dteStrDate = Now.AddMonths(-3).ToString
         Dim strSQLstring As String
-        strSQLstring = "SELECT B.ORDER_NO, B.ISA_INTFC_LN AS INTFC_LINE_NUM, B.ISA_INTFC_LN AS ORDER_INT_LINE_NO, D.DEMAND_LINE_NO," & vbCrLf & _
+        strSQLstring = "SELECT /*+ index(D,PSWIN_DEMAND) */ B.ORDER_NO, B.ISA_INTFC_LN AS INTFC_LINE_NUM, B.ISA_INTFC_LN AS ORDER_INT_LINE_NO, D.DEMAND_LINE_NO," & vbCrLf & _
                 " B.BUSINESS_UNIT_OM, B.ISA_EMPLOYEE_ID AS EMPLID, E.DESCR60, E.INV_ITEM_ID" & vbCrLf & _
                 " FROM PS_ISA_ORD_INTF_HD A, PS_ISA_ORD_INTF_LN B," & vbCrLf & _
                 " PS_ISA_USERS_TBL C, SYSADM8.PS_IN_DEMAND D," & vbCrLf & _
@@ -918,7 +918,7 @@ Module Module1
         strSQLstring = "SELECT * FROM (SELECT A.BUSINESS_UNIT_OM, G.BUSINESS_UNIT_OM AS G_BUS_UNIT, D.BUSINESS_UNIT, D.ISA_EMPLOYEE_ID, A.ORDER_NO, B.ISA_INTFC_LN AS line_nbr," & vbCrLf & _
                  " B.ISA_EMPLOYEE_ID AS EMPLID, B.ISA_LINE_STATUS as ORDER_TYPE," & vbCrLf & _
                  " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, " & vbCrLf & _
-                 " G.ISA_LINE_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','1','NEW','2','DSP','3','ORD','3','RSV','3','PKA','4','PKP','4','DLP','5','RCP','5','RCF','5','PKQ','5','DLO','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','1') AS OLD_ORDER_STATUS," & vbCrLf & _
+                 " G.ISA_LINE_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','1','NEW','2','DSP','3','ORD','3','RSV','3','PKA','4','PKP','4','DLP','5','RCP','5','RCF','6','PKQ','5','DLO','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','1') AS OLD_ORDER_STATUS," & vbCrLf & _
                  " (SELECT E.XLATLONGNAME" & vbCrLf & _
                                 " FROM XLATTABLE E" & vbCrLf & _
                                 " WHERE E.EFFDT =" & vbCrLf & _
