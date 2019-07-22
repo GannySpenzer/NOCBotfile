@@ -1077,7 +1077,7 @@ Module Module1
         '    ' add Ascend e-mail field
         '    strSQLstring += " AB.EMAIL_ADDRESS AS ASCEND_EMAIL_ADDRESS," & vbCrLf
         'End If
-        strSQLstring += "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','1','NEW','2','DSP','3','ORD','3','RSV','3','PKA','4','PKP','4','DLP','5','RCP','5','RCF','5','PKQ','5','DLO','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','1') AS OLD_ORDER_STATUS," & vbCrLf & _
+        strSQLstring += "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','1','NEW','2','DSP','3','ORD','3','RSV','3','PKA','4','PKP','4','DLP','5','RCP','5','RCF','6','PKQ','5','DLO','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','1') AS OLD_ORDER_STATUS," & vbCrLf & _
                  " (SELECT E.XLATLONGNAME" & vbCrLf & _
                                 " FROM XLATTABLE E" & vbCrLf & _
                                 " WHERE E.EFFDT =" & vbCrLf & _
