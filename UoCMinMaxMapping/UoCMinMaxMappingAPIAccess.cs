@@ -389,6 +389,7 @@ namespace UoCMinMaxMapping
                 }
 
                 m_oLogger.LogMessageWeb("postUoCMinMaxMappingData", "Error trying to POST data to UOC server.", responseErrorText); //ex
+                strResponse=responseErrorText;
             }
             return strResponse;
         }
