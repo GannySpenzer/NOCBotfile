@@ -452,8 +452,6 @@ Module Module1
         'Send the email and handle any error that occurs
         Try
            
-            'SendEmail1(email)
-
             sendemail(eMailNet)
 
         Catch ex As Exception
@@ -464,9 +462,39 @@ Module Module1
 
     Private Function sendemail(ByVal mailer As System.Net.Mail.MailMessage) As Boolean
         Dim bRetrn As Boolean = True
+        Dim strSmtpServerStr As String = "mail.sdi.com"
+        Try
+            strSmtpServerStr = My.Settings("SMTPServerString").ToString.Trim
+        Catch ex As Exception
+            strSmtpServerStr = "mail.sdi.com"
+        End Try
+        Dim strPortForSmtp As String = "25"
+        Dim intPortSMTP As Integer = 25
+        Try
+            strPortForSmtp = My.Settings("PortSMTPServer").ToString.Trim
+            If Trim(strPortForSmtp) <> "" Then
+                strPortForSmtp = Trim(strPortForSmtp)
+                If IsNumeric(strPortForSmtp) Then
+                    intPortSMTP = CType(strPortForSmtp, Integer)
+                Else
+                    intPortSMTP = 25
+                End If
+            Else
+                intPortSMTP = 25
+            End If
+        Catch ex As Exception
+            strPortForSmtp = "25"
+            intPortSMTP = 25
+        End Try
         Try
 
-            Dim clientSMTP As SmtpClient = New SmtpClient("SDIMBXHYBRID.isacs.com")
+            Dim clientSMTP As SmtpClient  '   = New SmtpClient(strSmtpServerStr, intPortSMTP)
+            Try
+                clientSMTP = New SmtpClient(strSmtpServerStr, intPortSMTP)
+
+            Catch ex As Exception
+                clientSMTP = New SmtpClient("mail.sdi.com", 25)
+            End Try
 
             clientSMTP.Send(mailer)
 

@@ -120,6 +120,24 @@ Namespace My
                 Return CType(Me("Subject911"),String)
             End Get
         End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("mail.sdi.com")>  _
+        Public ReadOnly Property SMTPServerString() As String
+            Get
+                Return CType(Me("SMTPServerString"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("25")>  _
+        Public ReadOnly Property PortSMTPServer() As String
+            Get
+                Return CType(Me("PortSMTPServer"),String)
+            End Get
+        End Property
     End Class
 End Namespace
 
