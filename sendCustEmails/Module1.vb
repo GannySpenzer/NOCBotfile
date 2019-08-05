@@ -376,6 +376,7 @@ Module Module1
 
             eMail.To.Clear()
             eMail.To.Add("webdev@sdi.com")
+            eMail.To.Add("SDIportalsupport@avasoft.com")
             eMail.Subject = " (Test Run) - " & eMail.Subject
             eMail.Body = "Email.To - " & strEmailToList & eMail.Body
         Else
