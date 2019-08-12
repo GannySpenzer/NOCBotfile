@@ -71,7 +71,9 @@ namespace WMReceiptsMapping
                     StringBuilder sbInit = new StringBuilder();
                     string xmlStr = string.Empty;
                     string xmlStringInit = string.Empty;
-                    using (StreamReader sr = new StreamReader(Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory())) + "/ZWIM_MBGMCR2-oneline-mapping3.xml"))
+                    //using (StreamReader sr = new StreamReader(Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory())) + "/ZWIM_MBGMCR2-oneline-mapping3.xml"))
+                    string dir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                    using (StreamReader sr = new StreamReader(dir + "/ZWIM_MBGMCR2-oneline-mapping3.xml"))
                     {
                         xmlStr = sr.ReadToEnd();
                         sbInit.AppendFormat(xmlStr, DOC_NUM, LOGDAT, LOGTIM, REFGRP, REFMES, PSTNG_DATE, MATERIAL, STGE_LOC, MOVE_TYPE, ENTRY_QNT, ENTRY_UOM, PO_NUMBER, PO_ITEM, ITEM_TEXT);
