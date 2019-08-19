@@ -413,7 +413,7 @@ Module Module1
                     
                     'get list of invoices
                     'Dim strListOrders As String = "SELECT A.*, B.DUE_DT FROM sysadm8.PS_ISA_XEEV_INV_HB A, sysadm8.ps_BI_HDR B where B.BILL_TO_CUST_ID = '" & strCustIDParam & "'  AND A.SHIP_CUST_NAME = 'University of Chicago'  and A.ISA_GST_TAX_AMT = 1 and A.INVOICE_ID=B.INVOICE AND A.BUSINESS_UNIT=B.BUSINESS_UNIT"  '  and INVOICE_ID = '11011082'"
-                    Dim strListOrders As String = "SELECT A.*, B.DUE_DT FROM sysadm8.PS_ISA_XEEV_INV_HB A, sysadm8.ps_BI_HDR B where B.BILL_TO_CUST_ID = '" & strCustIDParam & "' " & vbCrLf & _
+                    Dim strListOrders As String = "SELECT DISTINCT A.INVOICE_ID FROM sysadm8.PS_ISA_XEEV_INV_HB A, sysadm8.ps_BI_HDR B where B.BILL_TO_CUST_ID = '" & strCustIDParam & "' " & vbCrLf & _
                           " AND A.ISA_GST_TAX_AMT = 1 and A.INVOICE_ID=B.INVOICE AND A.BUSINESS_UNIT=B.BUSINESS_UNIT"  '  and INVOICE_ID = '11011082'"
 
                     Try
@@ -432,11 +432,11 @@ Module Module1
                             If OrderListDataSet.Tables.Count > 0 Then
                                 If OrderListDataSet.Tables(0).Rows.Count > 0 Then
                                     Dim iLst As Integer = 0
-                                    Dim rowMy1 As DataRow
+                                    'Dim rowMy1 As DataRow
 
                                     objStreamWriter.WriteLine("Have data " & Now())
                                     For iLst = 0 To OrderListDataSet.Tables(0).Rows.Count - 1
-                                        rowMy1 = OrderListDataSet.Tables(0).Rows(iLst)
+                                        'rowMy1 = OrderListDataSet.Tables(0).Rows(iLst)
                                         strOrderNo = OrderListDataSet.Tables(0).Rows(iLst).Item("INVOICE_ID").ToString()
                                         ''for test only
                                         'If iLst = 2 Then
@@ -455,7 +455,7 @@ Module Module1
 
                                         objStreamWriter.WriteLine("Before CreateOrderRequestXML " & Now())
                                         
-                                        cXML = m_setupReqDoc.CreateOrderRequestXML(connectOR, strOrderNo, rowMy1)
+                                        cXML = m_setupReqDoc.CreateOrderRequestXML(connectOR, strOrderNo, strCustIDParam)
 
                                         objStreamWriter.WriteLine("Finished building XML out for this OrderNo: " & strOrderNo & " ; Date/Time: " & Now())
                                         Dim doc As New XmlDocument

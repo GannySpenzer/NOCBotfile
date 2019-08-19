@@ -350,7 +350,7 @@ Public Class punchOutSetupRequestDoc
     End Function
 
     Public Function CreateOrderRequestXML(ByVal connectOR As OleDbConnection, ByVal strOrderNo As String, _
-                ByVal rowMy1 As DataRow) As String
+                ByVal strCustIDParam As String) As String
 
         Dim rtn As String = "CreateOrderRequestXML"
         Dim cXML As String = ""
@@ -446,8 +446,13 @@ Public Class punchOutSetupRequestDoc
                 ' get existing node Request
                 Dim nodeOrderReq As XmlNode = docXML.SelectSingleNode(xpath:="//cXML//Request")
 
-                ' for each order get all order info including lines info
-                Dim strOrder As String = "SELECT A.* FROM sysadm8.PS_ISA_XEEV_INV_LB A, sysadm8.PS_ISA_XEEV_INV_HB B where A.INVOICE_ID = '" & strOrderNo & "' AND A.INVOICE_ID=B.INVOICE_ID AND A.BUSINESS_UNIT=B.BUSINESS_UNIT AND A.PROCESS_INSTANCE=B.PROCESS_INSTANCE"
+                ' for each order get all order header info 
+                Dim strOrder As String = "SELECT A.*, B.DUE_DT " & vbCrLf & _
+                    "FROM sysadm8.PS_ISA_XEEV_INV_HB A, sysadm8.ps_BI_HDR B " & vbCrLf & _
+                    "where B.BILL_TO_CUST_ID = '" & strCustIDParam & "'and A.INVOICE_ID = '" & strOrderNo & "' " & vbCrLf & _
+                    "AND A.ISA_GST_TAX_AMT = 1 " & vbCrLf & _
+                    "and A.INVOICE_ID=B.INVOICE AND A.BUSINESS_UNIT=B.BUSINESS_UNIT "
+
                 If Not connectOR.State = ConnectionState.Open Then
                     connectOR.Open()
                 End If
@@ -487,8 +492,8 @@ Public Class punchOutSetupRequestDoc
 
                             'Dim strPoVersion As String = OrderDataSet.Tables(0).Rows(iOrd).Item("ORDER_VERSION").ToString()
                             ' (4) invoiceDate
-                            Dim strPoDate As String = ""  ' 
-                            strPoDate = rowMy1.Item("INVOICE_DT").ToString()
+                            Dim strPoDate As String = ""
+                            strPoDate = OrderDataSet.Tables(0).Rows(0).Item("INVOICE_DT").ToString()  '   rowMy1.Item("INVOICE_DT").ToString()  '  
                             'Dim dDate1 As DateTime = CType(strPoDate, DateTime)
                             'Dim dateOffset1 As New DateTimeOffset(dDate1, TimeZoneInfo.Local.GetUtcOffset(dDate1))
                             'strPoDate = dateOffset1.ToString("o")
@@ -560,7 +565,7 @@ Public Class punchOutSetupRequestDoc
                             attrib = nodeName2.Attributes.Append(docXML.CreateAttribute(name:="xml:lang"))
                             attrib.Value = "en-US"
                             Dim strNameSoldTo As String = " "
-                            strNameSoldTo = rowMy1.Item("SHIP_CUST_NAME").ToString()
+                            strNameSoldTo = OrderDataSet.Tables(0).Rows(0).Item("SHIP_CUST_NAME").ToString()  '   rowMy1.Item("SHIP_CUST_NAME").ToString()
                             nodeName2.InnerText = strNameSoldTo ' get from dataset Name for "soldTo"
 
                             ' node PostalAddress - under node Contact2 - under InvoicePartner2
@@ -569,25 +574,25 @@ Public Class punchOutSetupRequestDoc
                             ' node node321 (Street) under node PostalAddress2 - under node Contact2 - under InvoicePartner2
                             Dim node321 As XmlNode = nodePostalAddress2.AppendChild(docXML.CreateElement(name:="Street"))
                             Dim strStreet2 As String = " "
-                            strStreet2 = rowMy1.Item("REMIT_ADDRESS1").ToString()
+                            strStreet2 = OrderDataSet.Tables(0).Rows(0).Item("REMIT_ADDRESS1").ToString()  '   rowMy1.Item("REMIT_ADDRESS1").ToString()
                             node321.InnerText = strStreet2 ' get from dataset
 
                             ' node node321 (City) under node PostalAddress - under node Contact2 - under InvoicePartner2
                             node321 = nodePostalAddress2.AppendChild(docXML.CreateElement(name:="City"))
                             Dim strCity2 As String = " "
-                            strCity2 = rowMy1.Item("REMIT_CITY").ToString()
+                            strCity2 = OrderDataSet.Tables(0).Rows(0).Item("REMIT_CITY").ToString()  '   rowMy1.Item("REMIT_CITY").ToString()
                             node321.InnerText = strCity2 ' get from dataset
 
                             ' node node321 (State) under node PostalAddress - under node Contact2 - under InvoicePartner2
                             node321 = nodePostalAddress2.AppendChild(docXML.CreateElement(name:="State"))
                             Dim strState2 As String = " "
-                            strState2 = rowMy1.Item("REMIT_STATE").ToString()
+                            strState2 = OrderDataSet.Tables(0).Rows(0).Item("REMIT_STATE").ToString()  '   rowMy1.Item("REMIT_STATE").ToString()
                             node321.InnerText = strState2 ' get from dataset
 
                             ' node node321 (PostalCode) under node PostalAddress - under node Contact2 - under InvoicePartner2
                             node321 = nodePostalAddress2.AppendChild(docXML.CreateElement(name:="PostalCode"))
                             Dim strPostalCode2 As String = " "
-                            strPostalCode2 = rowMy1.Item("REMIT_POSTAL").ToString()
+                            strPostalCode2 = OrderDataSet.Tables(0).Rows(0).Item("REMIT_POSTAL").ToString()  '   rowMy1.Item("REMIT_POSTAL").ToString()
                             node321.InnerText = strPostalCode2 ' get from dataset
 
                             ' node node321 (Country) under node PostalAddress - under node Contact2 - under InvoicePartner2
@@ -614,7 +619,7 @@ Public Class punchOutSetupRequestDoc
                             attrib = nodeNameDetShip.Attributes.Append(docXML.CreateAttribute(name:="xml:lang"))
                             attrib.Value = "en-US"
                             Dim strNameDetShip As String = " "
-                            strNameDetShip = rowMy1.Item("SHIP_CUST_NAME").ToString()
+                            strNameDetShip = OrderDataSet.Tables(0).Rows(0).Item("SHIP_CUST_NAME").ToString()  '   rowMy1.Item("SHIP_CUST_NAME").ToString()
                             nodeNameDetShip.InnerText = strNameDetShip ' get from dataset 
 
                             'node Postal Address under Contact under InvoiceDetailShipping
@@ -623,25 +628,25 @@ Public Class punchOutSetupRequestDoc
                             ' node node321 (Street) under node PostalAddress2 
                             node321 = nodePostalAddress2.AppendChild(docXML.CreateElement(name:="Street"))
                             strStreet2 = " "
-                            strStreet2 = rowMy1.Item("SHIPTO_ADDRESS1").ToString()
+                            strStreet2 = OrderDataSet.Tables(0).Rows(0).Item("SHIPTO_ADDRESS1").ToString()  '    rowMy1.Item("SHIPTO_ADDRESS1").ToString()
                             node321.InnerText = strStreet2 ' get from dataset
 
                             ' node node321 (City) under node PostalAddress2 
                             node321 = nodePostalAddress2.AppendChild(docXML.CreateElement(name:="City"))
                             strCity2 = " "
-                            strCity2 = rowMy1.Item("SHIPTO_CITY").ToString()
+                            strCity2 = OrderDataSet.Tables(0).Rows(0).Item("SHIPTO_CITY").ToString()  '    rowMy1.Item("SHIPTO_CITY").ToString()
                             node321.InnerText = strCity2 ' get from dataset
 
                             ' node node321 (State) under node PostalAddress2 
                             node321 = nodePostalAddress2.AppendChild(docXML.CreateElement(name:="State"))
                             strState2 = " "
-                            strState2 = rowMy1.Item("SHIPTO_STATE").ToString()
+                            strState2 = OrderDataSet.Tables(0).Rows(0).Item("SHIPTO_STATE").ToString()  '   rowMy1.Item("SHIPTO_STATE").ToString()
                             node321.InnerText = strState2 ' get from dataset
 
                             ' node node321 (PostalCode) under node PostalAddress2 
                             node321 = nodePostalAddress2.AppendChild(docXML.CreateElement(name:="PostalCode"))
                             strPostalCode2 = " "
-                            strPostalCode2 = rowMy1.Item("RS_ZIP").ToString()
+                            strPostalCode2 = OrderDataSet.Tables(0).Rows(0).Item("RS_ZIP").ToString()  '   rowMy1.Item("RS_ZIP").ToString()
                             node321.InnerText = strPostalCode2 ' get from dataset
 
                             ' node node321 (Country) under node PostalAddress2 2
@@ -664,7 +669,7 @@ Public Class punchOutSetupRequestDoc
                             attrib = nodeNameDetShip.Attributes.Append(docXML.CreateAttribute(name:="xml:lang"))
                             attrib.Value = "en-US"
                             strNameDetShip = " "
-                            strNameDetShip = rowMy1.Item("SHIP_CUST_NAME").ToString()
+                            strNameDetShip = OrderDataSet.Tables(0).Rows(0).Item("SHIP_CUST_NAME").ToString()  '  rowMy1.Item("SHIP_CUST_NAME").ToString()
                             nodeNameDetShip.InnerText = strNameDetShip ' get from dataset 
 
                             ' node Extrinsic under nodeOrderHeader
@@ -673,7 +678,7 @@ Public Class punchOutSetupRequestDoc
                             attrib = nodeExtrnsc.Attributes.Append(docXML.CreateAttribute(name:="name"))
                             attrib.Value = "invoice due date"
                             Dim strInvDueDate As String = " "  ' sysadm8.ps_BI_HDR - DUE_DT
-                            strInvDueDate = rowMy1.Item("DUE_DT").ToString()
+                            strInvDueDate = OrderDataSet.Tables(0).Rows(0).Item("DUE_DT").ToString()  '  rowMy1.Item("DUE_DT").ToString()
                             nodeExtrnsc.InnerText = strInvDueDate
 
                             ' create top node InvoiceDetailOrder
@@ -687,12 +692,12 @@ Public Class punchOutSetupRequestDoc
 
                             attrib = nodeOrderReference.Attributes.Append(docXML.CreateAttribute(name:="orderDate"))
                             Dim strReferncOrdDate As String = " "
-                            strReferncOrdDate = rowMy1.Item("PO_DT").ToString()
+                            strReferncOrdDate = OrderDataSet.Tables(0).Rows(0).Item("PO_DT").ToString()  '   rowMy1.Item("PO_DT").ToString()
                             attrib.Value = strReferncOrdDate
 
                             attrib = nodeOrderReference.Attributes.Append(docXML.CreateAttribute(name:="orderID"))
                             Dim strReferncOrdId As String = " "
-                            strReferncOrdId = rowMy1.Item("CUSTOMER_PO").ToString()
+                            strReferncOrdId = OrderDataSet.Tables(0).Rows(0).Item("CUSTOMER_PO").ToString()  '  rowMy1.Item("CUSTOMER_PO").ToString()
                             If Trim(strReferncOrdId) <> "" Then
                                 If Len(Trim(strReferncOrdId)) > 3 Then
                                     If strReferncOrdId.StartsWith("C35") Then
@@ -715,85 +720,102 @@ Public Class punchOutSetupRequestDoc
                             Dim nodeSupplierOrderInfo As XmlNode = nodeInvDetlOrderInfo.AppendChild(docXML.CreateElement(name:="SupplierOrderInfo"))
                             attrib = nodeSupplierOrderInfo.Attributes.Append(docXML.CreateAttribute(name:="orderID"))
                             Dim strSupplierOrderID As String = " "
-                            strSupplierOrderID = rowMy1.Item("ISA_PO_ID").ToString()
+                            strSupplierOrderID = OrderDataSet.Tables(0).Rows(0).Item("ISA_PO_ID").ToString()  ' rowMy1.Item("ISA_PO_ID").ToString()
                             attrib.Value = strSupplierOrderID
 
                             Dim strInvoiceTotal As String = ""
                             'cycle starts here
-                            For iOrd = 0 To OrderDataSet.Tables(0).Rows.Count - 1
+                            Dim strOrderLines As String = "SELECT A.* FROM sysadm8.PS_ISA_XEEV_INV_LB A, sysadm8.PS_ISA_XEEV_INV_HB B where A.INVOICE_ID = '" & strOrderNo & "' AND B.ISA_GST_TAX_AMT = 1 AND A.INVOICE_ID=B.INVOICE_ID AND A.BUSINESS_UNIT=B.BUSINESS_UNIT AND A.PROCESS_INSTANCE=B.PROCESS_INSTANCE"
+                            Dim OrdCommand1 As OleDbCommand = New OleDbCommand(strOrderLines, connectOR)
+                            OrdCommand1.CommandTimeout = 120
+                            Dim OrdDataAdapter1 As OleDbDataAdapter = New OleDbDataAdapter(OrdCommand1)
 
-                                ' top line node: InvoiceDetailOrderInfo under  nodeInvDetlOrder ---- "InvoiceDetailOrder"
-                                Dim nodeLine As XmlNode = nodeInvDetlOrder.AppendChild(docXML.CreateElement(name:="InvoiceDetailItem"))
+                            Dim OrderDataSetLines As System.Data.DataSet = New System.Data.DataSet()
 
-                                'attribute invoiceLineNumber
-                                attrib = nodeLine.Attributes.Append(docXML.CreateAttribute(name:="invoiceLineNumber"))
-                                Dim strInvoiceLineNum As String = " "
-                                strInvoiceLineNum = OrderDataSet.Tables(0).Rows(iOrd).Item("LINE_NBR").ToString()
-                                attrib.Value = strInvoiceLineNum
+                            OrdDataAdapter1.Fill(OrderDataSetLines)
 
-                                'attribute quantity
-                                attrib = nodeLine.Attributes.Append(docXML.CreateAttribute(name:="quantity"))
-                                Dim strInvoiceLineQty As String = " "
-                                strInvoiceLineQty = OrderDataSet.Tables(0).Rows(iOrd).Item("INV_QTY").ToString()
-                                attrib.Value = strInvoiceLineQty
+                            If Not OrderDataSetLines Is Nothing Then
+                                If OrderDataSetLines.Tables.Count > 0 Then
+                                    If OrderDataSetLines.Tables(0).Rows.Count > 0 Then
 
-                                ' nodeUOM under nodeLine
-                                Dim nodeUOM As XmlNode = nodeLine.AppendChild(docXML.CreateElement(name:="UnitOfMeasure"))
-                                Dim strUOM As String = " "
-                                strUOM = OrderDataSet.Tables(0).Rows(iOrd).Item("UNIT_OF_MEASURE").ToString()
-                                nodeUOM.InnerText = strUOM
+                                        For iOrd = 0 To OrderDataSetLines.Tables(0).Rows.Count - 1
 
-                                ' UnitPrice  under nodeLine
-                                Dim nodeUnitPrice As XmlNode = nodeLine.AppendChild(docXML.CreateElement(name:="UnitPrice"))
-                                Dim nodeMoneyUnitPrice As XmlNode = nodeUnitPrice.AppendChild(docXML.CreateElement(name:="Money"))
-                                attrib = nodeMoneyUnitPrice.Attributes.Append(docXML.CreateAttribute(name:="currency"))
-                                attrib.Value = "USD"
-                                Dim strMoneyUnitPrice As String = "0.00"
-                                strMoneyUnitPrice = OrderDataSet.Tables(0).Rows(iOrd).Item("PRICE").ToString()
-                                nodeMoneyUnitPrice.InnerText = strMoneyUnitPrice
+                                            ' top line node: InvoiceDetailOrderInfo under  nodeInvDetlOrder ---- "InvoiceDetailOrder"
+                                            Dim nodeLine As XmlNode = nodeInvDetlOrder.AppendChild(docXML.CreateElement(name:="InvoiceDetailItem"))
 
-                                ' InvoiceDetailItemReference  under nodeLine
-                                Dim nodeInvoiceDetItemRef As XmlNode = nodeLine.AppendChild(docXML.CreateElement(name:="InvoiceDetailItemReference"))
-                                attrib = nodeInvoiceDetItemRef.Attributes.Append(docXML.CreateAttribute(name:="lineNumber"))
-                                Dim strLineNmbr As String = " "
-                                strLineNmbr = strInvoiceLineNum  ' ?? or OrderDataSet.Tables(0).Rows(iOrd).Item("TOTAL").ToString()
-                                attrib.Value = strLineNmbr
+                                            'attribute invoiceLineNumber
+                                            attrib = nodeLine.Attributes.Append(docXML.CreateAttribute(name:="invoiceLineNumber"))
+                                            Dim strInvoiceLineNum As String = " "
+                                            strInvoiceLineNum = OrderDataSetLines.Tables(0).Rows(iOrd).Item("LINE_NBR").ToString()
+                                            attrib.Value = strInvoiceLineNum
 
-                                ' ItemID under InvoiceDetailItemReference  under nodeLine
-                                Dim nodeItemID As XmlNode = nodeInvoiceDetItemRef.AppendChild(docXML.CreateElement(name:="ItemID"))
+                                            'attribute quantity
+                                            attrib = nodeLine.Attributes.Append(docXML.CreateAttribute(name:="quantity"))
+                                            Dim strInvoiceLineQty As String = " "
+                                            strInvoiceLineQty = OrderDataSetLines.Tables(0).Rows(iOrd).Item("INV_QTY").ToString()
+                                            attrib.Value = strInvoiceLineQty
 
-                                ' SupplierPartID under ItemID 
-                                Dim nodeSupplierPartID As XmlNode = nodeItemID.AppendChild(docXML.CreateElement(name:="SupplierPartID"))
-                                Dim strSupplierPartID As String = " "
-                                Try
-                                    strSupplierPartID = OrderDataSet.Tables(0).Rows(iOrd).Item("INV_ITEM_ID").ToString()
-                                    If Trim(strSupplierPartID) = "" Then
-                                        strSupplierPartID = " "
+                                            ' nodeUOM under nodeLine
+                                            Dim nodeUOM As XmlNode = nodeLine.AppendChild(docXML.CreateElement(name:="UnitOfMeasure"))
+                                            Dim strUOM As String = " "
+                                            strUOM = OrderDataSetLines.Tables(0).Rows(iOrd).Item("UNIT_OF_MEASURE").ToString()
+                                            nodeUOM.InnerText = strUOM
+
+                                            ' UnitPrice  under nodeLine
+                                            Dim nodeUnitPrice As XmlNode = nodeLine.AppendChild(docXML.CreateElement(name:="UnitPrice"))
+                                            Dim nodeMoneyUnitPrice As XmlNode = nodeUnitPrice.AppendChild(docXML.CreateElement(name:="Money"))
+                                            attrib = nodeMoneyUnitPrice.Attributes.Append(docXML.CreateAttribute(name:="currency"))
+                                            attrib.Value = "USD"
+                                            Dim strMoneyUnitPrice As String = "0.00"
+                                            strMoneyUnitPrice = OrderDataSetLines.Tables(0).Rows(iOrd).Item("PRICE").ToString()
+                                            nodeMoneyUnitPrice.InnerText = strMoneyUnitPrice
+
+                                            ' InvoiceDetailItemReference  under nodeLine
+                                            Dim nodeInvoiceDetItemRef As XmlNode = nodeLine.AppendChild(docXML.CreateElement(name:="InvoiceDetailItemReference"))
+                                            attrib = nodeInvoiceDetItemRef.Attributes.Append(docXML.CreateAttribute(name:="lineNumber"))
+                                            Dim strLineNmbr As String = " "
+                                            strLineNmbr = strInvoiceLineNum  ' ?? or OrderDataSetLines.Tables(0).Rows(iOrd).Item("TOTAL").ToString()
+                                            attrib.Value = strLineNmbr
+
+                                            ' ItemID under InvoiceDetailItemReference  under nodeLine
+                                            Dim nodeItemID As XmlNode = nodeInvoiceDetItemRef.AppendChild(docXML.CreateElement(name:="ItemID"))
+
+                                            ' SupplierPartID under ItemID 
+                                            Dim nodeSupplierPartID As XmlNode = nodeItemID.AppendChild(docXML.CreateElement(name:="SupplierPartID"))
+                                            Dim strSupplierPartID As String = " "
+                                            Try
+                                                strSupplierPartID = OrderDataSetLines.Tables(0).Rows(iOrd).Item("ITM_ID_VNDR").ToString()
+                                                If Trim(strSupplierPartID) = "" Then
+                                                    strSupplierPartID = " "
+                                                End If
+                                            Catch ex As Exception
+                                                strSupplierPartID = " "
+                                            End Try
+
+                                            nodeSupplierPartID.InnerText = strSupplierPartID
+
+                                            ' Description under InvoiceDetailItemReference  under nodeLine
+                                            Dim nodeDescrInvDetl As XmlNode = nodeInvoiceDetItemRef.AppendChild(docXML.CreateElement(name:="Description"))
+                                            attrib = nodeDescrInvDetl.Attributes.Append(docXML.CreateAttribute(name:="xml:lang"))
+                                            attrib.Value = "en-US"
+                                            Dim strDescrInvDetl As String = " "
+                                            strDescrInvDetl = OrderDataSetLines.Tables(0).Rows(iOrd).Item("DESCR80").ToString()
+                                            nodeDescrInvDetl.InnerText = strDescrInvDetl
+
+                                            ' Extrinsic  under nodeLine
+                                            Dim nodeExtrnc As XmlNode = nodeLine.AppendChild(docXML.CreateElement(name:="Extrinsic"))
+                                            attrib = nodeExtrnc.Attributes.Append(docXML.CreateAttribute(name:="name"))
+                                            attrib.Value = "UNSPSC"
+                                            Dim strNodeExtrnc As String = " "
+                                            '  strNodeExtrnc = OrderDataSetLines.Tables(0).Rows(iOrd).Item("TOTAL").ToString()
+                                            nodeExtrnc.InnerText = strNodeExtrnc
+
+                                        Next   '  Loop through Invoice Details
+
                                     End If
-                                Catch ex As Exception
-                                    strSupplierPartID = " "
-                                End Try
-
-                                nodeSupplierPartID.InnerText = strSupplierPartID
-
-                                ' Description under InvoiceDetailItemReference  under nodeLine
-                                Dim nodeDescrInvDetl As XmlNode = nodeInvoiceDetItemRef.AppendChild(docXML.CreateElement(name:="Description"))
-                                attrib = nodeDescrInvDetl.Attributes.Append(docXML.CreateAttribute(name:="xml:lang"))
-                                attrib.Value = "en-US"
-                                Dim strDescrInvDetl As String = " "
-                                strDescrInvDetl = OrderDataSet.Tables(0).Rows(iOrd).Item("DESCR80").ToString()
-                                nodeDescrInvDetl.InnerText = strDescrInvDetl
-
-                                ' Extrinsic  under nodeLine
-                                Dim nodeExtrnc As XmlNode = nodeLine.AppendChild(docXML.CreateElement(name:="Extrinsic"))
-                                attrib = nodeExtrnc.Attributes.Append(docXML.CreateAttribute(name:="name"))
-                                attrib.Value = "UNSPSC"
-                                Dim strNodeExtrnc As String = " "
-                                '  strNodeExtrnc = OrderDataSet.Tables(0).Rows(iOrd).Item("TOTAL").ToString()
-                                nodeExtrnc.InnerText = strNodeExtrnc
-
-                            Next   '  Loop through Invoice Details
-
+                                End If
+                            End If
+                            
                             'end of the code related to InvoiceDetailOrder node 
 
                             ' node InvoiceDetailSummary under  nodeOrder ---- "InvoiceDetailRequest"
@@ -805,7 +827,7 @@ Public Class punchOutSetupRequestDoc
                             Dim nodeMoney23 As XmlNode = nodeSubtotalAmount.AppendChild(docXML.CreateElement(name:="Money"))
                             attrib = nodeMoney23.Attributes.Append(docXML.CreateAttribute(name:="currency"))
                             attrib.Value = "USD"
-                            strInvoiceTotal = rowMy1.Item("INVOICE_AMOUNT").ToString()
+                            strInvoiceTotal = OrderDataSet.Tables(0).Rows(0).Item("INVOICE_AMOUNT").ToString()  ' rowMy1.Item("INVOICE_AMOUNT").ToString()
                             nodeMoney23.InnerText = strInvoiceTotal
 
                             'Tax
@@ -816,7 +838,7 @@ Public Class punchOutSetupRequestDoc
                             attrib = nodeMoneyTax.Attributes.Append(docXML.CreateAttribute(name:="currency"))
                             attrib.Value = "USD"
                             Dim strMoneyTax As String = "0.00"
-                            strMoneyTax = rowMy1.Item("TAX_AMT").ToString()
+                            strMoneyTax = OrderDataSet.Tables(0).Rows(0).Item("TAX_AMT").ToString()  ' rowMy1.Item("TAX_AMT").ToString()
                             nodeMoneyTax.InnerText = strMoneyTax
 
                             'Description under Tax
