@@ -1,5 +1,6 @@
 ﻿Imports System.IO
 Imports System.Data
+Imports System.ServiceProcess
 'Imports System.Text.StringBuilder
 Imports System.Threading.Thread
 
@@ -403,7 +404,7 @@ Public Class SiteUpload
                     Exit Sub
                 End Try
 
-                Exit Sub
+                'Exit Sub
 
                 'Sleep(3000)
                 lblMessage.AppendText("STOPPING IIS" & vbCrLf)
@@ -412,15 +413,15 @@ Public Class SiteUpload
                 'System.Diagnostics.Process.Start("iisreset /stop") 'Stop IIS
                 'Sleep(3000)
 
-                Dim stopinfo As New ProcessStartInfo("cmd", "iisreset /stop")
-                stopinfo.WindowStyle = ProcessWindowStyle.Normal
-                'Process.Start(stopinfo)
+                Dim stopinfo As New ProcessStartInfo("iisreset.exe", "/stop")
+                stopinfo.WindowStyle = ProcessWindowStyle.Hidden
+                stopinfo.Verb = "runas"
+                Process.Start(stopinfo)
                 Dim p1 As New Process
                 p1.StartInfo = stopinfo
                 p1.Start()
                 p1.WaitForExit()
                 p1.Close()
-
 
                 Try
                     Dim delDir As String = "\\" & cmbServer.Text & "\c$\inetpub\wwwroot\" & strServerFolder
@@ -500,17 +501,17 @@ Public Class SiteUpload
                 'System.Diagnostics.Process.Start("iisreset /start") 'Restart IIS
                 'Sleep(3000)
 
-                Dim startinfo As New ProcessStartInfo("cmd", "iisreset /start")
-                startinfo.WindowStyle = ProcessWindowStyle.Normal
-                'Process.Start(startinfo)
+                Dim startinfo As New ProcessStartInfo("iisreset.exe", "/start")
+                stopinfo.WindowStyle = ProcessWindowStyle.Hidden
+                startinfo.Verb = "runas"
                 Dim p2 As New Process
                 p2.StartInfo = startinfo
                 p2.Start()
                 p2.WaitForExit()
                 p2.Close()
 
-                'lblMessage.ForeColor = Color.Green
-                'lblMessage.Text += "Process complete!"
+                lblMessage.ForeColor = Color.Green
+                lblMessage.Text += "Prod upload complete!"
 
             Catch ex As Exception
                 lblMessage.Text = ex.ToString
@@ -690,9 +691,15 @@ Public Class SiteUpload
         Me.Refresh()
         Application.DoEvents()
 
-        Dim stopinfo As New ProcessStartInfo("cmd", "iisreset /stop")
-        stopinfo.WindowStyle = ProcessWindowStyle.Normal
-        'Process.Start(stopinfo)
+
+        'Dim stopinfo As New ProcessStartInfo("cmd",  "iisreset /stop")
+        Dim stopinfo As New ProcessStartInfo("iisreset.exe", "/stop")
+        'System.Diagnostics.Process.Start(stopinfo)
+        'stopinfo.FileName = "/c c:\windows\system32\iisreset.exe /help"
+        'stopinfo.WindowStyle = ProcessWindowStyle.Normal
+        stopinfo.WindowStyle = ProcessWindowStyle.Hidden
+        stopinfo.Verb = "runas"
+        Process.Start(stopinfo)
         Dim p1 As New Process
         p1.StartInfo = stopinfo
         p1.Start()
@@ -705,8 +712,12 @@ Public Class SiteUpload
         Me.Refresh()
         Application.DoEvents()
 
-        Dim startinfo As New ProcessStartInfo("cmd", "iisreset /start")
-        startinfo.WindowStyle = ProcessWindowStyle.Normal
+        'Dim startinfo As New ProcessStartInfo("cmd", "iisreset /start")
+        Dim startinfo As New ProcessStartInfo("iisreset.exe", "/start")
+        'startinfo.FileName = "iisreset.exe /start"
+        'startinfo.WindowStyle = ProcessWindowStyle.Normal
+        stopinfo.WindowStyle = ProcessWindowStyle.Hidden
+        startinfo.Verb = "runas"
         Dim p2 As New Process
         p2.StartInfo = startinfo
         p2.Start()
