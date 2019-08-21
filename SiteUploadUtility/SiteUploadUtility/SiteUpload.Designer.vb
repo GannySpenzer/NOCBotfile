@@ -243,6 +243,7 @@ Partial Class SiteUpload
         Me.Button1.TabIndex = 23
         Me.Button1.Text = "test"
         Me.Button1.UseVisualStyleBackColor = True
+        Me.Button1.Visible = False
         '
         'Timer1
         '
