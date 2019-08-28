@@ -34,7 +34,7 @@ namespace WMReceiptsMapping
             {
 
                 //strSQLstring = "SELECT * FROM sysadm8.PS_ISA_O_MATR_MOVE WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'PMC' AND TRANS_TYPE = 'REC'";
-                strSQLstring = "SELECT * FROM sysadm8.PS_ISA_SV_MOV_OUT WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'SOLVAY' AND ROWNUM < 2";
+                strSQLstring = "SELECT * FROM sysadm8.PS_ISA_SV_MOV_OUT WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'SOLVAY'";
                 m_oLogger.LogMessage("getWMReceiptMappingData", "PeopleSoft connection string : " + OracleConString);
                 m_oLogger.LogMessage("getWMReceiptMappingData", "Query To get the PO mapping date : " + strSQLstring);
                 dtResponse = oleDBExecuteReader(strSQLstring);
@@ -60,7 +60,7 @@ namespace WMReceiptsMapping
             try
             {
 
-                strSQLstring = "UPDATE SYSADM8.PS_ISA_SV_MOV_OUT SET PROCESS_FLAG='" + ProcFlag + "', DATE_PROCESSED = SYSDATE WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'SOLVAY' AND ROWNUM < 2";
+                strSQLstring = "UPDATE SYSADM8.PS_ISA_SV_MOV_OUT SET PROCESS_FLAG='" + ProcFlag + "', DATE_PROCESSED = SYSDATE WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'SOLVAY'";
 
                 m_oLogger.LogMessage("UpdateWMReceiptMappingData", "PeopleSoft connection string : " + OracleConString);
                 m_oLogger.LogMessage("UpdateWMReceiptMappingData", "Query To Update the PO Receipt mapping date : " + strSQLstring);
