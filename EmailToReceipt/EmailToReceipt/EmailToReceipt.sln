@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailToReceipt", "EmailToReceipt\EmailToReceipt.csproj", "{24A4145B-D68B-46A7-B2A4-D8B0ACC6CD81}"
+EndProject
+Global
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 2
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = http://vsfoundations:8080/tfs/insiteonline
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = EmailToReceipt\\EmailToReceipt.csproj
+		SccProjectName1 = EmailToReceipt
+		SccLocalPath1 = EmailToReceipt
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{24A4145B-D68B-46A7-B2A4-D8B0ACC6CD81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24A4145B-D68B-46A7-B2A4-D8B0ACC6CD81}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24A4145B-D68B-46A7-B2A4-D8B0ACC6CD81}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24A4145B-D68B-46A7-B2A4-D8B0ACC6CD81}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
