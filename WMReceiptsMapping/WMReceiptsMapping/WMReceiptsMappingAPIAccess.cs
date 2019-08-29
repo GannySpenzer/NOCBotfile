@@ -26,6 +26,27 @@ namespace WMReceiptsMapping
             string serviceURL = " ";
             var strResponse = " ";
             string responseErrorText = " ";
+            string RCVPOR = " ";
+            string RCVPRN = " ";
+            string SNDPRN = " ";
+
+            testOrProd = ConfigurationManager.AppSettings["TestOrProd"];
+            if (testOrProd == "TEST")
+            {
+                serviceURL = ConfigurationManager.AppSettings["testServiceURL"];
+                authorization = ConfigurationManager.AppSettings["testAuthorization"];
+                SNDPRN = "FRPARWM1";
+                RCVPOR = "SAPWQ1";
+                RCVPRN = "WQ1_400";
+            }
+            else if (testOrProd == "PROD") 
+            {
+                serviceURL = ConfigurationManager.AppSettings["prodServiceURL"];
+                authorization = ConfigurationManager.AppSettings["prodAuthorization"];
+                SNDPRN = "FRPARWM1";
+                RCVPOR = "SAPWP1";
+                RCVPRN = "WP1_400";
+            }
 
             DataTable dtResponse = new DataTable();
             try
@@ -79,7 +100,7 @@ namespace WMReceiptsMapping
                         using (StreamReader sr = new StreamReader(dir + "/ZWIM_MBGMCR2-oneline-mapping3.xml"))
                         {
                             xmlStr = sr.ReadToEnd();
-                            sbInit.AppendFormat(xmlStr, DOC_NUM, LOGDAT, LOGTIM, REFGRP, REFMES, PSTNG_DATE, MATERIAL, STGE_LOC, MOVE_TYPE, ENTRY_QNT, ENTRY_UOM, PO_NUMBER, PO_ITEM, ITEM_TEXT);
+                            sbInit.AppendFormat(xmlStr, DOC_NUM, LOGDAT, LOGTIM, REFGRP, REFMES, PSTNG_DATE, MATERIAL, STGE_LOC, MOVE_TYPE, ENTRY_QNT, ENTRY_UOM, PO_NUMBER, PO_ITEM, ITEM_TEXT, SNDPRN, RCVPOR, RCVPRN );
                             xmlStringInit = sbInit.ToString();
                         }
 
@@ -162,17 +183,17 @@ namespace WMReceiptsMapping
                         //JObject resultSet = JObject.Parse(jsonSampleData);
                         using (var client = new WebClient())
                         {
-                            testOrProd = ConfigurationManager.AppSettings["TestOrProd"];
-                            if (testOrProd == "TEST")
-                            {
-                                serviceURL = ConfigurationManager.AppSettings["testServiceURL"];
-                                authorization = ConfigurationManager.AppSettings["testAuthorization"];
-                            }
-                            else
-                            {
-                                serviceURL = ConfigurationManager.AppSettings["prodServiceURL"];
-                                authorization = ConfigurationManager.AppSettings["prodAuthorization"];
-                            }
+                            //testOrProd = ConfigurationManager.AppSettings["TestOrProd"];
+                            //if (testOrProd == "TEST")
+                            //{
+                            //    serviceURL = ConfigurationManager.AppSettings["testServiceURL"];
+                            //    authorization = ConfigurationManager.AppSettings["testAuthorization"];
+                            //}
+                            //else
+                            //{
+                            //    serviceURL = ConfigurationManager.AppSettings["prodServiceURL"];
+                            //    authorization = ConfigurationManager.AppSettings["prodAuthorization"];
+                            //}
 
 
                             m_oLogger.LogMessage("postWMReceiptMappingData", "POST WMReceipt Mapping Data to Solvay starts here");
