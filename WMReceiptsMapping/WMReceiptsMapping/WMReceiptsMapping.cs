@@ -29,7 +29,7 @@ namespace WMReceiptsMapping
             strResponse = objWMReceiptsMappingAPIAccess.postWMReceiptMappingData(m_oLogger);
             if (strResponse.ToUpper() == "SUCCESS")
             {
-                processFlag = "Y";
+                processFlag = "I";
             }
             else
             {
