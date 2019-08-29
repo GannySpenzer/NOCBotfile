@@ -36,8 +36,8 @@ namespace EmailToReceipt
             DirectoryInfo logDirInfo = null;
             FileInfo logFileInfo;
 
-            try 
-            {                
+            try
+            {
                 ExchangeService service = new ExchangeService(ExchangeVersion.Exchange2007_SP1);
                 service.Credentials = new WebCredentials(UN, Pwd);
                 service.Url = new Uri(OutlookURL);
@@ -48,7 +48,7 @@ namespace EmailToReceipt
                 FolderId processedFolderID = null;
 
                 FolderId fidProcessedParent = new FolderId(WellKnownFolderName.Inbox, mailBoxToProcess);
-                ItemView view = new ItemView(int.MaxValue);                
+                ItemView view = new ItemView(int.MaxValue);
 
                 string logpath = string.Empty;
 
@@ -66,12 +66,12 @@ namespace EmailToReceipt
                     fileStream = new FileStream(logFilePath, FileMode.Append);
                 }
                 log = new StreamWriter(fileStream);
-                log.WriteLine("*************************************Logs("+ String.Format(DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss")) +")***********************************");
+                log.WriteLine("*************************************Logs(" + String.Format(DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss")) + ")***********************************");
 
                 //Get the filtered Email With Subject in Inbox
-                FindItemsResults<Item> findResults = service.FindItems(fidProcessedParent, SetFilter(), view);                
+                FindItemsResults<Item> findResults = service.FindItems(fidProcessedParent, SetFilter(), view);
                 log.WriteLine("Total Emails with filtered subject name is " + findResults.Items.Count() + ".");
-                
+
                 moveToFolder = service.FindFolders(fidProcessedParent, fv);
                 //Get the Processed Folder Id
                 foreach (Folder folder in moveToFolder.Folders)
@@ -91,6 +91,7 @@ namespace EmailToReceipt
                     string from = message.From.Address.ToString();
                     string subject = message.Subject.ToString();
                     int attchcount = item.Attachments.Count();
+                    int attachmentMoved = 0;
                     foreach (Microsoft.Exchange.WebServices.Data.Attachment attch in message.Attachments)
                     {
                         FileAttachment fileAttachment = attch as FileAttachment;
@@ -99,26 +100,27 @@ namespace EmailToReceipt
                         int index = fileName.LastIndexOf('.');
                         string fileExtension = fileName.Substring(index + 1);
                         string csvfilename = fileAttachment.Name.Substring(0, fileAttachment.Name.LastIndexOf("."));
-                        
-                        if(fileExtension == "xlsx" || fileExtension == "xls"){
+
+                        if (fileExtension == "xlsx" || fileExtension == "xls")
+                        {
                             //stored the Attachment file in the AttachmentFile folder
                             try
                             {
                                 csvfilename = "Receipts_" + String.Format("" + DateTime.Now.ToString("MMddyyyy_hhmmss")).ToString() + ".csv";
                                 log.WriteLine("");
-                                log.WriteLine("Begin Processing the Email from : " + from_name +" for File name "+ fileAttachment.Name + "");
+                                log.WriteLine("Begin Processing the Email from : " + from_name + " for File name " + fileAttachment.Name + "");
                                 fileAttachment.Load(appPath + @"AttachmentFile\" + fileAttachment.Name);
                                 if (System.IO.File.Exists(appPath + @"AttachmentFile\" + fileAttachment.Name))
                                 {
                                     log.WriteLine("Downloaded the attachment file " + fileAttachment.Name);
                                 }
-                                else 
+                                else
                                 {
-                                    log.WriteLine("Error in Downloading the attachment file " + fileAttachment.Name+ " in attachment folder.");
+                                    log.WriteLine("Error in Downloading the attachment file " + fileAttachment.Name + " in attachment folder.");
                                     log.WriteLine("-------------------------------------------------------------");
                                     break;
-                                }                                
-                                                                
+                                }
+
                                 //Inserting into the Tables
                                 DataTable dt = new DataTable();
                                 dt = ReadExcel(appPath + @"AttachmentFile\" + fileAttachment.Name);
@@ -176,15 +178,16 @@ namespace EmailToReceipt
                                             log.WriteLine("Error while inserting the records into the receipt log table.");
                                         }
                                     }
-                                    else 
+                                    else
                                     {
                                         log.WriteLine("No records are availiable in the Attachment file.");
-                                    }                                    
+                                    }
                                 }
-                                else 
+                                else
                                 {
                                     log.WriteLine("Error in reading the attachment file records.");
-                                }                                
+                                    break;
+                                }
 
                                 //Move to the destination VM 
                                 System.IO.File.Copy(appPath + @"ConvertedFile\" + csvfilename, DestinationPath + csvfilename);
@@ -192,12 +195,13 @@ namespace EmailToReceipt
                                 {
                                     log.WriteLine("Moved the " + csvfilename + " file to destination VM");
                                 }
-                                else {
+                                else
+                                {
                                     log.WriteLine("Error in the Moving the " + csvfilename + " file to destination VM");
                                     log.WriteLine("-------------------------------------------------------------");
                                     break;
-                                }                                
-                               
+                                }
+
                                 //Delete the Attachment file in AttachmentFile folder
                                 System.IO.DirectoryInfo Attchment_Folder = new DirectoryInfo(appPath + @"AttachmentFile");
                                 foreach (FileInfo file in Attchment_Folder.GetFiles())
@@ -216,30 +220,40 @@ namespace EmailToReceipt
                                 //System.IO.File.Delete(appPath + @"ConvertedFile\" + csvfilename);
                                 log.WriteLine("Deleted the Converted file from the ConvertedFile folder");
                                 log.WriteLine("Email and attachments processed succeffully");
-                                log.WriteLine("");                                
+                                log.WriteLine("");
+                                attachmentMoved = attachmentMoved + 1;
                             }
-                            catch(Exception ex)
+                            catch (Exception ex)
                             {
                                 SendErrorEmail(ex, ex.Message, Convert.ToString(ex.InnerException), "");
                                 log.WriteLine("ERROR: " + ex.Message + ". Inner Exception : " + Convert.ToString(ex.InnerException));
                                 log.WriteLine("-------------------------------------------------------------");
-                                continue;                                
-                            }                            
-                        }                       
+                                continue;
+                            }
+                        }
                     }
                     //Email moved to Processed folder
-                    item.Move(processedFolderID);
-                    log.WriteLine("Moved the email to " + ProcessedFolderName + " folder.");
-                    log.WriteLine("-------------------------------------------------------------");
+                    if (attachmentMoved > 0)
+                    {
+                        item.Move(processedFolderID);
+                        log.WriteLine("Moved the email to " + ProcessedFolderName + " folder.");
+                        log.WriteLine("-------------------------------------------------------------");
+                    }
+                    else
+                    {
+                        log.WriteLine("");
+                        log.WriteLine("Email not moved to " + ProcessedFolderName + " folder since there is no attahments availible or attahcments not moved to destination.");
+                        log.WriteLine("-------------------------------------------------------------");
+                    }
                 }
                 log.WriteLine("-------------------------------------------------------------");
                 log.Close();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 SendErrorEmail(ex, ex.Message, Convert.ToString(ex.InnerException), "");
-            }            
-        }        
+            }
+        }
 
         private static SearchFilter SetFilter()
         {
@@ -249,10 +263,10 @@ namespace EmailToReceipt
             //searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, FilterEmailWithSubject.ToLower()));         
             SearchFilter searchfiltr = new SearchFilter.SearchFilterCollection(LogicalOperator.Or, searchFilterCollection.ToArray());
             return searchfiltr;
-        }       
+        }
 
         private static DataTable ReadExcel(string UploadPath)
-        {                        
+        {
             string conString = string.Format("Provider=Microsoft.ACE.OLEDB.12.0;Data Source={0};Extended Properties='Excel 8.0';", UploadPath);
             try
             {
@@ -270,7 +284,7 @@ namespace EmailToReceipt
                     oleda.Fill(ds);
 
                     oledbConn.Dispose();
-                    oledbConn.Close();                    
+                    oledbConn.Close();
 
                     return ds.Tables[0];
                 }
@@ -282,9 +296,9 @@ namespace EmailToReceipt
                 }
             }
             catch (Exception ex)
-            {                
+            {
                 return null;
-            }            
+            }
         }
 
         private static string DataTableToCSV(DataTable datatable, char seperator)
@@ -311,10 +325,10 @@ namespace EmailToReceipt
             return sb.ToString();
         }
 
-        private static Boolean InsertTbl(DataTable dt) 
+        private static Boolean InsertTbl(DataTable dt)
         {
             Boolean reslt = false;
-            try 
+            try
             {
                 string PO_ID = string.Empty;
                 string PO_Desc = string.Empty;
@@ -336,7 +350,7 @@ namespace EmailToReceipt
                 cn.Open();
 
                 foreach (DataRow rw in dt.Rows)
-                {                    
+                {
                     PO_ID = rw["PO"].ToString();
                     PO_Desc = rw["PO Description"].ToString();
                     PO_LINE_NO = rw["PO Line"].ToString();
@@ -360,9 +374,9 @@ namespace EmailToReceipt
                 cn.Dispose();
                 reslt = true;
 
-                return reslt;                
+                return reslt;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return false;
             }
@@ -395,7 +409,7 @@ namespace EmailToReceipt
 
                 strbodydetl = strbodydetl + "Error Message :<span>    </span>" + strMessage + "<BR>";
                 strbodydetl = strbodydetl + "Inner Exception :<span>    </span>" + InnerExcp + "<BR>";
-                strbodydetl = strbodydetl + "Error Line No :<span>    </span>" + lineNo + "<BR>";                
+                strbodydetl = strbodydetl + "Error Line No :<span>    </span>" + lineNo + "<BR>";
                 strbodydetl = strbodydetl + "Date:<span>    </span>" + DateTime.Now + "<BR>";
                 strbodydetl = strbodydetl + "&nbsp;<br>";
                 strbodydetl = strbodydetl + "&nbsp;</p>";
@@ -456,7 +470,7 @@ namespace EmailToReceipt
             return isEmailSent;
         }
 
-        
+
 
     }
 }
