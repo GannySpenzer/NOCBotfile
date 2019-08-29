@@ -107,8 +107,8 @@ namespace EmailToReceipt
                                 csvfilename = "Receipts_" + String.Format("" + DateTime.Now.ToString("MMddyyyy_hhmmss")).ToString() + ".csv";
                                 log.WriteLine("");
                                 log.WriteLine("Begin Processing the Email from : " + from_name +" for File name "+ fileAttachment.Name + "");
-                                fileAttachment.Load(@"C:\Avasoft_Utility\EmailToReceipt\EmailToReceipt\AttachmentFile\" + fileAttachment.Name);
-                                if (System.IO.File.Exists(@"C:\Avasoft_Utility\EmailToReceipt\EmailToReceipt\AttachmentFile\" + fileAttachment.Name))
+                                fileAttachment.Load(appPath + @"AttachmentFile\" + fileAttachment.Name);
+                                if (System.IO.File.Exists(appPath + @"AttachmentFile\" + fileAttachment.Name))
                                 {
                                     log.WriteLine("Downloaded the attachment file " + fileAttachment.Name);
                                 }
@@ -282,7 +282,7 @@ namespace EmailToReceipt
                 }
             }
             catch (Exception ex)
-            {
+            {                
                 return null;
             }            
         }
