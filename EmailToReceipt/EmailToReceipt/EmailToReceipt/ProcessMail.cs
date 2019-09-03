@@ -14,6 +14,7 @@ using Spire.Xls;
 using Excel = Microsoft.Office.Interop.Excel;
 using System.Data;
 using System.Diagnostics;
+using System.Net;
 
 namespace EmailToReceipt
 {
@@ -30,6 +31,8 @@ namespace EmailToReceipt
 
             string appPath = AppDomain.CurrentDomain.BaseDirectory;
             appPath = appPath.Substring(0, appPath.LastIndexOf("bin"));
+
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
             StreamWriter log;
             FileStream fileStream = null;
@@ -83,6 +86,7 @@ namespace EmailToReceipt
                     }
                 }
 
+                int PreventDuplicationoffiles = 0;
                 foreach (Item item in findResults.Items)
                 {
                     EmailMessage message = EmailMessage.Bind(service, item.Id, new PropertySet(BasePropertySet.FirstClassProperties, EmailMessageSchema.From, ItemSchema.Attachments));
@@ -94,6 +98,7 @@ namespace EmailToReceipt
                     int attachmentMoved = 0;
                     foreach (Microsoft.Exchange.WebServices.Data.Attachment attch in message.Attachments)
                     {
+                        PreventDuplicationoffiles = PreventDuplicationoffiles + 1;
                         FileAttachment fileAttachment = attch as FileAttachment;
                         string fileName = "";
                         fileName = fileAttachment.Name;
@@ -106,7 +111,7 @@ namespace EmailToReceipt
                             //stored the Attachment file in the AttachmentFile folder
                             try
                             {
-                                csvfilename = "Receipts_" + String.Format("" + DateTime.Now.ToString("MMddyyyy_hhmmss")).ToString() + ".csv";
+                                csvfilename = "Receipts_" + String.Format("" + DateTime.Now.ToString("MMddyyyy_hhmmss")).ToString() + ""+ PreventDuplicationoffiles +".csv";
                                 log.WriteLine("");
                                 log.WriteLine("Begin Processing the Email from : " + from_name + " for File name " + fileAttachment.Name + "");
                                 fileAttachment.Load(appPath + @"AttachmentFile\" + fileAttachment.Name);
@@ -123,7 +128,7 @@ namespace EmailToReceipt
 
                                 //Inserting into the Tables
                                 DataTable dt = new DataTable();
-                                dt = ReadExcel(appPath + @"AttachmentFile\" + fileAttachment.Name);
+                                dt = ReadExcel(appPath + @"AttachmentFile\" + fileAttachment.Name, log);
                                 if (dt != null)
                                 {
                                     if (dt.Rows.Count > 0)
@@ -180,7 +185,17 @@ namespace EmailToReceipt
                                     }
                                     else
                                     {
-                                        log.WriteLine("No records are availiable in the Attachment file.");
+                                        log.WriteLine("No records are availiable in the Attachment file. So we are moving this email to " + ProcessedFolderName + " folder.");
+                                        attachmentMoved = attachmentMoved + 1;
+                                        //Delete the Attachment file in AttachmentFile folder
+                                        System.IO.DirectoryInfo Attchments_Folder = new DirectoryInfo(appPath + @"AttachmentFile");
+                                        foreach (FileInfo file in Attchments_Folder.GetFiles())
+                                        {
+                                            file.Delete();
+                                        }
+                                        //System.IO.File.Delete(appPath + @"AttachmentFile\" + fileAttachment.Name);
+                                        log.WriteLine("Deleted the Attachment file from the AttachmentFile folder even when the attachment has no datas.");                                        
+                                        break;
                                     }
                                 }
                                 else
@@ -225,7 +240,7 @@ namespace EmailToReceipt
                             }
                             catch (Exception ex)
                             {
-                                SendErrorEmail(ex, ex.Message, Convert.ToString(ex.InnerException), "");
+                                SendErrorEmail(ex, ex.Message, Convert.ToString(ex.InnerException), "Main Method");
                                 log.WriteLine("ERROR: " + ex.Message + ". Inner Exception : " + Convert.ToString(ex.InnerException));
                                 log.WriteLine("-------------------------------------------------------------");
                                 continue;
@@ -251,7 +266,7 @@ namespace EmailToReceipt
             }
             catch (Exception ex)
             {
-                SendErrorEmail(ex, ex.Message, Convert.ToString(ex.InnerException), "");
+                SendErrorEmail(ex, ex.Message, Convert.ToString(ex.InnerException), "Main");
             }
         }
 
@@ -265,7 +280,7 @@ namespace EmailToReceipt
             return searchfiltr;
         }
 
-        private static DataTable ReadExcel(string UploadPath)
+        private static DataTable ReadExcel(string UploadPath, StreamWriter log)
         {
             string conString = string.Format("Provider=Microsoft.ACE.OLEDB.12.0;Data Source={0};Extended Properties='Excel 8.0';", UploadPath);
             try
@@ -286,17 +301,21 @@ namespace EmailToReceipt
                     oledbConn.Dispose();
                     oledbConn.Close();
 
+                    log.WriteLine("Readed the excel datas successfully.");
                     return ds.Tables[0];
                 }
                 catch (Exception ex)
                 {
                     oledbConn.Dispose();
                     oledbConn.Close();
+                    log.WriteLine("Error While reading the Excel File : " + ex.Message);
+                    SendErrorEmail(ex, ex.Message, Convert.ToString(ex.InnerException), "ReadExcel");
                     return null;
                 }
             }
             catch (Exception ex)
             {
+                log.WriteLine("Error While reading the Excel File : " + ex.Message);
                 return null;
             }
         }
@@ -407,6 +426,7 @@ namespace EmailToReceipt
                 strbodydetl = strbodydetl + "<p >" + strMessage + "... ";
                 strbodydetl = strbodydetl + "&nbsp;<BR>";
 
+                strbodydetl = strbodydetl + "Method Name :<span>    </span>" + MethodName + "<BR>";
                 strbodydetl = strbodydetl + "Error Message :<span>    </span>" + strMessage + "<BR>";
                 strbodydetl = strbodydetl + "Inner Exception :<span>    </span>" + InnerExcp + "<BR>";
                 strbodydetl = strbodydetl + "Error Line No :<span>    </span>" + lineNo + "<BR>";
@@ -469,8 +489,5 @@ namespace EmailToReceipt
             }
             return isEmailSent;
         }
-
-
-
     }
 }
