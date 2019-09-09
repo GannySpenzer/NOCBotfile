@@ -191,7 +191,7 @@ Public Class clsEnterprise
     End Property
 
     Private dteSendStartDate As DateTime
-    Public ReadOnly Property SendStartDate() As String
+    Public ReadOnly Property SendStartDate() As DateTime
         Get
             Return dteSendStartDate
         End Get
