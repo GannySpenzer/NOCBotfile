@@ -31,15 +31,15 @@ namespace UoCPOChgMapping
 
             UoCPOChgMappingDAL objUoCPOChgMappingDAL = new UoCPOChgMappingDAL();
             strResponse = objUoCPOChgMappingAPIAccess.postUoCPOChgMappingData(m_oLogger);
-            if (strResponse.ToUpper() == "SUCCESS")
-            {
-                processFlag = "Y";
-            }
-            else
-            {
-                processFlag = "E"; //error
-            }
-            objUoCPOChgMappingDAL.UpdateUoCPOChgMappingData(m_oLogger, processFlag );
+            //if (strResponse.ToUpper() == "SUCCESS")
+            //{
+            //    processFlag = "Y";
+            //}
+            //else
+            //{
+            //    processFlag = "E"; //error
+            //}
+            //objUoCPOChgMappingDAL.UpdateUoCPOChgMappingData(m_oLogger, processFlag );
 
             m_oLogger.LogMessage("Main", "UoCPOChgMapping End");
 

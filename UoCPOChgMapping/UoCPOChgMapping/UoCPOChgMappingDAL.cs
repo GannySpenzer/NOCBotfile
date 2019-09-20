@@ -34,6 +34,7 @@ namespace UoCPOChgMapping
 
                 //strSQLstring = "SELECT * FROM sysadm8.PS_ISA_O_MATR_MOVE WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'PMC' AND TRANS_TYPE = 'REC'";
                 strSQLstring = "SELECT * FROM SYSADM8.PS_ISA_MXM_POCHG WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'UCHICAGO'"; //AND ROWNUM < 2";
+                //strSQLstring = "SELECT * FROM SYSADM8.PS_ISA_MXM_POCHG WHERE CUST_ID = 'UCHICAGO' AND ISA_IDENTIFIER IN (876)"; //AND ROWNUM < 2"; //test
                 m_oLogger.LogMessage("getUoCPOChgMappingData", "PeopleSoft connection string : " + OracleConString);
                 m_oLogger.LogMessage("getUoCPOChgMappingData", "Query To get the PO mapping date : " + strSQLstring);
                 dtResponse = oleDBExecuteReader(strSQLstring);
@@ -51,7 +52,7 @@ namespace UoCPOChgMapping
         /// Update the process flag to I once the UOC service transaction successfully submited.
         /// </summary>
         /// <returns></returns>
-        public int UpdateUoCPOChgMappingData(Logger m_oLogger, string procFlag)
+        public int UpdateUoCPOChgMappingData(Logger m_oLogger, string procFlag, string PONum = "")
         {
 
             DataTable dtResponse = new DataTable();
@@ -60,6 +61,10 @@ namespace UoCPOChgMapping
             {
 
                 strSQLstring = "UPDATE sysadm8.PS_ISA_MXM_POCHG SET PROCESS_FLAG='" + procFlag + "', LAST_UPDATE_DTTM = SYSDATE WHERE PROCESS_FLAG = 'N' AND CUST_ID = 'UCHICAGO'"; // AND ROWNUM < 2";
+                if (PONum != "")
+                {
+                    strSQLstring += " AND ISA_CUST_PO_ID = '" + PONum + "'";
+                }
 
                 m_oLogger.LogMessage("UpdateUoCPOChgMappingData", "PeopleSoft connection string : " + OracleConString);
                 m_oLogger.LogMessage("UpdateUoCPOChgMappingData", "Query To Update the PO Chg mapping date : " + strSQLstring);

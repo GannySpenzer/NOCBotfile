@@ -9,6 +9,8 @@ using System.IO;
 using UoCMapping;
 using System.Web.Services.Protocols;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace UoCPOChgMapping
 {
@@ -32,6 +34,7 @@ namespace UoCPOChgMapping
             int iRowIndex = 0;
             string strlastPO = "";
             string strFailureMsg = "";
+            string processFlag = " ";
 
             StringBuilder sbInit = new StringBuilder();
             string xmlStr = string.Empty;
@@ -40,6 +43,20 @@ namespace UoCPOChgMapping
             DataTable dtResponse = new DataTable();
             try
             {
+
+                testOrProd = ConfigurationManager.AppSettings["TestOrProd"];
+                if (testOrProd == "TEST")
+                {
+                    serviceURL = ConfigurationManager.AppSettings["testServiceURL"];
+                    //authorization = ConfigurationManager.AppSettings["testAuthorization"];
+                    username = ConfigurationManager.AppSettings["testUsername"];
+                    password = ConfigurationManager.AppSettings["testPassword"];
+                }
+                else
+                {
+                    serviceURL = ConfigurationManager.AppSettings["prodServiceURL"];
+                    authorization = ConfigurationManager.AppSettings["prodAuthorization"];
+                }
 
                 //string carriagereturn = "\r\n";
 
@@ -125,8 +142,93 @@ namespace UoCPOChgMapping
                         //check to see if new PO encountered; if so, set counters and stamp out new row
                         if (PONUM != strlastPO & strlastPO != "")
                         {
+
+                            using (var client = new WebClient())
+                            {
+
+                                m_oLogger.LogMessage("postUoCPOChgMappingData", "POST UoCPOChg Mapping Data to UOC starts here");
+                                //m_oLogger.LogMessage("postUoCMinMaxMappingData", "POST UoCMinMaxMapping Data" + resultSet.ToString());
+                                //m_oLogger.LogMessage("postUoCMinMaxMappingData", "POST WMMapping Data URL : https://10.118.13.27:8243/SDIOutboundWMReceiptAPI/v1_0");
+                                m_oLogger.LogMessage("postUoCPOChgMappingData", "POST UoCPOChgMapping Data URL : " + serviceURL);
+
+                                string basicAuthBase641;
+                                //basicAuthBase641 = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(String.Format("{0}:{1}", authorization, authorization)));
+                                basicAuthBase641 = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(String.Format("{0}:{1}", username, password)));
+
+                                //req.Headers.Add("Authorization", String.Format("Basic {0}", basicAuthBase641))
+                                client.Headers.Add("Authorization", String.Format("Basic {0}", basicAuthBase641));
+                                //client.Headers.Add("Authorization: Basic " + authorization);
+                                client.Headers.Add("Content-Type:application/json");
+
+                                NetworkCredential myCredentials = new NetworkCredential(username, password);
+                                // Create a webrequest with the specified URL. 
+                                //WebRequest myWebRequest = WebRequest.Create(serviceURL ); 
+                                //myWebRequest.Credentials = myCredentials.GetCredential(new Uri(serviceURL),"");
+                                req.Credentials = myCredentials; // myCredentials.GetCredential(new Uri(serviceURL), "");
+
+                                DateTime creationDateTime = DateTime.Now;
+                                bool creationDateTimeSpec = true;
+                                string baseLang = "EN";
+                                string transLang = "EN";
+                                string msgID = "c";
+                                string maximoVer = "d";
+                                //req.UpdateUCSDIINVENTORYAsync(par,t,z,a,b,c,d);
+
+                                //string testXML;
+                                //using (var stringwriter = new System.IO.StringWriter())
+                                //{
+                                //    var serializer = new XmlSerializer(par.GetType());
+                                //    serializer.Serialize(stringwriter, par);
+                                //    testXML = stringwriter.ToString();
+                                //}
+
+                                try
+                                {
+                                    req.UpdateUCSDIPO(par, ref creationDateTime, ref creationDateTimeSpec, ref baseLang, ref transLang, ref msgID, ref maximoVer);
+                                }
+                                catch (SoapHeaderException ex)
+                                {
+
+                                    var responseStream = ex.Message; // ex.Response.GetResponseStream();
+                                    strFailureMsg = responseStream;
+
+                                    //m_oLogger.LogMessageWeb("postUoCMinMaxMapping", "Error trying to POST data to UoC server.", responseErrorText); //ex
+                                    m_oLogger.LogMessageWeb("postUoCPOChgMapping", "Error trying to POST data to UoC server.", responseStream);
+                                }
+
+                                req.Dispose();
+
+                                double myNum = 0;
+                                if (strFailureMsg != "")
+                                {
+                                    strResponse = "FAILURE: " + strFailureMsg;
+                                    processFlag = "Y";
+                                }
+                                else
+                                {
+                                    if (Double.TryParse(msgID, out myNum))
+                                    {
+                                        strResponse = "SUCCESS";
+                                        processFlag = "Y";
+                                    }
+                                    else
+                                    {
+                                        strResponse = "FAILURE: " + msgID;
+                                        processFlag = "E";
+                                    }
+                                }
+
+                                objUoCPOChgMappingDAL.UpdateUoCPOChgMappingData(m_oLogger, processFlag, strlastPO);
+
+                                //strResponse = msgID;
+
+                                m_oLogger.LogMessage("postUoCPOChgMappingData", "POST UoCPOChgMapping data to UOC server status " + strResponse);
+
+                                // strResponse = JsonConvert.SerializeObject(result);
+                            }
+
                             iLineIndex = 0;
-                            iRowIndex += 1;
+                            iRowIndex  = 0;
                             //Array.Resize(ref parRow, iRowIndex + 1);
                             parRow = new UCSDIPO.UCSDIPO_POType();
 
@@ -183,6 +285,70 @@ namespace UoCPOChgMapping
                     //par[0] = parRow;
 
                 }
+
+                /////////////////last record/////////////////////////////////////////////////////////////////////////////////////////////////////
+                if (iLineIndex > 0)
+                {
+                        using (var client = new WebClient())
+                        {
+
+                            m_oLogger.LogMessage("postUoCPOChgMappingData", "POST UoCPOChg Mapping Data to UOC starts here");
+                            m_oLogger.LogMessage("postUoCPOChgMappingData", "POST UoCPOChgMapping Data URL : " + serviceURL);
+
+                            string basicAuthBase641;
+                            basicAuthBase641 = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(String.Format("{0}:{1}", username, password)));
+
+                            client.Headers.Add("Authorization", String.Format("Basic {0}", basicAuthBase641));
+                            client.Headers.Add("Content-Type:application/json");
+
+                            NetworkCredential myCredentials = new NetworkCredential(username, password);
+                            req.Credentials = myCredentials; // myCredentials.GetCredential(new Uri(serviceURL), "");
+
+                            DateTime creationDateTime = DateTime.Now;
+                            bool creationDateTimeSpec = true;
+                            string baseLang = "EN";
+                            string transLang = "EN";
+                            string msgID = "c";
+                            string maximoVer = "d";
+                            try
+                            {
+                                req.UpdateUCSDIPO(par, ref creationDateTime, ref creationDateTimeSpec, ref baseLang, ref transLang, ref msgID, ref maximoVer);
+                            }
+                            catch (SoapHeaderException ex)
+                            {
+
+                                var responseStream = ex.Message; // ex.Response.GetResponseStream();
+                                strFailureMsg = responseStream;
+
+                                //m_oLogger.LogMessageWeb("postUoCMinMaxMapping", "Error trying to POST data to UoC server.", responseErrorText); //ex
+                                m_oLogger.LogMessageWeb("postUoCPOChgMapping", "Error trying to POST data to UoC server.", responseStream);
+                            }
+
+                            req.Dispose();
+                            double myNum = 0;
+                            if (strFailureMsg != "")
+                            {
+                                strResponse = "FAILURE: " + strFailureMsg;
+                                processFlag = "Y";
+                            }
+                            else
+                            {
+                                if (Double.TryParse(msgID, out myNum))
+                                {
+                                    strResponse = "SUCCESS";
+                                    processFlag = "Y";
+                                }
+                                else
+                                {
+                                    strResponse = "FAILURE: " + msgID;
+                                    processFlag = "E";
+                                }
+                            }
+                            objUoCPOChgMappingDAL.UpdateUoCPOChgMappingData(m_oLogger, processFlag, strlastPO);
+                            m_oLogger.LogMessage("postUoCPOChgMappingData", "POST UoCPOChgMapping data to UOC server status " + strResponse);
+                        }
+                }
+                /////////////////last record/////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 //old method
                 //string footer = @"         </UCSDIINVENTORYSet>" + carriagereturn +
@@ -262,102 +428,7 @@ namespace UoCPOChgMapping
                 //string resultSet = header + xmlStringInit + footer;
 
                 //JObject resultSet = JObject.Parse(jsonSampleData);
-                using (var client = new WebClient())
-                {
-                    testOrProd = ConfigurationManager.AppSettings["TestOrProd"];
-                    if (testOrProd == "TEST")
-                    {
-                        serviceURL = ConfigurationManager.AppSettings["testServiceURL"];
-                        //authorization = ConfigurationManager.AppSettings["testAuthorization"];
-                        username = ConfigurationManager.AppSettings["testUsername"];
-                        password = ConfigurationManager.AppSettings["testPassword"];
-                    }
-                    else
-                    {
-                        serviceURL = ConfigurationManager.AppSettings["prodServiceURL"];
-                        authorization = ConfigurationManager.AppSettings["prodAuthorization"];
-                    }
 
-
-                    m_oLogger.LogMessage("postUoCPOChgMappingData", "POST UoCPOChg Mapping Data to UOC starts here");
-                    //m_oLogger.LogMessage("postUoCMinMaxMappingData", "POST UoCMinMaxMapping Data" + resultSet.ToString());
-                    //m_oLogger.LogMessage("postUoCMinMaxMappingData", "POST WMMapping Data URL : https://10.118.13.27:8243/SDIOutboundWMReceiptAPI/v1_0");
-                    m_oLogger.LogMessage("postUoCPOChgMappingData", "POST UoCPOChgMapping Data URL : " + serviceURL);
-
-                    string basicAuthBase641;
-                    //basicAuthBase641 = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(String.Format("{0}:{1}", authorization, authorization)));
-                    basicAuthBase641 = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(String.Format("{0}:{1}", username, password)));
-
-                    //req.Headers.Add("Authorization", String.Format("Basic {0}", basicAuthBase641))
-                    client.Headers.Add("Authorization", String.Format("Basic {0}", basicAuthBase641));
-                    //client.Headers.Add("Authorization: Basic " + authorization);
-                    client.Headers.Add("Content-Type:application/json");
-
-                    NetworkCredential myCredentials = new NetworkCredential(username, password);
-                    // Create a webrequest with the specified URL. 
-                    //WebRequest myWebRequest = WebRequest.Create(serviceURL ); 
-                    //myWebRequest.Credentials = myCredentials.GetCredential(new Uri(serviceURL),"");
-                    req.Credentials = myCredentials; // myCredentials.GetCredential(new Uri(serviceURL), "");
-
-                    DateTime creationDateTime = DateTime.Now;
-                    bool creationDateTimeSpec = true;
-                    string baseLang = "EN";
-                    string transLang = "EN";
-                    string msgID = "c";
-                    string maximoVer = "d";
-                    //req.UpdateUCSDIINVENTORYAsync(par,t,z,a,b,c,d);
-                    try
-                    {
-                        req.UpdateUCSDIPO(par, ref creationDateTime, ref creationDateTimeSpec, ref baseLang, ref transLang, ref msgID, ref maximoVer);
-                    }
-                    catch (SoapHeaderException ex)
-                    {
-
-                        var responseStream = ex.Message; // ex.Response.GetResponseStream();
-                        strFailureMsg = responseStream;
-
-                        //m_oLogger.LogMessageWeb("postUoCMinMaxMapping", "Error trying to POST data to UoC server.", responseErrorText); //ex
-                        m_oLogger.LogMessageWeb("postUoCPOChgMapping", "Error trying to POST data to UoC server.", responseStream);
-                    }
-
-                    req.Dispose();
-
-                    //client.Headers.Add("Accept:application/json");
-                    //System.Net.ServicePointManager.CertificatePolicy = new AlwaysIgnoreCertPolicy();
-                    //System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
-
-                    //old method
-                    //var result = client.UploadString(serviceURL, resultSet.ToString());
-
-                    //old method
-                    // Console.WriteLine(result);
-                    //var parsed = JObject.Parse(result);
-                    //strResponse = parsed.SelectToken("RequestStatus").Value<string>();
-
-
-                    double myNum = 0;
-                    if (strFailureMsg != "")
-                    {
-                        strResponse = "FAILURE: " + strFailureMsg;
-                    }
-                    else
-                    {
-                        if (Double.TryParse(msgID, out myNum))
-                        {
-                            strResponse = "SUCCESS";
-                        }
-                        else
-                        {
-                            strResponse = "FAILURE: " + msgID;
-                        }
-                    }
-
-                    //strResponse = msgID;
-
-                    m_oLogger.LogMessage("postUoCPOChgMappingData", "POST UoCPOChgMapping data to UOC server status " + strResponse);
-
-                    // strResponse = JsonConvert.SerializeObject(result);
-                }
             }
 
 
