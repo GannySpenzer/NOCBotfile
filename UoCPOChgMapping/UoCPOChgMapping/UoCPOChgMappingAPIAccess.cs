@@ -329,7 +329,7 @@ namespace UoCPOChgMapping
                             if (strFailureMsg != "")
                             {
                                 strResponse = "FAILURE: " + strFailureMsg;
-                                processFlag = "Y";
+                                processFlag = "E";
                             }
                             else
                             {
