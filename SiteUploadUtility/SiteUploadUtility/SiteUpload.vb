@@ -455,6 +455,7 @@ Public Class SiteUpload
                         Application.DoEvents()
                     Next
                     For Each delFile In Directory.GetFiles(delDir, "*.*")
+                        File.SetAttributes(delFile, FileAttributes.Normal)
                         File.Delete(delFile)
                         delFilesCount += 1
                         ProgressBar1.Value = delFilesCount
