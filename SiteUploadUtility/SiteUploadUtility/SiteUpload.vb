@@ -546,7 +546,7 @@ Public Class SiteUpload
         If cmbServer.Text = "IMS" Then
             dirRoot = "\\ims\c$\builds\"
         ElseIf cmbServer.Text = "SDIX2012CLONE" Then
-            dirRoot = "\\sdix2012clone\d$\A_Sdiexchange_Copy\"
+            dirRoot = "\\sdix2012clone\d$\A_Zeus_Copy\"
         ElseIf cmbServer.Text = "SDIX2012ZEUS2" Then
             dirRoot = "\\sdix2012zeus2\d$\PROD_Publish\"
         ElseIf cmbServer.Text = "SDIX2012" Then
