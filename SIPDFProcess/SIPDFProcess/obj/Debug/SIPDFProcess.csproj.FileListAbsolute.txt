@@ -1,0 +1,13 @@
+C:\Avasoft_Utility\SIPDFProcess\SIPDFProcess\bin\Debug\SIPDFProcess.exe.config
+C:\Avasoft_Utility\SIPDFProcess\SIPDFProcess\bin\Debug\SIPDFProcess.exe
+C:\Avasoft_Utility\SIPDFProcess\SIPDFProcess\bin\Debug\SIPDFProcess.pdb
+C:\Avasoft_Utility\SIPDFProcess\SIPDFProcess\bin\Debug\itextsharp.xml
+C:\Avasoft_Utility\SIPDFProcess\SIPDFProcess\obj\Debug\SIPDFProcess.csprojResolveAssemblyReference.cache
+C:\Avasoft_Utility\SIPDFProcess\SIPDFProcess\obj\Debug\SIPDFProcess.exe
+C:\Avasoft_Utility\SIPDFProcess\SIPDFProcess\obj\Debug\SIPDFProcess.pdb
+C:\Avasoft_Utility\SIPDFProcess\SIPDFProcess\bin\Debug\Microsoft.Exchange.WebServices.Auth.dll
+C:\Avasoft_Utility\SIPDFProcess\SIPDFProcess\bin\Debug\Microsoft.Exchange.WebServices.dll
+C:\Avasoft_Utility\SIPDFProcess\SIPDFProcess\bin\Debug\Microsoft.Exchange.WebServices.pdb
+C:\Avasoft_Utility\SIPDFProcess\SIPDFProcess\bin\Debug\Microsoft.Exchange.WebServices.xml
+C:\Avasoft_Utility\SIPDFProcess\SIPDFProcess\bin\Debug\Microsoft.Exchange.WebServices.Auth.pdb
+C:\Avasoft_Utility\SIPDFProcess\SIPDFProcess\bin\Debug\Microsoft.Exchange.WebServices.Auth.xml
