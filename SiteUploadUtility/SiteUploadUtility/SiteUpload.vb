@@ -3,6 +3,7 @@ Imports System.Data
 Imports System.ServiceProcess
 'Imports System.Text.StringBuilder
 Imports System.Threading.Thread
+Imports System.Diagnostics
 
 
 Public Class SiteUpload
@@ -416,7 +417,7 @@ Public Class SiteUpload
                 Dim stopinfo As New ProcessStartInfo("iisreset.exe", "/stop")
                 stopinfo.WindowStyle = ProcessWindowStyle.Hidden
                 stopinfo.Verb = "runas"
-                Process.Start(stopinfo)
+                'Process.Start(stopinfo)
                 Dim p1 As New Process
                 p1.StartInfo = stopinfo
                 p1.Start()
@@ -693,14 +694,15 @@ Public Class SiteUpload
         Application.DoEvents()
 
 
-        'Dim stopinfo As New ProcessStartInfo("cmd",  "iisreset /stop")
-        Dim stopinfo As New ProcessStartInfo("iisreset.exe", "/stop")
+        'Dim stopinfo As New ProcessStartInfo("iisreset.exe", "/stop")
+        Dim stopinfo As New ProcessStartInfo("test.bat")
+
         'System.Diagnostics.Process.Start(stopinfo)
         'stopinfo.FileName = "/c c:\windows\system32\iisreset.exe /help"
-        'stopinfo.WindowStyle = ProcessWindowStyle.Normal
-        stopinfo.WindowStyle = ProcessWindowStyle.Hidden
+        stopinfo.WindowStyle = ProcessWindowStyle.Normal
+        'stopinfo.WindowStyle = ProcessWindowStyle.Hidden
         stopinfo.Verb = "runas"
-        Process.Start(stopinfo)
+        'Process.Start(stopinfo)
         Dim p1 As New Process
         p1.StartInfo = stopinfo
         p1.Start()
@@ -713,11 +715,12 @@ Public Class SiteUpload
         Me.Refresh()
         Application.DoEvents()
 
-        'Dim startinfo As New ProcessStartInfo("cmd", "iisreset /start")
-        Dim startinfo As New ProcessStartInfo("iisreset.exe", "/start")
+        'Dim startinfo As New ProcessStartInfo("iisreset.exe", "/start")
+        Dim startinfo As New ProcessStartInfo("test.bat")
+
         'startinfo.FileName = "iisreset.exe /start"
-        'startinfo.WindowStyle = ProcessWindowStyle.Normal
-        stopinfo.WindowStyle = ProcessWindowStyle.Hidden
+        startinfo.WindowStyle = ProcessWindowStyle.Normal
+        'stopinfo.WindowStyle = ProcessWindowStyle.Hidden
         startinfo.Verb = "runas"
         Dim p2 As New Process
         p2.StartInfo = startinfo
