@@ -641,6 +641,25 @@ namespace PDF_Extractor_Sample
                                                                         }
                                                                         UnitPrice = get_Unitprice.Replace(",", "");
 
+                                                                        string strcurrenttext = data.Replace("   ", "").ToString();
+                                                                        if(strcurrenttext.Trim() != "")
+                                                                        {
+                                                                            string itemno = "";
+                                                                            itemno = strcurrenttext.Substring(0, strcurrenttext.IndexOf(Qtys));
+                                                                            itemno = itemno.Replace(ItemNo, "");
+                                                                            itemno = itemno.Replace(Qtys, "");
+                                                                            itemno = itemno.Replace("  ", "");
+                                                                            itemno = itemno.Trim();
+
+                                                                            if (itemno.Length > 18)
+                                                                            {
+                                                                                ItemID = itemno.Substring(0, 18).Trim();
+                                                                            }
+                                                                            else {
+                                                                                ItemID = itemno.Trim();
+                                                                            }
+                                                                        }
+
                                                                         //log.WriteLine("Extracted the LINE_NO, PRICE, UM column values for LINE_NO: " + ItemNo);
                                                                         int LinesforgetDesc = 0;
                                                                         string strbrkline = "";
@@ -770,11 +789,11 @@ namespace PDF_Extractor_Sample
                                                                     }
                                                                     else if (data.StartsWith("Your material Number:"))
                                                                     {
-                                                                        ItemID = data.Replace("Your material Number:", "").Trim();
-                                                                        if (ItemID.Length > 18)
-                                                                        {
-                                                                            ItemID = ItemID.Substring(0, 18).Trim();
-                                                                        }
+                                                                        //ItemID = data.Replace("Your material Number:", "").Trim();
+                                                                        //if (ItemID.Length > 18)
+                                                                        //{
+                                                                        //    ItemID = ItemID.Substring(0, 18).Trim();
+                                                                        //}
                                                                         //log.WriteLine("Extracted the Material_NO(Item ID) for LINE_NO: " + ItemNo);
                                                                     }
                                                                     else if (data.StartsWith("Shipping Address:"))
@@ -1238,6 +1257,26 @@ namespace PDF_Extractor_Sample
                                                                                 }
                                                                             }
                                                                             UnitPrice = get_Unitprice.Replace(",", "");
+
+                                                                            string strcurrenttext = data.Replace("   ", "").ToString();
+                                                                            if (strcurrenttext.Trim() != "")
+                                                                            {
+                                                                                string itemno = "";
+                                                                                itemno = strcurrenttext.Substring(0, strcurrenttext.IndexOf(Qtys));
+                                                                                itemno = itemno.Replace(ItemNo, "");
+                                                                                itemno = itemno.Replace(Qtys, "");
+                                                                                itemno = itemno.Replace("  ", "");
+                                                                                itemno = itemno.Trim();
+
+                                                                                if (itemno.Length > 18)
+                                                                                {
+                                                                                    ItemID = itemno.Substring(0, 18).Trim();
+                                                                                }
+                                                                                else {
+                                                                                    ItemID = itemno.Trim();
+                                                                                }
+                                                                            }
+
                                                                             int LinesforgetDesc = 0;
                                                                             string strbrkline = "";
                                                                             foreach (string chkdesc in list)
@@ -1354,11 +1393,11 @@ namespace PDF_Extractor_Sample
                                                                         }
                                                                         else if (data.StartsWith("Your material Number:"))
                                                                         {
-                                                                            ItemID = data.Replace("Your material Number:", "").Trim();
-                                                                            if (ItemID.Length > 18)
-                                                                            {
-                                                                                ItemID = ItemID.Substring(0, 18).Trim();
-                                                                            }
+                                                                            //ItemID = data.Replace("Your material Number:", "").Trim();
+                                                                            //if (ItemID.Length > 18)
+                                                                            //{
+                                                                            //    ItemID = ItemID.Substring(0, 18).Trim();
+                                                                            //}
                                                                         }
                                                                         else if (data.StartsWith("Shipping Address:"))
                                                                         {
