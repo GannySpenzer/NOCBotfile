@@ -727,7 +727,12 @@ Module Module1
 
                                                     'get Customer ID
                                                     Dim strCustID As String = ""
-                                                    strCustID = GetCustomerId(strCustomerEmail, strCustomerName, strSdiBusUnit)
+                                                    If (Trim(strCustomerEmail) <> "") Or (Trim(strCustomerName) <> "") Then
+
+                                                        strCustID = GetCustomerId(strCustomerEmail, strCustomerName, strSdiBusUnit)
+                                                    Else
+                                                        strCustID = "NO_NAME_SUPPLIED"
+                                                    End If
 
                                                     strPathForLM = strFlatFileDir & strSrchFileName
                                                     writerLnsMagn = New StreamWriter(strPathForLM)
