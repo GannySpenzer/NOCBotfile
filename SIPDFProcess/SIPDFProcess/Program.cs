@@ -573,6 +573,19 @@ namespace PDF_Extractor_Sample
                                                                     }
                                                                 }
                                                             }
+                                                            List<string> chklist = new List<string>();
+                                                            foreach (List<string> lists in myList)
+                                                            {
+                                                                foreach (string chk_datas in lists)
+                                                                {
+                                                                    if(chk_datas.StartsWith("   "))
+                                                                    {
+                                                                        chklist.Add(chk_datas);
+                                                                        break;
+                                                                    }
+                                                                }
+                                                            }
+
                                                             foreach (List<string> list in myList)
                                                             {
                                                                 string ItemNo = " ";
@@ -712,66 +725,91 @@ namespace PDF_Extractor_Sample
                                                                             {
                                                                                 ItemDescription += list[l] + " ";
                                                                             }
-                                                                            string GetDescNextPage = "";
-                                                                            if ((strlst.Count()) > (i + 1))
-                                                                            {
-                                                                                GetDescNextPage = strlst[i + 1];
-                                                                                GetDescNextPage = GetDescNextPage.Substring(GetDescNextPage.IndexOf("Item Material/Description Quantity UM Unit Price Net Amount") + Convert.ToString("Item Material/Description Quantity UM Unit Price Net Amount").Length);
+                                                                            int ContainsMoreLinesAfterCurrentLine = 0;
+                                                                            string chkLines = "N";
 
-                                                                                int Lines_forgetDesc = 0;
-                                                                                string strbrk_line = "";
-                                                                                string[] Getdesclists = null;
-                                                                                if (!GetDescNextPage.StartsWith("\n   "))
+                                                                            foreach(string chkdesc in chklist)
+                                                                            {
+                                                                                if(chkdesc == data)
                                                                                 {
-                                                                                    Getdesclists = GetDescNextPage.Split('\n');
+                                                                                    chkLines = "Y";
                                                                                 }
-                                                                                if (Getdesclists != null)
+                                                                                if (chkLines == "Y") 
                                                                                 {
-                                                                                    foreach (string chkdesc in Getdesclists)
-                                                                                    {
-                                                                                        Lines_forgetDesc++;
-                                                                                        if (chkdesc.Contains("Your material Number"))
-                                                                                        {
-                                                                                            strbrk_line = "Y";
-                                                                                            break;
-                                                                                        }
-                                                                                        else if (chkdesc.Contains("Item partially delivered"))
-                                                                                        {
-                                                                                            strbrk_line = "Y";
-                                                                                            break;
-                                                                                        }
-                                                                                        else if (chkdesc.Contains("Item completely delivered"))
-                                                                                        {
-                                                                                            strbrk_line = "Y";
-                                                                                            break;
-                                                                                        }
-                                                                                        else if (chkdesc.Contains("Manufacturing Part Number Manuf. Manuf. pl. Rev. l"))
-                                                                                        {
-                                                                                            strbrk_line = "Y";
-                                                                                            break;
-                                                                                        }
-                                                                                        else if (chkdesc.Contains("Shipping Address"))
-                                                                                        {
-                                                                                            strbrk_line = "Y";
-                                                                                            break;
-                                                                                        }
-                                                                                        else if (chkdesc.Contains("Net value incl. disc"))
-                                                                                        {
-                                                                                            strbrk_line = "Y";
-                                                                                            break;
-                                                                                        }
-                                                                                    }
-                                                                                }
-                                                                                int Mark_Lns = 0;
-                                                                                ItemDescription = ItemDescription.Trim();
-                                                                                if (strbrk_line == "Y")
-                                                                                {
-                                                                                    for (int l = 0; l < Lines_forgetDesc - 1; l++)
-                                                                                    {
-                                                                                        ItemDescription += Getdesclists[l].Trim() + " ";
-                                                                                    }
+                                                                                    ContainsMoreLinesAfterCurrentLine++;
                                                                                 }
                                                                             }
+                                                                            if (ContainsMoreLinesAfterCurrentLine > 1)
+                                                                            {
+
+                                                                            }
+                                                                            else {
+                                                                                string GetDescNextPage = "";
+                                                                                if ((strlst.Count()) > (i + 1))
+                                                                                {
+                                                                                    GetDescNextPage = strlst[i + 1];
+                                                                                    GetDescNextPage = GetDescNextPage.Substring(GetDescNextPage.IndexOf("Item Material/Description Quantity UM Unit Price Net Amount") + Convert.ToString("Item Material/Description Quantity UM Unit Price Net Amount").Length);
+
+                                                                                    int Lines_forgetDesc = 0;
+                                                                                    string strbrk_line = "";
+                                                                                    string[] Getdesclists = null;
+                                                                                    if (!GetDescNextPage.StartsWith("\n   "))
+                                                                                    {
+                                                                                        Getdesclists = GetDescNextPage.Split('\n');
+                                                                                    }
+                                                                                    if (Getdesclists != null)
+                                                                                    {
+                                                                                        foreach (string chkdesc in Getdesclists)
+                                                                                        {
+                                                                                            Lines_forgetDesc++;
+                                                                                            if (chkdesc.Contains("Your material Number"))
+                                                                                            {
+                                                                                                strbrk_line = "Y";
+                                                                                                break;
+                                                                                            }
+                                                                                            else if (chkdesc.Contains("Item partially delivered"))
+                                                                                            {
+                                                                                                strbrk_line = "Y";
+                                                                                                break;
+                                                                                            }
+                                                                                            else if (chkdesc.Contains("Item completely delivered"))
+                                                                                            {
+                                                                                                strbrk_line = "Y";
+                                                                                                break;
+                                                                                            }
+                                                                                            else if (chkdesc.Contains("Manufacturing Part Number Manuf. Manuf. pl. Rev. l"))
+                                                                                            {
+                                                                                                strbrk_line = "Y";
+                                                                                                break;
+                                                                                            }
+                                                                                            else if (chkdesc.Contains("Shipping Address"))
+                                                                                            {
+                                                                                                strbrk_line = "Y";
+                                                                                                break;
+                                                                                            }
+                                                                                            else if (chkdesc.Contains("Net value incl. disc"))
+                                                                                            {
+                                                                                                strbrk_line = "Y";
+                                                                                                break;
+                                                                                            }
+                                                                                            else if (chkdesc.StartsWith("   "))                                                                                             
+                                                                                            {
+                                                                                                strbrk_line = "Y";
+                                                                                                break;
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                    int Mark_Lns = 0;
+                                                                                    ItemDescription = ItemDescription.Trim();
+                                                                                    if (strbrk_line == "Y")
+                                                                                    {
+                                                                                        for (int l = 0; l < Lines_forgetDesc - 1; l++)
+                                                                                        {
+                                                                                            ItemDescription += Getdesclists[l].Trim() + " ";
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }                                                                                                                                                        
                                                                             //log.WriteLine("Extracted the Complete Descriptions for LINE_NO: " + ItemNo);
                                                                         }
                                                                         ItemDescription = ItemDescription.Trim();
@@ -1007,16 +1045,7 @@ namespace PDF_Extractor_Sample
                                                                     else
                                                                     {
                                                                         dr_LINE["DESCR254"] = " ";
-                                                                    }
-                                                                    if (VendorID.Trim() != "")
-                                                                    {
-                                                                        dr_LINE["ITM_ID_VNDR"] = VendorID.Trim();
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        dr_LINE["ITM_ID_VNDR"] = " ";
-                                                                    }
-
+                                                                    }                                                                    
                                                                     if (HDRShipAddrLFlag == "N")
                                                                     {
                                                                         if (ShipName.Trim() != "")
@@ -1130,6 +1159,7 @@ namespace PDF_Extractor_Sample
                                                                         }
 
                                                                     }
+                                                                    dr_LINE["ITM_ID_VNDR"] = " ";
                                                                     dr_LINE["PREV_INV_ITEM_ID"] = " ";
                                                                     dr_LINE["MFG_ID"] = " ";
                                                                     dr_LINE["MFG_ITM_ID"] = " ";
@@ -1183,6 +1213,18 @@ namespace PDF_Extractor_Sample
 
                                                             if (LinesCount != 0)
                                                             {
+                                                                List<string> chklist = new List<string>();
+                                                                foreach (List<string> lists in myList)
+                                                                {
+                                                                    foreach (string chk_datas in lists)
+                                                                    {
+                                                                        if (chk_datas.StartsWith("   "))
+                                                                        {
+                                                                            chklist.Add(chk_datas);
+                                                                            break;
+                                                                        }
+                                                                    }
+                                                                }
                                                                 foreach (List<string> list in myList)
                                                                 {
                                                                     string ItemNo = " ";
@@ -1328,66 +1370,91 @@ namespace PDF_Extractor_Sample
                                                                                 {
                                                                                     ItemDescription += list[l] + " ";
                                                                                 }
+                                                                                int ContainsMoreLinesAfterCurrentLine = 0;
+                                                                                string chkLines = "N";
 
-                                                                                string GetDescNextPage = "";
-                                                                                if ((strlst.Count() - 1) > (i + 1))
+                                                                                foreach (string chkdesc in chklist)
                                                                                 {
-                                                                                    GetDescNextPage = strlst[i + 1];
-                                                                                    GetDescNextPage = GetDescNextPage.Substring(GetDescNextPage.IndexOf("Item Material/Description Quantity UM Unit Price Net Amount") + Convert.ToString("Item Material/Description Quantity UM Unit Price Net Amount").Length).Trim();
-                                                                                    string[] Getdesclists = null;
-                                                                                    if (!GetDescNextPage.StartsWith("\n   "))
+                                                                                    if (chkdesc == data)
                                                                                     {
-                                                                                        Getdesclists = GetDescNextPage.Split('\n');
+                                                                                        chkLines = "Y";
                                                                                     }
-                                                                                    int Lines_forgetDesc = 0;
-                                                                                    string strbrk_line = "";
-
-                                                                                    if (Getdesclists != null)
+                                                                                    if (chkLines == "Y")
                                                                                     {
-                                                                                        foreach (string chkdesc in Getdesclists)
-                                                                                        {
-                                                                                            Lines_forgetDesc++;
-                                                                                            if (chkdesc.Contains("Your material Number"))
-                                                                                            {
-                                                                                                strbrk_line = "Y";
-                                                                                                break;
-                                                                                            }
-                                                                                            else if (chkdesc.Contains("Item partially delivered"))
-                                                                                            {
-                                                                                                strbrk_line = "Y";
-                                                                                                break;
-                                                                                            }
-                                                                                            else if (chkdesc.Contains("Item completely delivered"))
-                                                                                            {
-                                                                                                strbrk_line = "Y";
-                                                                                                break;
-                                                                                            }
-                                                                                            else if (chkdesc.Contains("Manufacturing Part Number Manuf. Manuf. pl. Rev. l"))
-                                                                                            {
-                                                                                                strbrk_line = "Y";
-                                                                                                break;
-                                                                                            }
-                                                                                            else if (chkdesc.Contains("Shipping Address"))
-                                                                                            {
-                                                                                                strbrk_line = "Y";
-                                                                                                break;
-                                                                                            }
-                                                                                            else if (chkdesc.Contains("Net value incl. disc"))
-                                                                                            {
-                                                                                                strbrk_line = "Y";
-                                                                                                break;
-                                                                                            }
-                                                                                        }
-                                                                                    }
-                                                                                    ItemDescription = ItemDescription.Trim();
-                                                                                    if (strbrk_line == "Y")
-                                                                                    {
-                                                                                        for (int l = 0; l < Lines_forgetDesc; l++)
-                                                                                        {
-                                                                                            ItemDescription += Getdesclists[l].Trim() + " ";
-                                                                                        }
+                                                                                        ContainsMoreLinesAfterCurrentLine++;
                                                                                     }
                                                                                 }
+                                                                                if (ContainsMoreLinesAfterCurrentLine > 1)
+                                                                                {
+
+                                                                                }
+                                                                                else 
+                                                                                {
+                                                                                    string GetDescNextPage = "";
+                                                                                    if ((strlst.Count() - 1) > (i + 1))
+                                                                                    {
+                                                                                        GetDescNextPage = strlst[i + 1];
+                                                                                        GetDescNextPage = GetDescNextPage.Substring(GetDescNextPage.IndexOf("Item Material/Description Quantity UM Unit Price Net Amount") + Convert.ToString("Item Material/Description Quantity UM Unit Price Net Amount").Length).Trim();
+                                                                                        string[] Getdesclists = null;
+                                                                                        if (!GetDescNextPage.StartsWith("\n   "))
+                                                                                        {
+                                                                                            Getdesclists = GetDescNextPage.Split('\n');
+                                                                                        }
+                                                                                        int Lines_forgetDesc = 0;
+                                                                                        string strbrk_line = "";
+
+                                                                                        if (Getdesclists != null)
+                                                                                        {
+                                                                                            foreach (string chkdesc in Getdesclists)
+                                                                                            {
+                                                                                                Lines_forgetDesc++;
+                                                                                                if (chkdesc.Contains("Your material Number"))
+                                                                                                {
+                                                                                                    strbrk_line = "Y";
+                                                                                                    break;
+                                                                                                }
+                                                                                                else if (chkdesc.Contains("Item partially delivered"))
+                                                                                                {
+                                                                                                    strbrk_line = "Y";
+                                                                                                    break;
+                                                                                                }
+                                                                                                else if (chkdesc.Contains("Item completely delivered"))
+                                                                                                {
+                                                                                                    strbrk_line = "Y";
+                                                                                                    break;
+                                                                                                }
+                                                                                                else if (chkdesc.Contains("Manufacturing Part Number Manuf. Manuf. pl. Rev. l"))
+                                                                                                {
+                                                                                                    strbrk_line = "Y";
+                                                                                                    break;
+                                                                                                }
+                                                                                                else if (chkdesc.Contains("Shipping Address"))
+                                                                                                {
+                                                                                                    strbrk_line = "Y";
+                                                                                                    break;
+                                                                                                }
+                                                                                                else if (chkdesc.Contains("Net value incl. disc"))
+                                                                                                {
+                                                                                                    strbrk_line = "Y";
+                                                                                                    break;
+                                                                                                }
+                                                                                                else if (chkdesc.StartsWith("   "))
+                                                                                                {
+                                                                                                    strbrk_line = "Y";
+                                                                                                    break;
+                                                                                                }
+                                                                                            }
+                                                                                        }
+                                                                                        ItemDescription = ItemDescription.Trim();
+                                                                                        if (strbrk_line == "Y")
+                                                                                        {
+                                                                                            for (int l = 0; l < Lines_forgetDesc; l++)
+                                                                                            {
+                                                                                                ItemDescription += Getdesclists[l].Trim() + " ";
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }                                                                                
                                                                             }
                                                                             ItemDescription = ItemDescription.Trim();
                                                                         }
@@ -1696,16 +1763,7 @@ namespace PDF_Extractor_Sample
                                                                     else
                                                                     {
                                                                         dr_LINE["DESCR254"] = " ";
-                                                                    }
-                                                                    if (VendorID.Trim() != "")
-                                                                    {
-                                                                        dr_LINE["ITM_ID_VNDR"] = VendorID.Trim();
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        dr_LINE["ITM_ID_VNDR"] = " ";
-                                                                    }
-
+                                                                    }                                                                    
                                                                     if (HDRShipAddrLFlag == "N")
                                                                     {
                                                                         if (ShipName.Trim() != "")
@@ -1819,6 +1877,7 @@ namespace PDF_Extractor_Sample
                                                                         }
 
                                                                     }
+                                                                    dr_LINE["ITM_ID_VNDR"] = " ";
                                                                     dr_LINE["PREV_INV_ITEM_ID"] = " ";
                                                                     dr_LINE["MFG_ID"] = " ";
                                                                     dr_LINE["MFG_ITM_ID"] = " ";
