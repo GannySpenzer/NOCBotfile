@@ -16,6 +16,7 @@ using System.Text.RegularExpressions;
 using System.Configuration;
 using System.Net.Mail;
 using Microsoft.Exchange.WebServices.Data;
+using System.Net;
 
 namespace PDF_Extractor_Sample
 {
@@ -78,6 +79,8 @@ namespace PDF_Extractor_Sample
 
             try
             {
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
                 ExchangeService service = new ExchangeService(ExchangeVersion.Exchange2007_SP1);
                 service.Credentials = new WebCredentials(UN, Pwd);
                 service.Url = new Uri(OutlookURL);
