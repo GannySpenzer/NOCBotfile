@@ -517,6 +517,66 @@ namespace PDF_Extractor_Sample
                                                             log.WriteLine("Error while extracting the header information");
                                                         }
                                                         dr_HDR["TAXABLE_CD"] = "Y";
+
+                                                        if (Fax.Trim() == "")
+                                                        {
+                                                            dr_HDR["CONTACT_FAX"] = " ";
+                                                        }
+                                                        else {
+                                                            if (Fax.Length > 24)
+                                                            {
+                                                                Fax = Fax.Substring(0, 24).Trim();
+                                                                dr_HDR["CONTACT_FAX"] = Fax.Trim();
+                                                            }
+                                                        }
+
+                                                        if (DocNo.Trim() == "")
+                                                        {
+                                                            dr_HDR["PO_ID"] = " ";
+                                                        }
+                                                        else {
+                                                            if(DocNo.Length > 10)
+                                                            {
+                                                                DocNo = DocNo.Substring(0, 10);
+                                                                dr_HDR["PO_ID"] = DocNo.Trim();
+                                                            }
+                                                        }
+
+                                                        if (Phone.Trim() == "")
+                                                        {
+                                                            dr_HDR["CONTACT_PHONE"] = " ";
+                                                        }
+                                                        else { 
+                                                            if(Phone.Length > 24)
+                                                            {
+                                                                Phone = Phone.Substring(0, 24);
+                                                                dr_HDR["CONTACT_PHONE"] = Phone.Trim();
+                                                            }
+                                                        }
+
+                                                        if (Email.Trim() == "")
+                                                        {
+                                                            dr_HDR["CONTACT_EMAIL"] = " ";
+                                                        }
+                                                        else { 
+                                                            if(Email.Length > 70)
+                                                            {
+                                                                Email = Email.Substring(0, 70);
+                                                                dr_HDR["CONTACT_EMAIL"] = Email.Trim();
+                                                            }
+                                                        }
+
+                                                        if (ContactName.Trim() == "")
+                                                        {
+                                                            dr_HDR["CONTACT_NAME"] = " ";
+                                                        }
+                                                        else { 
+                                                            if(ContactName.Length > 50)
+                                                            {
+                                                                dr_HDR["CONTACT_NAME"] = ContactName.Trim();
+                                                            }
+                                                        }  
+                                                   
                                                         dt_HDR.Rows.Add(dr_HDR);
 
                                                         fullfile = strlst[i];
@@ -1986,7 +2046,6 @@ namespace PDF_Extractor_Sample
                                         item.Move(processedFolderID);
                                         log.WriteLine("Moved the email to " + ProcessedFolderName + " folder.");
                                         //log.WriteLine("-------------------------------------------------------------");
-
                                     }
                                     else {
                                         string paths = appPath + @"PDFAttachments\" + fileAttachment.Name;
@@ -2052,7 +2111,8 @@ namespace PDF_Extractor_Sample
         {
             string FilterEmailWithSubject = ConfigurationManager.AppSettings["FilterEmailSubject"];
             List<SearchFilter> searchFilterCollection = new List<SearchFilter>();
-            searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, FilterEmailWithSubject));
+            //searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, FilterEmailWithSubject));
+            searchFilterCollection.Add(new SearchFilter.ContainsSubstring(EmailMessageSchema.Subject, FilterEmailWithSubject));
             //searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, FilterEmailWithSubject.ToLower()));         
             SearchFilter searchfiltr = new SearchFilter.SearchFilterCollection(LogicalOperator.Or, searchFilterCollection.ToArray());
             return searchfiltr;
@@ -2179,6 +2239,9 @@ namespace PDF_Extractor_Sample
                 //strbodydetl = strbodydetl + "Date:<span>    </span>" + DateTime.Now + "<BR>";
                 //strbodydetl = strbodydetl + "&nbsp;<br>";
                 strbodydetl = strbodydetl + "&nbsp;</p>";
+                strbodydetl = strbodydetl + "&nbsp;<br>";
+                strbodydetl = strbodydetl + "<p>Sincerely,</p>";
+                strbodydetl = strbodydetl + "<p>SDI Customer Care</p>";
                 strbodydetl = strbodydetl + "</div>";
 
                 Mailer.Body = strbodydetl;
@@ -2276,6 +2339,8 @@ namespace PDF_Extractor_Sample
                 strbodydetl = strbodydetl + "Date:<span>    </span>" + DateTime.Now + "<BR>";
                 strbodydetl = strbodydetl + "&nbsp;<br>";
                 strbodydetl = strbodydetl + "&nbsp;</p>";
+                strbodydetl = strbodydetl + "<p>Sincerely,</p>";
+                strbodydetl = strbodydetl + "<p>SDI Customer Care</p>";
                 strbodydetl = strbodydetl + "</div>";
 
                 Mailer.Body = strbodydetl;
