@@ -495,7 +495,18 @@ Public Class SiteUpload
                     Exit Sub
                 End Try
 
-                'Sleep(3000)
+                Dim ss As System.IO.StreamWriter
+                ss = My.Computer.FileSystem.OpenTextFileWriter("readyforiisstart.txt", True)
+                ss.WriteLine("Done.")
+                ss.Close()
+
+                Do
+                    If My.Computer.FileSystem.FileExists("readyforiisstart.txt") Then
+                        My.Computer.FileSystem.DeleteFile("readyforiisstart.txt")
+                        Exit Do
+                    End If
+                    Sleep(1000)
+                Loop
 
                 lblMessage.AppendText("RESTARTING IIS" & vbCrLf)
                 Me.Refresh()
@@ -682,6 +693,21 @@ Public Class SiteUpload
     'End Sub
 
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+
+
+        Dim tst As System.IO.StreamWriter
+        tst = My.Computer.FileSystem.OpenTextFileWriter("readyforiisstart.txt", True)
+        tst.WriteLine("Done.")
+        tst.Close()
+
+        Do
+            If My.Computer.FileSystem.FileExists("readyforiisstart.txt") Then
+                My.Computer.FileSystem.DeleteFile("readyforiisstart.txt")
+                Exit Do
+            End If
+            Sleep(1000)
+        Loop
+
 
         Dim result As Integer = MessageBox.Show("Test IIS Reset on local machine?  Are you sure?!?!?!!", "Test IIS Reset", MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation)
         If result = DialogResult.Cancel Then
