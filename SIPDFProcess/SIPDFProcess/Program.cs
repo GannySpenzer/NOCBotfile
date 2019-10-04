@@ -1116,8 +1116,11 @@ namespace PDF_Extractor_Sample
                                                                                             }
                                                                                             else
                                                                                             {
-                                                                                                ItemID = ItemDescription.Trim().Substring(0, ItemDescription.IndexOf("-"));
-                                                                                                ItemID = ItemID.Replace("test", "");
+                                                                                                if (ItemDescription.IndexOf("-") > 0)
+                                                                                                {
+                                                                                                    ItemID = ItemDescription.Trim().Substring(0, ItemDescription.IndexOf("-"));
+                                                                                                    ItemID = ItemID.Replace("test", "");
+                                                                                                }                                                                                                
                                                                                             }
                                                                                         }
                                                                                         catch (Exception ex)
@@ -1132,7 +1135,10 @@ namespace PDF_Extractor_Sample
                                                                                         {
                                                                                             ItemID = ItemID.Trim();
                                                                                         }
-                                                                                        ItemDescription = ItemDescription.Replace(ItemID, "").Trim();
+                                                                                        if (ItemID.Length > 0)
+                                                                                        {
+                                                                                            ItemDescription = ItemDescription.Replace(ItemID, "").Trim();
+                                                                                        }                                                                                        
                                                                                         if (ItemDescription.StartsWith("-"))
                                                                                         {
                                                                                             ItemDescription = ItemDescription.Substring(1);
@@ -1471,7 +1477,7 @@ namespace PDF_Extractor_Sample
                                                                                 foreach (string word in wordslist2)
                                                                                 {
                                                                                     bool result = false;
-                                                                                    result = Regex.IsMatch(word, @"^\d+(?:[\,]?\d+([\.]\d+))?$");
+                                                                                    result = Regex.IsMatch(word, @"(?=.*\d)^\$?(([1-9]\d{0,20}(,\d{3})*)|0)?(\.\d{1,5})?$");
                                                                                     if (result)
                                                                                     {
                                                                                         get_Unitprice = word;
@@ -1958,8 +1964,11 @@ namespace PDF_Extractor_Sample
                                                                                                 }
                                                                                                 else
                                                                                                 {
-                                                                                                    ItemID = ItemDescription.Trim().Substring(0, ItemDescription.IndexOf("-"));
-                                                                                                    ItemID = ItemID.Replace("test", "");
+                                                                                                    if (ItemDescription.IndexOf("-") > 0)
+                                                                                                    {
+                                                                                                        ItemID = ItemDescription.Trim().Substring(0, ItemDescription.IndexOf("-"));
+                                                                                                        ItemID = ItemID.Replace("test", "");
+                                                                                                    }                                                                                                    
                                                                                                 }                                                                                                
                                                                                             }
                                                                                             catch (Exception ex)
@@ -1975,7 +1984,10 @@ namespace PDF_Extractor_Sample
                                                                                             {
                                                                                                 ItemID = ItemID.Trim();
                                                                                             }
-                                                                                            ItemDescription = ItemDescription.Replace(ItemID, "").Trim();
+                                                                                            if(ItemID.Length > 0)
+                                                                                            {
+                                                                                                ItemDescription = ItemDescription.Replace(ItemID, "").Trim();
+                                                                                            }                                                                                            
                                                                                             if (ItemDescription.StartsWith("-"))
                                                                                             {
                                                                                                 ItemDescription = ItemDescription.Substring(1);
