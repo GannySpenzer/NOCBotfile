@@ -457,6 +457,46 @@ namespace PDF_Extractor_Sample
                                                                                             }
                                                                                         }
                                                                                     }
+                                                                                    else {
+                                                                                        string nwstr = strchek;
+                                                                                        nwstr = nwstr.ToUpper().Replace("SI", "");
+                                                                                        nwstr = nwstr.ToUpper().Replace("GROUP", "");
+                                                                                        nwstr = nwstr.ToUpper().Replace("INC.", "");
+                                                                                        string[] checkShipAddr = nwstr.Split(' ');                                                                                        
+                                                                                        foreach (string str in checkShipAddr)
+                                                                                        {
+                                                                                            if (HDRShipAddrLFlag == "Y")
+                                                                                            {
+                                                                                                break;
+                                                                                            }
+                                                                                            if (str.Trim() != "")
+                                                                                            {
+                                                                                                if (ShipTo != null)
+                                                                                                {
+                                                                                                    foreach (DataRow rw in ShipTo.Rows)
+                                                                                                    {
+                                                                                                        string checkdata = Convert.ToString(rw["ADDRESS"]);
+                                                                                                        if (checkdata.ToUpper().Contains(" " + str.ToUpper()))
+                                                                                                        {
+                                                                                                            Ship_Name = Convert.ToString(rw["DESCR"]);
+                                                                                                            Ship_Addr1 = Convert.ToString(rw["ADDRESS1"]);
+                                                                                                            Ship_Addr2 = Convert.ToString(rw["ADDRESS2"]);
+                                                                                                            Ship_City = Convert.ToString(rw["CITY"]);
+                                                                                                            Ship_State = Convert.ToString(rw["STATE"]);
+                                                                                                            Ship_Postal = Convert.ToString(rw["POSTAL"]);
+                                                                                                            HDRShipAddrLFlag = "Y";
+                                                                                                            //log.WriteLine("Extracted the Header Shipping Address info for LINE_NO: " + ItemNo);
+                                                                                                            break;
+                                                                                                        }
+                                                                                                        if (HDRShipAddrLFlag == "Y")
+                                                                                                        {
+                                                                                                            break;
+                                                                                                        }
+                                                                                                    }
+                                                                                                }
+                                                                                            }
+                                                                                        }
+                                                                                    }
                                                                                 }
                                                                                 //HDRShipAddrLFlag = "Y";
                                                                             }
@@ -600,8 +640,17 @@ namespace PDF_Extractor_Sample
                                                         if (fullfile.Contains("Item Material/Description Quantity UM Unit Price Net Amount"))
                                                         {
                                                             //log.WriteLine("Started th processing the Page: " + (i + 1));
-                                                            int current_Line = Convert.ToInt32(Convert.ToString("Item Material/Description Quantity UM Unit Price Net Amount ").Length);
-                                                            fullfile = fullfile.Substring(current_Line);
+                                                            //int current_Line = Convert.ToInt32(Convert.ToString("Item Material/Description Quantity UM Unit Price Net Amount ").Length);
+                                                            int current_Line = fullfile.IndexOf("Item Material/Description Quantity UM Unit Price Net Amount");
+                                                            try 
+                                                            {
+                                                                fullfile = fullfile.Substring(current_Line);                                                                
+                                                            }catch(Exception ex)
+                                                            {
+                                                                current_Line = Convert.ToInt32(Convert.ToString("Item Material/Description Quantity UM Unit Price Net Amount ").Length);
+                                                                fullfile = fullfile.Substring(current_Line);
+                                                                continue;
+                                                            }
                                                             string[] datas = fullfile.Split('\n');
                                                             int LineItemsCount = 0;
                                                             foreach (string data in datas)
@@ -1040,7 +1089,7 @@ namespace PDF_Extractor_Sample
                                                                         }
                                                                     }
                                                                 }
-                                                                if (ShipCity.Trim() != "" || Ship_City.Trim() != "" )                                                                
+                                                                if (ShipCity.Trim() != "" || Ship_City.Trim() != "" )
                                                                 {
                                                                     foreach (string data in list)
                                                                     {
@@ -1059,15 +1108,25 @@ namespace PDF_Extractor_Sample
                                                                                         itemno = itemno.Replace(Qtys, "");
                                                                                         itemno = itemno.Replace("  ", "");
                                                                                         itemno = itemno.Trim();
-
-                                                                                        if (itemno.Length > 18)
+                                                                                        if (itemno.Contains(" "))
                                                                                         {
-                                                                                            ItemID = itemno.Substring(0, 18).Trim();
+                                                                                            itemno = itemno.Split(' ').ToList().FirstOrDefault();                                                                                            
                                                                                         }
-                                                                                        else
+                                                                                        if (itemno.Length >= 4)
                                                                                         {
-                                                                                            ItemID = itemno.Trim();
+                                                                                            if (itemno.Length > 10)
+                                                                                            {
+                                                                                                ItemID = itemno.Substring(0, 10).Trim();
+                                                                                            }
+                                                                                            else
+                                                                                            {
+                                                                                                ItemID = itemno.Trim();
+                                                                                            }
                                                                                         }
+                                                                                        else {
+                                                                                            ItemID = "";
+                                                                                        }
+                                                                                        
                                                                                     }catch(Exception ex){
                                                                                         ItemID = "";
                                                                                     }                                                                                    
@@ -1082,22 +1141,27 @@ namespace PDF_Extractor_Sample
                                                                                         try {
                                                                                             string getitemID = list[1];
                                                                                             ItemID = getitemID.Trim();
-                                                                                            if (ItemID.Length > 18)
+                                                                                            if(ItemID.Contains(" "))
                                                                                             {
-                                                                                                ItemID = ItemID.Substring(0, 18).Trim();
+                                                                                                ItemID = ItemID.Split(' ').ToList().FirstOrDefault();
                                                                                             }
-                                                                                            else
+                                                                                            if (ItemID.Length >= 4)
                                                                                             {
-                                                                                                ItemID = ItemID.Trim();
+                                                                                                if (ItemID.Length > 10)
+                                                                                                {
+                                                                                                    ItemID = ItemID.Substring(0, 10).Trim();
+                                                                                                }
+                                                                                                else
+                                                                                                {
+                                                                                                    ItemID = ItemID.Trim();
+                                                                                                }
                                                                                             }
+                                                                                            else {
+                                                                                                ItemID = "";
+                                                                                            }                                                                                            
                                                                                         }catch(Exception ex){
                                                                                             ItemID = "";
                                                                                         }                                                                                        
-                                                                                    }
-                                                                                    ItemDescription = ItemDescription.Replace(ItemID, "").Trim();
-                                                                                    if (ItemDescription.StartsWith("-"))
-                                                                                    {
-                                                                                        ItemDescription = ItemDescription.Substring(1);
                                                                                     }
                                                                                 }
                                                                             }
@@ -1127,22 +1191,24 @@ namespace PDF_Extractor_Sample
                                                                                         {
                                                                                             ItemID = "";
                                                                                         }
-                                                                                        if (ItemID.Length > 18)
+                                                                                        if (ItemID.Contains(" "))
                                                                                         {
-                                                                                            ItemID = ItemID.Substring(0, 18).Trim();
+                                                                                            ItemID = ItemID.Split(' ').ToList().FirstOrDefault();
                                                                                         }
-                                                                                        else
+                                                                                        if (ItemID.Length >= 4)
                                                                                         {
-                                                                                            ItemID = ItemID.Trim();
+                                                                                            if (ItemID.Length > 10)
+                                                                                            {
+                                                                                                ItemID = ItemID.Substring(0, 10).Trim();
+                                                                                            }
+                                                                                            else
+                                                                                            {
+                                                                                                ItemID = ItemID.Trim();
+                                                                                            }
                                                                                         }
-                                                                                        if (ItemID.Length > 0)
-                                                                                        {
-                                                                                            ItemDescription = ItemDescription.Replace(ItemID, "").Trim();
-                                                                                        }                                                                                        
-                                                                                        if (ItemDescription.StartsWith("-"))
-                                                                                        {
-                                                                                            ItemDescription = ItemDescription.Substring(1);
-                                                                                        }
+                                                                                        else {
+                                                                                            ItemID = "";
+                                                                                        }                                                                                                                                                                                
                                                                                     }
                                                                                 }
                                                                             }
@@ -1357,8 +1423,17 @@ namespace PDF_Extractor_Sample
                                                         string full_file = strlst[i];
                                                         if (full_file.Contains("Item Material/Description Quantity UM Unit Price Net Amount"))
                                                         {
-                                                            int current_Line = Convert.ToInt32(Convert.ToString("Item Material/Description Quantity UM Unit Price Net Amount ").Length);
-                                                            full_file = full_file.Substring(current_Line);
+                                                            int current_Line = full_file.IndexOf("Item Material/Description Quantity UM Unit Price Net Amount");
+                                                            try
+                                                            {
+                                                                full_file = full_file.Substring(current_Line);
+                                                            }
+                                                            catch (Exception ex)
+                                                            {
+                                                                current_Line = Convert.ToInt32(Convert.ToString("Item Material/Description Quantity UM Unit Price Net Amount ").Length);
+                                                                full_file = full_file.Substring(current_Line);
+                                                                continue;
+                                                            }
                                                             if (full_file.Contains("The foregoing product brand is a trademark of one or more SI Group, Inc. affiliated companies. ADDIVANT is a trademark of SI Group"))
                                                             {
                                                                 int removecontent = full_file.IndexOf("The foregoing product brand is a trademark of one or more SI Group, Inc. affiliated companies. ADDIVANT is a trademark of SI Group");
@@ -1901,15 +1976,24 @@ namespace PDF_Extractor_Sample
                                                                                             itemno = itemno.Replace(Qtys, "");
                                                                                             itemno = itemno.Replace("  ", "");
                                                                                             itemno = itemno.Trim();
-
-                                                                                            if (itemno.Length > 18)
+                                                                                            if (ItemID.Contains(" "))
                                                                                             {
-                                                                                                ItemID = itemno.Substring(0, 18).Trim();
+                                                                                                ItemID = ItemID.Split(' ').ToList().FirstOrDefault();
                                                                                             }
-                                                                                            else
+                                                                                            if (itemno.Length >= 4)
                                                                                             {
-                                                                                                ItemID = itemno.Trim();
+                                                                                                if (itemno.Length > 10)
+                                                                                                {
+                                                                                                    ItemID = itemno.Substring(0, 10).Trim();
+                                                                                                }
+                                                                                                else
+                                                                                                {
+                                                                                                    ItemID = itemno.Trim();
+                                                                                                }
                                                                                             }
+                                                                                            else {
+                                                                                                ItemID = "";
+                                                                                            }                                                                                            
                                                                                         }
                                                                                         catch (Exception ex) {
                                                                                             ItemID = "";
@@ -1927,19 +2011,24 @@ namespace PDF_Extractor_Sample
                                                                                             {
                                                                                                 string getitemID = list[1];
                                                                                                 ItemID = getitemID.Trim();
-                                                                                                if (ItemID.Length > 18)
+                                                                                                if (ItemID.Contains(" "))
                                                                                                 {
-                                                                                                    ItemID = ItemID.Substring(0, 18).Trim();
+                                                                                                    ItemID = ItemID.Split(' ').ToList().FirstOrDefault();
                                                                                                 }
-                                                                                                else
+                                                                                                if (ItemID.Length >= 4)
                                                                                                 {
-                                                                                                    ItemID = ItemID.Trim();
+                                                                                                    if (ItemID.Length > 18)
+                                                                                                    {
+                                                                                                        ItemID = ItemID.Substring(0, 18).Trim();
+                                                                                                    }
+                                                                                                    else
+                                                                                                    {
+                                                                                                        ItemID = ItemID.Trim();
+                                                                                                    }
                                                                                                 }
-                                                                                                ItemDescription = ItemDescription.Replace(ItemID, "").Trim();
-                                                                                                if (ItemDescription.StartsWith("-"))
-                                                                                                {
-                                                                                                    ItemDescription = ItemDescription.Substring(1);
-                                                                                                }
+                                                                                                else {
+                                                                                                    ItemID = "";
+                                                                                                }                                                                                                                                                                                                
                                                                                             }
                                                                                             catch (Exception ex) 
                                                                                             {
@@ -1976,22 +2065,24 @@ namespace PDF_Extractor_Sample
                                                                                                 ItemID = "";
                                                                                                 continue;
                                                                                             }
-                                                                                            if (ItemID.Length > 18)
+                                                                                            if (ItemID.Contains(" "))
                                                                                             {
-                                                                                                ItemID = ItemID.Substring(0, 18).Trim();
+                                                                                                ItemID = ItemID.Split(' ').ToList().FirstOrDefault();
                                                                                             }
-                                                                                            else
+                                                                                            if (ItemID.Length >= 4)
                                                                                             {
-                                                                                                ItemID = ItemID.Trim();
+                                                                                                if (ItemID.Length > 10)
+                                                                                                {
+                                                                                                    ItemID = ItemID.Substring(0, 10).Trim();
+                                                                                                }
+                                                                                                else
+                                                                                                {
+                                                                                                    ItemID = ItemID.Trim();
+                                                                                                }
                                                                                             }
-                                                                                            if(ItemID.Length > 0)
-                                                                                            {
-                                                                                                ItemDescription = ItemDescription.Replace(ItemID, "").Trim();
-                                                                                            }                                                                                            
-                                                                                            if (ItemDescription.StartsWith("-"))
-                                                                                            {
-                                                                                                ItemDescription = ItemDescription.Substring(1);
-                                                                                            }
+                                                                                            else {
+                                                                                                ItemID = "";
+                                                                                            }                                                                                                                                                                                        
                                                                                         }
                                                                                     }
                                                                                 }
