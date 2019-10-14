@@ -743,21 +743,29 @@ namespace PDF_Extractor_Sample
 
                                                                             string[] wordslist = data.Split(' ');
                                                                             string getqtys = "";
+                                                                            string strFixWord = "";    
                                                                             foreach (string word in wordslist)
                                                                             {
                                                                                 bool result = false;
-                                                                                result = Regex.IsMatch(word, @"^\d*\.\d*$");
+                                                                                string strWord = word;
+                                                                                 // To remove comma in decimal price and QTY
+                                                                                if (word.Contains(",")) {
+                                                                                    strWord = strWord.Replace(",", "");
+                                                                                }
+
+                                                                                result = Regex.IsMatch(strWord, @"^\d*\.\d*$");
                                                                                 if (result)
                                                                                 {
-                                                                                    getqtys = word;
+                                                                                    getqtys = strWord;
+                                                                                    strFixWord = word;
                                                                                     break;
                                                                                 }
                                                                             }
                                                                             Qtys = getqtys;
-                                                                            int getint = newstr.IndexOf(getqtys);
+                                                                            int getint = newstr.IndexOf(strFixWord);
                                                                             string splitstrs = newstr.Substring(0, getint);
                                                                             string descriptionsValue = splitstrs;
-                                                                            newstr = newstr.Substring(newstr.IndexOf(getqtys) + getqtys.Length);
+                                                                            newstr = newstr.Substring(newstr.IndexOf(strFixWord) + strFixWord.Length);
 
                                                                             newstr = newstr.Trim();
 
@@ -1523,21 +1531,30 @@ namespace PDF_Extractor_Sample
 
                                                                                 string[] wordslist = data.Split(' ');
                                                                                 string getqtys = "";
+                                                                                string strFixWord = "";
                                                                                 foreach (string word in wordslist)
                                                                                 {
                                                                                     bool result = false;
-                                                                                    result = Regex.IsMatch(word, @"^\d*\.\d*$");
+                                                                                    string strWord = word;
+                                                                                    // To remove comma in decimal price and QTY
+                                                                                    if (word.Contains(","))
+                                                                                    {
+                                                                                        strWord = strWord.Replace(",", "");
+                                                                                    }
+
+                                                                                    result = Regex.IsMatch(strWord, @"^\d*\.\d*$");
                                                                                     if (result)
                                                                                     {
-                                                                                        getqtys = word;
+                                                                                        getqtys = strWord;
+                                                                                        strFixWord = word;
                                                                                         break;
                                                                                     }
                                                                                 }
                                                                                 Qtys = getqtys;
-                                                                                int getint = newstr.IndexOf(getqtys);
+                                                                                int getint = newstr.IndexOf(strFixWord);
                                                                                 string splitstrs = newstr.Substring(0, getint);
                                                                                 string descriptionsValue = splitstrs;
-                                                                                newstr = newstr.Substring(newstr.IndexOf(getqtys) + getqtys.Length);
+                                                                                newstr = newstr.Substring(newstr.IndexOf(strFixWord) + strFixWord.Length);
 
                                                                                 newstr = newstr.Trim();
 
