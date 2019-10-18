@@ -12,6 +12,9 @@ Imports System.Net.Mail
 Imports SDI.ApplicationLogger
 Imports SDI.UNCC.WorkOrderAdapter
 
+'*************************************************************************************************************************
+' new code to insert NBTY work orders in SYSADM8.PS_NLNK2_OBJCT_VAL (to be used in Shopping Cart WO validation) - VR 08/21/2019
+'*************************************************************************************************************************
 Module Module1
 
     Private m_logger As appLogger = Nothing
@@ -20,7 +23,7 @@ Module Module1
     Dim rootDir As String = "C:\NbtyWorkOrder"
     Dim logpath As String = "C:\NbtyWorkOrder\LOGS\NbtyWrkOrdXmlIn" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
     Dim sErrLogPath As String = "C:\NbtyWorkOrder\LOGS\MyErredSQLs" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=RPTG")
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=RPTG")
 
     Dim strOverride As String = ""
     Dim bolWarning As Boolean = False
@@ -39,7 +42,7 @@ Module Module1
         ' default log level
         Dim logLevel As System.Diagnostics.TraceLevel = TraceLevel.Verbose
 
-        Dim cnStringORA As String = "Provider=OraOLEDB.Oracle.1;Password=einternet;User ID=einternet;Data Source=RPTG"
+        Dim cnStringORA As String = "Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=RPTG"
         Try
             cnStringORA = My.Settings("oraCNString1").ToString.Trim
         Catch ex As Exception
@@ -106,6 +109,57 @@ Module Module1
 
             Next
         End If
+
+        ' new code to insert NBTY work orders in SYSADM8.PS_NLNK2_OBJCT_VAL (to be used in Shopping Cart WO validation)
+        Dim strPlantListForSql As String = sPlantList
+        strPlantListForSql = Replace(strPlantListForSql, ",", "','")
+        strPlantListForSql = "('" & strPlantListForSql & "')"
+
+        Dim strSqlForWOInsert As String = ""
+        strSqlForWOInsert = " INSERT INTO SYSADM8.PS_NLNK2_OBJCT_VAL(CUST_ID,ISA_OBJ_KEY,ISA_OBJECTID,DT_TIMESTAMP,ISA_ATTRLBL1,ISA_ATTRVAL1,ISA_ATTRLBL2, " & vbCrLf & _
+            " ISA_ATTRVAL2,ISA_ATTRLBL3,ISA_ATTRVAL3,ISA_ATTRLBL4,ISA_ATTRVAL4) " & vbCrLf & _
+            " SELECT DISTINCT 'NBTY' AS CUST_ID,'WORKORDER' AS ISA_OBJ_KEY,A.ISA_WORK_ORDER_NO AS ISA_OBJECTID," & vbCrLf & _
+            " TO_TIMESTAMP('" & Now.ToString("MM/dd/yyyy hh:mm:ss:ff5 tt") & "', 'MM/DD/YYYY HH:MI:SS:ff5 AM') AS DT_TIMESTAMP,'PLANT' AS ISA_ATTRLBL1," & vbCrLf & _
+            " A.PLANT AS ISA_ATTRVAL1, ' ' AS ISA_ATTRLBL2, ' ' AS ISA_ATTRVAL2, " & vbCrLf & _
+            " ' ' AS ISA_ATTRLBL3, ' ' AS ISA_ATTRVAL3, ' ' AS ISA_ATTRLBL4, ' ' AS ISA_ATTRVAL4 " & vbCrLf & _
+            " FROM SYSADM8.PS_ISA_NB_WOVAL A WHERE A.PLANT IN " & strPlantListForSql & " AND " & vbCrLf & _
+            " NOT EXISTS (  SELECT 'X' " & vbCrLf & _
+            " FROM SYSADM8.PS_NLNK2_OBJCT_VAL B " & vbCrLf & _
+            " WHERE B.CUST_ID = 'NBTY' AND B.ISA_OBJ_KEY = 'WORKORDER' AND B.ISA_ATTRLBL1 = 'PLANT' " & vbCrLf & _
+            " AND B.ISA_OBJECTID = A.ISA_WORK_ORDER_NO AND B.ISA_ATTRVAL1 = A.PLANT  )" & vbCrLf & _
+            " "
+
+        If Not connectOR.State = ConnectionState.Open Then
+            connectOR.Open()
+        End If
+
+        Dim rowsaffected As Integer = 0
+        Try
+
+            Dim Command As OleDbCommand = New OleDbCommand(strSqlForWOInsert, connectOR)
+            Command.CommandTimeout = 120
+
+            rowsaffected = Command.ExecuteNonQuery()
+
+            m_logger.WriteErrorLog(rtn & " ::  ")
+            m_logger.WriteErrorLog(rtn & " :: Number of Work Orders inserted: " & rowsaffected.ToString())
+            myLoggr1.WriteErrorLog(rtn & " ::  ")
+            myLoggr1.WriteErrorLog(rtn & " :: Number of Work Orders inserted: " & rowsaffected.ToString())
+            myLoggr1.WriteInformationLog(rtn & " :: SQL String: " & strSqlForWOInsert)
+
+            Try
+                connectOR.Close()
+            Catch ex As Exception
+
+            End Try
+        Catch exInsrt As Exception
+            myLoggr1.WriteErrorLog(rtn & " :: Error while trying to INSERT INTO SYSADM8.PS_NLNK2_OBJCT_VAL: " & exInsrt.ToString())
+            Try
+                connectOR.Close()
+            Catch ex As Exception
+
+            End Try
+        End Try
 
         ' destroy logger object
         Try
@@ -690,16 +744,16 @@ Module Module1
                                 Next  '  For iCnt = 0 To root.ChildNodes.Count - 1 
                                 myLoggr1.WriteInformationLog(rtn & " :: Number of lines in this file: " & root.ChildNodes.Count)
                                 m_logger.WriteInformationLog(rtn & " :: Number of lines in this file: " & root.ChildNodes.Count)
-                            End If  '  root.ChildNodes.Count > 0 
+                            End If  '  root.ChildNodes.Count > 0
                         End If ' Trim(strXMLError) = ""  '  inner if 
                     End If  ' Trim(strXMLError) = "" 
 
                     ' if there's an error, capture the filename of the XML and corresponding error message
                     If Trim(strXMLError) <> "" Or bolError Or bLineError Then
                         If Trim(m_arrXMLErrFiles) = "" Then
-                            m_arrXMLErrFiles = aFiles(I).Name
+                            m_arrXMLErrFiles = aFiles(I).Name & " for: " & sPlantCode
                         Else
-                            m_arrXMLErrFiles &= "," & aFiles(I).Name
+                            m_arrXMLErrFiles &= "," & aFiles(I).Name & " for: " & sPlantCode
                         End If
                         If Trim(strXMLError) <> "" Then
                             If Len(strXMLError) > 250 Then
@@ -735,9 +789,9 @@ Module Module1
             End If  '  aFiles.Length > 0
         Catch ex As Exception
             If Trim(m_arrXMLErrFiles) = "" Then
-                m_arrXMLErrFiles = aFiles(I).Name
+                m_arrXMLErrFiles = aFiles(I).Name & " for: " & sPlantCode
             Else
-                m_arrXMLErrFiles &= "," & aFiles(I).Name
+                m_arrXMLErrFiles &= "," & aFiles(I).Name & " for: " & sPlantCode
             End If
             If Trim(strXMLError) <> "" Then
                 If Len(strXMLError) > 250 Then
