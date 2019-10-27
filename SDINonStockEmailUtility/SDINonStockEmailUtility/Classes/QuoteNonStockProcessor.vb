@@ -1602,6 +1602,14 @@ Public Class QuoteNonStockProcessor
                                     bShowWorkOrderNo = True
                                 Else
                                 End If
+                                If bShowWorkOrderNo Then
+                                Else
+                                    If IsUOC(itmQuoted.BusinessUnitOM) Then
+                                        bShowWorkOrderNo = True
+                                    Else                                        
+                                    End If
+                                End If
+
                                 PI_SDI = LETTER_CONTENT_PI_SDiExchange
                                 eml.Body = "<HTML>" & _
                                             "<HEAD></HEAD>" & _
@@ -1624,6 +1632,13 @@ Public Class QuoteNonStockProcessor
                                     bShowWorkOrderNo = True
                                 Else
                                     PI = LETTER_CONTENT_PI
+                                End If
+                                If bShowWorkOrderNo Then
+                                Else
+                                    If IsUOC(itmQuoted.BusinessUnitOM) Then
+                                        bShowWorkOrderNo = True
+                                    Else
+                                    End If
                                 End If
                                 eml.Body = "<HTML>" & _
                                                 "<HEAD></HEAD>" & _
@@ -1650,6 +1665,13 @@ Public Class QuoteNonStockProcessor
                                     bShowWorkOrderNo = True
                                 Else
                                 End If
+                                If bShowWorkOrderNo Then
+                                Else
+                                    If IsUOC(itmQuoted.BusinessUnitOM) Then
+                                        bShowWorkOrderNo = True
+                                    Else
+                                    End If
+                                End If
                                 ContentSDI = LETTER_CONTENT_SDiExchange
                                 eml.Body = "<HTML>" & _
                                             "<HEAD></HEAD>" & _
@@ -1674,6 +1696,13 @@ Public Class QuoteNonStockProcessor
                                     bShowWorkOrderNo = True
                                 Else
                                     Content = LETTER_CONTENT
+                                End If
+                                If bShowWorkOrderNo Then
+                                Else
+                                    If IsUOC(itmQuoted.BusinessUnitOM) Then
+                                        bShowWorkOrderNo = True
+                                    Else
+                                    End If
                                 End If
                                 eml.Body = "<HTML>" & _
                                                 "<HEAD></HEAD>" & _
@@ -1849,6 +1878,13 @@ Public Class QuoteNonStockProcessor
                                 bShowWorkOrderNo = True
                             Else
                             End If
+                            If bShowWorkOrderNo Then
+                            Else
+                                If IsUOC(itmQuoted.BusinessUnitOM) Then
+                                    bShowWorkOrderNo = True
+                                Else
+                                End If
+                            End If
                             PI_SDI = LETTER_CONTENT_PI_SDiExchange
                             eml.Body = "<HTML>" & _
                                         "<HEAD></HEAD>" & _
@@ -1871,6 +1907,13 @@ Public Class QuoteNonStockProcessor
                                 bShowWorkOrderNo = True
                             Else
                                 PI = LETTER_CONTENT_PI
+                            End If
+                            If bShowWorkOrderNo Then
+                            Else
+                                If IsUOC(itmQuoted.BusinessUnitOM) Then
+                                    bShowWorkOrderNo = True
+                                Else
+                                End If
                             End If
                             eml.Body = "<HTML>" & _
                                             "<HEAD></HEAD>" & _
@@ -1897,6 +1940,13 @@ Public Class QuoteNonStockProcessor
                                 bShowWorkOrderNo = True
                             Else
                             End If
+                            If bShowWorkOrderNo Then
+                            Else
+                                If IsUOC(itmQuoted.BusinessUnitOM) Then
+                                    bShowWorkOrderNo = True
+                                Else
+                                End If
+                            End If
                             ContentSDI = LETTER_CONTENT_SDiExchange
                             eml.Body = "<HTML>" & _
                                         "<HEAD></HEAD>" & _
@@ -1921,6 +1971,13 @@ Public Class QuoteNonStockProcessor
                                 bShowWorkOrderNo = True
                             Else
                                 Content = LETTER_CONTENT
+                            End If
+                            If bShowWorkOrderNo Then
+                            Else
+                                If IsUOC(itmQuoted.BusinessUnitOM) Then
+                                    bShowWorkOrderNo = True
+                                Else
+                                End If
                             End If
                             eml.Body = "<HTML>" & _
                                             "<HEAD></HEAD>" & _
@@ -2974,6 +3031,23 @@ Public Class QuoteNonStockProcessor
             bIsAscend = False
         End Try
         Return bIsAscend
+
+    End Function
+
+    Public Shared Function IsUOC(ByVal sBU As String) As Boolean
+
+        Dim bIsUOC As Boolean = False
+
+        Try
+            If sBU = "I0535" Then
+                bIsUOC = True
+            Else
+                bIsUOC = False
+            End If
+        Catch ex As Exception
+            bIsUOC = False
+        End Try
+        Return bIsUOC
 
     End Function
 
