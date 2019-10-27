@@ -225,9 +225,9 @@ Public Class QuoteNonStockProcessor
                   "FROM SYSADM8.PS_ISA_ORD_INTF_LN A " & vbCrLf & _
                   "WHERE NOT EXISTS (" & vbCrLf & _
                   "                  SELECT 'X' " & vbCrLf & _
-                  "                  FROM SDIX_REQ_EML_LOG B " & vbCrLf & _
+                  "                  FROM PS_ISA_REQ_EML_LOG B " & vbCrLf & _
                   "                  WHERE B.BUSINESS_UNIT = A.BUSINESS_UNIT_OM " & vbCrLf & _
-                  "                    AND B.REQ_ID = A.ORDER_NO AND B.ISA_EMPLOYEE_ID = A.ISA_EMPLOYEE_ID " & vbCrLf & _
+                  "                    AND B.REQ_ID = A.ORDER_NO " & vbCrLf & _
                   "                 ) " & vbCrLf & _
                   "  AND A.ISA_LINE_STATUS = 'QTS' " & vbCrLf & _
                   "  AND NOT EXISTS ( " & vbCrLf & _
@@ -822,9 +822,9 @@ Public Class QuoteNonStockProcessor
                                  "                 ) " & vbCrLf & _
                                  "  AND NOT EXISTS (" & vbCrLf & _
                                  "                  SELECT 'X'" & vbCrLf & _
-                                 "                  FROM SDIX_REQ_EML_LOG B1" & vbCrLf & _
+                                 "                  FROM PS_ISA_REQ_EML_LOG B1" & vbCrLf & _
                                  "                  WHERE B1.BUSINESS_UNIT = A.BUSINESS_UNIT" & vbCrLf & _
-                                 "                    AND B1.REQ_ID = A.REQ_ID AND B1.ISA_EMPLOYEE_ID = L.ISA_EMPLOYEE_ID " & vbCrLf & _
+                                 "                    AND B1.REQ_ID = A.REQ_ID" & vbCrLf & _
                                  "                 )" & vbCrLf & _
                                  " ORDER BY A1.BUSINESS_UNIT, A1.REQ_ID, A1.LINE_NBR " & vbCrLf & _
                                  ""
@@ -863,13 +863,9 @@ Public Class QuoteNonStockProcessor
                     bNew = True
                     boItem = Nothing
 
-                    ' get the key for the current record - with Employee ID
+                    ' get the key for the current record
                     cKey = CType(rdr("BUSINESS_UNIT"), String).Trim.PadLeft(5, CType(" ", Char)) & _
-                           CType(rdr("REQ_ID"), String).Trim.PadLeft(10, CType(" ", Char)) & _
-                           CType(rdr("ISA_EMPLOYEE_ID"), String).Trim.PadLeft(10, CType(" ", Char))
-
-                    'cKey = CType(rdr("BUSINESS_UNIT"), String).Trim.PadLeft(5, CType(" ", Char)) & _
-                    '       CType(rdr("REQ_ID"), String).Trim.PadLeft(10, CType(" ", Char))
+                           CType(rdr("REQ_ID"), String).Trim.PadLeft(10, CType(" ", Char))
 
                     ' check if current key exist or be in a new message instance
                     If m_colMsgs.Count > 0 Then
@@ -1602,14 +1598,6 @@ Public Class QuoteNonStockProcessor
                                     bShowWorkOrderNo = True
                                 Else
                                 End If
-                                If bShowWorkOrderNo Then
-                                Else
-                                    If IsUOC(itmQuoted.BusinessUnitOM) Then
-                                        bShowWorkOrderNo = True
-                                    Else                                        
-                                    End If
-                                End If
-
                                 PI_SDI = LETTER_CONTENT_PI_SDiExchange
                                 eml.Body = "<HTML>" & _
                                             "<HEAD></HEAD>" & _
@@ -1632,13 +1620,6 @@ Public Class QuoteNonStockProcessor
                                     bShowWorkOrderNo = True
                                 Else
                                     PI = LETTER_CONTENT_PI
-                                End If
-                                If bShowWorkOrderNo Then
-                                Else
-                                    If IsUOC(itmQuoted.BusinessUnitOM) Then
-                                        bShowWorkOrderNo = True
-                                    Else
-                                    End If
                                 End If
                                 eml.Body = "<HTML>" & _
                                                 "<HEAD></HEAD>" & _
@@ -1665,13 +1646,6 @@ Public Class QuoteNonStockProcessor
                                     bShowWorkOrderNo = True
                                 Else
                                 End If
-                                If bShowWorkOrderNo Then
-                                Else
-                                    If IsUOC(itmQuoted.BusinessUnitOM) Then
-                                        bShowWorkOrderNo = True
-                                    Else
-                                    End If
-                                End If
                                 ContentSDI = LETTER_CONTENT_SDiExchange
                                 eml.Body = "<HTML>" & _
                                             "<HEAD></HEAD>" & _
@@ -1696,13 +1670,6 @@ Public Class QuoteNonStockProcessor
                                     bShowWorkOrderNo = True
                                 Else
                                     Content = LETTER_CONTENT
-                                End If
-                                If bShowWorkOrderNo Then
-                                Else
-                                    If IsUOC(itmQuoted.BusinessUnitOM) Then
-                                        bShowWorkOrderNo = True
-                                    Else
-                                    End If
                                 End If
                                 eml.Body = "<HTML>" & _
                                                 "<HEAD></HEAD>" & _
@@ -1806,8 +1773,8 @@ Public Class QuoteNonStockProcessor
 
                         ' build insert SQL command
                         cSQL = _
-                        "INSERT INTO SDIX_REQ_EML_LOG " & _
-                        "(BUSINESS_UNIT, REQ_ID, ISA_RECIPIENT, ISA_SENDER, ISA_SUBJECT, EMAIL_DATETIME, ISA_EMPLOYEE_ID) " & _
+                        "INSERT INTO PS_ISA_REQ_EML_LOG " & _
+                        "(BUSINESS_UNIT, REQ_ID, ISA_RECIPIENT, ISA_SENDER, ISA_SUBJECT, EMAIL_DATETIME) " & _
                         "VALUES " & _
                         "(" & _
                             "'" & CType(IIf(itmQuoted.BusinessUnitID.Length > 0, itmQuoted.BusinessUnitID, "."), String) & "', " & _
@@ -1815,7 +1782,7 @@ Public Class QuoteNonStockProcessor
                             "'" & "TO=" & eml.To & "CC=" & eml.Cc & "BCC=" & eml.Bcc & "', " & _
                             "'" & CType(IIf(eml.From.Length > 0, eml.From, "."), String) & "', " & _
                             "'" & CType(IIf(eml.Subject.Length > 0, eml.Subject, "."), String) & "', " & _
-                            "TO_DATE('" & System.DateTime.Now.ToString & "','MM/DD/YYYY HH:MI:SS AM'), '" & itmQuoted.EmployeeID & "' " & _
+                            "TO_DATE('" & System.DateTime.Now.ToString & "','MM/DD/YYYY HH:MI:SS AM') " & _
                         ")"
 
                         If m_CN.State = ConnectionState.Open Then
@@ -1878,13 +1845,6 @@ Public Class QuoteNonStockProcessor
                                 bShowWorkOrderNo = True
                             Else
                             End If
-                            If bShowWorkOrderNo Then
-                            Else
-                                If IsUOC(itmQuoted.BusinessUnitOM) Then
-                                    bShowWorkOrderNo = True
-                                Else
-                                End If
-                            End If
                             PI_SDI = LETTER_CONTENT_PI_SDiExchange
                             eml.Body = "<HTML>" & _
                                         "<HEAD></HEAD>" & _
@@ -1907,13 +1867,6 @@ Public Class QuoteNonStockProcessor
                                 bShowWorkOrderNo = True
                             Else
                                 PI = LETTER_CONTENT_PI
-                            End If
-                            If bShowWorkOrderNo Then
-                            Else
-                                If IsUOC(itmQuoted.BusinessUnitOM) Then
-                                    bShowWorkOrderNo = True
-                                Else
-                                End If
                             End If
                             eml.Body = "<HTML>" & _
                                             "<HEAD></HEAD>" & _
@@ -1940,13 +1893,6 @@ Public Class QuoteNonStockProcessor
                                 bShowWorkOrderNo = True
                             Else
                             End If
-                            If bShowWorkOrderNo Then
-                            Else
-                                If IsUOC(itmQuoted.BusinessUnitOM) Then
-                                    bShowWorkOrderNo = True
-                                Else
-                                End If
-                            End If
                             ContentSDI = LETTER_CONTENT_SDiExchange
                             eml.Body = "<HTML>" & _
                                         "<HEAD></HEAD>" & _
@@ -1971,13 +1917,6 @@ Public Class QuoteNonStockProcessor
                                 bShowWorkOrderNo = True
                             Else
                                 Content = LETTER_CONTENT
-                            End If
-                            If bShowWorkOrderNo Then
-                            Else
-                                If IsUOC(itmQuoted.BusinessUnitOM) Then
-                                    bShowWorkOrderNo = True
-                                Else
-                                End If
                             End If
                             eml.Body = "<HTML>" & _
                                             "<HEAD></HEAD>" & _
@@ -2074,7 +2013,7 @@ Public Class QuoteNonStockProcessor
                     ' build insert SQL command
                     cSQL = _
                     "INSERT INTO PS_ISA_REQ_EML_LOG " & _
-                    "(BUSINESS_UNIT, REQ_ID, ISA_RECIPIENT, ISA_SENDER, ISA_SUBJECT, EMAIL_DATETIME, ISA_EMPLOYEE_ID) " & _
+                    "(BUSINESS_UNIT, REQ_ID, ISA_RECIPIENT, ISA_SENDER, ISA_SUBJECT, EMAIL_DATETIME) " & _
                     "VALUES " & _
                     "(" & _
                         "'" & CType(IIf(itmQuoted.BusinessUnitID.Length > 0, itmQuoted.BusinessUnitID, "."), String) & "', " & _
@@ -2082,7 +2021,7 @@ Public Class QuoteNonStockProcessor
                         "'" & "TO=" & eml.To & "CC=" & eml.Cc & "BCC=" & eml.Bcc & "', " & _
                         "'" & CType(IIf(eml.From.Length > 0, eml.From, "."), String) & "', " & _
                         "'" & CType(IIf(eml.Subject.Length > 0, eml.Subject, "."), String) & "', " & _
-                        "TO_DATE('" & System.DateTime.Now.ToString & "','MM/DD/YYYY HH:MI:SS AM'), '" & itmQuoted.EmployeeID & "' " & _
+                        "TO_DATE('" & System.DateTime.Now.ToString & "','MM/DD/YYYY HH:MI:SS AM') " & _
                     ")"
 
                     If m_CN.State = ConnectionState.Open Then
@@ -2197,12 +2136,12 @@ Public Class QuoteNonStockProcessor
     End Function
 
     Private Function GetReqAltApprover(ByVal strUserid As String, ByVal strBU As String, ByVal Req_type As String) As String
-        Dim strReqApprEmailID As String = ""
         Try
             Dim strReqApprSet As String = "SELECT ISA_REQ_APR_ALT FROM SDIX_USERS_REQ_APPRV WHERE ISA_EMPLOYEE_ID = '" & strUserid & "' AND BUSINESS_UNIT = '" & strBU & "'"
             Dim ListOfReqApprSet As DataSet = ORDBData.GetAdapter(strReqApprSet)
             Dim getemailID_altAppr As DataSet
             'Dim listReqApprSet As New List(Of String)
+            Dim strReqApprEmailID As String = String.Empty
             If Not ListOfReqApprSet Is Nothing Then
                 If ListOfReqApprSet.Tables(0).Rows.Count = 1 Then
                     Dim strReqAltApprEmailID As String = "SELECT * FROM SDIX_USERS_TBL WHERE ISA_EMPLOYEE_ID = '" & Convert.ToString(ListOfReqApprSet.Tables(0).Rows(0).Item("ISA_REQ_APR_ALT")) & "'"
@@ -2226,11 +2165,10 @@ Public Class QuoteNonStockProcessor
             Else
                 strReqApprEmailID = ""
             End If
+            Return strReqApprEmailID
         Catch ex As Exception
-            strReqApprEmailID = ""
-        End Try
-        Return strReqApprEmailID
 
+        End Try
     End Function
 
 
@@ -2682,8 +2620,8 @@ Public Class QuoteNonStockProcessor
                 End If
             End If
 
-            strInsertQuery = "INSERT INTO SDIX_REQ_EML_LOG " & _
-                "(BUSINESS_UNIT, REQ_ID, ISA_RECIPIENT, ISA_SENDER, ISA_SUBJECT, EMAIL_DATETIME, ISA_EMPLOYEE_ID) " & _
+            strInsertQuery = "INSERT INTO PS_ISA_REQ_EML_LOG " & _
+                "(BUSINESS_UNIT, REQ_ID, ISA_RECIPIENT, ISA_SENDER, ISA_SUBJECT, EMAIL_DATETIME) " & _
                 "VALUES " & _
                 "(" & _
                     "'" & CType(IIf(itmQuoted.BusinessUnitID.Length > 0, itmQuoted.BusinessUnitID, "."), String) & "', " & _
@@ -2691,7 +2629,7 @@ Public Class QuoteNonStockProcessor
                     "'" & "TO=" & eml.To & "CC=" & eml.Cc & "BCC=" & eml.Bcc & "', " & _
                     "'" & CType(IIf(eml.From.Length > 0, eml.From, "."), String) & "', " & _
                     "'" & CType(IIf(eml.Subject.Length > 0, eml.Subject, "."), String) & "', " & _
-                    "TO_DATE('" & System.DateTime.Now.ToString & "','MM/DD/YYYY HH:MI:SS AM'), '" & itmQuoted.EmployeeID & "' " & _
+                    "TO_DATE('" & System.DateTime.Now.ToString & "','MM/DD/YYYY HH:MI:SS AM') " & _
                 ")"
 
             rowsaffected = ExecNonQuery(strInsertQuery)
@@ -3031,23 +2969,6 @@ Public Class QuoteNonStockProcessor
             bIsAscend = False
         End Try
         Return bIsAscend
-
-    End Function
-
-    Public Shared Function IsUOC(ByVal sBU As String) As Boolean
-
-        Dim bIsUOC As Boolean = False
-
-        Try
-            If sBU = "I0535" Then
-                bIsUOC = True
-            Else
-                bIsUOC = False
-            End If
-        Catch ex As Exception
-            bIsUOC = False
-        End Try
-        Return bIsUOC
 
     End Function
 
