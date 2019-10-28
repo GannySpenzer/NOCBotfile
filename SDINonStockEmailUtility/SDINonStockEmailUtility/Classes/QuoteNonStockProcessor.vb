@@ -17,8 +17,6 @@ Imports System.Collections.Specialized
 Imports System.Security.Cryptography
 Imports System.Math
 
-
-
 Public Class QuoteNonStockProcessor
 
     Private m_oApprovalDetails As ApprovalDetails
@@ -87,6 +85,23 @@ Public Class QuoteNonStockProcessor
     Private m_configFile As String = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly.GetModules()(0).FullyQualifiedName) & "\configSetting.xml"
 
     Dim logpath As String = "C:\Program Files (x86)\SDI\SDINonStockEmailUtility\LOGS\NonStockEmailUtil" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+
+    Public Shared Function IsUOC(ByVal sBU As String) As Boolean
+
+        Dim bIsUOC As Boolean = False
+
+        Try
+            If sBU = "I0535" Then
+                bIsUOC = True
+            Else
+                bIsUOC = False
+            End If
+        Catch ex As Exception
+            bIsUOC = False
+        End Try
+        Return bIsUOC
+
+    End Function
 
     Public ReadOnly Property DBConnection() As OleDbConnection
         Get
@@ -558,7 +573,7 @@ Public Class QuoteNonStockProcessor
                             Else
                                 SendMessages(itmQuoted)
                             End If
-                            
+
                         Else
                             If itmQuoted.ApprovalLimit > 0 Then
                                 If TtlPrice > itmQuoted.ApprovalLimit Then
@@ -569,7 +584,7 @@ Public Class QuoteNonStockProcessor
                             Else
                                 PriceUpdate(itmQuoted.OrderID, "QTW")
                             End If
-                            
+
                             UpdateReqEmailLog(itmQuoted)
                             buildNotifyApprover(itmQuoted)
                         End If
@@ -985,7 +1000,7 @@ Public Class QuoteNonStockProcessor
                     If Trim(priceBlock) = "" Then
                         priceBlock = "N"
                     End If
-                    
+
                     boItem.PriceBlockFlag = priceBlock
                     'Session("PriceBlockFlag") = boItem.PriceBlockFlag
 
@@ -1481,7 +1496,7 @@ Public Class QuoteNonStockProcessor
                         eml.To = Trim(eml.To) & ";"
                     End If
                 End If
-                
+
                 If m_extendedTO.Count > 0 Then
                     For Each sTo As String In m_extendedTO
                         If Utility.IsValidEmailAdd(sTo) Then
@@ -1599,6 +1614,14 @@ Public Class QuoteNonStockProcessor
                             bShowWorkOrderNo = True
                         Else
                         End If
+                        If bShowWorkOrderNo Then
+                        Else
+                            If IsUOC(itmQuoted.BusinessUnitOM) Then
+                                bShowWorkOrderNo = True
+                            Else
+                            End If
+                        End If
+
                         PI_SDI = LETTER_CONTENT_PI_SDiExchange
                         eml.Body = "<HTML>" & _
                                     "<HEAD></HEAD>" & _
@@ -1622,6 +1645,14 @@ Public Class QuoteNonStockProcessor
                         Else
                             PI = LETTER_CONTENT_PI
                         End If
+                        If bShowWorkOrderNo Then
+                        Else
+                            If IsUOC(itmQuoted.BusinessUnitOM) Then
+                                bShowWorkOrderNo = True
+                            Else
+                            End If
+                        End If
+
                         eml.Body = "<HTML>" & _
                                         "<HEAD></HEAD>" & _
                                         "<BODY>" & _
@@ -1647,6 +1678,14 @@ Public Class QuoteNonStockProcessor
                             bShowWorkOrderNo = True
                         Else
                         End If
+                        If bShowWorkOrderNo Then
+                        Else
+                            If IsUOC(itmQuoted.BusinessUnitOM) Then
+                                bShowWorkOrderNo = True
+                            Else
+                            End If
+                        End If
+
                         ContentSDI = LETTER_CONTENT_SDiExchange
                         eml.Body = "<HTML>" & _
                                     "<HEAD></HEAD>" & _
@@ -1671,6 +1710,14 @@ Public Class QuoteNonStockProcessor
                         Else
                             Content = LETTER_CONTENT
                         End If
+                        If bShowWorkOrderNo Then
+                        Else
+                            If IsUOC(itmQuoted.BusinessUnitOM) Then
+                                bShowWorkOrderNo = True
+                            Else
+                            End If
+                        End If
+
                         eml.Body = "<HTML>" & _
                                         "<HEAD></HEAD>" & _
                                         "<BODY>" & _
@@ -2140,7 +2187,7 @@ Public Class QuoteNonStockProcessor
                 ", TO_DATE('" & Now.ToString("MM/dd/yyyy HH:mm:ss") & "', 'MM/DD/YYYY HH24:MI:SS') " & vbCrLf & _
                 ", '" & sBU & "', ' ', ' ', ' ' " & vbCrLf & _
                 " )"
-            
+
             rowsaffected = ORDBData.ExecNonQuery(strInsertQuery)
 
         Catch ex As Exception
@@ -7114,7 +7161,7 @@ Public Class clsSDIAudit
             ' want to abort the primary function (interunit receipts, etc) 
             ' just for an audit record.
 
-         
+
             sServer = "SDIMOBILE03"
 
             If TruncateData(sSourceProgram, sFunctionDesc, sTableName, sOprID, sBU, sColumnChg, sOldValue, _
