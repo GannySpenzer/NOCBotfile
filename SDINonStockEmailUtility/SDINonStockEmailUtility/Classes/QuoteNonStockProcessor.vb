@@ -1609,18 +1609,8 @@ Public Class QuoteNonStockProcessor
                 If bIsPunchInBU Then
                     If bIsBusUnitSDiExch Then
                         'SdiExchange
-                        If IsAscend(itmQuoted.BusinessUnitOM) Then
-                            'PI_SDI = LETTER_CONTENT_PI_SDiExchange.Replace("Requestor Approval", "Approve Quotes (Ascend)")
-                            bShowWorkOrderNo = True
-                        Else
-                        End If
-                        If bShowWorkOrderNo Then
-                        Else
-                            If IsUOC(itmQuoted.BusinessUnitOM) Then
-                                bShowWorkOrderNo = True
-                            Else
-                            End If
-                        End If
+                        'WorkOrder should show for all the BU's
+                        bShowWorkOrderNo = True
 
                         PI_SDI = LETTER_CONTENT_PI_SDiExchange
                         eml.Body = "<HTML>" & _
@@ -1640,19 +1630,12 @@ Public Class QuoteNonStockProcessor
                     Else
                         'InsiteOnline
                         If IsAscend(itmQuoted.BusinessUnitOM) Then
-                            PI = LETTER_CONTENT_PI.Replace("Requestor Approval", "Approve Quotes (Ascend)")
-                            bShowWorkOrderNo = True
+                            PI = LETTER_CONTENT_PI.Replace("Requestor Approval", "Approve Quotes (Ascend)")                            
                         Else
                             PI = LETTER_CONTENT_PI
-                        End If
-                        If bShowWorkOrderNo Then
-                        Else
-                            If IsUOC(itmQuoted.BusinessUnitOM) Then
-                                bShowWorkOrderNo = True
-                            Else
-                            End If
-                        End If
-
+                        End If                        
+                        'WorkOrder should show for all the BU's
+                        bShowWorkOrderNo = True
                         eml.Body = "<HTML>" & _
                                         "<HEAD></HEAD>" & _
                                         "<BODY>" & _
@@ -1673,18 +1656,8 @@ Public Class QuoteNonStockProcessor
                     If bIsBusUnitSDiExch Then
                         bShowApproveViaEmailLink = True
                         'SdiExchange
-                        If IsAscend(itmQuoted.BusinessUnitOM) Then
-                            'ContentSDI = LETTER_CONTENT_SDiExchange.Replace("Requestor Approval", "Approve Quotes (Ascend)")
-                            bShowWorkOrderNo = True
-                        Else
-                        End If
-                        If bShowWorkOrderNo Then
-                        Else
-                            If IsUOC(itmQuoted.BusinessUnitOM) Then
-                                bShowWorkOrderNo = True
-                            Else
-                            End If
-                        End If
+                        'WorkOrder should show for all the BU's
+                        bShowWorkOrderNo = True
 
                         ContentSDI = LETTER_CONTENT_SDiExchange
                         eml.Body = "<HTML>" & _
@@ -1705,18 +1678,12 @@ Public Class QuoteNonStockProcessor
                     Else
                         'InsiteOnline
                         If IsAscend(itmQuoted.BusinessUnitOM) Then
-                            Content = LETTER_CONTENT.Replace("Requestor Approval", "Approve Quotes (Ascend)")
-                            bShowWorkOrderNo = True
+                            Content = LETTER_CONTENT.Replace("Requestor Approval", "Approve Quotes (Ascend)")                            
                         Else
                             Content = LETTER_CONTENT
                         End If
-                        If bShowWorkOrderNo Then
-                        Else
-                            If IsUOC(itmQuoted.BusinessUnitOM) Then
-                                bShowWorkOrderNo = True
-                            Else
-                            End If
-                        End If
+                        'WorkOrder should show for all the BU's
+                        bShowWorkOrderNo = True                        
 
                         eml.Body = "<HTML>" & _
                                         "<HEAD></HEAD>" & _
