@@ -1,0 +1,23 @@
+﻿{{
+    "Action_Items": "{0}",
+    "Business_Unit": "{1}",
+    "Buyer_ID": "{2}",
+    "Buyer_Team": "{3}",
+    "Client": "{4}",
+    "Description": "{5}",
+    "Expediting_Comments": "{6}",
+    "Inventory_Business_Unit": "{7}",
+    "Item": "{8}",
+    "Last_Comment_Date": "{9}",
+    "Last_Operator": "{10}",
+    "Line_Number": "{11}",
+    "PO_Date": "{12}",
+    "PO_ID": "{13}",
+    "PS_URL": "{14}",
+    "Priority_Flag": "{15}",
+    "Problem_Code": "{16}",
+    "Site_Name": "{17}",
+    "Status_Age": {18},
+    "Vendor_ID": "{19}",
+    "Vendor_Name": "{20}"
+}}
