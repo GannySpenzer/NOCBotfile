@@ -774,7 +774,7 @@ Public Class punchOutSetupRequestDoc
                                             Dim nodeInvoiceDetItemRef As XmlNode = nodeLine.AppendChild(docXML.CreateElement(name:="InvoiceDetailItemReference"))
                                             attrib = nodeInvoiceDetItemRef.Attributes.Append(docXML.CreateAttribute(name:="lineNumber"))
                                             Dim strLineNmbr As String = " "
-                                            strLineNmbr = strInvoiceLineNum  ' ?? or OrderDataSetLines.Tables(0).Rows(iOrd).Item("TOTAL").ToString()
+                                            strLineNmbr = OrderDataSetLines.Tables(0).Rows(iOrd).Item("PO_LINE_NBR").ToString()
                                             attrib.Value = strLineNmbr
 
                                             ' ItemID under InvoiceDetailItemReference  under nodeLine
