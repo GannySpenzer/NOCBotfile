@@ -21,7 +21,7 @@ namespace ExpediterReload
             string password = " ";
             string serviceURL = " ";
             string serviceURL2 = " ";
-            var strResponse = "";
+            var strResponse = "Failure";
             string resultSet = "";
             string processFlag = " ";
             
@@ -49,7 +49,6 @@ namespace ExpediterReload
             string VENDOR_ID = " ";
             string VENDOR_NAME = " ";
             DateTime dateparse;
-
             
             ServicePointManager.Expect100Continue = true;
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
@@ -64,10 +63,6 @@ namespace ExpediterReload
             m_oLogger = new Logger(sLogPath, "ExpediterReload");
             m_oLogger.LogMessage("Main", "Started utility ExpediterReload");
 
-            //WMReceiptsMappingAPIAccess objWMReceiptsMappingAPIAccess = new WMReceiptsMappingAPIAccess();
-            //WMReceiptsMappingDAL objWMReceiptsMappingDAL = new WMReceiptsMappingDAL();
-            //strResponse = objWMReceiptsMappingAPIAccess.postWMReceiptMappingData(m_oLogger);
-
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //m_oLogger.LogMessage("postExpediterReload", "GET Oracle Data starts here");
             //m_oLogger.LogMessage("postWMReceiptMappingData", "POST WMReceiptMapping Data" + resultSet.ToString());
@@ -78,7 +73,7 @@ namespace ExpediterReload
             using (var client = new WebClient())
             {
                 
-
+                //set default parameters
                 testOrProd = ConfigurationManager.AppSettings["TestOrProd"];
                 if (testOrProd == "TEST")
                 {
@@ -112,8 +107,17 @@ namespace ExpediterReload
                     StreamReader sr = new StreamReader(myStream);
                     resultSet = sr.ReadToEnd();
                     string json = resultSet;
-                    m_oLogger.LogMessage("ExpediterReload", "QUERYING Oracle Data successful");
-
+                    if (json.Trim() != "")
+                    {
+                        m_oLogger.LogMessage("ExpediterReload", "QUERYING Oracle Data successful");
+                    }
+                    else
+                    {
+                        m_oLogger.LogMessage("ExpediterReload", "QUERYING Oracle Data failed");
+                        m_oLogger.LogMessageWeb("ExpediterReload", "QUERYING Oracle Data failed", "QUERYING Oracle Data failed");
+                        return;
+                    }
+                    
                     RootObject  bo = JsonConvert.DeserializeObject<RootObject>(resultSet);
                     
                     //var objects = JArray.Parse(resultSet);
@@ -132,10 +136,13 @@ namespace ExpediterReload
                             client.UploadString(serviceURL2 + rowToDel, "DELETE", "");
 
                         }
+                        m_oLogger.LogMessage("ExpediterReload", "DELETE Oracle Data successful.");
                     }
                     catch (Exception ex)
                     {
                         m_oLogger.LogMessage("ExpediterReload", "DELETE Oracle Data failed.");
+                        m_oLogger.LogMessageWeb("ExpediterReload", "DELETE Oracle Data failed", "DELETE Oracle Data failed.  Resultset to delete: " + resultSet );
+                        return;
                     }
 
 
@@ -146,6 +153,7 @@ namespace ExpediterReload
                     if (dtResponse.Rows.Count == 0)
                     {
                         m_oLogger.LogMessage("ExpediterReload", "Query returned no records.");
+                        return;
                     }
                     else
                         for (int i = 0; i < dtResponse.Rows.Count; i++)
@@ -202,20 +210,28 @@ namespace ExpediterReload
                             //string LINENUM = rowInit["ISA_CUST_PO_LINE"].ToString();
                             //string VENDELIVERYDATE = rowInit["DUE_DT"].ToString();
 
-                            StringBuilder sbInit = new StringBuilder();
-                            string xmlStr = string.Empty;
-                            string xmlStringInit = string.Empty;
-                            string dir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-                            using (StreamReader sr2 = new StreamReader(dir + "/BuyExpPost.txt"))
+                            try
                             {
+                                StringBuilder sbInit = new StringBuilder();
+                                string xmlStr = string.Empty;
+                                string xmlStringInit = string.Empty;
+                                string dir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                                using (StreamReader sr2 = new StreamReader(dir + "/BuyExpPost.txt"))
+                                {
 
-                                xmlStr = sr2.ReadToEnd();
-                                sbInit.AppendFormat(xmlStr, ACTION_ITEMS, BUSINESS_UNIT, BUYER_ID, BUYER_TEAM, CLIENT, DESCRIPTION, EXPEDITING_COMMENTS, INVENTORY_BUSINESS_UNIT, ITEM, LAST_COMMENT_DATE, LAST_OPERATOR, LINE_NUMBER, PO_DATE, PO_ID, PS_URL, PRIORITY_FLAG, PROBLEM_CODE, SITE_NAME, STATUS_AGE, VENDOR_ID, VENDOR_NAME);
-                                xmlStringInit = sbInit.ToString();
+                                    xmlStr = sr2.ReadToEnd();
+                                    sbInit.AppendFormat(xmlStr, ACTION_ITEMS, BUSINESS_UNIT, BUYER_ID, BUYER_TEAM, CLIENT, DESCRIPTION, EXPEDITING_COMMENTS, INVENTORY_BUSINESS_UNIT, ITEM, LAST_COMMENT_DATE, LAST_OPERATOR, LINE_NUMBER, PO_DATE, PO_ID, PS_URL, PRIORITY_FLAG, PROBLEM_CODE, SITE_NAME, STATUS_AGE, VENDOR_ID, VENDOR_NAME);
+                                    xmlStringInit = sbInit.ToString();
+                                }
+
+                                m_oLogger.LogMessage("ExpediterReload", "POST ExpediterReload data.");
+                                client.UploadString(serviceURL2, xmlStringInit);
                             }
-
-                            m_oLogger.LogMessage("ExpediterReload", "POST ExpediterReload data.");
-                            client.UploadString(serviceURL2,  xmlStringInit);
+                            catch (Exception ex)
+                            {
+                                m_oLogger.LogMessage("ExpediterReload", "POST ExpediterReload failed at row:" + i.ToString());
+                                return;
+                            }
 
                             if (i == (dtResponse.Rows.Count -1))
                             {
@@ -264,7 +280,9 @@ namespace ExpediterReload
 
                     if (strResponse.ToUpper() != "SUCCESS")
                     {
-                        //break;
+                        m_oLogger.LogMessage("ExpediterReload", "POST ExpediterReload data to Solvay server status " + strResponse);
+                        m_oLogger.LogMessageWeb("ExpediterReload", "POST ExpediterReload data to Solvay server status " + strResponse, "POST ExpediterReload data to Solvay server status " + strResponse);
+
                     }
 
 
