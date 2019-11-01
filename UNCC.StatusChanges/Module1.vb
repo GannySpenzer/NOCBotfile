@@ -141,7 +141,9 @@ Module Module1
         Dim rtn As String = "Module1.buildStatusXMLOut"
 
         ' set the end date time
-        Dim strSQLstring As String
+        Dim strSQLstring As String = ""
+        Dim strSQLstrUpdate1 As String = ""
+        Dim strSQLstrUpdate2 As String = ""
         Dim dteEndDate As DateTime
         Dim dteEndDatePlus1 As DateTime
         Dim format As New System.Globalization.CultureInfo("en-US", True)
@@ -192,44 +194,66 @@ Module Module1
             Return True
         End Try
 
-        connectOR.Open()
-        Dim objEnterprise As New clsEnterprise("I0256", connectOR)
-        Dim dteStartDate As DateTime = objEnterprise.SendStartDate
-        connectOR.Close()
+        'connectOR.Open()
+        'Dim objEnterprise As New clsEnterprise("I0256", connectOR)
+        'Dim dteStartDate As DateTime = objEnterprise.SendStartDate
+        'connectOR.Close()
 
         dteEndDatePlus1 = DateAdd(DateInterval.Second, 1, dteEndDate)
         Dim ds As New DataSet
-        Dim bolerror As Boolean
-        'strSQLstring = "SELECT A.ORDER_NO, A.ISA_INTFC_LN AS LINE_NBR," & vbCrLf & _
-        '                    " TO_CHAR(A.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP" & vbCrLf & _
-        '                    " ,A.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(A.ISA_LINE_STATUS,'NEW','1','QTA','2','CRE','2','DSP','3','ORD','3','RSV','3','PKA','4','PKP','4','DLP','5','RCP','5','RCF','6','PKQ','5','DLO','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','1') AS OLD_ORDER_STATUS" & vbCrLf & _
-        '                    " FROM PS_ISAORDSTATUSLOG A, SYSADM8.PS_ISA_ORD_INTF_HD B, SYSADM8.PS_ISA_ORD_INTF_LN C" & vbCrLf & _
-        '                    " WHERE A.BUSINESS_UNIT_OM = 'I0256'" & vbCrLf & _
-        '                    " AND B.ORIGIN IN ('INT','IOL') AND C.LINE_FIELD_C6 <> 'PCH'" & vbCrLf & _
-        '                    " AND A.BUSINESS_UNIT_OM = C.BUSINESS_UNIT_OM" & vbCrLf & _
-        '                    " AND A.ORDER_NO = C.ORDER_NO" & vbCrLf & _
-        '                    " AND A.ISA_INTFC_LN = C.ISA_INTFC_LN" & vbCrLf & _
-        '                    " AND A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf & _
-        '                    " AND A.ORDER_NO = B.ORDER_NO " & vbCrLf & _
-        '                    " AND TO_DATE(TO_CHAR(A.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM'), 'MM/DD/YYYY HH:MI:SS AM') >= TO_DATE('" & dteStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
-        '                    " AND TO_DATE(TO_CHAR(A.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM'), 'MM/DD/YYYY HH:MI:SS AM') <= TO_DATE('" & dteEndDatePlus1 & "', 'MM/DD/YYYY HH:MI:SS AM')"
-
-        'm_logger.WriteVerboseLog(rtn & " :: Update 1 SQL: " & strSQLstring & " ")
-
-
-        strSQLstring = "SELECT A.ORDER_NO, A.ISA_INTFC_LN AS LINE_NBR," & vbCrLf & _
+        Dim bolerror As Boolean = False
+        strSQLstrUpdate1 = "UPDATE (SELECT A.ORDER_NO, A.ISA_INTFC_LN AS LINE_NBR,A.PROCESS_FLAG, A.PROCESS_DTTM, " & vbCrLf & _
                             " TO_CHAR(A.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP" & vbCrLf & _
                             " ,A.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(A.ISA_LINE_STATUS,'NEW','1','QTA','2','CRE','2','DSP','3','ORD','3','RSV','3','PKA','4','PKP','4','DLP','5','RCP','5','RCF','6','PKQ','5','DLO','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','1') AS OLD_ORDER_STATUS" & vbCrLf & _
                             " FROM PS_ISAORDSTATUSLOG A, SYSADM8.PS_ISA_ORD_INTF_HD B, SYSADM8.PS_ISA_ORD_INTF_LN C" & vbCrLf & _
-                            " WHERE A.BUSINESS_UNIT_OM = 'I0256'" & vbCrLf & _
+                            " WHERE A.BUSINESS_UNIT_OM = 'I0256' AND A.PROCESS_FLAG <> 'Y'" & vbCrLf & _
+                            " AND B.ORIGIN IN ('INT','IOL') AND C.LINE_FIELD_C6 <> 'PCH'" & vbCrLf & _
+                            " AND A.BUSINESS_UNIT_OM = C.BUSINESS_UNIT_OM" & vbCrLf & _
+                            " AND A.ORDER_NO = C.ORDER_NO" & vbCrLf & _
+                            " AND A.ISA_INTFC_LN = C.ISA_INTFC_LN" & vbCrLf & _
+                            " AND A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf & _
+                            " AND A.ORDER_NO = B.ORDER_NO)  BB set BB.PROCESS_FLAG = 'M' " & vbCrLf & _
+                            "  "
+
+        m_logger.WriteVerboseLog(rtn & " :: Update 1 SQL: " & strSQLstrUpdate1 & " ")
+
+        Dim rowsaffected1 As Integer = 0
+        Try
+            Dim Command As OleDbCommand = New OleDbCommand(strSQLstrUpdate1, connectOR)
+            connectOR.Open()
+            rowsaffected1 = Command.ExecuteNonQuery()
+            connectOR.Close()
+            m_logger.WriteVerboseLog(rtn & " :: Update 1 SQL rowsaffected1: " & rowsaffected1.ToString() & " ")
+        Catch OleDBExp As OleDbException
+
+            connectOR.Close()
+
+            m_logger.WriteErrorLog(rtn & " :: Error - updating PS_ISAORDSTATUSLOG column PROCESS_FLAG: " & OleDBExp.ToString)
+            bolerror = True
+            Return True
+            Exit Function
+        End Try
+
+        If rowsaffected1 < 1 Then
+
+            m_logger.WriteWarningLog(rtn & " :: Warning - no status changes to process at this time")
+            Return False
+            Exit Function
+        End If
+
+        strSQLstring = "SELECT A.ORDER_NO, A.ISA_INTFC_LN AS LINE_NBR,A.PROCESS_FLAG, A.PROCESS_DTTM, " & vbCrLf & _
+                            " TO_CHAR(A.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP" & vbCrLf & _
+                            " ,A.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(A.ISA_LINE_STATUS,'NEW','1','QTA','2','CRE','2','DSP','3','ORD','3','RSV','3','PKA','4','PKP','4','DLP','5','RCP','5','RCF','6','PKQ','5','DLO','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','1') AS OLD_ORDER_STATUS" & vbCrLf & _
+                            " FROM PS_ISAORDSTATUSLOG A, SYSADM8.PS_ISA_ORD_INTF_HD B, SYSADM8.PS_ISA_ORD_INTF_LN C" & vbCrLf & _
+                            " WHERE A.BUSINESS_UNIT_OM = 'I0256' AND A.PROCESS_FLAG = 'M' " & vbCrLf & _
                             " AND B.ORIGIN IN ('INT','IOL') AND C.LINE_FIELD_C6 <> 'PCH'" & vbCrLf & _
                             " AND A.BUSINESS_UNIT_OM = C.BUSINESS_UNIT_OM" & vbCrLf & _
                             " AND A.ORDER_NO = C.ORDER_NO" & vbCrLf & _
                             " AND A.ISA_INTFC_LN = C.ISA_INTFC_LN" & vbCrLf & _
                             " AND A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf & _
                             " AND A.ORDER_NO = B.ORDER_NO " & vbCrLf & _
-                            " AND TO_DATE(TO_CHAR(A.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM'), 'MM/DD/YYYY HH:MI:SS AM') >= TO_DATE('" & dteStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
-                            " AND TO_DATE(TO_CHAR(A.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM'), 'MM/DD/YYYY HH:MI:SS AM') <= TO_DATE('" & dteEndDatePlus1 & "', 'MM/DD/YYYY HH:MI:SS AM')"
+                            "  " & vbCrLf & _
+                            " "
 
         m_logger.WriteVerboseLog(rtn & " :: Select SQL: " & strSQLstring & " ")
 
@@ -237,9 +261,9 @@ Module Module1
             ds = ORDBAccess.GetAdapter(strSQLstring, connectOR)
 
         Catch OleDBExp As OleDbException
-            Console.WriteLine("")
-            Console.WriteLine("***OLEDB error - " & OleDBExp.ToString)
-            Console.WriteLine("")
+            'Console.WriteLine("")
+            'Console.WriteLine("***OLEDB error - " & OleDBExp.ToString)
+            'Console.WriteLine("")
             connectOR.Close()
 
             m_logger.WriteErrorLog(rtn & " :: Error - error reading transaction FROM PS_ISAORDSTATUSLOG A")
@@ -267,7 +291,7 @@ Module Module1
             m_logger.WriteInformationLog(rtn & " :: Writing to file: " & strXMLPath)
         Catch objError As Exception
 
-            m_logger.WriteErrorLog(rtn & " :: Error while accessing document " & strXMLPath & vbCrLf & objError.Message)
+            m_logger.WriteErrorLog(rtn & " :: Error while accessing document " & strXMLPath & vbCrLf & objError.ToString)
             Return True
         End Try
         objXMLWriter.Formatting = Formatting.Indented
@@ -307,15 +331,25 @@ Module Module1
                 m_logger.WriteVerboseLog(rtn & " :: SUCCESS for Order NO: " & CStr(ds.Tables(0).Rows(I).Item("ORDER_NO")) & _
                        " :: Line No: " & CStr(ds.Tables(0).Rows(I).Item("LINE_NBR")) & " :: Line Status: " & CStr(ds.Tables(0).Rows(I).Item("OLD_ORDER_STATUS")) & _
                        " :: TimeStamp: " & ds.Tables(0).Rows(I).Item("DTTM_STAMP").ToString())
-                ' write audit record
-
+               
             Catch ex As Exception
                 m_logger.WriteVerboseLog(rtn & " :: error for Order NO: " & CStr(ds.Tables(0).Rows(I).Item("ORDER_NO")) & _
                         " :: Line No: " & CStr(ds.Tables(0).Rows(I).Item("LINE_NBR")) & " :: Line Status: " & CStr(ds.Tables(0).Rows(I).Item("OLD_ORDER_STATUS")) & _
                         " :: TimeStamp: " & ds.Tables(0).Rows(I).Item("DTTM_STAMP").ToString())
+                bolerror = True
             End Try
             
-        Next
+        Next ' For I = 0 To ds.Tables(0).Rows.Count - 1
+
+        objXMLWriter.WriteEndElement()
+        objXMLWriter.Flush()
+        objXMLWriter.Close()
+
+        Dim strXMLResult As String
+        Dim objSR As StreamReader = File.OpenText(strXMLPath)
+        strXMLResult = objSR.ReadToEnd()
+        objSR.Close()
+        objSR = Nothing
 
         If ds.Tables(0).Rows.Count > 0 Then
             ' update date/time stamp (flag) of last set of records processed
@@ -324,30 +358,54 @@ Module Module1
                         " WHERE ISA_BUSINESS_UNIT = 'I0256'"
 
             Try
-                Dim Command = New OleDbCommand(strSQLstring, connectOR)
+                Dim Command As OleDbCommand = New OleDbCommand(strSQLstring, connectOR)
                 connectOR.Open()
                 rowsaffected = Command.ExecuteNonQuery()
                 connectOR.Close()
             Catch OleDBExp As OleDbException
-                Console.WriteLine("")
-                Console.WriteLine("***OLEDB error - " & OleDBExp.ToString)
-                Console.WriteLine("")
+                'Console.WriteLine("")
+                'Console.WriteLine("***OLEDB error - " & OleDBExp.ToString)
+                'Console.WriteLine("")
                 connectOR.Close()
 
                 m_logger.WriteErrorLog(rtn & " :: Error - updating the Enterprise send date " & OleDBExp.ToString)
                 bolerror = True
             End Try
+
+            strSQLstrUpdate2 = "UPDATE (SELECT A.ORDER_NO, A.ISA_INTFC_LN AS LINE_NBR,A.PROCESS_FLAG, A.PROCESS_DTTM, " & vbCrLf & _
+                                " TO_CHAR(A.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP" & vbCrLf & _
+                                " ,A.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(A.ISA_LINE_STATUS,'NEW','1','QTA','2','CRE','2','DSP','3','ORD','3','RSV','3','PKA','4','PKP','4','DLP','5','RCP','5','RCF','6','PKQ','5','DLO','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','1') AS OLD_ORDER_STATUS" & vbCrLf & _
+                                " FROM PS_ISAORDSTATUSLOG A, SYSADM8.PS_ISA_ORD_INTF_HD B, SYSADM8.PS_ISA_ORD_INTF_LN C" & vbCrLf & _
+                                " WHERE A.BUSINESS_UNIT_OM = 'I0256' AND A.PROCESS_FLAG = 'M'" & vbCrLf & _
+                                " AND B.ORIGIN IN ('INT','IOL') AND C.LINE_FIELD_C6 <> 'PCH'" & vbCrLf & _
+                                " AND A.BUSINESS_UNIT_OM = C.BUSINESS_UNIT_OM" & vbCrLf & _
+                                " AND A.ORDER_NO = C.ORDER_NO" & vbCrLf & _
+                                " AND A.ISA_INTFC_LN = C.ISA_INTFC_LN" & vbCrLf & _
+                                " AND A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf & _
+                                " AND A.ORDER_NO = B.ORDER_NO) BB set BB.PROCESS_FLAG = 'Y', BB.PROCESS_DTTM = TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
+                                "  "
+
+            m_logger.WriteVerboseLog(rtn & " :: Update 2 SQL: " & strSQLstrUpdate2 & " ")
+
+            rowsaffected1 = 0
+            Try
+                Dim Command As OleDbCommand = New OleDbCommand(strSQLstrUpdate2, connectOR)
+                connectOR.Open()
+                rowsaffected1 = Command.ExecuteNonQuery()
+                connectOR.Close()
+                m_logger.WriteVerboseLog(rtn & " :: Update 2 SQL rows affected: " & rowsaffected1.ToString() & " ")
+            Catch OleDBExp As OleDbException
+
+                connectOR.Close()
+
+                m_logger.WriteErrorLog(rtn & " :: Error - updating PS_ISAORDSTATUSLOG columns PROCESS_FLAG, PROCESS_DTTM: " & OleDBExp.ToString)
+                bolerror = True
+                Return True
+                Exit Function
+            End Try
+
         End If
         
-        objXMLWriter.WriteEndElement()
-        objXMLWriter.Flush()
-        objXMLWriter.Close()
-        Dim strXMLResult As String
-        Dim objSR As StreamReader = File.OpenText(strXMLPath)
-        strXMLResult = objSR.ReadToEnd()
-        objSR.Close()
-        objSR = Nothing
-
         If bolerror = True Then
             Return True
         Else
@@ -365,7 +423,7 @@ Module Module1
         email.From = "TechSupport@sdi.com"
 
         'The email address of the recipient. 
-        email.To = "bob.dougherty@sdi.com;pete.doyle@sdi.com"
+        email.To = "webdev@sdi.com"
 
         'The subject of the email
         email.Subject = "UNCCStatusChanges XML OUT Error"
