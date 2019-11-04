@@ -9,6 +9,7 @@ using System.Net;
 using System.Configuration;
 using System.IO;
 using System.Data;
+using System.Web.Http;
 
 namespace ExpediterReload
 {
@@ -156,6 +157,7 @@ namespace ExpediterReload
                         return;
                     }
                     else
+                        m_oLogger.LogMessage("ExpediterReload", "POST ExpediterReload data started.");
                         for (int i = 0; i < dtResponse.Rows.Count; i++)
                         {
                             DataRow rowInit;
@@ -212,6 +214,42 @@ namespace ExpediterReload
 
                             try
                             {
+                                ////////////////////////////////////////////////////test//////////////////////////////////////
+                                DataRow[] rows = dtResponse.Select();
+
+                                
+                                //List<ExpediterReloadBO> target = rows.Where(row => row.Field<string>("ITEM") == ITEM  )
+                                List<ExpediterReloadBO> target = dtResponse.AsEnumerable()
+                                    .Select (row => new ExpediterReloadBO
+                                    {
+                                        Action_Items = ACTION_ITEMS ,
+                                        Business_Unit = BUSINESS_UNIT,  
+                                        Buyer_ID = BUYER_ID ,
+                                        Buyer_Team = BUYER_TEAM,
+                                        Client = CLIENT ,
+                                        Description = DESCRIPTION ,
+                                        Expediting_Comments = EXPEDITING_COMMENTS ,
+                                        Inventory_Business_Unit = INVENTORY_BUSINESS_UNIT ,
+                                        Item = ITEM ,
+                                        Last_Comment_Date = LAST_COMMENT_DATE ,
+                                        Last_Operator = LAST_OPERATOR ,
+                                        Line_Number = LINE_NUMBER ,
+                                        PO_Date = PO_DATE ,
+                                        PO_ID = PO_ID ,
+                                        PS_URL = PS_URL,
+                                        Priority_Flag = PRIORITY_FLAG,
+                                        Problem_Code = PROBLEM_CODE ,
+                                        Site_Name = SITE_NAME ,
+                                        Status_Age = STATUS_AGE ,
+                                        Vendor_ID = VENDOR_ID ,
+                                        Vendor_Name = VENDOR_NAME 
+                                    }).ToList();
+                                string json1 = JsonConvert.SerializeObject(target, Formatting.None);
+                                json1 = json1.Remove(0, 1);
+                                json1 = json1.Remove(json1.Length - 1);
+                                ////////////////////////////////////////////////////test//////////////////////////////////////
+
+
                                 StringBuilder sbInit = new StringBuilder();
                                 string xmlStr = string.Empty;
                                 string xmlStringInit = string.Empty;
@@ -223,8 +261,6 @@ namespace ExpediterReload
                                     sbInit.AppendFormat(xmlStr, ACTION_ITEMS, BUSINESS_UNIT, BUYER_ID, BUYER_TEAM, CLIENT, DESCRIPTION, EXPEDITING_COMMENTS, INVENTORY_BUSINESS_UNIT, ITEM, LAST_COMMENT_DATE, LAST_OPERATOR, LINE_NUMBER, PO_DATE, PO_ID, PS_URL, PRIORITY_FLAG, PROBLEM_CODE, SITE_NAME, STATUS_AGE, VENDOR_ID, VENDOR_NAME);
                                     xmlStringInit = sbInit.ToString();
                                 }
-
-                                m_oLogger.LogMessage("ExpediterReload", "POST ExpediterReload data.");
                                 client.UploadString(serviceURL2, xmlStringInit);
                             }
                             catch (Exception ex)
@@ -264,13 +300,6 @@ namespace ExpediterReload
                             }
                             */
                         }
-
-
-
-
-
-                    //var result = client.OpenRead (serviceURL );
-                    
 
                     // Console.WriteLine(result);
                     //var parsed = JObject.Parse(result);

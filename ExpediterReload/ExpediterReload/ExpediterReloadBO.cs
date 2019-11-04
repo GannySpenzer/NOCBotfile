@@ -8,7 +8,7 @@ namespace ExpediterReload
 {
     class ExpediterReloadBO
     {
-
+        public string Action_Items { get; set; }
         public string Business_Unit  { get; set; }
         public string Buyer_ID { get; set; }
         public string Buyer_Team { get; set; }
