@@ -52,6 +52,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -60,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BatchBuyExp.cs" />
     <Compile Include="ExpediterReloadAPIAccess.cs" />
     <Compile Include="ExpediterReloadBO.cs" />
     <Compile Include="ExpediterReloadDAL.cs" />
@@ -70,6 +72,11 @@
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\OSVCService\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
     <Compile Include="Web References\SDiEmailUtilityService\Reference.cs">
       <AutoGen>True</AutoGen>
@@ -83,6 +90,136 @@
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.APIAccessResponseHeaderType.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.BatchResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.BatchResponseItem.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.ConvertGenericToObjectResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.ConvertObjectToGenericResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.CreateResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.CSVTableSet.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.DestroyResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.ExecuteMarketingFlowResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.GetFileDataResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.GetMetaDataForClassResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.GetMetaDataForOperationResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.GetMetaDataLastChangeTimeResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.GetMetaDataResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.GetPrimaryClassNamesResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.GetResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.GetSubscribableObjectsResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.GetValuesForNamedIDHierarchyResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.GetValuesForNamedIDResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.Incident.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.MetaDataClass.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.MetaDataClassOperation.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.NamedID.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.NamedIDWithParent.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.QueryCSVResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.QueryObjectsResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.QueryResultData.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.ResetContactPasswordResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.RNObject.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.RNObjectType.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.RunAnalyticsReportResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.SendIncidentResponseResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.SendMailingToContactResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.SubscribableObject.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.TransferSubObjectsResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\ExpediterReload.OSVCService.UpdateResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\OSVCService\RightNow.wsdl" />
+    <None Include="Service References\OSVCService\soap.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\OSVCService\soap1.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\OSVCService\soap2.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\OSVCService\soap3.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\OSVCService\soap4.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\OSVCService\soap5.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\OSVCService\soap6.xsd">
+      <SubType>Designer</SubType>
     </None>
     <None Include="Web References\SDiEmailUtilityService\EmailServices.wsdl" />
     <None Include="Web References\SDiEmailUtilityService\Reference.map">
@@ -114,6 +251,15 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="BuyExpPost.txt" />
+    <None Include="Service References\OSVCService\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\OSVCService\configuration.svcinfo" />
+    <None Include="Service References\OSVCService\configuration91.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadataStorage Include="Service References\OSVCService\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

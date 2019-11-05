@@ -50,7 +50,7 @@ namespace ExpediterReload
                        " AND C.PO_ID = A.PO_ID" +
                        " AND C.LINE_NBR = A.LINE_NBR" +
                        " AND C.SCHED_NBR = A.SCHED_NBR)" +
-                       " AND b.isa_problem_code = z.isa_problem_code AND ROWNUM < 6";
+                       " AND b.isa_problem_code = z.isa_problem_code AND ROWNUM < 8";
                 m_oLogger.LogMessage("getExpediterData", "PeopleSoft connection string : " + OracleConString);
                 m_oLogger.LogMessage("getExpediterData", "Query To get the Expediter data: " + strSQLstring);
                 dtResponse = oleDBExecuteReader(strSQLstring);
