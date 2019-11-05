@@ -1,24 +1,26 @@
 Imports System.Data.OleDb
 Public Class ORDBAccess
-    Public Shared Function GetAdapter(ByVal p_strQuery As String, ByVal connection As OleDbConnection) As DataSet
+    Public Shared Function GetAdapter(ByVal p_strQuery As String, ByVal connection As OleDbConnection, Optional ByRef strError As String = "") As DataSet
+
+        Dim UserdataSet As System.Data.DataSet = New System.Data.DataSet
 
         Try
             Dim Command = New OleDbCommand(p_strQuery, connection)
-            connection.open()
+            connection.Open()
             Dim dataAdapter As OleDbDataAdapter = _
                     New OleDbDataAdapter(Command)
 
-            Dim UserdataSet As System.Data.DataSet = New System.Data.DataSet
-
             dataAdapter.Fill(UserdataSet)
-            connection.close()
+            connection.Close()
             Return UserdataSet
         Catch objException As Exception
+            strError = objException.ToString()
             Try
                 connection.Close()
             Catch ex As Exception
 
             End Try
+            Return Nothing
         End Try
 
     End Function
