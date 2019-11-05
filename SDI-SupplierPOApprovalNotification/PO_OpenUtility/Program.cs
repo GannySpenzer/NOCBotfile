@@ -42,7 +42,6 @@ namespace PO_OpenUtility
             log = new StreamWriter(fileStream);
             log.WriteLine("Open PO Utility Logs: ");
 
-            //string Sqlstring = "SELECT * FROM sysadm8.PS_ISA_PRTL_PO_VCH WHERE po_id='R010244236'";
             string Sqlstring = "SELECT *  FROM SYSADM8.PS_ISA_PO_DISP_PTL";
             DataSet ds_OpentPOs = GetAdapter(Sqlstring);
 
@@ -59,7 +58,7 @@ namespace PO_OpenUtility
                     string strEncrypt_VendorID = Encrypt(VendorID, "bautista");
                     string strEncrypt_PO_BU = Encrypt(PO_BU, "bautista");
 
-                   
+                    string strBuyerEmail = getBuyerEmail(POID, PO_BU);
 
                     string UsrTblQuery = "SELECT * FROM SDIX_USERS_TBL WHERE ISA_EMPLOYEE_ID = '" + VendorID + "'";
                     DataSet ds_UserDetail = GetAdapter(UsrTblQuery);
@@ -72,7 +71,7 @@ namespace PO_OpenUtility
 
                         string EmailBasueURL = baseWebURL + "Supplier/PODetails.aspx?POID=" + strEncrypt_POID + "&vendorid=" + strEncrypt_VendorID + "&PO_BU=" + strEncrypt_PO_BU + "&OPR_ID=" + Vendr_OprID + "";
 
-                        Boolean EmailSent = SendEmail(VendorID, Vendr_UN, Vendr_Email, POID, PO_BU, EmailBasueURL);
+                        Boolean EmailSent = SendEmail(VendorID, Vendr_UN, Vendr_Email, POID, PO_BU, EmailBasueURL, strBuyerEmail);
 
                         log.WriteLine("{0}. PO ID - {1}, Generated email link {2} notification sent to - {3} \n", ItemCount, POID, EmailBasueURL, Vendr_UN.ToUpper());
                     }
@@ -82,7 +81,32 @@ namespace PO_OpenUtility
             fileStream.Close();
         }
 
-      
+        public static string getBuyerEmail(string strPO, string strPOBU)
+        {
+            string strSQLString = "";
+            string strBuyerEmail = "";
+            try
+            {
+                strSQLString = @"SELECT DECODE(E.EMAILID, null, ' ', E.EMAILID) AS EMAILID 
+                  FROM PS_BUYER_TBL A, PS_PO_HDR B,(SELECT C.EMAILID, C.ROLEUSER, D.BUYER_ID 
+                  FROM SYSADM8.PS_ROLEXLATOPR C,PS_BUYER_TBL D
+                  WHERE  D.BUYER_ID= C.ROLEUSER (+))E 
+                  WHERE  A.BUYER_ID = B.BUYER_ID 
+                  AND   A.BUYER_ID = E.ROLEUSER (+)  
+                  AND   A.BUYER_ID = E.BUYER_ID (+) 
+                  AND   B.BUSINESS_UNIT = '" + strPOBU + "' AND B.PO_ID = '" + strPO + "'";
+
+                strBuyerEmail = GetScalar(strSQLString);
+
+                return strBuyerEmail;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
         public static DataSet GetAdapter(string p_strQuery, bool bGoToErrPage = true, bool bThrowBackError = false)
         {
             // Gives us a reference to the current asp.net 
@@ -195,8 +219,7 @@ namespace PO_OpenUtility
             return strReturn;
         }
 
-
-        public static Boolean SendEmail(string VendorID, string VendorUN, string VendorEmail, string POID, string PO_BU, string strURL)
+        public static Boolean SendEmail(string VendorID, string VendorUN, string VendorEmail, string POID, string PO_BU, string strURL, string strBuyerEmail)
         {
             string strbodyhead;
             string strbodydetl = "";
@@ -214,15 +237,23 @@ namespace PO_OpenUtility
 
                 strbodyhead = "<table bgcolor='black' Width='100%'><tbody><tr><td style='width:1%;'><img src='http://www.sdiexchange.com/images/SDNewLogo_Email.png' alt='SDI' style='padding: 10px 0;' vspace='0' hspace='0' /></td>";
                 strbodyhead = strbodyhead + "<td style='width:50% ;'><center><span style='font-weight:bold;color:white;font-size:24px;'>SDI Marketplace</span></center>";
-                strbodyhead = strbodyhead + "<center><span style='color:white;'>SDiExchange - SDI PO Approval Notification</span></center></td></tr></tbody></table>";
+                strbodyhead = strbodyhead + "<center><span style='color:white;'>SDiExchange - Purchase Order Notification</span></center></td></tr></tbody></table>";
                 strbodyhead = strbodyhead + "<HR width='100%' SIZE='1'>";
                 strbodydetl = "<div>";
 
                 strbodydetl = "&nbsp;";
                 strbodydetl = strbodydetl + "<div>";
-                strbodydetl = strbodydetl + "<p ><span>" + VendorUN + "</span><span></span><br>";
+                strbodydetl = strbodydetl + "<p>Dear <span>" + VendorUN + "</span><br>";
                 strbodydetl = strbodydetl + "&nbsp;<br>";
-                strbodydetl = strbodydetl + "<p>Need approval for PO ID: " + POID + ". Please click on this following  <a href=" + strURL + ">Link</a> to go through the approval process.</p>";
+                //   strbodydetl = strbodydetl + "<p>Need approval for PO ID: " + POID + ". Please click on this following  <a href=" + strURL + ">Link</a> to go through the approval process.</p>";
+                //strbodydetl = strbodydetl + "<p>Purchase Order " + POID + " has been created for " + VendorUN + ". Please select the <a href=" + strURL + ">Link</a> to review and confirm this purchase order, <span style='color: red;'>price and anticipated delivery date</span>.</p>";
+                strbodydetl = strbodydetl + "<p>Purchase Order " + POID + " has been created for " + VendorUN + ". Please select the <a href=" + strURL + ">Link</a> to review and confirm<span style='color: red;'> pricing </span>and<span style='color: red;'> anticipated delivery date</span> for this purchase order.</p>";
+                // strbodydetl = strbodydetl + "<br>";
+
+                if (strBuyerEmail != "")
+                {
+                    strbodydetl = strbodydetl + "<p style='font-weight: bold;'>If you have any questions, please e-mail: " + strBuyerEmail + "  </p>";
+                }
 
                 strbodydetl = strbodydetl + "&nbsp;<br>";
                 strbodydetl = strbodydetl + "Sincerely,<br>";
@@ -241,13 +272,13 @@ namespace PO_OpenUtility
                 {
                     Mailer.To.Add(new MailAddress("WebDev@sdi.com"));
                     Mailer.To.Add(new MailAddress("avacorp@sdi.com"));
-                    Mailer.Subject = "<<TEST SITE>> SDiExchange - Pending approval for PO ";
+                    Mailer.Subject = "<<TEST SITE>> SDiExchange - Purchase Order " + POID + "";
 
                 }
                 else
                 {
                     Mailer.To.Add(new MailAddress(VendorEmail));
-                    Mailer.Subject = "SDiExchange - Pending approval for PO ";
+                    Mailer.Subject = "SDiExchange - Purchase Order " + POID + "";
                 }
 
                 OleDbConnection connectionEmail = new OleDbConnection(ConfigurationSettings.AppSettings["OLEDBconString"]);
