@@ -161,7 +161,7 @@ namespace ExpediterReload
                                 strDelQuery += "Delete From CO.BuyExp LIMIT 1000;";
                             }
                             client.OpenRead (serviceURL2 + strDelQuery);
-                            m_oLogger.LogMessage("ExpediterReload", "DELETE Oracle Data successful.");
+                            m_oLogger.LogMessage("ExpediterReload", "DELETE Oracle Data of " + bo.items[0].rows.Count.ToString() + " records successful.");
                         }
                     }
                     catch (Exception ex)
