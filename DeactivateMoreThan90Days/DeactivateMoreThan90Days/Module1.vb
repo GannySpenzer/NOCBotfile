@@ -85,6 +85,20 @@ Module Module1
         Dim bError As Boolean = False
         Dim rowsUpdated As Integer = 0
 
+        Dim bTest As Boolean = False
+        Dim strDBase As String = ""
+        If Trim(cnString) <> "" Then
+            cnString = Trim(cnString)
+            If Len(cnString) > 4 Then
+                strDBase = Right(cnString, 4)
+                If UCase(Trim(strDBase)) = "PROD" Then
+                    bTest = False
+                Else
+                    bTest = True
+                End If
+            End If
+        End If
+
         If Not bError Then
 
             Console.WriteLine("Started Update part of 'DEACTIVATE - Not Active 90 Days' process")
@@ -119,17 +133,17 @@ Module Module1
             If Not bError Then
 
                 If ds Is Nothing Then
-                    m_logger.WriteWarningLog(rtn & " :: Warning - no Not Active Customers to process at this time")
+                    m_logger.WriteWarningLog(rtn & " :: Warning - no Not Active Customers to process at this time - ds Is Nothing")
 
                 Else
 
                     If ds.Tables.Count = 0 Then
-                        m_logger.WriteWarningLog(rtn & " :: Warning - no Not Active Customers to process at this time")
+                        m_logger.WriteWarningLog(rtn & " :: Warning - no Not Active Customers to process at this time - ds.Tables.Count = 0")
 
                     Else
 
                         If ds.Tables(0).Rows.Count < 1 Then
-                            m_logger.WriteWarningLog(rtn & " :: Warning - no Not Active Customers to process at this time")
+                            m_logger.WriteWarningLog(rtn & " :: Warning - no Not Active Customers to process at this time - ds.Tables(0).Rows.Count < 1")
 
                         End If
                     End If
@@ -227,15 +241,18 @@ Module Module1
                                             Else
                                                 bSend = True
                                                 'If intX > 4 Then
-                                                '    SendEmail(strEmailAddress, strAccount, bSend)
+                                                '    SendEmail(strEmailAddress, strAccount, bSend, bTest)
                                                 'End If
-                                                SendEmail(strEmailAddress, strAccount, bSend)
+                                                SendEmail(strEmailAddress, strAccount, bSend, bTest)
                                                 If bSend Then
                                                     m_logger.WriteVerboseLog(rtn & " :: Email sent to: " & strEmailAddress & " ; Account ID: " & strAccount & " ; User Name: " & strUserName)
                                                     intX = intX + 1
-                                                    'If intX = 2 Then
-                                                    '    Exit For
-                                                    'End If
+                                                    If bTest Then
+                                                        If intX = 2 Then
+                                                            Exit For
+                                                        End If
+                                                    End If
+                                                    
                                                 Else
                                                     intNotSent = intNotSent + 1
                                                     m_logger.WriteVerboseLog(rtn & " :: Email WAS NOT sent to (tried to send): " & strEmailAddress & " ; Account ID: " & strAccount & " ; User Name: " & strUserName)
@@ -279,7 +296,7 @@ Module Module1
             m_logger = Nothing
         End Try
 
-        SendEmailHelpDesk(strLogFileName, logpath)
+        SendEmailHelpDesk(strLogFileName, logpath, bTest)
 
     End Sub
 
@@ -321,7 +338,8 @@ Module Module1
         End If
     End Sub
 
-    Private Sub SendEmail(ByVal strEmailAddress As String, ByVal strAccount As String, ByRef bSend As Boolean)
+    Private Sub SendEmail(ByVal strEmailAddress As String, ByVal strAccount As String, ByRef bSend As Boolean, _
+                Optional ByVal bTest As Boolean = False)
 
         Dim rtn As String = "Module1.SendEmail"
 
@@ -333,8 +351,10 @@ Module Module1
 
         'The email address of the recipient. 
         email.To = strEmailAddress
-        '' for testing
-        'email.To = "vitaly.rovensky@sdi.com;michael.randall@sdi.com"
+        If bTest Then
+            email.To = "vitaly.rovensky@sdi.com;"
+        End If
+
         email.Cc = " "
         email.Bcc = " "
 
@@ -365,7 +385,9 @@ Module Module1
         If Trim(strSource) <> "" Then
             email.Subject = strSource
         End If
-
+        If bTest Then
+            email.Subject = " (Test) " & email.Subject
+        End If
         'The Priority attached and displayed for the email
         email.Priority = MailPriority.High
 
@@ -381,7 +403,7 @@ Module Module1
         Try
             SendEmail1(email)
             bSend = True
-            
+
         Catch ex As Exception
             bSend = False
         End Try
@@ -420,7 +442,7 @@ Module Module1
         End Try
     End Sub
 
-    Private Sub SendEmailHelpDesk(ByVal strAttachedFileName As String, ByVal strFileUrl As String)
+    Private Sub SendEmailHelpDesk(ByVal strAttachedFileName As String, ByVal strFileUrl As String, Optional ByVal bTest As Boolean = False)
 
         Dim rtn As String = "Module1.SendEmailHelpDesk"
 
@@ -431,12 +453,17 @@ Module Module1
 
         'The email address of the recipient. 
         email.To = "Tony.Smith@sdi.com"
+        If bTest Then
+            email.To = "vitaly.rovensky@sdi.com"
+        End If
         email.Cc = " "
         email.Bcc = "webdev@sdi.com"
 
         'The subject of the email
         email.Subject = "'DEACTIVATE - Not Active 90 Days' process Summary"
-
+        If bTest Then
+            email.Subject = " (Test) " & email.Subject
+        End If
         'The Priority attached and displayed for the email
         email.Priority = MailPriority.High
 
