@@ -8,6 +8,7 @@ using OSVCService;
 using ExpediterReload;
 using ExpediterReload1;
 using System.Data;
+using System.ServiceModel.Channels;
 
 namespace OSVCService 
 {
@@ -40,23 +41,39 @@ namespace OSVCService
         DateTime dateparse;
 
         int iLastVal = 0;
-        int modValue = 5; //test
+        int modValue = 1000;
         string strResp = "SUCCESS";
 
         RightNowSyncPortClient _client;
 
         // InitializeLogger start here
-        Logger m_oLogger;
-        string sLogPath = Environment.CurrentDirectory;
+        //Logger m_oLogger;
+        //string sLogPath = Environment.CurrentDirectory;
 
         DataTable dtResponse = new DataTable();
 
         //Set the API Username and Password
-        public Batcher()
+        public Batcher(string strauth, string strpass)
         {
+            //EndpointAddress endPointAddr = new EndpointAddress("https://sdi.custhelp.com/services/soap/connect/soap");
+            //BasicHttpBinding binding = new BasicHttpBinding(BasicHttpSecurityMode.TransportWithMessageCredential);
+            //binding.Security.Message.ClientCredentialType = BasicHttpMessageCredentialType.UserName;
+            //binding.MaxReceivedMessageSize = 147483775; // Set max buffer size to 10MB for large files
+            //binding.MaxBufferSize = 147483775;
+            // The send timeout must be altered since there is so much data to retrieve
+            //binding.SendTimeout = new TimeSpan(6, 6, 6); // (Set to 5 minutes)
+
+            //_client = new RightNowSyncPortClient(binding, endPointAddr );
             _client = new RightNowSyncPortClient();
-            _client.ClientCredentials.UserName.UserName = "API_User";
-            _client.ClientCredentials.UserName.Password = "qD28#!ddnq";
+            //_client.ClientCredentials.UserName.UserName = "API_User";
+            //_client.ClientCredentials.UserName.Password = "qD28#!ddnq";
+            _client.ClientCredentials.UserName.UserName = strauth;
+            _client.ClientCredentials.UserName.Password = strpass;
+
+            // Create the binding elements
+            //BindingElementCollection elements = _client.Endpoint.Binding.CreateBindingElements();
+            //_client.Endpoint.Binding = binding;
+
         }
 
         public void CreateBuyExpBatch(out string sResponse)
@@ -66,7 +83,6 @@ namespace OSVCService
             {
                 buildBatchRequestItems();
             }
-
             sResponse = strResp;
         }
 
@@ -102,7 +118,7 @@ namespace OSVCService
                     ACTION_ITEMS.Add(rowInit["ACTION_ITEMS"].ToString());
                     BUSINESS_UNIT.Add(rowInit["BUSINESS_UNIT"].ToString());
                     BUYER_ID.Add(rowInit["BUYER_ID"].ToString());
-                    BUYER_TEAM.Add("Test");                                     //?????
+                    BUYER_TEAM.Add(rowInit["BUYER_TEAM"].ToString());                    
                     CLIENT.Add(rowInit["CLIENT"].ToString());
                     DESCRIPTION.Add(rowInit["DESCRIPTION"].ToString());
                     EXPEDITING_COMMENTS.Add(rowInit["EXPEDITING_COMMENTS"].ToString());
@@ -124,10 +140,10 @@ namespace OSVCService
 
                     PO_ID.Add(rowInit["PO_ID"].ToString());
                     PS_URL.Add(" ");                                        //?????
-                    PRIORITY_FLAG.Add("Test");                                 //?????
+                    PRIORITY_FLAG.Add(rowInit["PRIORITY_FLAG"].ToString());              
                     PROBLEM_CODE.Add(rowInit["PROBLEM_CODE"].ToString());
-                    SITE_NAME.Add("Test");                                     //?????
-                    STATUS_AGE.Add("10");
+                    SITE_NAME.Add(" ");                                     //?????
+                    STATUS_AGE.Add(rowInit["STATUS_AGE"].ToString());
                     VENDOR_ID.Add(rowInit["VENDOR_ID"].ToString());
                     VENDOR_NAME.Add(rowInit["VENDOR"].ToString());
                 }
@@ -149,86 +165,92 @@ namespace OSVCService
         //can have up to 1000 objects so you can essentially have 100,000 records created in one call
         public void buildBatchRequestItems()
         {
-            BatchRequestItem[] requestItems = new BatchRequestItem[100];
-
-            //for (int i = 0; i < ACTION_ITEMS.Count() / modValue; i++)
-            int i = 0;
-            while (iLastVal != ACTION_ITEMS.Count())
+            try
             {
-                requestItems[i] = createNewBuyExpBatchRequest();
-                requestItems[i].CommitAfter = true;
-                requestItems[i].CommitAfterSpecified = true;
-                //requestItems[1] = createNewBuyExpBatchRequest();
-                //requestItems[1].CommitAfter = true;
-                //requestItems[1].CommitAfterSpecified = true;
-                //requestItems[2] = createNewBuyExpBatchRequest();
-                //requestItems[2].CommitAfter = true;
-                //requestItems[2].CommitAfterSpecified = true;
-                i += 1;
+
+                BatchRequestItem[] requestItems = new BatchRequestItem[100];
+
+                //for (int i = 0; i < ACTION_ITEMS.Count() / modValue; i++)
+                int p = 0;
+                while (iLastVal != ACTION_ITEMS.Count())
+                {
+                    requestItems[p] = createNewBuyExpBatchRequest();
+                    requestItems[p].CommitAfter = true;
+                    requestItems[p].CommitAfterSpecified = true;
+                    //requestItems[1] = createNewBuyExpBatchRequest();
+                    //requestItems[1].CommitAfter = true;
+                    //requestItems[1].CommitAfterSpecified = true;
+                    //requestItems[2] = createNewBuyExpBatchRequest();
+                    //requestItems[2].CommitAfter = true;
+                    //requestItems[2].CommitAfterSpecified = true;
+                    p += 1;
+                }
+
+                System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
+
+                submitBatch(requestItems);
             }
+            catch (Exception ex)
+            {
 
-            System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
-
-            submitBatch(requestItems);
-
+            }
         }
 
 
         //Submit the batch and read the response if needed
         public void submitBatch(BatchRequestItem[] requestItems)
         {
+                Logger m_oLogger;
+                string sLogPath = Environment.CurrentDirectory;
+                if (!sLogPath.EndsWith(@"\"))
+                    sLogPath += @"\";
+                sLogPath += "Logs";
+                m_oLogger = new Logger(sLogPath, "ExpediterReload");
+                m_oLogger.LogMessage("BatchBuyExp", "Entered submitBatch class");
 
-            Logger m_oLogger;
-            string sLogPath = Environment.CurrentDirectory;
-            if (!sLogPath.EndsWith(@"\"))
-                sLogPath += @"\";
-            sLogPath += "Logs";
-            m_oLogger = new Logger(sLogPath, "ExpediterReload");
-            m_oLogger.LogMessage("BatchBuyExp", "Entered submitBatch class");
+                ClientInfoHeader clientInfoHeader = new ClientInfoHeader();
+                clientInfoHeader.AppID = "Batcher";
 
-            ClientInfoHeader clientInfoHeader = new ClientInfoHeader();
-            clientInfoHeader.AppID = "Batcher";
+                APIAccessRequestHeader apiAccessRequestHeader = new APIAccessRequestHeader();
 
-            APIAccessRequestHeader apiAccessRequestHeader = new APIAccessRequestHeader();
+                BatchResponseItem[] batchRes;
 
-            BatchResponseItem[] batchRes;
+                m_oLogger.LogMessage("ExpeditorReload", "BatchBuyExp submitBatch Starting Service Run.");
+                _client.Batch(clientInfoHeader, apiAccessRequestHeader, requestItems, out batchRes);
+            
+                //If you need to get the response for each batch
+                //CreateResponseMsg createResponseMsg0 = (CreateResponseMsg)batchRes[0].Item;
+                //CreateResponseMsg createResponseMsg1 = (CreateResponseMsg)batchRes[1].Item;
+                //CreateResponseMsg createResponseMsg2 = (CreateResponseMsg)batchRes[2].Item;
 
-            m_oLogger.LogMessage("ExpeditorReload", "BatchBuyExp submitBatch Starting Service Run.");
-            _client.Batch(clientInfoHeader, apiAccessRequestHeader, requestItems, out batchRes);
+                //RNObject[] createdBuyExp = createResponseMsg0.RNObjectsResult;
+                //foreach (RNObject obj in createdBuyExp)
+                //{
+                //    GenericObject newObj = (GenericObject)obj;
+                //    System.Console.WriteLine("New BuyExp ID: " + newObj.ID.id);
+                //    m_oLogger.LogMessage("ExpeditorReload", "BatchBuyExp submitBatch Response: " + newObj.ID.id.ToString());
+                //}
 
-            //If you need to get the response for each batch
-            //CreateResponseMsg createResponseMsg0 = (CreateResponseMsg)batchRes[0].Item;
-            //CreateResponseMsg createResponseMsg1 = (CreateResponseMsg)batchRes[1].Item;
-            //CreateResponseMsg createResponseMsg2 = (CreateResponseMsg)batchRes[2].Item;
-
-            //RNObject[] createdBuyExp = createResponseMsg0.RNObjectsResult;
-            //foreach (RNObject obj in createdBuyExp)
-            //{
-            //    GenericObject newObj = (GenericObject)obj;
-            //    System.Console.WriteLine("New BuyExp ID: " + newObj.ID.id);
-            //    m_oLogger.LogMessage("ExpeditorReload", "BatchBuyExp submitBatch Response: " + newObj.ID.id.ToString());
-            //}
-
-            try
-            {
-                for (int i = 0; i < batchRes.Count(); i++)
+                try
                 {
-
-                    CreateResponseMsg createResponseMsg0 = (CreateResponseMsg)batchRes[i].Item;
-                    RNObject[] createdBuyExp = createResponseMsg0.RNObjectsResult;
-                    foreach (RNObject obj in createdBuyExp)
+                    for (int i = 0; i < batchRes.Count(); i++)
                     {
-                        GenericObject newObj = (GenericObject)obj;
-                        System.Console.WriteLine("New BuyExp ID: " + newObj.ID.id);
-                        m_oLogger.LogMessage("ExpeditorReload", "BatchBuyExp submitBatch Response: " + newObj.ID.id.ToString());
+
+                        CreateResponseMsg createResponseMsg0 = (CreateResponseMsg)batchRes[i].Item;
+                        RNObject[] createdBuyExp = createResponseMsg0.RNObjectsResult;
+                        foreach (RNObject obj in createdBuyExp)
+                        {
+                            GenericObject newObj = (GenericObject)obj;
+                            //System.Console.WriteLine("New BuyExp ID: " + newObj.ID.id);
+                            m_oLogger.LogMessage("ExpeditorReload", "BatchBuyExp submitBatch Response: " + newObj.ID.id.ToString());
+                        }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                strResp = "FAILURE";
-                m_oLogger.LogMessage("ExpeditorReload", "BatchBuyExp submitBatch Failure: " + ex.ToString());
-            }
+                catch (Exception ex)
+                {
+                    strResp = "FAILURE";
+                    m_oLogger.LogMessage("ExpeditorReload", "BatchBuyExp submitBatch Failure: " + ex.ToString());
+                }
 
         }
         //Create an generic object/record for each row that you want to insert
@@ -291,7 +313,7 @@ namespace OSVCService
             //Create a list of generic objects and return those to the batch processor
             //You can have up to 1000 objects
 
-            GenericObject[] genArray = new GenericObject[99];
+            GenericObject[] genArray = new GenericObject[modValue];
             int n = 0;
 
             try
