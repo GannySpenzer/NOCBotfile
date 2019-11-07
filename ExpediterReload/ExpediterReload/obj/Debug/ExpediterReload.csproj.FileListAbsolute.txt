@@ -1,0 +1,10 @@
+C:\Users\yury.arkadin\AppData\Local\Temporary Projects\ExpediterReload\bin\Debug\ExpediterReload.exe.config
+C:\A_ExpediterReload\ExpediterReload\ExpediterReload\bin\Debug\ExpediterReload.exe.config
+C:\A_ExpediterReload\ExpediterReload\ExpediterReload\bin\Debug\ExpediterReload.exe
+C:\A_ExpediterReload\ExpediterReload\ExpediterReload\bin\Debug\ExpediterReload.pdb
+C:\A_ExpediterReload\ExpediterReload\ExpediterReload\bin\Debug\Newtonsoft.Json.dll
+C:\A_ExpediterReload\ExpediterReload\ExpediterReload\obj\Debug\ExpediterReload.exe
+C:\A_ExpediterReload\ExpediterReload\ExpediterReload\obj\Debug\ExpediterReload.pdb
+C:\A_ExpediterReload\ExpediterReload\ExpediterReload\bin\Debug\System.Net.Http.Formatting.dll
+C:\A_ExpediterReload\ExpediterReload\ExpediterReload\bin\Debug\Newtonsoft.Json.xml
+C:\A_ExpediterReload\ExpediterReload\ExpediterReload\bin\Debug\System.Net.Http.Formatting.xml
