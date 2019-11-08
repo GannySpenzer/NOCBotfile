@@ -35,7 +35,7 @@ namespace OSVCService
         List<string> PRIORITY_FLAG = new List<string>();
         List<string> PROBLEM_CODE = new List<string>();
         List<string> SITE_NAME = new List<string>();
-        List<string> STATUS_AGE = new List<string>();
+        List<int> STATUS_AGE = new List<int>();
         List<string> VENDOR_ID = new List<string>();
         List<string> VENDOR_NAME = new List<string>();
         DateTime dateparse;
@@ -143,7 +143,7 @@ namespace OSVCService
                     PRIORITY_FLAG.Add(rowInit["PRIORITY_FLAG"].ToString());              
                     PROBLEM_CODE.Add(rowInit["PROBLEM_CODE"].ToString());
                     SITE_NAME.Add(" ");                                     //?????
-                    STATUS_AGE.Add(rowInit["STATUS_AGE"].ToString());
+                    STATUS_AGE.Add(Convert.ToInt16( rowInit["STATUS_AGE"]));
                     VENDOR_ID.Add(rowInit["VENDOR_ID"].ToString());
                     VENDOR_NAME.Add(rowInit["VENDOR"].ToString());
                 }
@@ -322,7 +322,7 @@ namespace OSVCService
                 //while (iLastVal % modValue != 0 || (iLastVal / modValue) == 0 || iLastVal == ACTION_ITEMS.Count())
                 while (iLastVal != ACTION_ITEMS.Count())
                 {
-                    genArray[n] = getBuyExpGenericObject(ACTION_ITEMS[iLastVal], CLIENT[iLastVal], PO_DATE[iLastVal], BUSINESS_UNIT[iLastVal], PO_ID[iLastVal], LINE_NUMBER[iLastVal], ITEM[iLastVal], DESCRIPTION[iLastVal], PROBLEM_CODE[iLastVal], EXPEDITING_COMMENTS[iLastVal], BUYER_ID[iLastVal], VENDOR_ID[iLastVal], VENDOR_NAME[iLastVal], LAST_OPERATOR[iLastVal], LAST_COMMENT_DATE[iLastVal], INVENTORY_BUSINESS_UNIT[iLastVal], PRIORITY_FLAG[iLastVal], 10, SITE_NAME[iLastVal], BUYER_TEAM[iLastVal], PS_URL[iLastVal]);
+                    genArray[n] = getBuyExpGenericObject(ACTION_ITEMS[iLastVal], CLIENT[iLastVal], PO_DATE[iLastVal], BUSINESS_UNIT[iLastVal], PO_ID[iLastVal], LINE_NUMBER[iLastVal], ITEM[iLastVal], DESCRIPTION[iLastVal], PROBLEM_CODE[iLastVal], EXPEDITING_COMMENTS[iLastVal], BUYER_ID[iLastVal], VENDOR_ID[iLastVal], VENDOR_NAME[iLastVal], LAST_OPERATOR[iLastVal], LAST_COMMENT_DATE[iLastVal], INVENTORY_BUSINESS_UNIT[iLastVal], PRIORITY_FLAG[iLastVal], STATUS_AGE [iLastVal], SITE_NAME[iLastVal], BUYER_TEAM[iLastVal], PS_URL[iLastVal]);
                     //GenericObject go1 = getBuyExpGenericObject("Test1","Test1",DateTime.Now,"Test1","Test1","Test1","Test1","Test1","Test1","Test1","Test1","Test1","Test1","Test1",DateTime.Now,"Test1","Test1",0,"Test1","Test1","Test1");
                     //GenericObject go2 = getBuyExpGenericObject("Test2", "Test2", DateTime.Now, "Test2", "Test2", "Test2", "Test2", "Test2", "Test2", "Test2", "Test2", "Test2", "Test2", "Test2", DateTime.Now, "Test2", "Test2", 0, "Test2", "Test2", "Test2");
 

@@ -124,7 +124,7 @@ namespace ExpediterReload1
                 strBody = strBodyhead + strbodydetl;
                 try
                 {
-                    SDIEmailService.EmailUtilityServices("Mail", "SDIExchADMIN@sdi.com", "webdev@sdi.com; Donna.Ciampoli@sdi.com; scott.doyle@sdi.com", testOrProd + "Error from ExpediterReload Utility", "", "", strBody, "SDIERRMAIL", MailAttachmentName, MailAttachmentbytes.ToArray());
+                    SDIEmailService.EmailUtilityServices("Mail", "SDIExchADMIN@sdi.com", "webdev@sdi.com;", testOrProd + "Error from ExpediterReload Utility", "", "", strBody, "SDIERRMAIL", MailAttachmentName, MailAttachmentbytes.ToArray());
                 }
                 catch (Exception ex1)
                 {
