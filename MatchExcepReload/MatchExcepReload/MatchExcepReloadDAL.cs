@@ -57,9 +57,9 @@ namespace MatchExcepReload
                 strSQLstring += "A.INVOICE_ID as INVOICE_ID,\n";
                 strSQLstring += "TO_CHAR(A.INVOICE_DT, 'YYYY-MM-DD') as INVOICE_DATE,\n";
                 strSQLstring += "A.TOTAL_INVOICED_AMT as TOTAL_INVOICED_AMT,\n";
-                strSQLstring += "TO_CHAR(CAST((A.DWR_SCAN_DATE)AS TIMESTAMP), 'YYYY-MM-DD HH24:MI:SS') as SCAN_DATE,\n";
-                strSQLstring += "TO_CHAR(CAST((A.DWR_TASK_DATE)AS TIMESTAMP), 'YYYY-MM-DD HH24:MI:SS') as TASK_DATE,\n";
-                strSQLstring += "A.DWR_TASK_DAYS as TASK_DAYS,\n";
+                strSQLstring += "NVL(TO_CHAR(CAST((A.DWR_SCAN_DATE)AS TIMESTAMP), 'YYYY-MM-DD HH24:MI:SS'), sysdate) as SCAN_DATE,\n";
+                strSQLstring += "NVL(TO_CHAR(CAST((A.DWR_TASK_DATE)AS TIMESTAMP), 'YYYY-MM-DD HH24:MI:SS'), sysdate) as TASK_DATE,\n";
+                strSQLstring += "NVL(A.DWR_TASK_DAYS, 0) as TASK_DAYS,\n";
                 strSQLstring += "A.DWR_AGING2 as TASK_AGING,\n";
                 strSQLstring += "TO_CHAR(CAST((A.DWR_ASSIGNED_DT)AS TIMESTAMP), 'YYYY-MM-DD HH24:MI:SS') as DATE_ASSIGNED,\n";
                 strSQLstring += "A.DWR_DAYS_ASSIGNED as DAYS_ASSIGNED,\n";
@@ -99,7 +99,8 @@ namespace MatchExcepReload
                 strSQLstring += "and case \n";
                 strSQLstring += "when d.business_unit = 'ISA00' then 'SDI_PROCURE_SUPERVISOR'\n";
                 strSQLstring += "when d.business_unit = 'SDM00' then 'SDI_SITE_MANAGER_SDM'\n";
-                strSQLstring += "else 'OTHER' end = r.rolename(+) and rownum < 2";
+                strSQLstring += "else 'OTHER' end = r.rolename(+)\n";
+                strSQLstring += "and rownum < 15001";
                 m_oLogger.LogMessage("getMatchExcepData", "PeopleSoft connection string : " + OracleConString);
                 m_oLogger.LogMessage("getMatchExcepData", "Query To get the MatchExcep data: " + strSQLstring);
                 dtResponse = oleDBExecuteReader(strSQLstring);

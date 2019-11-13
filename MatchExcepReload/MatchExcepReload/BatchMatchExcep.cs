@@ -120,11 +120,12 @@ namespace OSVCService
                     SHIPTO_ID.Add(rowInit["SHIPTO_ID"].ToString());
                     ASSIGNED_TO.Add(rowInit["ASSIGNED_TO"].ToString());
                     TASK_TYPE.Add(rowInit["TASK_TYPE"].ToString());
-                    ME_LINES .Add(Convert.ToInt16 (rowInit["ME_LINES"]));
-                    DAYS_OVERALL.Add(Convert.ToInt16(rowInit["DAYS_OVERALL"]));
+                    ME_LINES .Add(Convert.ToInt32 (rowInit["ME_LINES"]));
+                    DAYS_OVERALL.Add(Convert.ToInt32(rowInit["DAYS_OVERALL"]));
                     OVERALL_AGING.Add(rowInit["OVERALL_AGING"].ToString());
                     
                     REPORTING_DATE.Add(Convert.ToDateTime (rowInit["REPORTING_DATE"]));
+                    //REPORTING_DATE.Add(rowInit["REPORTING_DATE"].ToString ());
                     //string REPORTING_DATEtest = rowInit["REPORTING_DATE"].ToString();
                     //dateparse = DateTime.Parse(REPORTING_DATEtest);
                     ////LAST_COMMENT_DATE.Add(dateparse.ToString("yyyy-MM-ddTHH:mm:ss.000Z"));
@@ -140,13 +141,13 @@ namespace OSVCService
                     INVOICE_ID.Add(rowInit["INVOICE_ID"].ToString());
                     INVOICE_DATE.Add(Convert.ToDateTime (rowInit["INVOICE_DATE"]));
 
-                    TOTAL_INVOICED_AMT.Add(Convert.ToInt16(rowInit["TOTAL_INVOICED_AMT"]));
+                    TOTAL_INVOICED_AMT.Add(Convert.ToInt32 (rowInit["TOTAL_INVOICED_AMT"]));
                     SCAN_DATE.Add(Convert.ToDateTime(rowInit["SCAN_DATE"]));
                     TASK_DATE.Add(Convert.ToDateTime(rowInit["TASK_DATE"]));
-                    TASK_DAYS.Add(Convert.ToInt16 (rowInit["TASK_DAYS"]));
+                    TASK_DAYS.Add(Convert.ToInt32 (rowInit["TASK_DAYS"]));
                     TASK_AGING .Add(rowInit["TASK_AGING"].ToString());
                     DATE_ASSIGNED.Add(Convert.ToDateTime(rowInit["DATE_ASSIGNED"]));
-                    DAYS_ASSIGNED.Add(Convert.ToInt16(rowInit["DAYS_ASSIGNED"]));
+                    DAYS_ASSIGNED.Add(Convert.ToInt32(rowInit["DAYS_ASSIGNED"]));
                     ASSIGNED_AGING.Add(rowInit["ASSIGNED_AGING"].ToString());
 
                 }
@@ -168,8 +169,17 @@ namespace OSVCService
         //can have up to 1000 objects so you can essentially have 100,000 records created in one call
         public void buildBatchRequestItems()
         {
+            Logger m_oLogger;
+            string sLogPath = Environment.CurrentDirectory;
+            if (!sLogPath.EndsWith(@"\"))
+                sLogPath += @"\";
+            sLogPath += "Logs";
+            m_oLogger = new Logger(sLogPath, "MatchExcepReload");
+            m_oLogger.LogMessage("BatchMatchExcep", "Entered BatchMatchExcep class");
+
             try
             {
+
 
                 BatchRequestItem[] requestItems = new BatchRequestItem[100];
 
@@ -195,6 +205,8 @@ namespace OSVCService
             }
             catch (Exception ex)
             {
+                strResp = "FAILURE";
+                m_oLogger.LogMessage("MatchExcepReload", "BatchMatchExcep submitBatch Failure: " + ex.ToString());
 
             }
         }
@@ -262,7 +274,7 @@ namespace OSVCService
             string Buyer_Team, string Site, string PS_url, string Me_Role,
             string Shipto_Desc, string Shipto_ID, string Assigned_To, string Task_Type,
             int Me_Lines, int Days_Overall, string Overall_Aging,
-            DateTime  Reporting_Date, string Match_Rule, string Supplier_ID,
+            DateTime   Reporting_Date, string Match_Rule, string Supplier_ID,
             string Supplier_Name , string Buyer_ID, string PO_Business_Unit,
             string PO_No, string Dispatch_Method, string Invoice_ID, 
             DateTime Invoice_Date, int Total_Invoiced_Amt, DateTime Scan_Date,
@@ -290,23 +302,23 @@ namespace OSVCService
             gfs.Add(createGenericField("ME_Lines", ItemsChoiceType.IntegerValue , Me_Lines));
             gfs.Add(createGenericField("Days_Overall", ItemsChoiceType.IntegerValue , Days_Overall ));
             gfs.Add(createGenericField("Overall_Aging", ItemsChoiceType.StringValue, Overall_Aging ));
-            gfs.Add(createGenericField("Reporting_Date", ItemsChoiceType.DateTimeValue , Reporting_Date ));
+            gfs.Add(createGenericField("Reporting_Date", ItemsChoiceType.DateValue   , Reporting_Date ));
             gfs.Add(createGenericField("Match_Rule", ItemsChoiceType.StringValue, Match_Rule ));
             gfs.Add(createGenericField("Supplier_ID", ItemsChoiceType.StringValue , Supplier_ID ));
-            
-            gfs.Add(createGenericField("Supplier_Name", ItemsChoiceType.StringValue, Supplier_Name ));
+
+            gfs.Add(createGenericField("Supplier_Name", ItemsChoiceType.StringValue, Supplier_Name )); 
             gfs.Add(createGenericField("Buyer_ID", ItemsChoiceType.StringValue, Buyer_ID ));
             gfs.Add(createGenericField("PO_Business_Unit", ItemsChoiceType.StringValue ,PO_Business_Unit ));
             gfs.Add(createGenericField("PO_No", ItemsChoiceType.StringValue, PO_No ));
-            gfs.Add(createGenericField("Dispatch_Method", ItemsChoiceType.StringValue, Buyer_Team));
-            gfs.Add(createGenericField("Invoice_ID", ItemsChoiceType.StringValue, PS_URL));
-            gfs.Add(createGenericField("Invoice_Date", ItemsChoiceType.DateTimeValue, Invoice_Date ));
-            gfs.Add(createGenericField("Total_Invoiced_Amt", ItemsChoiceType.StringValue  , Total_Invoiced_Amt ));
-            gfs.Add(createGenericField("Scan_Date", ItemsChoiceType.DateTimeValue , Scan_Date ));
-            gfs.Add(createGenericField("Task_Date", ItemsChoiceType.DateTimeValue , Task_Date));
+            gfs.Add(createGenericField("Dispatch_Method", ItemsChoiceType.StringValue, Dispatch_Method ));
+            gfs.Add(createGenericField("Invoice_ID", ItemsChoiceType.StringValue, Invoice_ID ));
+            gfs.Add(createGenericField("Invoice_Date", ItemsChoiceType.DateValue, Invoice_Date ));
+            gfs.Add(createGenericField("Total_Invoiced_Amt", ItemsChoiceType.IntegerValue     , Total_Invoiced_Amt ));
+            gfs.Add(createGenericField("Scan_Date", ItemsChoiceType.DateValue , Scan_Date ));
+            gfs.Add(createGenericField("Task_Date", ItemsChoiceType.DateValue , Task_Date));
             gfs.Add(createGenericField("Task_Days", ItemsChoiceType.IntegerValue , Task_Days));
             gfs.Add(createGenericField("Task_Aging", ItemsChoiceType.StringValue, Task_Aging));
-            gfs.Add(createGenericField("Date_Assigned", ItemsChoiceType.DateTimeValue , Date_Assigned));
+            gfs.Add(createGenericField("Date_Assigned", ItemsChoiceType.DateValue , Date_Assigned));
             gfs.Add(createGenericField("Days_Assigned", ItemsChoiceType.IntegerValue , Days_Assigned));
             gfs.Add(createGenericField("Assigned_Aging", ItemsChoiceType.StringValue, Assigned_Aging));
             
