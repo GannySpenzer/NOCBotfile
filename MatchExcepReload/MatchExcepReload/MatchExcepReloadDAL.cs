@@ -26,16 +26,16 @@ namespace MatchExcepReload
             try
             {
                 strSQLstring = "SELECT DISTINCT\n";
-                strSQLstring += "DECODE(T.ACCOUNTING_OWNER, ' ', 'Inactive Site', T.ACCOUNTING_OWNER) as CLIENT,\n";
-                strSQLstring += "T.descr as SITE,\n";
+                strSQLstring += "DECODE(T.ACCOUNTING_OWNER, ' ', 'Inactive Site', NVL(T.ACCOUNTING_OWNER, ' ')) as CLIENT,\n";
+                strSQLstring += "NVL(T.descr, ' ') as SITE,\n";
                 strSQLstring += "CASE WHEN  U.ROLENAME IS NULL THEN 'Unassigned'\n";
                 strSQLstring += "WHEN A.ASSIGNED_TO = 'sdiapxd' and A.DWR_MATCH_RULE <> 'Wait for Receipts' then 'Buyer'\n";
                 strSQLstring += "else  U.ROLENAME END  as ME_ROLE,\n";
-                strSQLstring += "C.DESCR as SHIPTO_DESC,\n";
-                strSQLstring += "B.SHIPTO_ID as SHIPTO_ID,\n";
+                strSQLstring += "NVL(C.DESCR, ' ') as SHIPTO_DESC,\n";
+                strSQLstring += "NVL(B.SHIPTO_ID, ' ') as SHIPTO_ID,\n";
                 strSQLstring += "A.ASSIGNED_TO as ASSIGNED_TO,\n";
-                strSQLstring += "A.TYPE_DESCR as TASK_TYPE\n";
-                strSQLstring += "A.LINE_COUNT as ME_LINES\n";
+                strSQLstring += "A.TYPE_DESCR as TASK_TYPE,\n";
+                strSQLstring += "A.LINE_COUNT as ME_LINES,\n";
                 strSQLstring += "A.DWR_DAYS_OVERALL as DAYS_OVERALL,\n";
                 strSQLstring += "case when A.DWR_AGING = '0 to 7 days' then '00 - 07'\n";
                 strSQLstring += "when A.DWR_AGING = '8 to 14 days' then '08 - 14'\n";
@@ -49,22 +49,22 @@ namespace MatchExcepReload
                 strSQLstring += "A.DWR_MATCH_RULE as MATCH_RULE,\n";
                 strSQLstring += "A.VENDOR_ID as SUPPLIER_ID,\n";
                 strSQLstring += "V.NAME1 as SUPPLIER_NAME,\n";
-                strSQLstring += "A.BUYER_ID as BUYER_ID,\n";
+                strSQLstring += "NVL(A.BUYER_ID, ' ') as BUYER_ID,\n";
                 strSQLstring += "A.BUSINESS_UNIT as PO_BUSINESS_UNIT,\n";
-                strSQLstring += "A.PO_ID as PO_NO,\n";
-                strSQLstring += "A.DISP_METHOD as DISPATCH_METHOD,\n";
+                strSQLstring += "NVL(A.PO_ID, ' ') as PO_NO,\n";
+                strSQLstring += "NVL(A.DISP_METHOD, ' ') as DISPATCH_METHOD,\n";
                 strSQLstring += "A.INVOICE_ID as INVOICE_ID,\n";
                 strSQLstring += "TO_CHAR(A.INVOICE_DT, 'YYYY-MM-DD') as INVOICE_DATE,\n";
                 strSQLstring += "A.TOTAL_INVOICED_AMT as TOTAL_INVOICED_AMT,\n";
-                strSQLstring += "TO_CHAR(CAST((A.DWR_SCAN_DATE)AS TIMESTAMP), 'YYYY-MM-DD-HH24.MI.SS.FF') as SCAN_DATE,\n";
-                strSQLstring += "TO_CHAR(CAST((A.DWR_TASK_DATE)AS TIMESTAMP), 'YYYY-MM-DD-HH24.MI.SS.FF') as TASK_DATE,\n";
+                strSQLstring += "TO_CHAR(CAST((A.DWR_SCAN_DATE)AS TIMESTAMP), 'YYYY-MM-DD HH24:MI:SS') as SCAN_DATE,\n";
+                strSQLstring += "TO_CHAR(CAST((A.DWR_TASK_DATE)AS TIMESTAMP), 'YYYY-MM-DD HH24:MI:SS') as TASK_DATE,\n";
                 strSQLstring += "A.DWR_TASK_DAYS as TASK_DAYS,\n";
-                strSQLstring += "A.DWR_AGING2 as TASK_AGIGN,\n";
-                strSQLstring += "TO_CHAR(CAST((A.DWR_ASSIGNED_DT)AS TIMESTAMP), 'YYYY-MM-DD-HH24.MI.SS.FF') as DATE_ASSIGNED,\n";
+                strSQLstring += "A.DWR_AGING2 as TASK_AGING,\n";
+                strSQLstring += "TO_CHAR(CAST((A.DWR_ASSIGNED_DT)AS TIMESTAMP), 'YYYY-MM-DD') as DATE_ASSIGNED,\n";
                 strSQLstring += "A.DWR_DAYS_ASSIGNED as DAYS_ASSIGNED,\n";
                 strSQLstring += "A.DWR_AGING3 as ASSIGNED_AGING,\n";
-                strSQLstring += "R.ROLEUSER as 'Buyer Team',\n";
-                strSQLstring += "' ' as 'PeopleSoft URL''\n";
+                strSQLstring += "NVL(R.ROLEUSER, ' ') as BUYER_TEAM,\n";
+                strSQLstring += "' ' as PS_URL\n";
 
                 strSQLstring += "FROM\n";
                 strSQLstring += "sysadm8.DW_APXME A,\n";
@@ -98,7 +98,7 @@ namespace MatchExcepReload
                 strSQLstring += "and case \n";
                 strSQLstring += "when d.business_unit = 'ISA00' then 'SDI_PROCURE_SUPERVISOR'\n";
                 strSQLstring += "when d.business_unit = 'SDM00' then 'SDI_SITE_MANAGER_SDM'\n";
-                strSQLstring += "else 'OTHER' end = r.rolename(+)";
+                strSQLstring += "else 'OTHER' end = r.rolename(+) and rownum < 3";
                 m_oLogger.LogMessage("getExpediterData", "PeopleSoft connection string : " + OracleConString);
                 m_oLogger.LogMessage("getExpediterData", "Query To get the Expediter data: " + strSQLstring);
                 dtResponse = oleDBExecuteReader(strSQLstring);

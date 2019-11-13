@@ -19,15 +19,15 @@ namespace MatchExcepReload1
             {
                 if (!System.IO.Directory.Exists(sLogPath))
                     System.IO.Directory.CreateDirectory(sLogPath);
-
-                // m_sLogFileSpec = sLogPath & "\" & sFilePrefix & Now.ToString("_yyyyMMdd_HHmmtt") & ".log"
+                
+                m_sLogFileSpec = sLogPath + @"\" + sFilePrefix + DateTime.Now.ToString("_yyyyMMdd_HHmmtt") + ".log";
                 if (LogFileSpec == "")
                 {
                     LogFileSpec = sLogPath + @"\" + sFilePrefix + DateTime.Now.ToString("_yyyyMMdd_HHmmtt") + ".log";
                 }
                 else
                 {
-                    LogFileSpec = LogFileName;
+                    LogFileName = LogFileSpec;
                 }
 
             }
@@ -108,7 +108,7 @@ namespace MatchExcepReload1
                 string testOrProd = ConfigurationManager.AppSettings["TestOrProd"].ToUpper() == "TEST" ? "(TEST) " : "";
 
                 //const string cErrMsg = testOrProd +  "Utility WMReceiptMapping had a critical error";
-                string cErrMsg = testOrProd + "Utility ExpediterReload had a critical error";
+                string cErrMsg = testOrProd + "Utility MatchExcepReload had a critical error";
                 string strBodyhead = "";
                 string strbodydetl = "";
                 string strBody = "";

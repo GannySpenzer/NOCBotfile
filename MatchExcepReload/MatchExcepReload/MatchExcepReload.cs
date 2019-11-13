@@ -163,7 +163,7 @@ namespace MatchExcepReload
                                 strDelQuery += "Delete From CO.MatchExcep LIMIT 1000;";
                             }
                             client.OpenRead(serviceURL2 + strDelQuery);
-                            m_oLogger.LogMessage("ExpediterReload", "DELETE Oracle Data of " + bo.items[0].rows.Count.ToString() + " records successful.");
+                            m_oLogger.LogMessage("MatchExcepReload", "DELETE Oracle Data of " + bo.items[0].rows.Count.ToString() + " records successful.");
                         }
                     }
                     catch (Exception ex)
@@ -192,12 +192,12 @@ namespace MatchExcepReload
                 //var parsed = JObject.Parse(result);
                 //strResponse = parsed.SelectToken("RequestStatus").Value<string>();
 
-                m_oLogger.LogMessage("MatchExcepReload", "POST MatchExcepReload data to Solvay server status " + strResponse);
+                m_oLogger.LogMessage("MatchExcepReload", "POST MatchExcepReload data to Oracle Helix server status " + strResponse);
 
                 if (strResponse.ToUpper() != "SUCCESS")
                 {
-                    m_oLogger.LogMessage("MatchExcepReload", "POST MatchExcepReload data to Solvay server status " + strResponse);
-                    m_oLogger.LogMessageWeb("MatchExcepReload", "POST MatchExcepReload data to Solvay server status " + strResponse, "POST MatchExcepReload data to Oracle server status " + strResponse);
+                    m_oLogger.LogMessage("MatchExcepReload", "POST MatchExcepReload data to Oracle Helix server status " + strResponse);
+                    m_oLogger.LogMessageWeb("MatchExcepReload", "POST MatchExcepReload data to Oracle Helix server status " + strResponse, "POST MatchExcepReload data to Oracle server status " + strResponse);
 
                 }
 
