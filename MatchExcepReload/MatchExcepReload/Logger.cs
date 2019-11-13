@@ -19,7 +19,7 @@ namespace MatchExcepReload1
             {
                 if (!System.IO.Directory.Exists(sLogPath))
                     System.IO.Directory.CreateDirectory(sLogPath);
-                
+
                 m_sLogFileSpec = sLogPath + @"\" + sFilePrefix + DateTime.Now.ToString("_yyyyMMdd_HHmmtt") + ".log";
                 if (LogFileSpec == "")
                 {
@@ -27,7 +27,7 @@ namespace MatchExcepReload1
                 }
                 else
                 {
-                    LogFileName = LogFileSpec;
+                    LogFileSpec = m_sLogFileSpec ;
                 }
 
             }

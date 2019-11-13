@@ -27,7 +27,7 @@ namespace OSVCService
         List<int> ME_LINES = new List<int>();
         List<int> DAYS_OVERALL = new List<int>();
         List<string> OVERALL_AGING = new List<string>();
-        List<DateTime > REPORTING_DATE = new List<DateTime >();
+        List<DateTime> REPORTING_DATE = new List<DateTime>();
         List<string> MATCH_RULE = new List<string>();
         List<string> SUPPLIER_ID= new List<string>();
         List<string> SUPPLIER_NAME = new List<string>();
@@ -38,11 +38,11 @@ namespace OSVCService
         List<string> INVOICE_ID = new List<string>();
         List<DateTime> INVOICE_DATE= new List<DateTime>();
         List<int> TOTAL_INVOICED_AMT = new List<int>();
-        List<DateTime> SCAN_DATE = new List<DateTime >();
+        List<DateTime > SCAN_DATE = new List<DateTime >();
         List<DateTime> TASK_DATE= new List<DateTime>();
         List<int> TASK_DAYS = new List<int>();
         List<string> TASK_AGING = new List<string>();
-        List<DateTime> DATE_ASSIGNED = new List<DateTime>();
+        List<DateTime> DATE_ASSIGNED= new List<DateTime>();
         List<int> DAYS_ASSIGNED = new List<int>();
         List<string> ASSIGNED_AGING = new List<string>();
 
@@ -74,7 +74,7 @@ namespace OSVCService
         public void CreateBuyExpBatch(out string sResponse)
         {
             getData();
-            if (dtResponseRowsCount > 0)
+            if (INVOICE_ID.Count > 0)
             {
                 buildBatchRequestItems();
             }
@@ -120,15 +120,15 @@ namespace OSVCService
                     SHIPTO_ID.Add(rowInit["SHIPTO_ID"].ToString());
                     ASSIGNED_TO.Add(rowInit["ASSIGNED_TO"].ToString());
                     TASK_TYPE.Add(rowInit["TASK_TYPE"].ToString());
-                    ME_LINES .Add( Convert.ToInt16  (rowInit["ME_LINES"]));
-                    DAYS_OVERALL.Add(Convert.ToInt16 (rowInit["DAYS_OVERALL"]));
+                    ME_LINES .Add(Convert.ToInt16 (rowInit["ME_LINES"]));
+                    DAYS_OVERALL.Add(Convert.ToInt16(rowInit["DAYS_OVERALL"]));
                     OVERALL_AGING.Add(rowInit["OVERALL_AGING"].ToString());
-
-                    //REPORTING_DATE.Add(Convert.ToDateTime (rowInit["REPORTING_DATE"]));
-                    string REPORTING_DATEtest = rowInit["REPORTING_DATE"].ToString();
-                    dateparse = DateTime.Parse(REPORTING_DATEtest);
-                    //LAST_COMMENT_DATE.Add(dateparse.ToString("yyyy-MM-ddTHH:mm:ss.000Z"));
-                    REPORTING_DATE.Add(dateparse);
+                    
+                    REPORTING_DATE.Add(Convert.ToDateTime (rowInit["REPORTING_DATE"]));
+                    //string REPORTING_DATEtest = rowInit["REPORTING_DATE"].ToString();
+                    //dateparse = DateTime.Parse(REPORTING_DATEtest);
+                    ////LAST_COMMENT_DATE.Add(dateparse.ToString("yyyy-MM-ddTHH:mm:ss.000Z"));
+                    //REPORTING_DATE.Add(dateparse);
 
                     MATCH_RULE.Add(rowInit["MATCH_RULE"].ToString ());
                     SUPPLIER_ID.Add(rowInit["SUPPLIER_ID"].ToString());
@@ -138,43 +138,16 @@ namespace OSVCService
                     PO_NO.Add(rowInit["PO_NO"].ToString());
                     DISPATCH_METHOD .Add(rowInit["DISPATCH_METHOD"].ToString());
                     INVOICE_ID.Add(rowInit["INVOICE_ID"].ToString());
+                    INVOICE_DATE.Add(Convert.ToDateTime (rowInit["INVOICE_DATE"]));
 
-                    //INVOICE_DATE.Add(Convert.ToDateTime(rowInit["INVOICE_DATE"]));
-                    string INVOICE_DATEtest = rowInit["INVOICE_DATE"].ToString();
-                    dateparse = DateTime.Parse(INVOICE_DATEtest);
-                    //LAST_COMMENT_DATE.Add(dateparse.ToString("yyyy-MM-ddTHH:mm:ss.000Z"));
-                    INVOICE_DATE.Add(dateparse);
-
-                    TOTAL_INVOICED_AMT.Add(Convert.ToInt16 (rowInit["TOTAL_INVOICED_AMT"]));
-
-                    //SCAN_DATE.Add(Convert.ToDateTime( rowInit["SCAN_DATE"]));
-                    string SCAN_DATEtest = rowInit["SCAN_DATE"].ToString();
-                    dateparse = DateTime.Parse(SCAN_DATEtest);
-                    //LAST_COMMENT_DATE.Add(dateparse.ToString("yyyy-MM-ddTHH:mm:ss.000Z"));
-                    SCAN_DATE.Add(dateparse);
-
-                    //TASK_DATE.Add(Convert.ToDateTime( rowInit["TASK_DATE"]));
-                    string TASK_DATEtest = rowInit["TASK_DATE"].ToString();
-                    dateparse = DateTime.Parse(TASK_DATEtest);
-                    //LAST_COMMENT_DATE.Add(dateparse.ToString("yyyy-MM-ddTHH:mm:ss.000Z"));
-                    TASK_DATE.Add(dateparse);
-
+                    TOTAL_INVOICED_AMT.Add(Convert.ToInt16(rowInit["TOTAL_INVOICED_AMT"]));
+                    SCAN_DATE.Add(Convert.ToDateTime(rowInit["SCAN_DATE"]));
+                    TASK_DATE.Add(Convert.ToDateTime(rowInit["TASK_DATE"]));
                     TASK_DAYS.Add(Convert.ToInt16 (rowInit["TASK_DAYS"]));
                     TASK_AGING .Add(rowInit["TASK_AGING"].ToString());
-
-                    //DATE_ASSIGNED.Add(Convert.ToDateTime (rowInit["DATE_ASSIGNED"]));
-                    string DATE_ASSIGNEDtest = rowInit["DATE_ASSIGNED"].ToString();
-                    dateparse = DateTime.Parse(DATE_ASSIGNEDtest);
-                    //DATE_ASSIGNED.Add(dateparse.ToString("yyyy-MM-ddTHH:mm:ss.000Z"));
-                    DATE_ASSIGNED.Add(dateparse);
-
-                    DAYS_ASSIGNED.Add(Convert.ToInt16 (rowInit["DAYS_ASSIGNED"]));
+                    DATE_ASSIGNED.Add(Convert.ToDateTime(rowInit["DATE_ASSIGNED"]));
+                    DAYS_ASSIGNED.Add(Convert.ToInt16(rowInit["DAYS_ASSIGNED"]));
                     ASSIGNED_AGING.Add(rowInit["ASSIGNED_AGING"].ToString());
-
-                    //string PO_DATEtest = rowInit["PO_DATE"].ToString();
-                    //dateparse = DateTime.Parse(PO_DATEtest);
-                    ////PO_DATE.Add(dateparse.ToString("yyyy-MM-ddTHH:mm:ss.000Z"));
-                    //PO_DATE.Add(dateparse);
 
                 }
                 catch (Exception ex)
@@ -245,7 +218,7 @@ namespace OSVCService
 
             BatchResponseItem[] batchRes;
 
-            m_oLogger.LogMessage("MatchExcepReload", "BatchMatchExp submitBatch Starting Service Run.");
+            m_oLogger.LogMessage("ExpeditorReload", "BatchMatchExcep submitBatch Starting Service Run.");
             _client.Batch(clientInfoHeader, apiAccessRequestHeader, requestItems, out batchRes);
 
             //If you need to get the response for each batch
@@ -258,7 +231,7 @@ namespace OSVCService
             //{
             //    GenericObject newObj = (GenericObject)obj;
             //    System.Console.WriteLine("New BuyExp ID: " + newObj.ID.id);
-            //    m_oLogger.LogMessage("ExpeditorReload", "BatchBuyExp submitBatch Response: " + newObj.ID.id.ToString());
+            //    m_oLogger.LogMessage("ExpeditorReload", "BatchMatchExcep submitBatch Response: " + newObj.ID.id.ToString());
             //}
 
             try
@@ -272,14 +245,14 @@ namespace OSVCService
                     {
                         GenericObject newObj = (GenericObject)obj;
                         //System.Console.WriteLine("New BuyExp ID: " + newObj.ID.id);
-                        m_oLogger.LogMessage("MatchExcepReload", "BatchMatchExcep submitBatch Response: " + newObj.ID.id.ToString());
+                        m_oLogger.LogMessage("ExpeditorReload", "BatchMatchExcep submitBatch Response: " + newObj.ID.id.ToString());
                     }
                 }
             }
             catch (Exception ex)
             {
                 strResp = "FAILURE";
-                m_oLogger.LogMessage("MatchExcepReload", "BatchMatchExcep submitBatch Failure: " + ex.ToString());
+                m_oLogger.LogMessage("ExpeditorReload", "BatchMatchExcep submitBatch Failure: " + ex.ToString());
             }
 
         }
@@ -311,7 +284,7 @@ namespace OSVCService
             gfs.Add(createGenericField("PS_URL", ItemsChoiceType.StringValue, PS_url ));
             gfs.Add(createGenericField("ME_Role", ItemsChoiceType.StringValue, Me_Role ));
             gfs.Add(createGenericField("Shipto_Desc", ItemsChoiceType.StringValue, Shipto_Desc ));
-            gfs.Add(createGenericField("Shopto_ID", ItemsChoiceType.StringValue, Shipto_ID ));
+            gfs.Add(createGenericField("Shipto_ID", ItemsChoiceType.StringValue, Shipto_ID ));
             gfs.Add(createGenericField("Assigned_To", ItemsChoiceType.StringValue, Assigned_To ));
             gfs.Add(createGenericField("Task_Type", ItemsChoiceType.StringValue, Task_Type ));
             gfs.Add(createGenericField("ME_Lines", ItemsChoiceType.IntegerValue , Me_Lines));
@@ -320,21 +293,23 @@ namespace OSVCService
             gfs.Add(createGenericField("Reporting_Date", ItemsChoiceType.DateTimeValue , Reporting_Date ));
             gfs.Add(createGenericField("Match_Rule", ItemsChoiceType.StringValue, Match_Rule ));
             gfs.Add(createGenericField("Supplier_ID", ItemsChoiceType.StringValue , Supplier_ID ));
+            
             gfs.Add(createGenericField("Supplier_Name", ItemsChoiceType.StringValue, Supplier_Name ));
             gfs.Add(createGenericField("Buyer_ID", ItemsChoiceType.StringValue, Buyer_ID ));
             gfs.Add(createGenericField("PO_Business_Unit", ItemsChoiceType.StringValue ,PO_Business_Unit ));
             gfs.Add(createGenericField("PO_No", ItemsChoiceType.StringValue, PO_No ));
-            gfs.Add(createGenericField("Dispatch_Method", ItemsChoiceType.StringValue, Dispatch_Method ));
-            gfs.Add(createGenericField("Invoice_ID", ItemsChoiceType.StringValue, Invoice_ID ));
+            gfs.Add(createGenericField("Dispatch_Method", ItemsChoiceType.StringValue, Buyer_Team));
+            gfs.Add(createGenericField("Invoice_ID", ItemsChoiceType.StringValue, PS_URL));
             gfs.Add(createGenericField("Invoice_Date", ItemsChoiceType.DateTimeValue, Invoice_Date ));
-            gfs.Add(createGenericField("Total_Invoiced_Amt", ItemsChoiceType.IntegerValue, Total_Invoiced_Amt ));
-            gfs.Add(createGenericField("Scan_Date", ItemsChoiceType.DateTimeValue , Scan_Date));
+            gfs.Add(createGenericField("Total_Invoiced_Amt", ItemsChoiceType.StringValue  , Total_Invoiced_Amt ));
+            gfs.Add(createGenericField("Scan_Date", ItemsChoiceType.DateTimeValue , Scan_Date ));
             gfs.Add(createGenericField("Task_Date", ItemsChoiceType.DateTimeValue , Task_Date));
             gfs.Add(createGenericField("Task_Days", ItemsChoiceType.IntegerValue , Task_Days));
             gfs.Add(createGenericField("Task_Aging", ItemsChoiceType.StringValue, Task_Aging));
-            gfs.Add(createGenericField("Date_Assigned", ItemsChoiceType.DateTimeValue   , Date_Assigned ));
+            gfs.Add(createGenericField("Date_Assigned", ItemsChoiceType.DateTimeValue , Date_Assigned));
             gfs.Add(createGenericField("Days_Assigned", ItemsChoiceType.IntegerValue , Days_Assigned));
             gfs.Add(createGenericField("Assigned_Aging", ItemsChoiceType.StringValue, Assigned_Aging));
+            
 
             go.GenericFields = gfs.ToArray();
 
@@ -367,7 +342,7 @@ namespace OSVCService
                     genArray[n] = getBuyExpGenericObject(CLIENT [iLastVal], BUYER_TEAM [iLastVal], SITE [iLastVal], PS_URL [iLastVal], ME_ROLE [iLastVal], SHIPTO_DESC [iLastVal], SHIPTO_ID [iLastVal], 
                         ASSIGNED_TO [iLastVal], TASK_TYPE [iLastVal], ME_LINES [iLastVal], DAYS_OVERALL [iLastVal], OVERALL_AGING [iLastVal], REPORTING_DATE [iLastVal], MATCH_RULE [iLastVal], 
                         SUPPLIER_ID [iLastVal], SUPPLIER_NAME [iLastVal], BUYER_ID [iLastVal], PO_BUSINESS_UNIT[iLastVal] , PO_NO [iLastVal], DISPATCH_METHOD [iLastVal], INVOICE_ID [iLastVal], 
-                        INVOICE_DATE[iLastVal], TOTAL_INVOICED_AMT [iLastVal],SCAN_DATE[iLastVal], TASK_DATE[iLastVal],TASK_DAYS[iLastVal],TASK_AGING[iLastVal], DATE_ASSIGNED[iLastVal],
+                        INVOICE_DATE[iLastVal], TOTAL_INVOICED_AMT [iLastVal],SCAN_DATE[iLastVal], TASK_DATE[iLastVal],TASK_DAYS[iLastVal],TASK_AGING[iLastVal],DATE_ASSIGNED[iLastVal],
                         DAYS_ASSIGNED[iLastVal], ASSIGNED_AGING[iLastVal]);
                     //GenericObject go1 = getBuyExpGenericObject("Test1","Test1",DateTime.Now,"Test1","Test1","Test1","Test1","Test1","Test1","Test1","Test1","Test1","Test1","Test1",DateTime.Now,"Test1","Test1",0,"Test1","Test1","Test1");
                     //GenericObject go2 = getBuyExpGenericObject("Test2", "Test2", DateTime.Now, "Test2", "Test2", "Test2", "Test2", "Test2", "Test2", "Test2", "Test2", "Test2", "Test2", "Test2", DateTime.Now, "Test2", "Test2", 0, "Test2", "Test2", "Test2");

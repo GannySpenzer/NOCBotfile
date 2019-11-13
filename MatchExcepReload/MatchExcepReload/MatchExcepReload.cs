@@ -33,29 +33,6 @@ namespace MatchExcepReload
 
             DataTable dtResponse = new DataTable();
 
-            //string ACTION_ITEMS = " ";
-            //string BUSINESS_UNIT = " ";
-            //string BUYER_ID = " ";
-            //string BUYER_TEAM = " ";
-            //string CLIENT = " ";
-            //string DESCRIPTION = " ";
-            //string EXPEDITING_COMMENTS = " ";
-            //string INVENTORY_BUSINESS_UNIT = " ";
-            //string ITEM = " ";
-            //string LAST_COMMENT_DATE = " ";
-            //string LAST_OPERATOR = " ";
-            //string LINE_NUMBER = " ";
-            //string PO_DATE = " ";
-            //string PO_ID = " ";
-            //string PS_URL = " ";
-            //string PRIORITY_FLAG = " ";
-            //string PROBLEM_CODE = " ";
-            //string SITE_NAME = " ";
-            //string STATUS_AGE = " ";
-            //string VENDOR_ID = " ";
-            //string VENDOR_NAME = " ";
-            //DateTime dateparse;
-
             ServicePointManager.Expect100Continue = true;
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
             // Use SecurityProtocolType.Ssl3 if needed for compatibility reasons
@@ -70,7 +47,7 @@ namespace MatchExcepReload
             m_oLogger.LogMessage("Main", "Started utility MatchExcepReload");
 
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            //m_oLogger.LogMessage("postExpediterReload", "GET Oracle Data starts here");
+            //m_oLogger.LogMessage("postMatchExcepReload", "GET Oracle Data starts here");
             //m_oLogger.LogMessage("postWMReceiptMappingData", "POST WMReceiptMapping Data" + resultSet.ToString());
             //m_oLogger.LogMessage("postWMReceiptMappingData", "POST WMMapping Data URL : https://10.118.13.27:8243/SDIOutboundWMReceiptAPI/v1_0");
             //m_oLogger.LogMessage("postWMReceiptMappingData", "POST WMReceiptMapping Data URL : " + serviceURL);
@@ -142,12 +119,12 @@ namespace MatchExcepReload
                     //        client.UploadString(serviceURL2 + rowToDel, "DELETE", "");
 
                     //    }
-                    //    m_oLogger.LogMessage("ExpediterReload", "DELETE Oracle Data successful.");
+                    //    m_oLogger.LogMessage("MatchExcepReload", "DELETE Oracle Data successful.");
                     //}
                     //catch (Exception ex)
                     //{
-                    //    m_oLogger.LogMessage("ExpediterReload", "DELETE Oracle Data failed.");
-                    //    m_oLogger.LogMessageWeb("ExpediterReload", "DELETE Oracle Data failed", "DELETE Oracle Data failed.  Resultset to delete: " + resultSet );
+                    //    m_oLogger.LogMessage("MatchExcepReload", "DELETE Oracle Data failed.");
+                    //    m_oLogger.LogMessageWeb("MatchExcepReload", "DELETE Oracle Data failed", "DELETE Oracle Data failed.  Resultset to delete: " + resultSet );
                     //    return;
                     //}
                     try

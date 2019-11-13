@@ -33,7 +33,7 @@ namespace MatchExcepReload
                 strSQLstring += "else  U.ROLENAME END  as ME_ROLE,\n";
                 strSQLstring += "NVL(C.DESCR, ' ') as SHIPTO_DESC,\n";
                 strSQLstring += "NVL(B.SHIPTO_ID, ' ') as SHIPTO_ID,\n";
-                strSQLstring += "A.ASSIGNED_TO as ASSIGNED_TO,\n";
+                strSQLstring += "NVL(A.ASSIGNED_TO, ' ') as ASSIGNED_TO,\n";
                 strSQLstring += "A.TYPE_DESCR as TASK_TYPE,\n";
                 strSQLstring += "A.LINE_COUNT as ME_LINES,\n";
                 strSQLstring += "A.DWR_DAYS_OVERALL as DAYS_OVERALL,\n";
@@ -45,7 +45,8 @@ namespace MatchExcepReload
                 strSQLstring += "when A.DWR_AGING = '61 to 90 days' then '61 - 90'\n";
                 strSQLstring += "when A.DWR_AGING like '%> 90 days' then '90+'\n";
                 strSQLstring += "else  A.DWR_AGING END as OVERALL_AGING,\n";
-                strSQLstring += "to_date(TO_CHAR(A.DWR_REPORTING_DT, 'YYYY-MM-DD'), 'YYYY-MM-DD') + 1 as REPORTING_DATE,\n";
+                //strSQLstring += "to_date(TO_CHAR(A.DWR_REPORTING_DT, 'YYYY-MM-DD'), 'YYYY-MM-DD') + 1 as REPORTING_DATE,\n";
+                strSQLstring += "TO_CHAR(to_date(TO_CHAR(A.DWR_REPORTING_DT, 'YYYY-MM-DD'), 'YYYY-MM-DD') + 1, 'MM-DD-YYYY HH24:MI:SS') as REPORTING_DATE,\n";
                 strSQLstring += "A.DWR_MATCH_RULE as MATCH_RULE,\n";
                 strSQLstring += "A.VENDOR_ID as SUPPLIER_ID,\n";
                 strSQLstring += "V.NAME1 as SUPPLIER_NAME,\n";
@@ -60,7 +61,7 @@ namespace MatchExcepReload
                 strSQLstring += "TO_CHAR(CAST((A.DWR_TASK_DATE)AS TIMESTAMP), 'YYYY-MM-DD HH24:MI:SS') as TASK_DATE,\n";
                 strSQLstring += "A.DWR_TASK_DAYS as TASK_DAYS,\n";
                 strSQLstring += "A.DWR_AGING2 as TASK_AGING,\n";
-                strSQLstring += "TO_CHAR(CAST((A.DWR_ASSIGNED_DT)AS TIMESTAMP), 'YYYY-MM-DD') as DATE_ASSIGNED,\n";
+                strSQLstring += "TO_CHAR(CAST((A.DWR_ASSIGNED_DT)AS TIMESTAMP), 'YYYY-MM-DD HH24:MI:SS') as DATE_ASSIGNED,\n";
                 strSQLstring += "A.DWR_DAYS_ASSIGNED as DAYS_ASSIGNED,\n";
                 strSQLstring += "A.DWR_AGING3 as ASSIGNED_AGING,\n";
                 strSQLstring += "NVL(R.ROLEUSER, ' ') as BUYER_TEAM,\n";
@@ -98,11 +99,11 @@ namespace MatchExcepReload
                 strSQLstring += "and case \n";
                 strSQLstring += "when d.business_unit = 'ISA00' then 'SDI_PROCURE_SUPERVISOR'\n";
                 strSQLstring += "when d.business_unit = 'SDM00' then 'SDI_SITE_MANAGER_SDM'\n";
-                strSQLstring += "else 'OTHER' end = r.rolename(+) and rownum < 3";
-                m_oLogger.LogMessage("getExpediterData", "PeopleSoft connection string : " + OracleConString);
-                m_oLogger.LogMessage("getExpediterData", "Query To get the Expediter data: " + strSQLstring);
+                strSQLstring += "else 'OTHER' end = r.rolename(+) and rownum < 2";
+                m_oLogger.LogMessage("getMatchExcepData", "PeopleSoft connection string : " + OracleConString);
+                m_oLogger.LogMessage("getMatchExcepData", "Query To get the MatchExcep data: " + strSQLstring);
                 dtResponse = oleDBExecuteReader(strSQLstring);
-                m_oLogger.LogMessage("getExpediterData", "Number of rows Selected " + dtResponse.Rows.Count);
+                m_oLogger.LogMessage("getMatchExcepData", "Number of rows Selected " + dtResponse.Rows.Count);
 
             }
             catch (Exception ex)
