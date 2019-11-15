@@ -37,7 +37,7 @@ namespace OSVCService
         List<string> DISPATCH_METHOD = new List<string>();
         List<string> INVOICE_ID = new List<string>();
         List<DateTime> INVOICE_DATE= new List<DateTime>();
-        List<int> TOTAL_INVOICED_AMT = new List<int>();
+        List<string> TOTAL_INVOICED_AMT = new List<string>();
         List<DateTime > SCAN_DATE = new List<DateTime >();
         List<DateTime> TASK_DATE= new List<DateTime>();
         List<int> TASK_DAYS = new List<int>();
@@ -138,10 +138,11 @@ namespace OSVCService
                     PO_BUSINESS_UNIT.Add(rowInit["PO_BUSINESS_UNIT"].ToString());
                     PO_NO.Add(rowInit["PO_NO"].ToString());
                     DISPATCH_METHOD .Add(rowInit["DISPATCH_METHOD"].ToString());
-                    INVOICE_ID.Add(rowInit["INVOICE_ID"].ToString());
+                   
+                    INVOICE_ID.Add(rowInit["INVOICE_ID"].ToString().Replace("\"", ""));
                     INVOICE_DATE.Add(Convert.ToDateTime (rowInit["INVOICE_DATE"]));
 
-                    TOTAL_INVOICED_AMT.Add(Convert.ToInt32 (rowInit["TOTAL_INVOICED_AMT"]));
+                    TOTAL_INVOICED_AMT.Add(rowInit["TOTAL_INVOICED_AMT"].ToString());
                     SCAN_DATE.Add(Convert.ToDateTime(rowInit["SCAN_DATE"]));
                     TASK_DATE.Add(Convert.ToDateTime(rowInit["TASK_DATE"]));
                     TASK_DAYS.Add(Convert.ToInt32 (rowInit["TASK_DAYS"]));
@@ -230,8 +231,13 @@ namespace OSVCService
 
             BatchResponseItem[] batchRes;
 
+            WSHttpBinding test = new WSHttpBinding();
+            test.TextEncoding = UTF8Encoding.UTF8;
+            
+
             m_oLogger.LogMessage("ExpeditorReload", "BatchMatchExcep submitBatch Starting Service Run.");
             _client.Batch(clientInfoHeader, apiAccessRequestHeader, requestItems, out batchRes);
+
 
             //If you need to get the response for each batch
             //CreateResponseMsg createResponseMsg0 = (CreateResponseMsg)batchRes[0].Item;
@@ -277,7 +283,7 @@ namespace OSVCService
             DateTime   Reporting_Date, string Match_Rule, string Supplier_ID,
             string Supplier_Name , string Buyer_ID, string PO_Business_Unit,
             string PO_No, string Dispatch_Method, string Invoice_ID, 
-            DateTime Invoice_Date, int Total_Invoiced_Amt, DateTime Scan_Date,
+            DateTime Invoice_Date, string Total_Invoiced_Amt, DateTime Scan_Date,
             DateTime Task_Date, int Task_Days, string Task_Aging, DateTime Date_Assigned,
             int Days_Assigned, string Assigned_Aging)
         {
@@ -313,7 +319,7 @@ namespace OSVCService
             gfs.Add(createGenericField("Dispatch_Method", ItemsChoiceType.StringValue, Dispatch_Method ));
             gfs.Add(createGenericField("Invoice_ID", ItemsChoiceType.StringValue, Invoice_ID ));
             gfs.Add(createGenericField("Invoice_Date", ItemsChoiceType.DateValue, Invoice_Date ));
-            gfs.Add(createGenericField("Total_Invoiced_Amt", ItemsChoiceType.IntegerValue     , Total_Invoiced_Amt ));
+            gfs.Add(createGenericField("Total_Invoiced_Amt", ItemsChoiceType.StringValue     , Total_Invoiced_Amt ));
             gfs.Add(createGenericField("Scan_Date", ItemsChoiceType.DateValue , Scan_Date ));
             gfs.Add(createGenericField("Task_Date", ItemsChoiceType.DateValue , Task_Date));
             gfs.Add(createGenericField("Task_Days", ItemsChoiceType.IntegerValue , Task_Days));

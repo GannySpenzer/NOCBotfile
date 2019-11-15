@@ -100,7 +100,16 @@ namespace MatchExcepReload
                 strSQLstring += "when d.business_unit = 'ISA00' then 'SDI_PROCURE_SUPERVISOR'\n";
                 strSQLstring += "when d.business_unit = 'SDM00' then 'SDI_SITE_MANAGER_SDM'\n";
                 strSQLstring += "else 'OTHER' end = r.rolename(+)\n";
-                strSQLstring += "and rownum < 15001";
+                //strSQLstring += "and rownum < 12351";
+                //strSQLstring += "and rownum < 13351";
+
+                //strSQLstring = "SELECT * FROM SDIX_MATCHEXCEPTEST where buyer_team = 'Jaclyn.Quattrone'";
+                //strSQLstring = "SELECT * FROM SDIX_MATCHEXCEPTEST where buyer_team in ('Maria.Richman', 'Jaclyn.Quattrone') ";  //6231 count fail
+                //strSQLstring = "SELECT * FROM SDIX_MATCHEXCEPTEST where buyer_team in (' ', 'Jenny.Kelly', 'Jesus.Concha', 'Jose.Carrion', 'Juan.Romero') ";   //1711
+                //strSQLstring = "SELECT * FROM SDIX_MATCHEXCEPTEST where buyer_team in ('Stephanie.Zuelsdorf', 'Ulises.Romero', 'Victor.Sanchez') ";   
+
+
+
                 m_oLogger.LogMessage("getMatchExcepData", "PeopleSoft connection string : " + OracleConString);
                 m_oLogger.LogMessage("getMatchExcepData", "Query To get the MatchExcep data: " + strSQLstring);
                 dtResponse = oleDBExecuteReader(strSQLstring);
