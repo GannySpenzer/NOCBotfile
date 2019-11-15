@@ -9,7 +9,7 @@ using System.Configuration;
 
 namespace MatchExcepReload1
 {
-    class Logger
+    public class Logger
     {
         private string m_sLogFileSpec;
 

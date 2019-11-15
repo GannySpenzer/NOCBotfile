@@ -11,6 +11,7 @@ using System.IO;
 using System.Data;
 using System.Web.Http;
 using OSVCService;
+using MatchExcepReload1;
 //using OSVCService;
 
 namespace MatchExcepReload
@@ -152,10 +153,16 @@ namespace MatchExcepReload
 
                     try
                     {
-                        //new batch SoapUI code
-                        Batcher batcher = new Batcher(authorization, password);
-                        batcher.CreateBuyExpBatch(out strResponse);
-
+                        MatchExcepReloadDAL dal = new MatchExcepReloadDAL();
+                        MEData med = dal.getData();
+                        
+                        
+                        if (dal.dtResponseRowsCount > 0)
+                        {
+                            //new batch SoapUI code
+                            Batcher batcher = new Batcher(authorization, password);
+                            batcher.CreateBuyExpBatch(med, out strResponse);
+                        }
                     }
                     catch (Exception ex)
                     {

@@ -12,10 +12,10 @@ using System.ServiceModel.Channels;
 
 namespace OSVCService
 {
-    public class Batcher
+    public class Batcher : MatchExcepReloadDAL 
     {
 
-        List<string> CLIENT = new List<string>();
+        public List<string> CLIENT = new List<string>();
         List<string> BUYER_TEAM = new List<string>();
         List<string> SITE = new List<string>();
         List<string> PS_URL = new List<string>();
@@ -71,100 +71,49 @@ namespace OSVCService
             _client.ClientCredentials.UserName.Password = strpass;
         }
 
-        public void CreateBuyExpBatch(out string sResponse)
+        public void CreateBuyExpBatch(MEData medIn, out string sResponse)
         {
-            getData();
-            if (INVOICE_ID.Count > 0)
-            {
-                buildBatchRequestItems();
-            }
+            //getData();
+            //if (dtResponseRowsCount > 0)
+            //{
+            CLIENT = medIn.CLIENT;
+            BUYER_TEAM = medIn.BUYER_TEAM;
+            SITE = medIn.SITE;
+            PS_URL = medIn.PS_URL;
+            ME_ROLE = medIn.ME_ROLE;
+            SHIPTO_DESC = medIn.SHIPTO_DESC;
+            SHIPTO_ID = medIn.SHIPTO_ID;
+            ASSIGNED_TO = medIn.ASSIGNED_TO ;
+            TASK_TYPE = medIn.TASK_TYPE;
+            ME_LINES = medIn.ME_LINES;
+            DAYS_OVERALL = medIn.DAYS_OVERALL;
+            OVERALL_AGING = medIn.OVERALL_AGING;
+            REPORTING_DATE = medIn.REPORTING_DATE;
+            MATCH_RULE = medIn.MATCH_RULE;
+            SUPPLIER_ID = medIn.SUPPLIER_ID;
+            SUPPLIER_NAME = medIn.SUPPLIER_NAME;
+            BUYER_ID = medIn.BUYER_ID;
+            PO_BUSINESS_UNIT = medIn.PO_BUSINESS_UNIT;
+            PO_NO = medIn.PO_NO;
+            DISPATCH_METHOD = medIn.DISPATCH_METHOD;
+            INVOICE_ID = medIn.INVOICE_ID;
+            INVOICE_DATE = medIn.INVOICE_DATE;
+            TOTAL_INVOICED_AMT = medIn.TOTAL_INVOICED_AMT;
+            SCAN_DATE = medIn.SCAN_DATE;
+            TASK_DATE = medIn.TASK_DATE;
+            TASK_DAYS = medIn.TASK_DAYS;
+            TASK_AGING = medIn.TASK_AGING;
+            DATE_ASSIGNED = medIn.DATE_ASSIGNED;
+            DAYS_ASSIGNED = medIn.DAYS_ASSIGNED;
+            ASSIGNED_AGING = medIn.ASSIGNED_AGING;
+
+            dtResponseRowsCount = ASSIGNED_AGING.Count();
+
+            buildBatchRequestItems();
+            //}
             sResponse = strResp;
         }
 
-        public void getData()
-        {
-            Logger m_oLogger;
-            string sLogPath = Environment.CurrentDirectory;
-            if (!sLogPath.EndsWith(@"\"))
-                sLogPath += @"\";
-            sLogPath += "Logs";
-            m_oLogger = new Logger(sLogPath, "MatchExcepReload");
-            m_oLogger.LogMessage("BatchMatchExcep", "Entered BatchMatchExcep class");
-
-
-            //STEP #3 - QUERY TABLE AND POST NEW DATA 
-            m_oLogger.LogMessage("MatchExcepReload", "Query table started");
-            MatchExcepReloadDAL objGetMatchExcepReloadDAL = new MatchExcepReloadDAL();
-            dtResponse = objGetMatchExcepReloadDAL.getMatchExcepData(m_oLogger);
-            dtResponseRowsCount = dtResponse.Rows.Count;
-            if (dtResponseRowsCount == 0)
-            {
-                m_oLogger.LogMessage("MatchExcepReload", "Query returned no records.");
-                return;
-            }
-            else
-                m_oLogger.LogMessage("MatchExcepReload", "POST MatchExcepReload data started.");
-                for (int i = 0; i < dtResponseRowsCount; i++)
-                {
-                DataRow rowInit;
-                rowInit = dtResponse.Rows[i];
-
-                try
-                {
-                    CLIENT .Add(rowInit["CLIENT"].ToString());
-                    BUYER_TEAM .Add(rowInit["BUYER_TEAM"].ToString());
-                    SITE.Add(rowInit["SITE"].ToString());
-                    PS_URL.Add(rowInit["PS_URL"].ToString());
-                    ME_ROLE.Add(rowInit["ME_ROLE"].ToString());
-                    SHIPTO_DESC.Add(rowInit["SHIPTO_DESC"].ToString());
-                    SHIPTO_ID.Add(rowInit["SHIPTO_ID"].ToString());
-                    ASSIGNED_TO.Add(rowInit["ASSIGNED_TO"].ToString());
-                    TASK_TYPE.Add(rowInit["TASK_TYPE"].ToString());
-                    ME_LINES .Add(Convert.ToInt32 (rowInit["ME_LINES"]));
-                    DAYS_OVERALL.Add(Convert.ToInt32(rowInit["DAYS_OVERALL"]));
-                    OVERALL_AGING.Add(rowInit["OVERALL_AGING"].ToString());
-                    
-                    REPORTING_DATE.Add(Convert.ToDateTime (rowInit["REPORTING_DATE"]));
-                    //REPORTING_DATE.Add(rowInit["REPORTING_DATE"].ToString ());
-                    //string REPORTING_DATEtest = rowInit["REPORTING_DATE"].ToString();
-                    //dateparse = DateTime.Parse(REPORTING_DATEtest);
-                    ////LAST_COMMENT_DATE.Add(dateparse.ToString("yyyy-MM-ddTHH:mm:ss.000Z"));
-                    //REPORTING_DATE.Add(dateparse);
-
-                    MATCH_RULE.Add(rowInit["MATCH_RULE"].ToString ());
-                    SUPPLIER_ID.Add(rowInit["SUPPLIER_ID"].ToString());
-                    SUPPLIER_NAME.Add(rowInit["SUPPLIER_NAME"].ToString());
-                    BUYER_ID .Add(rowInit["BUYER_ID"].ToString());
-                    PO_BUSINESS_UNIT.Add(rowInit["PO_BUSINESS_UNIT"].ToString());
-                    PO_NO.Add(rowInit["PO_NO"].ToString());
-                    DISPATCH_METHOD .Add(rowInit["DISPATCH_METHOD"].ToString());
-                   
-                    INVOICE_ID.Add(rowInit["INVOICE_ID"].ToString().Replace("\"", ""));
-                    INVOICE_DATE.Add(Convert.ToDateTime (rowInit["INVOICE_DATE"]));
-
-                    TOTAL_INVOICED_AMT.Add(rowInit["TOTAL_INVOICED_AMT"].ToString());
-                    SCAN_DATE.Add(Convert.ToDateTime(rowInit["SCAN_DATE"]));
-                    TASK_DATE.Add(Convert.ToDateTime(rowInit["TASK_DATE"]));
-                    TASK_DAYS.Add(Convert.ToInt32 (rowInit["TASK_DAYS"]));
-                    TASK_AGING .Add(rowInit["TASK_AGING"].ToString());
-                    DATE_ASSIGNED.Add(Convert.ToDateTime(rowInit["DATE_ASSIGNED"]));
-                    DAYS_ASSIGNED.Add(Convert.ToInt32(rowInit["DAYS_ASSIGNED"]));
-                    ASSIGNED_AGING.Add(rowInit["ASSIGNED_AGING"].ToString());
-
-                }
-                catch (Exception ex)
-                {
-                    m_oLogger.LogMessage("MatchExcepReload", "Error trying to parse data at line " + i.ToString(), ex);
-
-                }
-
-            }
-
-            m_oLogger.LogMessage("MatchExcepReload", "Query table and parse successful.");
-
-
-
-        }
 
         //You can have up to 100 items in a batch. The function that is part of the batch
         //can have up to 1000 objects so you can essentially have 100,000 records created in one call
