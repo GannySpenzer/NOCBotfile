@@ -154,14 +154,20 @@ namespace MatchExcepReload
                     try
                     {
                         MatchExcepReloadDAL dal = new MatchExcepReloadDAL();
-                        MEData med = dal.getData();
-                        
-                        
+                        dal.CreateTable(m_oLogger);
+
                         if (dal.dtResponseRowsCount > 0)
                         {
-                            //new batch SoapUI code
-                            Batcher batcher = new Batcher(authorization, password);
-                            batcher.CreateBuyExpBatch(med, out strResponse);
+                             while (dal.gotAllData == "N")
+                            {
+                               MEData med = dal.getData(m_oLogger);
+
+                               //new batch SoapUI code
+                               Batcher batcher = new Batcher(authorization, password);
+                               batcher.CreateBuyExpBatch(med, m_oLogger, out strResponse);
+
+                               dal.UpdateTable(m_oLogger );
+                            }
                         }
                     }
                     catch (Exception ex)

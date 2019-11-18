@@ -57,7 +57,7 @@ namespace OSVCService
         RightNowSyncPortClient _client;
 
         // InitializeLogger start here
-        //Logger m_oLogger;
+        public Logger m_oLogger;
         //string sLogPath = Environment.CurrentDirectory;
 
         DataTable dtResponse = new DataTable();
@@ -71,7 +71,7 @@ namespace OSVCService
             _client.ClientCredentials.UserName.Password = strpass;
         }
 
-        public void CreateBuyExpBatch(MEData medIn, out string sResponse)
+        public void CreateBuyExpBatch(MEData medIn, Logger m_oLogger, out string sResponse)
         {
             //getData();
             //if (dtResponseRowsCount > 0)
@@ -109,7 +109,7 @@ namespace OSVCService
 
             dtResponseRowsCount = ASSIGNED_AGING.Count();
 
-            buildBatchRequestItems();
+            buildBatchRequestItems(m_oLogger);
             //}
             sResponse = strResp;
         }
@@ -117,14 +117,14 @@ namespace OSVCService
 
         //You can have up to 100 items in a batch. The function that is part of the batch
         //can have up to 1000 objects so you can essentially have 100,000 records created in one call
-        public void buildBatchRequestItems()
+        public void buildBatchRequestItems(Logger m_oLogger)
         {
-            Logger m_oLogger;
-            string sLogPath = Environment.CurrentDirectory;
-            if (!sLogPath.EndsWith(@"\"))
-                sLogPath += @"\";
-            sLogPath += "Logs";
-            m_oLogger = new Logger(sLogPath, "MatchExcepReload");
+            //Logger m_oLogger;
+            //string sLogPath = Environment.CurrentDirectory;
+            //if (!sLogPath.EndsWith(@"\"))
+            //    sLogPath += @"\";
+            //sLogPath += "Logs";
+            //m_oLogger = new Logger(sLogPath, "MatchExcepReload");
             m_oLogger.LogMessage("BatchMatchExcep", "Entered BatchMatchExcep class");
 
             try
@@ -151,7 +151,7 @@ namespace OSVCService
 
                 System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
 
-                submitBatch(requestItems);
+                submitBatch(requestItems, m_oLogger );
             }
             catch (Exception ex)
             {
@@ -163,14 +163,14 @@ namespace OSVCService
 
 
         //Submit the batch and read the response if needed
-        public void submitBatch(BatchRequestItem[] requestItems)
+        public void submitBatch(BatchRequestItem[] requestItems, Logger m_oLogger)
         {
-            Logger m_oLogger;
-            string sLogPath = Environment.CurrentDirectory;
-            if (!sLogPath.EndsWith(@"\"))
-                sLogPath += @"\";
-            sLogPath += "Logs";
-            m_oLogger = new Logger(sLogPath, "MatchExcepReload");
+            //Logger m_oLogger;
+            //string sLogPath = Environment.CurrentDirectory;
+            //if (!sLogPath.EndsWith(@"\"))
+            //    sLogPath += @"\";
+            //sLogPath += "Logs";
+            //m_oLogger = new Logger(sLogPath, "MatchExcepReload");
             m_oLogger.LogMessage("BatchMatchExcep", "Entered submitBatch class");
 
             ClientInfoHeader clientInfoHeader = new ClientInfoHeader();
@@ -212,7 +212,7 @@ namespace OSVCService
                     {
                         GenericObject newObj = (GenericObject)obj;
                         //System.Console.WriteLine("New BuyExp ID: " + newObj.ID.id);
-                        m_oLogger.LogMessage("ExpeditorReload", "BatchMatchExcep submitBatch Response: " + newObj.ID.id.ToString());
+                        //m_oLogger.LogMessage("ExpeditorReload", "BatchMatchExcep submitBatch Response: " + newObj.ID.id.ToString());
                     }
                 }
             }

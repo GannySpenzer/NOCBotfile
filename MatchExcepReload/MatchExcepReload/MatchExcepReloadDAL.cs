@@ -57,9 +57,11 @@ namespace MatchExcepReload
 
         int iLastVal = 0;
         int modValue = 1000;
+        int oracleSendLimit = 3000;
         string strResp = "SUCCESS";
 
         public int dtResponseRowsCount = 0;
+        public string gotAllData = "N";
 
         MEData med = new MEData();
 
@@ -105,13 +107,24 @@ namespace MatchExcepReload
 
         DataTable dtResponse = new DataTable();
 
-        
-        public DataTable getMatchExcepData(Logger m_oLogger)
+        public void CreateTable(Logger m_oLogger)
         {
-            DataTable dtResponse = new DataTable();
-            try
+            try 
             {
-                strSQLstring = "SELECT DISTINCT\n";
+                //check if table already exists
+                strSQLstring="select table_name from user_tables where table_name='SDIX_MATCHEXCEPTEST'";
+                dtResponse = oleDBExecuteReader(strSQLstring);
+                if (dtResponse.Rows.Count > 0)
+                {
+                    //if it does, drop the table
+                    strSQLstring = "DROP TABLE SDIX_MATCHEXCEPTEST";
+                    dtResponse = oleDBExecuteReader(strSQLstring);
+                }
+
+
+
+                strSQLstring = "CREATE TABLE SDIX_MATCHEXCEPTEST as\n";
+                strSQLstring += "(SELECT DISTINCT\n";
                 strSQLstring += "DECODE(T.ACCOUNTING_OWNER, ' ', 'Inactive Site', NVL(T.ACCOUNTING_OWNER, ' ')) as CLIENT,\n";
                 strSQLstring += "NVL(T.descr, ' ') as SITE,\n";
                 strSQLstring += "CASE WHEN  U.ROLENAME IS NULL THEN 'Unassigned'\n";
@@ -131,7 +144,6 @@ namespace MatchExcepReload
                 strSQLstring += "when A.DWR_AGING = '61 to 90 days' then '61 - 90'\n";
                 strSQLstring += "when A.DWR_AGING like '%> 90 days' then '90+'\n";
                 strSQLstring += "else  A.DWR_AGING END as OVERALL_AGING,\n";
-                //strSQLstring += "to_date(TO_CHAR(A.DWR_REPORTING_DT, 'YYYY-MM-DD'), 'YYYY-MM-DD') + 1 as REPORTING_DATE,\n";
                 strSQLstring += "TO_CHAR(to_date(TO_CHAR(A.DWR_REPORTING_DT, 'YYYY-MM-DD'), 'YYYY-MM-DD') + 1, 'MM-DD-YYYY HH24:MI:SS') as REPORTING_DATE,\n";
                 strSQLstring += "A.DWR_MATCH_RULE as MATCH_RULE,\n";
                 strSQLstring += "A.VENDOR_ID as SUPPLIER_ID,\n";
@@ -151,7 +163,8 @@ namespace MatchExcepReload
                 strSQLstring += "A.DWR_DAYS_ASSIGNED as DAYS_ASSIGNED,\n";
                 strSQLstring += "A.DWR_AGING3 as ASSIGNED_AGING,\n";
                 strSQLstring += "NVL(R.ROLEUSER, ' ') as BUYER_TEAM,\n";
-                strSQLstring += "' ' as PS_URL\n";
+                strSQLstring += "' ' as PS_URL,\n";
+                strSQLstring += "' ' as PROCESS_FLAG\n";
 
                 strSQLstring += "FROM\n";
                 strSQLstring += "sysadm8.DW_APXME A,\n";
@@ -185,9 +198,129 @@ namespace MatchExcepReload
                 strSQLstring += "and case \n";
                 strSQLstring += "when d.business_unit = 'ISA00' then 'SDI_PROCURE_SUPERVISOR'\n";
                 strSQLstring += "when d.business_unit = 'SDM00' then 'SDI_SITE_MANAGER_SDM'\n";
-                strSQLstring += "else 'OTHER' end = r.rolename(+)\n";
-                strSQLstring += "and rownum < 10001";
+                strSQLstring += "else 'OTHER' end = r.rolename(+))\n";
+                m_oLogger.LogMessage("CreateTable", "PeopleSoft connection string : " + OracleConString);
+                m_oLogger.LogMessage("CreateTable", "Query To create the MatchExcep temp data table: " + strSQLstring);
+                dtResponse = oleDBExecuteReader(strSQLstring);
+
+                strSQLstring = "SELECT Process_Flag from SDIX_MATCHEXCEPTEST";
+                dtResponse = oleDBExecuteReader(strSQLstring);
+                dtResponseRowsCount = dtResponse.Rows.Count;
+
+                 m_oLogger.LogMessage("CreateTable", "Number of rows Selected " + dtResponse.Rows.Count);
+
+            }
+            catch (Exception ex)
+            {
+                m_oLogger.LogMessage("CreateTable", "Error trying to create the MatchExcep temp data table.", ex);
+            }
+
+        }
+
+        public void UpdateTable(Logger m_oLogger)
+        {
+            try
+            {
+                strSQLstring = "UPDATE SDIX_MATCHEXCEPTEST SET Process_Flag = 'X' Where Process_Flag <> 'X' And rownum < 3001";
+                m_oLogger.LogMessage("UpdateTable", "PeopleSoft connection string : " + OracleConString);
+                m_oLogger.LogMessage("UpdateTable", "Query To update the MatchExcep temp data table: " + strSQLstring);
+                dtResponse = oleDBExecuteReader(strSQLstring);
+
+                m_oLogger.LogMessage("UpdateTable", "Number of rows Selected " + dtResponse.Rows.Count);
+
+            }
+            catch (Exception ex)
+            {
+                m_oLogger.LogMessage("UpdateTable", "Error trying to update the MatchExcep temp data table.", ex);
+            }
+
+        }
+
+
+        
+        public DataTable getMatchExcepData(Logger m_oLogger)
+        {
+            DataTable dtResponse = new DataTable();
+            try
+            {
+                //strSQLstring = "SELECT DISTINCT\n";
+                //strSQLstring += "DECODE(T.ACCOUNTING_OWNER, ' ', 'Inactive Site', NVL(T.ACCOUNTING_OWNER, ' ')) as CLIENT,\n";
+                //strSQLstring += "NVL(T.descr, ' ') as SITE,\n";
+                //strSQLstring += "CASE WHEN  U.ROLENAME IS NULL THEN 'Unassigned'\n";
+                //strSQLstring += "WHEN A.ASSIGNED_TO = 'sdiapxd' and A.DWR_MATCH_RULE <> 'Wait for Receipts' then 'Buyer'\n";
+                //strSQLstring += "else  U.ROLENAME END  as ME_ROLE,\n";
+                //strSQLstring += "NVL(C.DESCR, ' ') as SHIPTO_DESC,\n";
+                //strSQLstring += "NVL(B.SHIPTO_ID, ' ') as SHIPTO_ID,\n";
+                //strSQLstring += "NVL(A.ASSIGNED_TO, ' ') as ASSIGNED_TO,\n";
+                //strSQLstring += "A.TYPE_DESCR as TASK_TYPE,\n";
+                //strSQLstring += "A.LINE_COUNT as ME_LINES,\n";
+                //strSQLstring += "A.DWR_DAYS_OVERALL as DAYS_OVERALL,\n";
+                //strSQLstring += "case when A.DWR_AGING = '0 to 7 days' then '00 - 07'\n";
+                //strSQLstring += "when A.DWR_AGING = '8 to 14 days' then '08 - 14'\n";
+                //strSQLstring += "when A.DWR_AGING = '15 to 21 days' then '15 - 21'\n";
+                //strSQLstring += "when A.DWR_AGING = '22 to 30 days' then '22 - 30'\n";
+                //strSQLstring += "when A.DWR_AGING = '31 to 60 days' then '31 - 60'\n";
+                //strSQLstring += "when A.DWR_AGING = '61 to 90 days' then '61 - 90'\n";
+                //strSQLstring += "when A.DWR_AGING like '%> 90 days' then '90+'\n";
+                //strSQLstring += "else  A.DWR_AGING END as OVERALL_AGING,\n";
+                ////strSQLstring += "to_date(TO_CHAR(A.DWR_REPORTING_DT, 'YYYY-MM-DD'), 'YYYY-MM-DD') + 1 as REPORTING_DATE,\n";
+                //strSQLstring += "TO_CHAR(to_date(TO_CHAR(A.DWR_REPORTING_DT, 'YYYY-MM-DD'), 'YYYY-MM-DD') + 1, 'MM-DD-YYYY HH24:MI:SS') as REPORTING_DATE,\n";
+                //strSQLstring += "A.DWR_MATCH_RULE as MATCH_RULE,\n";
+                //strSQLstring += "A.VENDOR_ID as SUPPLIER_ID,\n";
+                //strSQLstring += "V.NAME1 as SUPPLIER_NAME,\n";
+                //strSQLstring += "NVL(A.BUYER_ID, ' ') as BUYER_ID,\n";
+                //strSQLstring += "A.BUSINESS_UNIT as PO_BUSINESS_UNIT,\n";
+                //strSQLstring += "NVL(A.PO_ID, ' ') as PO_NO,\n";
+                //strSQLstring += "NVL(A.DISP_METHOD, ' ') as DISPATCH_METHOD,\n";
+                //strSQLstring += "A.INVOICE_ID as INVOICE_ID,\n";
+                //strSQLstring += "TO_CHAR(A.INVOICE_DT, 'YYYY-MM-DD') as INVOICE_DATE,\n";
+                //strSQLstring += "A.TOTAL_INVOICED_AMT as TOTAL_INVOICED_AMT,\n";
+                //strSQLstring += "NVL(TO_CHAR(CAST((A.DWR_SCAN_DATE)AS TIMESTAMP), 'YYYY-MM-DD HH24:MI:SS'), sysdate) as SCAN_DATE,\n";
+                //strSQLstring += "NVL(TO_CHAR(CAST((A.DWR_TASK_DATE)AS TIMESTAMP), 'YYYY-MM-DD HH24:MI:SS'), sysdate) as TASK_DATE,\n";
+                //strSQLstring += "NVL(A.DWR_TASK_DAYS, 0) as TASK_DAYS,\n";
+                //strSQLstring += "A.DWR_AGING2 as TASK_AGING,\n";
+                //strSQLstring += "TO_CHAR(CAST((A.DWR_ASSIGNED_DT)AS TIMESTAMP), 'YYYY-MM-DD HH24:MI:SS') as DATE_ASSIGNED,\n";
+                //strSQLstring += "A.DWR_DAYS_ASSIGNED as DAYS_ASSIGNED,\n";
+                //strSQLstring += "A.DWR_AGING3 as ASSIGNED_AGING,\n";
+                //strSQLstring += "NVL(R.ROLEUSER, ' ') as BUYER_TEAM,\n";
+                //strSQLstring += "' ' as PS_URL\n";
+                //strSQLstring += "FROM\n";
+                //strSQLstring += "sysadm8.DW_APXME A,\n";
+                //strSQLstring += "sysadm8.PS_PO_LINE_SHIP B,\n";
+                //strSQLstring += "sysadm8.PS_LOCATION_TBL C,\n";
+                //strSQLstring += "sysadm8.ps_po_line_distrib D,\n";
+                //strSQLstring += "sysadm8.DW_APX_USERS U,\n";
+                //strSQLstring += "sysadm8.PS_VENDOR V,\n";
+                //strSQLstring += "sysadm8.ps_dept_Tbl T,\n";
+                //strSQLstring += "sysadm8.ps_rte_cntl_ruser R\n";
+                //strSQLstring += "WHERE\n";
+                //strSQLstring += "A.BUSINESS_UNIT = B.BUSINESS_UNIT(+)\n";
+                //strSQLstring += "AND A.PO_ID = B.PO_ID(+)\n";
+                //strSQLstring += "and B.BUSINESS_UNIT = D.BUSINESS_UNIT(+)\n";
+                //strSQLstring += "AND B.PO_ID = D.PO_ID(+)\n";
+                //strSQLstring += "AND B.LINE_NBR = D.LINE_NBR(+)\n";
+                //strSQLstring += "AND B.SHIPTO_SETID = C.SETID(+)\n";
+                //strSQLstring += "AND B.SHIPTO_ID = C.LOCATION(+)\n";
+                //strSQLstring += "AND A.VENDOR_ID = V.VENDOR_ID\n";
+                //strSQLstring += "AND A.ASSIGNED_TO = U.NAME(+)\n";
+                //strSQLstring += "AND A.DWR_REPORTING_DT > trunc(sysdate) - 3\n";
+                //strSQLstring += "AND(C.EFFDT =\n";
+                //strSQLstring += "        (SELECT MAX(C_ED.EFFDT) FROM sysadm8.PS_LOCATION_TBL C_ED\n";
+                //strSQLstring += "              WHERE C.SETID = C_ED.SETID\n";
+                //strSQLstring += "                  AND C.LOCATION = C_ED.LOCATION\n";
+                //strSQLstring += "                  AND C_ED.EFFDT <= SYSDATE)\n";
+                //strSQLstring += "         OR C.EFFDT IS NULL)\n";
+                //strSQLstring += "     and d.deptid = t.deptid(+)\n";
+                //strSQLstring += "and d.deptid = r.rte_cntl_profile(+)\n";
+                //strSQLstring += "and case \n";
+                //strSQLstring += "when d.business_unit = 'ISA00' then 'SDI_PROCURE_SUPERVISOR'\n";
+                //strSQLstring += "when d.business_unit = 'SDM00' then 'SDI_SITE_MANAGER_SDM'\n";
+                //strSQLstring += "else 'OTHER' end = r.rolename(+)\n";
+                //strSQLstring += "and process_flag <> 'X'\n";
                 //strSQLstring += "and rownum < 13351";
+
+                strSQLstring = "SELECT * FROM SDIX_MATCHEXCEPTEST\n";
+                strSQLstring += "where process_flag <> 'X' and rownum < " + (oracleSendLimit + 1) ;
 
                 //strSQLstring = "SELECT * FROM SDIX_MATCHEXCEPTEST where buyer_team = 'Jaclyn.Quattrone'";
                 //strSQLstring = "SELECT * FROM SDIX_MATCHEXCEPTEST where buyer_team in ('Maria.Richman', 'Jaclyn.Quattrone') ";  //6231 count fail
@@ -288,16 +421,46 @@ namespace MatchExcepReload
             return rowsaffected;
         }
 
-        public MEData getData()
+        public MEData getData(Logger m_oLogger)
         {
-            Logger m_oLogger;
-            string sLogPath = Environment.CurrentDirectory;
-            if (!sLogPath.EndsWith(@"\"))
-                sLogPath += @"\";
-            sLogPath += "Logs";
-            m_oLogger = new Logger(sLogPath, "MatchExcepReload");
+            //Logger m_oLogger;
+            //string sLogPath = Environment.CurrentDirectory;
+            //if (!sLogPath.EndsWith(@"\"))
+            //    sLogPath += @"\";
+            //sLogPath += "Logs";
+            //m_oLogger = new Logger(sLogPath, "MatchExcepReload");
             m_oLogger.LogMessage("BatchMatchExcep", "Entered BatchMatchExcep class");
 
+            med.CLIENT.Clear();
+            med.BUYER_TEAM.Clear();
+            med.SITE.Clear();
+            med.PS_URL.Clear();
+            med.ME_ROLE.Clear();
+            med.SHIPTO_DESC.Clear();
+            med.SHIPTO_ID.Clear();
+            med.ASSIGNED_TO.Clear();
+            med.TASK_TYPE.Clear();
+            med.ME_LINES.Clear();
+            med.DAYS_OVERALL.Clear();
+            med.OVERALL_AGING.Clear();
+            med.REPORTING_DATE.Clear();
+            med.MATCH_RULE.Clear();
+            med.SUPPLIER_ID.Clear();
+            med.SUPPLIER_NAME.Clear();
+            med.BUYER_ID.Clear();
+            med.PO_BUSINESS_UNIT.Clear();
+            med.PO_NO.Clear();
+            med.DISPATCH_METHOD.Clear();
+            med.INVOICE_ID.Clear();
+            med.INVOICE_DATE.Clear();
+            med.TOTAL_INVOICED_AMT.Clear();
+            med.SCAN_DATE.Clear();
+            med.TASK_DATE.Clear();
+            med.TASK_DAYS.Clear();
+            med.TASK_AGING.Clear();
+            med.DATE_ASSIGNED.Clear();
+            med.DAYS_ASSIGNED.Clear();
+            med.ASSIGNED_AGING.Clear();
 
             //STEP #3 - QUERY TABLE AND POST NEW DATA 
             m_oLogger.LogMessage("MatchExcepReload", "Query table started");
@@ -305,6 +468,12 @@ namespace MatchExcepReload
             //dtResponse = objGetMatchExcepReloadDAL.getMatchExcepData(m_oLogger);
             dtResponse = getMatchExcepData(m_oLogger);
             dtResponseRowsCount = dtResponse.Rows.Count;
+
+            if (dtResponseRowsCount < oracleSendLimit)
+            {
+                gotAllData = "Y";
+            }
+
             if (dtResponseRowsCount == 0)
             {
                 m_oLogger.LogMessage("MatchExcepReload", "Query returned no records.");
@@ -312,8 +481,8 @@ namespace MatchExcepReload
             }
             else
                 m_oLogger.LogMessage("MatchExcepReload", "POST MatchExcepReload data started.");
-            for (int i = 0; i < dtResponseRowsCount; i++)
-            {
+                for (int i = 0; i < dtResponseRowsCount; i++)
+                {
                 DataRow rowInit;
                 rowInit = dtResponse.Rows[i];
 
