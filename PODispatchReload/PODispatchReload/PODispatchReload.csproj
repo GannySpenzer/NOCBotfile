@@ -87,7 +87,13 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="bin\Debug\PODispatchReload.vshost.exe.config" />
     <None Include="bin\PODispatchReload.exe.config" />
+    <None Include="bin\PODispatchReload.vshost.exe.config" />
+    <None Include="bin\PODispatchReload.vshost.exe.manifest" />
+    <None Include="obj\Debug\DesignTimeResolveAssemblyReferences.cache" />
+    <None Include="obj\Debug\DesignTimeResolveAssemblyReferencesInput.cache" />
+    <None Include="obj\Debug\PODispatchReload.csprojResolveAssemblyReference.cache" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -266,10 +272,19 @@
     <None Include="Web References\SDiEmailUtilityService\EmailServices.disco" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="bin\Newtonsoft.Json.dll" />
     <Content Include="bin\PODispatchReload.exe" />
     <Content Include="bin\PODispatchReload.pdb" />
+    <Content Include="bin\PODispatchReload.vshost.exe" />
+    <Content Include="obj\Debug\PODispatchReload.csproj.FileListAbsolute.txt" />
+    <Content Include="obj\Debug\PODispatchReload.exe" />
+    <Content Include="obj\Debug\PODispatchReload.pdb" />
+    <Content Include="obj\Debug\TempPE\Service References.OSVCService.Reference.cs.dll" />
+    <Content Include="obj\Debug\TempPE\Web References.SDiEmailUtilityService.Reference.cs.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="bin\Logs\" />
+    <Folder Include="bin\Release\" />
     <Folder Include="obj\Release\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

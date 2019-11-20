@@ -1,0 +1,8 @@
+C:\Users\yury.arkadin\AppData\Local\Temporary Projects\PODispatchReload\bin\Debug\PODispatchReload.exe.config
+C:\A_PODispatchReload\PODispatchReload\PODispatchReload\bin\PODispatchReload.exe.config
+C:\A_PODispatchReload\PODispatchReload\PODispatchReload\bin\PODispatchReload.exe
+C:\A_PODispatchReload\PODispatchReload\PODispatchReload\bin\PODispatchReload.pdb
+C:\A_PODispatchReload\PODispatchReload\PODispatchReload\bin\Newtonsoft.Json.dll
+C:\A_PODispatchReload\PODispatchReload\PODispatchReload\obj\Debug\PODispatchReload.exe
+C:\A_PODispatchReload\PODispatchReload\PODispatchReload\obj\Debug\PODispatchReload.pdb
+C:\A_PODispatchReload\PODispatchReload\PODispatchReload\obj\Debug\PODispatchReload.csprojResolveAssemblyReference.cache
