@@ -50,7 +50,7 @@ namespace PODispatchReload1
 
         int iLastVal = 0;
         int modValue = 1000;
-        int oracleSendLimit = 30000;
+        int oracleSendLimit = 3000;
         string strResp = "SUCCESS";
 
         public int dtResponseRowsCount = 0;
