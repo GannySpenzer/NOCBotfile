@@ -805,10 +805,27 @@ Module Module1
         strEmailTo = "vitaly.rovensky@sdi.com"
         strEmailCc = " "
         strEmailBcc = "webdev@sdi.com"
+        Dim strConnString As String = ""
+        Dim strDbName As String = ""
+        Try
+            strConnString = connectOR.ConnectionString()
+        Catch ex As Exception
+            strConnString = " "
+        End Try
+        If Trim(strConnString) <> "" Then
+            If Len(Trim(strConnString)) > 4 Then
+                strDbName = UCase(Right(Trim(strConnString), 4))
+            End If
+        End If
 
-        ''The subject of the email
+        'The subject of the email   
         Dim strEmailSubject As String = ""
-        strEmailSubject = " (Test) 'Univ. of Chicago send XML out' was completed with Error(s) for Invoice No: " & strInvoiceNo
+        strEmailSubject = " 'Univ. of Chicago send XML out' was completed with Error(s) for Invoice No: " & strInvoiceNo
+        If strDbName = "PROD" Then
+            'do nothing
+        Else
+            strEmailSubject = " (Test) " & strEmailSubject
+        End If
 
         Dim strEmailBody As String = ""
         strEmailBody = "<table><tr><td>'Univ. of Chicago send XML out' process has completed with errors - check application Logs.</td></tr></table>"
