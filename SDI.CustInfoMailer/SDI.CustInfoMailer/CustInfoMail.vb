@@ -143,7 +143,7 @@ Module CustInfoMail
         Dim Mailer As MailMessage = New MailMessage
         Dim FromAddress As String = "SDIExchange@SDI.com"
         Dim Mailcc As String = ""
-        Dim MailBcc As String = "webdev@sdi.com;Tony.Smith@sdi.com"
+        Dim MailBcc As String = "webdev@sdi.com;Tony.Smith@sdi.com;avacorp@sdi.com"
 
         '' strbodyhead = "<span><B>**PRIORITY ORDER**</B></span>"
 
@@ -156,10 +156,39 @@ Module CustInfoMail
 
         strbodydetl = "&nbsp;" & vbCrLf
         strbodydetl = strbodydetl & "<div>"
-        strbodydetl = strbodydetl & "<p >" & EmpNme & ":<br>"
+        strbodydetl = strbodydetl & "<p >Employee Name:" & EmpNme & ",<br>"
         strbodydetl = strbodydetl & "&nbsp;<br>"
+
+        'strbodydetl = strbodydetl & "<TD colspan=2>" & vbCrLf
+        'strbodydetl = strbodydetl & "&nbsp;</td></tr>" & vbCrLf
+        ''strbodydetl = strbodydetl & "<TD>" & vbCrLf
+        ''strbodydetl = strbodydetl & "<span style='font-weight:bold;'>SDI Requisition Number:</span> <span 'width:128px;'>&nbsp;" & stritemid & "</span></td>"
+        'strbodydetl = strbodydetl & "<tr><TD>" & vbCrLf
+        'strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Employee Name:</span> <span>&nbsp;" & EmpNme & "</span></td>"
+        'strbodydetl = strbodydetl & "<TD>" & vbCrLf
+        'strbodydetl = strbodydetl & "<span>&nbsp;</span></td></tr>" & vbCrLf
+        'strbodydetl = strbodydetl & "<TD>" & vbCrLf
+        'strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Employee Email:</span> <span>&nbsp;" & EmpEmail & "</span></td>"
+        'strbodydetl = strbodydetl & "<TD>" & vbCrLf
+        'strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Employee Phone#:</span> <span>&nbsp;" & phoneNum & "</span></td>" & vbCrLf
+        'strbodydetl = strbodydetl & "<TD>" & vbCrLf
+        'strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Work Order #:</span> <span>&nbsp;" & workOrderNo & "</span></td>" & vbCrLf
+        'strbodydetl = strbodydetl & "<TD>" & vbCrLf
+        'strbodydetl = strbodydetl & "<span>&nbsp;</span></td></tr>" & vbCrLf
+        'strbodydetl = strbodydetl & "<TD>" & vbCrLf
+        'strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Request by Date:</span> <span>&nbsp;" & ReqDate & "</span></td>"
+        'strbodydetl = strbodydetl & "<TD>" & vbCrLf
+        'strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Submit Date:</span> <span>&nbsp;" & Now() & "</span></td></tr>"
+        ''strbodydetl = strbodydetl & "<TD colspan='2'>" & vbCrLf
+        ''strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Notes:</span><br>"
+        ''strbodydetl = strbodydetl & "<textarea readonly='readonly' style='width:100%;'>" & dstcart2.Rows(0).Item(4) & "</textarea></td>" & vbCrLf
+        ''strbodydetl = strbodydetl & "<span>&nbsp;</span></td></tr>" & vbCrLf
+        ''strbodydetl = strbodydetl & "<TD>" & vbCrLf
+        ''strbodydetl = strbodydetl & "<span style='font-weight:bold;'>OPR Entered By:</span> <span>&nbsp;" & OPREntBy & "</span></td></table>"
+        'strbodydetl = strbodydetl & "&nbsp;<br>" & vbCrLf
         
-        strbodydetl = strbodydetl & "<p>Processing for Order " & orderNum & " is currently on hold awaiting customer supplied information. Please provide the necessary information so processing can resume.</p>"
+        'strbodydetl = strbodydetl & "<p>Processing for Order " & orderNum & " is currently on hold awaiting customer supplied information. Please provide the necessary information so processing can resume.</p>"
+        strbodydetl = strbodydetl & "<p>Processing for " & orderNum & " order is currently suspended, awaiting additional customer information. Please contact your buyer.</P>"
         Mailer.Body = strbodyhead & strbodydetl
 
         Mailer.Body = Mailer.Body & "<TABLE cellSpacing='1' cellPadding='1' width='100%' border='0'>" & vbCrLf
