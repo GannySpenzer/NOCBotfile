@@ -35,6 +35,8 @@ Public Class QuotedNStkItem
     Private m_ApprovalLimit As Decimal = 0
     Private m_arrEmpIDs As New ArrayList
 
+    Private m_Priority As String = ""
+
 
     Public Property ID() As String
         Get
@@ -230,6 +232,15 @@ Public Class QuotedNStkItem
         End Get
         Set(value As Decimal)
             m_ApprovalLimit = value
+        End Set
+    End Property
+
+    Public Property Priority() As String
+        Get
+            Return m_Priority
+        End Get
+        Set(ByVal Value As String)
+            m_Priority = Value
         End Set
     End Property
 

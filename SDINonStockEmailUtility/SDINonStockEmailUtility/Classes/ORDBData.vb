@@ -496,45 +496,6 @@ Public Class ORDBData
     '    End Get
     'End Property
 
-    'Public Shared Function GetUnilogConnectString() As String
-    '    'Gives us a reference to the current asp.net 
-    '    'application executing the method.
-    '    Dim currentApp As HttpApplication = HttpContext.Current.ApplicationInstance
-    '    Dim strConnString As String = ""
-    '    Dim strXMLDir As String = ""
-    '    Try
-    '        strXMLDir = CType(ConfigurationSettings.AppSettings("AppConfigPath"), String)
-    '        If Not strXMLDir Is Nothing Then
-    '            strXMLDir = Trim(strXMLDir)
-    '        Else
-    '            strXMLDir = "C:\inetpub\wwwroot\SdiExchangeConfig"
-    '        End If
-    '    Catch ex As Exception
-    '        strXMLDir = "C:\inetpub\wwwroot\SdiExchangeConfig"
-    '    End Try
-    '    If Trim(strXMLDir) <> "" Then
-    '        strXMLDir = strXMLDir & "\configSetting.xml"
-    '    Else
-    '        strXMLDir = "C:\inetpub\wwwroot\SdiExchangeConfig\configSetting.xml"
-    '    End If
-
-    '    Dim m_xmlConfig As System.Xml.XmlDocument = New System.Xml.XmlDocument
-    '    m_xmlConfig.Load(strXMLDir)
-
-    '    Try
-    '        ' retrieve the source DB connection string to use
-    '        If Not (m_xmlConfig("configuration")("sourceDB").Attributes("cnString").InnerText Is Nothing) Then
-    '            strConnString = m_xmlConfig("configuration")("sourceDB").Attributes("cnString").InnerText.Trim
-    '        Else
-    '            strConnString = "Provider=OraOLEDB.Oracle.1;Password=Sd1UniProd;User Id=sdiprod;Data Source=unip1.sdi.com"
-    '        End If
-    '    Catch ex As Exception
-    '        strConnString = "Provider=OraOLEDB.Oracle.1;Password=Sd1UniProd;User Id=sdiprod;Data Source=unip1.sdi.com"
-    '    End Try
-
-    '    Return strConnString
-    'End Function
-
     Public Shared Sub sendErrorEmail(ByVal strMessage As String, ByVal strMobile As String, ByVal strURL As String, ByVal strSQL As String)
 
         'Gives us a reference to the current asp.net 

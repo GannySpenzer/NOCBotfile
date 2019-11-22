@@ -22,11 +22,11 @@ Public Class QuoteNonStockProcessor
     Private m_oApprovalDetails As ApprovalDetails
 
     Private m_logger As appLogger = Nothing
-    Private Const LETTER_HEAD_SdiExch As String = "<table width='100%' bgcolor='black'><tbody><tr><td><img src='https://www.sdiexchange.com/images/SDNewLogo_Email.png' alt='SDI' vspace='0' hspace='0' /></td>" & _
+    Private Const LETTER_HEAD_SdiExch As String = "<table width='100%' bgcolor='black'><tbody><tr><td><img src='https://www.sdizeus.com/images/SDNewLogo_Email.png' alt='SDI' vspace='0' hspace='0' /></td>" & _
                                                     "<td width='100%'><br/><br/><br/><div align='center'><SPAN style='FONT-SIZE: x-large; WIDTH: 256px; FONT-FAMILY: Arial; Color: White;'>SDI Marketplace</SPAN></div>" & _
-                                                    "<div align='center'><SPAN style='FONT-FAMILY: Arial; Color: White;'>SDiExchange - Request for Quote</SPAN></div></td></tr></tbody></table>" & _
+                                                    "<div align='center'><SPAN style='FONT-FAMILY: Arial; Color: White;'>SDI ZEUS - Request for Quote</SPAN></div></td></tr></tbody></table>" & _
                                                     "<HR width='100%' SIZE='1'>"
-    Private Const LETTER_HEAD As String = "<div><img src='https://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></div>" & _
+    Private Const LETTER_HEAD As String = "<div><img src='https://www.sdizeus.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></div>" & _
                                             "<div align=""center""><SPAN style=""FONT-SIZE: x-large; WIDTH: 256px; FONT-FAMILY: Arial"">SDI Marketplace</SPAN></div>" & _
                                             "<div align=""center""><SPAN>In-Site® Online - Request for Quote</SPAN></div><br><br>" & _
                                             "<HR width='100%' SIZE='1'>"
@@ -42,7 +42,7 @@ Public Class QuoteNonStockProcessor
                                              "The above referenced order contains items that required a price " & _
                                              "quote before processing.&nbsp;&nbsp;To view the quoted price either " & _
                                              "click the link below or select the ""Requestor Approval"" menu option " & _
-                                             "in SDiExchange to approve or decline the order." & _
+                                             "in SDI ZEUS to approve or decline the order." & _
                                              "<br></p>Sincerely,</p>" & _
                                              "<p>SDI Customer Care</p>"
 
@@ -58,7 +58,7 @@ Public Class QuoteNonStockProcessor
                                                 "The above referenced order contains items that required a price " & _
                                                 "quote before processing.&nbsp;&nbsp;To view the quoted price, please " & _
                                                 "select the ""Requestor Approval"" menu option " & _
-                                                "in SDiExchange to approve or decline the order." & _
+                                                "in SDI ZEUS to approve or decline the order." & _
                                                 "<br></p>Sincerely,</p>" & _
                                                 "<p>SDI Customer Care</p>"
 
@@ -854,7 +854,7 @@ Public Class QuoteNonStockProcessor
                                  ",A3.ISA_NONSKREQ_EMAIL AS ISA_NONSKREQ_EMAIL" & vbCrLf & _
                                  ",L.ISA_EMPLOYEE_ID AS ISA_EMPLOYEE_ID" & vbCrLf & _
                                  ",A4.BUSINESS_UNIT_OM AS BUSINESS_UNIT_OM" & vbCrLf & _
-                                 ",L.PROJECT_ID,A4.ORIGIN" & vbCrLf & _
+                                 ",L.ISA_PRIORITY_FLAG,A4.ORIGIN" & vbCrLf & _
                                  ",L.OPRID_MODIFIED_BY AS OPRID_MODIFIED_BY, L.ISA_WORK_ORDER_NO AS WORK_ORDER_ID , A3.APPRVALTHRESHOLD AS APPROVAL_LIMIT " & vbCrLf & _
                                  ",A3.ISA_CUSTINT_APPRVL " & vbCrLf & _
                                  "FROM " & vbCrLf & _
@@ -923,6 +923,7 @@ Public Class QuoteNonStockProcessor
                 Dim strBuyerDescr As String = ""
                 Dim strBuyerEmail As String = ""
                 Dim appLimit As Double = 0
+                Dim strPriority As String = " "
 
                 While rdr.Read
                     cKey = ""
@@ -1076,13 +1077,6 @@ Public Class QuoteNonStockProcessor
                             workOrderNo = " "
                         End Try
 
-                        '' VR 11/20/2014 New code based on using new header table SYSADM.PS_ISA_INTFC_H_SUP
-                        'If Not (rdr("WORK_ORDER_ID") Is System.DBNull.Value) Then
-                        '    workOrderNo = CStr(rdr("WORK_ORDER_ID")).Trim
-                        'End If
-                        'If Not (rdr("EMAIL_ADDRESS") Is System.DBNull.Value) Then
-                        '    rfqEmailRecipient = CStr(rdr("EMAIL_ADDRESS")).Trim
-                        'End If
                         rfqEmailRecipient = " "
                         If Not (rdr("ISA_EMPLOYEE_EMAIL") Is System.DBNull.Value) Then
 
@@ -1102,6 +1096,17 @@ Public Class QuoteNonStockProcessor
                         Try
                             If Not (rdr("DESCR") Is System.DBNull.Value) Then
                                 boItem.BuyerId = CType(rdr("DESCR"), String).Trim
+                            End If
+                        Catch ex As Exception
+
+                        End Try
+                    End If
+
+                    ' get Priority
+                    If Trim(boItem.Priority) = "" Then
+                        Try
+                            If Not (rdr("ISA_PRIORITY_FLAG") Is System.DBNull.Value) Then
+                                boItem.Priority = CType(rdr("ISA_PRIORITY_FLAG"), String).Trim
                             End If
                         Catch ex As Exception
 
@@ -1242,6 +1247,10 @@ Public Class QuoteNonStockProcessor
                         End If
                     End If
 
+                    If Trim(boItem.Priority) = "" Then
+                        boItem.Priority = " "
+                    End If
+
                     ' put back the item into our collection object
                     m_colMsgs(boItem.IndexInCollection) = boItem
                 End While
@@ -1303,9 +1312,9 @@ Public Class QuoteNonStockProcessor
 
         Select Case strDBase
             Case "PROD"
-                sRet = "https://www.sdiexchange.com/"
+                sRet = "https://www.sdizeus.com/"
             Case "STAR", "PLGR"
-                sRet = "https://sdix92.sdi.com/"
+                sRet = "https://zeustest.sdi.com/"
             Case Else
                 sRet = "http://" & sWebAppName
         End Select
@@ -1618,13 +1627,13 @@ Public Class QuoteNonStockProcessor
                                     "<BODY>" & _
                                         AddNoRecepientExistNote(eml.To) & _
                                         LETTER_HEAD_SdiExch & _
-                                        FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder) & _
+                                        FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority) & _
                                         PositionGrid(dataGridHTML) & _
                                         PI_SDI & _
                                         AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
                                         AddVersionNumber() & _
                                         "<HR width='100%' SIZE='1'>" & _
-                                        "<img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
+                                        "<img src='https://www.sdizeus.com/Images/SDIFooter_Email.png' />" & _
                                     "</BODY>" & _
                                "</HTML>"
                     Else
@@ -1641,13 +1650,13 @@ Public Class QuoteNonStockProcessor
                                         "<BODY>" & _
                                             AddNoRecepientExistNote(eml.To) & _
                                             LETTER_HEAD & _
-                                            FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder) & _
+                                            FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority) & _
                                             PositionGrid(dataGridHTML) & _
                                             PI & _
                                             AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
                                             AddVersionNumber() & _
                                             "<HR width='100%' SIZE='1'>" & _
-                                            "<img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
+                                            "<img src='https://www.sdizeus.com/Images/SDIFooter_Email.png' />" & _
                                         "</BODY>" & _
                                    "</HTML>"
                     End If
@@ -1665,14 +1674,14 @@ Public Class QuoteNonStockProcessor
                                     "<BODY>" & _
                                         AddNoRecepientExistNote(eml.To) & _
                                         LETTER_HEAD_SdiExch & _
-                                        FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder) &
+                                        FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority) &
                                         PositionGrid(dataGridHTML) & _
                                         ContentSDI & _
                                         FormHTMLLinkSDiExchange(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, bShowApproveViaEmailLink) & _
                                         AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
                                         AddVersionNumber() & _
                                         "<HR width='100%' SIZE='1'>" & _
-                                            "<img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
+                                            "<img src='https://www.sdizeus.com/Images/SDIFooter_Email.png' />" & _
                                     "</BODY>" & _
                                "</HTML>"
                     Else
@@ -1690,14 +1699,14 @@ Public Class QuoteNonStockProcessor
                                         "<BODY>" & _
                                             AddNoRecepientExistNote(eml.To) & _
                                             LETTER_HEAD & _
-                                            FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder) & _
+                                            FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority) & _
                                             PositionGrid(dataGridHTML) & _
                                             Content & _
                                             FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, bShowApproveViaEmailLink) & _
                                             AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
                                             AddVersionNumber() & _
                                             "<HR width='100%' SIZE='1'>" & _
-                                            "<img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & _
+                                            "<img src='https://www.sdizeus.com/Images/SDIFooter_Email.png' />" & _
                                         "</BODY>" & _
                                    "</HTML>"
                     End If
@@ -1749,12 +1758,18 @@ Public Class QuoteNonStockProcessor
 
                 Select Case strDBase
                     Case "STAR", "PLGR", "RPTG", "DEVL"
-                        eml.Subject = " TEST SDIX92 - " & eml.Subject
-                        eml.To = "webdev@sdi.com;Benjamin.Heinzerling@sdi.com;SDIportalsupport@avasoft.biz"
-                        eml.Cc = "webdev@sdi.com;Benjamin.Heinzerling@sdi.com;SDIportalsupport@avasoft.biz"
+                        eml.Subject = " TEST ZEUS - " & eml.Subject
+                        eml.To = "webdev@sdi.com;SDIportalsupport@avasoft.biz"
+                        eml.Cc = "webdev@sdi.com;SDIportalsupport@avasoft.biz"
                     Case Else
 
                 End Select
+
+                If Trim(itmQuoted.Priority) <> "" Then
+                    If Trim(itmQuoted.Priority) = "R" Then
+                        eml.Subject = eml.Subject & " - PRIORITY"
+                    End If
+                End If
 
                 ' send this email
                 Try
@@ -1843,8 +1858,18 @@ Public Class QuoteNonStockProcessor
         End Try
     End Sub
 
-    Private Function FormHTMLQouteInfo(ByVal cAddressee As String, ByVal cOrderID As String, Optional ByVal bIsShowWorkOrderNo As Boolean = False, Optional ByVal cWorkOrderNo As String = "") As String
+    Private Function FormHTMLQouteInfo(ByVal cAddressee As String, ByVal cOrderID As String, Optional ByVal bIsShowWorkOrderNo As Boolean = False, _
+                Optional ByVal cWorkOrderNo As String = "", Optional ByVal strPriority As String = "") As String
+
         Dim cHdr As String = "QuoteNonStockProcessor.FormHTMLQouteInfo: "
+
+        Dim strOrderPriorty As String = " "
+        If Trim(strPriority) <> "" Then
+            If Trim(strPriority) = "R" Then
+                strOrderPriorty = "PRIORITY"
+            End If
+        End If
+
         Try
             Dim cInfoHTML As String = ""
 
@@ -1865,6 +1890,12 @@ Public Class QuoteNonStockProcessor
                 cInfoHTML &= "  <TR>" & _
                                "<TD style=""WIDTH: 110px;Font-Weight:Bold"">Work Order:</TD>" & _
                                "<TD style=""COLOR: purple"">" & cWorkOrderNo & "</TD>" & _
+                               "</TR>"
+            End If
+            If strOrderPriorty = "PRIORITY" Then
+                cInfoHTML &= "  <TR>" & _
+                               "<TD style=""WIDTH: 110px;Font-Weight:Bold;COLOR: red"">Priority Order!</TD>" & _
+                               "<TD style=""COLOR: purple""> </TD>" & _
                                "</TR>"
             End If
             cInfoHTML &= "</TABLE>"
@@ -2563,7 +2594,7 @@ Public Class QuoteNonStockProcessor
             AppMail = dtrAppReader.Item("ISA_EMPLOYEE_EMAIL")
         End If
 
-        strbodyhead = "<table width='100%'><tbody><tr><td><img src='https://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></td><td width='100%'><br /><br /><br /><br /><br /><br /><center><span style='font-family: Arial; font-size: x-large; text-align: center;'>SDI Marketplace</span></center><center><span style='text-align: center; margin: 0px auto;'>SDiExchange - Request for Approval</span></center></td></tr></tbody></table>" & vbCrLf
+        strbodyhead = "<table width='100%'><tbody><tr><td><img src='https://www.sdizeus.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></td><td width='100%'><br /><br /><br /><br /><br /><br /><center><span style='font-family: Arial; font-size: x-large; text-align: center;'>SDI Marketplace</span></center><center><span style='text-align: center; margin: 0px auto;'>SDI ZEUS - Request for Approval</span></center></td></tr></tbody></table>" & vbCrLf
         strbodyhead = strbodyhead & "<HR width='100%' SIZE='1'>" & vbCrLf
         strbodyhead = strbodyhead & "&nbsp;" & vbCrLf
         strbodyhead = strbodyhead & "&nbsp;" & vbCrLf
@@ -2589,7 +2620,7 @@ Public Class QuoteNonStockProcessor
             strbodydetl = strbodydetl & "and needs your approval.  Click the link below or select the ""Approve Orders"" "
         End If
 
-        strbodydetl = strbodydetl & "menu option in SDiExchange to approve or reject the order.<br>"
+        strbodydetl = strbodydetl & "menu option in SDI ZEUS to approve or reject the order.<br>"
         strbodydetl = strbodydetl & "&nbsp;<br>"
 
         strbodydetl = strbodydetl & "<TABLE cellSpacing='1' cellPadding='1' width='100%' border='0'>" & vbCrLf
@@ -2605,12 +2636,12 @@ Public Class QuoteNonStockProcessor
         strbodydetl = strbodydetl & "to APPROVE or REJECT order. </p>"
         strbodydetl = strbodydetl & "</div>"
         strbodydetl = strbodydetl & "<HR width='100%' SIZE='1'>" & vbCrLf
-        strbodydetl = strbodydetl & "<img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & vbCrLf
+        strbodydetl = strbodydetl & "<img src='https://www.sdizeus.com/Images/SDIFooter_Email.png' />" & vbCrLf
 
         MailBody = strbodyhead & strbodydetl
 
 
-        MailSub = "SDiExchange - Order Number " & strreqID & " needs approval"
+        MailSub = "SDI ZEUS - Order Number " & strreqID & " needs approval"
 
         MailTo = AppMail
 
@@ -2735,11 +2766,7 @@ Public Class OrderApprovals
     Private Shared m_cApproverDelimiter As String = "||"
     Private Shared m_cClassName As String = "OrderApprovals."
 
-    'Dim rdr As OleDbDataReader
-    'Dim cmd As New OleDbCommand
-    ' Dim connection As OleDbConnection = New OleDbConnection(DbUrl)
-
-    'Approval process start hear
+    'Approval process starts hear
 
     Public Shared Function ApproveQuote(oApprovalDetails As ApprovalDetails, ByRef strAppMessage() As String, ByVal LineStatus As String) As Boolean
         Dim bSuccessful As Boolean = False
@@ -3245,6 +3272,31 @@ Public Class OrderApprovals
 
     End Function
 
+    Public Shared Function GetPriorityFromIntfLn(ByVal strreqID As String, ByVal strBU As String) As String
+
+        Dim strSQLString As String = ""
+        Dim strPriority As String = " "
+        strSQLString = "SELECT ISA_PRIORITY_FLAG FROM SYSADM8.PS_ISA_ORD_INTF_LN WHERE order_no = '" & strreqID & "' " & vbCrLf & _
+            " AND business_unit_om = '" & strBU & "'"
+        Dim dtrPriorityOrder As OleDbDataReader = ORDBData.GetReader(strSQLString, False)
+        If dtrPriorityOrder.HasRows() Then
+            While dtrPriorityOrder.Read()
+                Try
+                    If dtrPriorityOrder.Item("ISA_PRIORITY_FLAG").ToString().Trim().ToUpper() = "R" Then
+                        strPriority = "*PRIORITY*"
+                    End If
+                Catch ex As Exception
+                    strPriority = " "
+                End Try
+            End While
+           
+        End If
+        dtrPriorityOrder.Close()
+
+        Return strPriority
+
+    End Function
+
     Public Shared Sub buildNotifyBuyer(ByVal strreqID As String, _
                                 ByVal strwo As String, _
                                 ByVal strAgent As String, _
@@ -3327,19 +3379,21 @@ Public Class OrderApprovals
         dtrAppReader.Close()
 
         Dim strPriority As String = ""
-        strSQLString = "SELECT project_id FROM SYSADM8.PS_ISA_ORD_INTF_LN WHERE order_no = '" & strreqID & "' " & vbCrLf & _
-            " AND business_unit_om = '" & strBU & "'"
-        Dim dtrPriorityOrder As OleDbDataReader = ORDBData.GetReader(strSQLString)
-        If dtrPriorityOrder.HasRows() Then
-            dtrPriorityOrder.Read()
-            Try
-                If dtrPriorityOrder.Item("PROJECT_ID").ToString().Trim().ToUpper() = "PRIORITY" Then
-                    strPriority = "*PRIORITY*"
-                End If
-            Catch ex As Exception
-            End Try
-        End If
-        dtrPriorityOrder.Close()
+        strPriority = GetPriorityFromIntfLn(strreqID, strBU)
+
+        'strSQLString = "SELECT ISA_PRIORITY_FLAG FROM SYSADM8.PS_ISA_ORD_INTF_LN WHERE order_no = '" & strreqID & "' " & vbCrLf & _
+        '    " AND business_unit_om = '" & strBU & "'"
+        'Dim dtrPriorityOrder As OleDbDataReader = ORDBData.GetReader(strSQLString)
+        'If dtrPriorityOrder.HasRows() Then
+        '    dtrPriorityOrder.Read()
+        '    Try
+        '        If dtrPriorityOrder.Item("ISA_PRIORITY_FLAG").ToString().Trim().ToUpper() = "R" Then
+        '            strPriority = "*PRIORITY*"
+        '        End If
+        '    Catch ex As Exception
+        '    End Try
+        'End If
+        'dtrPriorityOrder.Close()
 
         Dim strbodyhead As String = ""
         Dim strbodydetl As String = ""
@@ -3362,9 +3416,9 @@ Public Class OrderApprovals
         'strbodyhead = "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI Marketplace</span></center>" & vbCrLf
         'strbodyhead = strbodyhead & "<center><span >SDiExchange - Request for Approval</span></center>"
         'strbodyhead = strbodyhead & "&nbsp;" & vbCrLf
-        strbodyhead = "<table bgcolor='black' Width='100%'><tbody><tr><td style='width:1%;'><img src='http://www.sdiexchange.com/images/SDNewLogo_Email.png' alt='SDI' style='padding: 10px 0;' vspace='0' hspace='0' /></td>" & vbCrLf
+        strbodyhead = "<table bgcolor='black' Width='100%'><tbody><tr><td style='width:1%;'><img src='https://www.sdizeus.com/images/SDNewLogo_Email.png' alt='SDI' style='padding: 10px 0;' vspace='0' hspace='0' /></td>" & vbCrLf
         strbodyhead = strbodyhead & "<td style='width:50% ;'><center><span style='font-weight:bold;color:white;font-size:24px;'>SDI Marketplace</span></center>" & vbCrLf
-        strbodyhead = strbodyhead & "<center><span style='color:white;'>SDiExchange - Request for Approval</span></center></td></tr></tbody></table>" & vbCrLf
+        strbodyhead = strbodyhead & "<center><span style='color:white;'>SDI ZEUS - Request for Approval</span></center></td></tr></tbody></table>" & vbCrLf
         strbodyhead = strbodyhead & "<HR width='100%' SIZE='1'>"
 
         ' strbodydetl = "&nbsp;" & vbCrLf
@@ -3396,7 +3450,7 @@ Public Class OrderApprovals
         strbodydetl = strbodydetl & "</p>"
         strbodydetl = strbodydetl & "</div>"
         strbodydetl = strbodydetl & "<HR width='100%' SIZE='1'>" & vbCrLf
-        strbodydetl = strbodydetl & "<img src='http://www.sdiexchange.com/Images/SDIFooter_Email.png' />"
+        strbodydetl = strbodydetl & "<img src='https://www.sdizeus.com/Images/SDIFooter_Email.png' />"
 
         ' Mailer.Body = strbodyhead & strbodydetl
         MailBody = strbodyhead & strbodydetl
@@ -3405,11 +3459,11 @@ Public Class OrderApprovals
             DbUrl.Substring(DbUrl.Length - 4).ToUpper = "RPTG" Then
             ' Mailer.To = "DoNotSendPLGR@sdi.com"
             MailTo = "WebDev@sdi.com;sdiportalsupport@avasoft.biz"
-            MailSub = "<<TEST SITE>> SDiExchange - Order Number " & strreqID & " has been " & strAction
+            MailSub = "<<TEST SITE>> SDI ZEUS - Order Number " & strreqID & " has been " & strAction
         Else
             'Mailer.To = strBuyerEmail
             MailTo = strBuyerEmail
-            MailSub = "SDiExchange - Order Number " & strreqID & " has been " & strAction
+            MailSub = "SDI ZEUS - Order Number " & strreqID & " has been " & strAction
             If Not bMoreAppr And _
                 Not strType = "quote" Then
                 'Mailer.To = strBuyerEmail & "; " & strSDIBuyer
@@ -3539,7 +3593,7 @@ Public Class OrderApprovals
         Dim strSQLString As String
         Dim strappName As String
         Dim strappEmail As String
-        Dim strBuyerName As String
+        Dim strBuyerName As String = " "
 
         strSQLString = "SELECT FIRST_NAME_SRCH," & vbCrLf & _
                 " LAST_NAME_SRCH," & vbCrLf & _
@@ -3669,7 +3723,9 @@ Public Class OrderApprovals
         Dim streApper As String = EncryptQueryString(strAppUserid)
         Dim streAppTyp As String = EncryptQueryString(strHldStatus)
         Dim strhref As String
-        Dim stritemid As String
+        Dim stritemid As String = " "
+        Dim strPriority As String = " "
+        strPriority = GetPriorityFromIntfLn(strreqID, strBU)
 
         strhref = ConfigurationManager.AppSettings("WebAppName") & "approveorder.aspx?fer=" & streOrdnum & "&op=" & streApper & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
         Dim StrResult As String = String.Empty
@@ -3679,17 +3735,17 @@ Public Class OrderApprovals
         Mailer.Cc = ""
         Mailer.Bcc = "webdev@sdi.com"  '  ;Tony.Smith@sdi.com"
 
-        'strbodyhead = "<table width='100%'><tbody><tr><td><img src='http://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></td><td width='100%'><br /><br /><br /><br /><br /><br /><center><span style='font-family: Arial; font-size: x-large; text-align: center;'>SDI Marketplace</span></center></td></tr></tbody></table>" & vbCrLf
+        'strbodyhead = "<table width='100%'><tbody><tr><td><img src='http://www.sdizeus.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></td><td width='100%'><br /><br /><br /><br /><br /><br /><center><span style='font-family: Arial; font-size: x-large; text-align: center;'>SDI Marketplace</span></center></td></tr></tbody></table>" & vbCrLf
         If strHldStatus = "B" Then
             ' strbodyhead = strbodyhead & "<center><span >SDiExchange - Request for Budget Approval</span></center>"
 
-            strbodyhead = "<table bgcolor='black' width='100%'><tbody><tr><td><img src='http://www.sdiexchange.com/images/SDNewLogo_Email.png' alt='SDI' style=padding: 10px 0;' vspace='0' hspace='0' /></td><td width='100%'><center><span style='font-family: Arial; font-size: x-large;color:white; text-align: center;'>SDI Marketplace</span></center><center><span style='text-align: center;color:white; margin: 0px auto;'>SDiExchange - Request for Budget Approval</span></center></td></tr></tbody></table>" & vbCrLf
+            strbodyhead = "<table bgcolor='black' width='100%'><tbody><tr><td><img src='https://www.sdizeus.com/images/SDNewLogo_Email.png' alt='SDI' style=padding: 10px 0;' vspace='0' hspace='0' /></td><td width='100%'><center><span style='font-family: Arial; font-size: x-large;color:white; text-align: center;'>SDI Marketplace</span></center><center><span style='text-align: center;color:white; margin: 0px auto;'>SDI ZEUS - Request for Budget Approval</span></center></td></tr></tbody></table>" & vbCrLf
             strbodyhead = strbodyhead & "<HR width='100%' SIZE='1'>" & vbCrLf
             strbodyhead = strbodyhead & "&nbsp;" & vbCrLf
         Else
             'strbodyhead = strbodyhead & "<center><span >SDiExchange - Request for Approval</span></center>"
 
-            strbodyhead = "<table bgcolor='black' width='100%'><tbody><tr><td><img src='http://www.sdiexchange.com/images/SDNewLogo_Email.png' alt='SDI' style='padding: 10px 0;' vspace='0' hspace='0' /></td><td width='100%'><center><span style='font-family: Arial; font-size: x-large;color:white; text-align: center;'>SDI Marketplace</span></center><center><span style='text-align: center;color:white; margin: 0px auto;'>SDiExchange - Request for Approval</span></center></td></tr></tbody></table>" & vbCrLf
+            strbodyhead = "<table bgcolor='black' width='100%'><tbody><tr><td><img src='https://www.sdizeus.com/images/SDNewLogo_Email.png' alt='SDI' style='padding: 10px 0;' vspace='0' hspace='0' /></td><td width='100%'><center><span style='font-family: Arial; font-size: x-large;color:white; text-align: center;'>SDI Marketplace</span></center><center><span style='text-align: center;color:white; margin: 0px auto;'>SDI ZEUS - Request for Approval</span></center></td></tr></tbody></table>" & vbCrLf
             strbodyhead = strbodyhead & "<HR width='100%' SIZE='1'>" & vbCrLf
             strbodyhead = strbodyhead & "&nbsp;" & vbCrLf
         End If
@@ -3705,7 +3761,10 @@ Public Class OrderApprovals
         strbodydetl = strbodydetl & "&nbsp;<br>"
         strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Work Order: </span><span>  </span>" & strwo & "<br>"
         strbodydetl = strbodydetl & "&nbsp;<br>"
-        strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Item Number:</span><span>  </span>" & stritemid & "<br>"
+        'strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Item Number:</span><span>  </span>" & stritemid & "<br>"
+        If Trim(strPriority) <> "" Then
+            strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Priority:</span><span>  </span><span style='color:red;'> " & strPriority & " </span><br>"
+        End If
         strbodydetl = strbodydetl & "&nbsp;</p>"
         strbodydetl = strbodydetl & "<p style='text-indent:.5in'>The above referenced order has been "
         strbodydetl = strbodydetl & "requested by <b>" & strBuyerName & "</b> "
@@ -3714,7 +3773,7 @@ Public Class OrderApprovals
         Else
             strbodydetl = strbodydetl & "and needs your approval.  Click the link below or select the ""Approve Orders"" "
         End If
-        strbodydetl = strbodydetl & "menu option in SDiExchange to approve or reject the order.<br>"
+        strbodydetl = strbodydetl & "menu option in SDI ZEUS to approve or reject the order.<br>"
         strbodydetl = strbodydetl & "&nbsp;<br>"
 
         strbodydetl = strbodydetl & "<TABLE cellSpacing='1' cellPadding='1' width='100%' border='0'>" & vbCrLf
@@ -3730,7 +3789,7 @@ Public Class OrderApprovals
         strbodydetl = strbodydetl & "to APPROVE or REJECT order. </p>"
         strbodydetl = strbodydetl & "</div>"
         strbodydetl = strbodydetl & "<HR width='100%' SIZE='1'>" & vbCrLf
-        strbodydetl = strbodydetl & "<img src='http://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & vbCrLf
+        strbodydetl = strbodydetl & "<img src='https://www.sdizeus.com/Images/SDIFooter_Email.png' />" & vbCrLf
 
         Mailer.Body = strbodyhead & strbodydetl
         If DbUrl.Substring(DbUrl.Length - 4).ToUpper = "STAR" Or _
@@ -3743,15 +3802,18 @@ Public Class OrderApprovals
         End If
         Dim Notify_Key As String = String.Empty
         If strHldStatus = "B" Then
-            Mailer.Subject = "SDiExchange - Order Number " & strreqID & " needs budget approval"
+            Mailer.Subject = "SDI ZEUS - Order Number " & strreqID & " needs budget approval"
             Notify_Key = "Order Number " & strreqID & " needs budget approval"
         Else
-            Mailer.Subject = "SDiExchange - Order Number " & strreqID & " needs approval"
+            Mailer.Subject = "SDI ZEUS - Order Number " & strreqID & " needs approval"
             Notify_Key = "Order Number " & strreqID & " needs approval"
         End If
 
+        If Trim(strPriority) <> "" Then
+            Mailer.Subject = Mailer.Subject & " " & strPriority
+        End If
         Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
-        'WebPSharedFunc.sendemail(Mailer)
+
         Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
         Dim MailAttachmentName As String()
         Dim MailAttachmentbytes As New List(Of Byte())()
@@ -5349,10 +5411,10 @@ Public Class OrderApprovals
         mail.From = New System.Net.Mail.MailAddress("SDIExchADMIN@sdi.com", "SDiExchange Admin")
 
         ' adding server name to the error message
-        mail.Body = "Error in SDiExchange  -  " & vbCrLf & strErrorMessage & ". Server Id: " & strComeFrom
+        mail.Body = "Error in SDI ZEUS  -  " & vbCrLf & strErrorMessage & ". Server Id: " & strComeFrom
 
         If sSubject.Trim.Length = 0 Then
-            sSubject = "Error - SDiExchange"
+            sSubject = "Error - SDI ZEUS"
         End If
         mail.Subject = sSubject
 
@@ -7432,10 +7494,10 @@ Public Class WebPSharedFunc
         mail.From = New System.Net.Mail.MailAddress("SDIExchADMIN@sdi.com", "SDiExchange Admin")
 
         ' adding server name to the error message
-        mail.Body = "Error in SDiExchange  -  " & vbCrLf & strErrorMessage & ". Server Id: " & strComeFrom
+        mail.Body = "Error in SDI ZEUS  -  " & vbCrLf & strErrorMessage & ". Server Id: " & strComeFrom
 
         If sSubject.Trim.Length = 0 Then
-            sSubject = "Error - SDiExchange"
+            sSubject = "Error - SDI ZEUS"
         End If
         mail.Subject = sSubject
 
