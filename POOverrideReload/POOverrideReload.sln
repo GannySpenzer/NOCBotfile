@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "POOverrideReload", "POOverrideReload\POOverrideReload.csproj", "{C00853FE-0FF3-40B9-9B31-CC3B907452AD}"
+EndProject
+Global
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 2
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = http://vsfoundations:8080/tfs/insiteonline
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = POOverrideReload\\POOverrideReload.csproj
+		SccProjectName1 = POOverrideReload
+		SccLocalPath1 = POOverrideReload
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C00853FE-0FF3-40B9-9B31-CC3B907452AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C00853FE-0FF3-40B9-9B31-CC3B907452AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C00853FE-0FF3-40B9-9B31-CC3B907452AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C00853FE-0FF3-40B9-9B31-CC3B907452AD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D40D1A68-3399-4B77-A8D5-F9DBE912802E}
+	EndGlobalSection
+EndGlobal
