@@ -32,8 +32,8 @@ namespace OSVCService
         public List<string> ITEM_ID = new List<string>();
         public List<int> PO_QUANTITY = new List<int>();
         public List<int> QTY_ACKNOWLEDGED = new List<int>();
-        public List<int> PO_PRICE = new List<int>();
-        public List<int> PRICE_ACKNOWLEDGED = new List<int>();
+        public List<string> PO_PRICE = new List<string>();
+        public List<string> PRICE_ACKNOWLEDGED = new List<string>();
         public List<string> CURRENCY = new List<string>();
         public List<string> CURRENCY_ACKNOWLEDGED = new List<string>();
         public List<string> UNIT_MEASURE = new List<string>();
@@ -234,7 +234,7 @@ namespace OSVCService
             string line_number, DateTime  date_acknowledged, string vendor_id, string vendor_name,
             DateTime po_date, string buyer_id, string operator_id,
             string shipto_id, string item_id, int po_quantity,
-            int qty_acknowledged, int po_price, int price_acknowledged,
+            int qty_acknowledged, string po_price, string price_acknowledged,
             string currency, string currency_acknowledged, string unit_measure,
             string uom_acknowledged, DateTime  po_due_date, DateTime due_date_acknowledged,
             string price_update_bypass, string price_update_override, 
@@ -266,8 +266,8 @@ namespace OSVCService
             gfs.Add(createGenericField("Item_ID", ItemsChoiceType.StringValue, item_id ));
             gfs.Add(createGenericField("PO_Quantity", ItemsChoiceType.IntegerValue , po_quantity ));
             gfs.Add(createGenericField("Qty_Acknowledged", ItemsChoiceType.IntegerValue , qty_acknowledged ));
-            gfs.Add(createGenericField("PO_Price", ItemsChoiceType.IntegerValue , po_price ));
-            gfs.Add(createGenericField("Price_Acknowledged", ItemsChoiceType.IntegerValue , price_acknowledged));
+            gfs.Add(createGenericField("PO_Price", ItemsChoiceType.StringValue  , po_price ));
+            gfs.Add(createGenericField("Price_Acknowledged", ItemsChoiceType.StringValue , price_acknowledged));
             gfs.Add(createGenericField("Currency", ItemsChoiceType.StringValue, currency ));
             gfs.Add(createGenericField("Currency_Acknowledged", ItemsChoiceType.StringValue, currency_acknowledged ));
             gfs.Add(createGenericField("Unit_Measure", ItemsChoiceType.StringValue, unit_measure ));

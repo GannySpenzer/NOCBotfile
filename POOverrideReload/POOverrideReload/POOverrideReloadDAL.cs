@@ -27,8 +27,8 @@ namespace POOverrideReload1
         public List<string> ITEM_ID = new List<string>();
         public List<int> PO_QUANTITY = new List<int>();
         public List<int> QTY_ACKNOWLEDGED = new List<int>();
-        public List<int> PO_PRICE = new List<int>();
-        public List<int> PRICE_ACKNOWLEDGED = new List<int>();
+        public List<string> PO_PRICE = new List<string>();
+        public List<string> PRICE_ACKNOWLEDGED = new List<string>();
         public List<string> CURRENCY = new List<string>();
         public List<string> CURRENCY_ACKNOWLEDGED = new List<string>();
         public List<string> UNIT_MEASURE = new List<string>();
@@ -379,8 +379,8 @@ namespace POOverrideReload1
                     pod.ITEM_ID .Add(rowInit["ITEM_ID"].ToString());
                     pod.PO_QUANTITY .Add(Convert.ToInt32( rowInit["PO_QUANTITY"]));
                     pod.QTY_ACKNOWLEDGED .Add(Convert.ToInt32( rowInit["QTY_ACKNOWLEDGED"]));
-                    pod.PO_PRICE .Add(Convert.ToInt32( rowInit["PRICE_PO"]));
-                    pod.PRICE_ACKNOWLEDGED .Add(Convert.ToInt32(rowInit["PRICE_ACKNOWLEDGED"]));
+                    pod.PO_PRICE .Add( rowInit["PRICE_PO"].ToString());
+                    pod.PRICE_ACKNOWLEDGED .Add(rowInit["PRICE_ACKNOWLEDGED"].ToString());
                     pod.CURRENCY .Add(rowInit["CURRENCY"].ToString());
                     pod.CURRENCY_ACKNOWLEDGED .Add(rowInit["CURRENCY_ACKNOWLEDGED"].ToString());
                     pod.UNIT_MEASURE.Add(rowInit["UNIT_MEASURE"].ToString ());
