@@ -115,7 +115,7 @@ namespace POOverrideReload1
                 strSQLstring += "A.ISA_PRICE_UPD_OV as PRICE_UPDATE_OVERRIDE, \n";
                 strSQLstring += "A.ISA_DUEDT_UPDBYP as DUE_DATE_BYPASS, \n";
                 strSQLstring += "A.ISA_DUEDT_UPD_OV as DUE_DATE_OVERRIDE, \n";
-                strSQLstring += "A.ISA_QTY_UPDBYP as QTY_OVERRIDE_BYPASS, \n";
+                strSQLstring += "A.ISA_QTY_UPDBYP as QTY_UPDATE_BYPASS, \n";
                 strSQLstring += "A.ISA_QTY_UPD_OV as QTY_OVERRIDE_STATUS, \n";
                 strSQLstring += "A.ISA_STAT_RVW_FLG as REVIEW_FLAG,\n";
                 strSQLstring += "' ' as PS_URL,\n";
@@ -387,15 +387,15 @@ namespace POOverrideReload1
                     pod.UOM_ACKNOWLEDGED .Add(rowInit["UOM_ACKNOWLEDGED"].ToString());
                     pod.PO_DUE_DATE .Add(Convert.ToDateTime ( rowInit["PO_DUE_DATE"]));
                     pod.DUE_DATE_ACKNOWLEDGED .Add(Convert.ToDateTime(rowInit["DUE_DATE_ACKNOWLEDGED"]));
-                    pod.PRICE_UPDATE_BYPASS .Add("PRICE_UPDATE_BYPASS");
-                    pod.PRICE_UPDATE_OVERRIDE .Add("PRICE_UPDATE_OVERRIDE");
-                    pod.DUE_DATE_BYPASS .Add("DUE_DATE_BYPASS");
-                    pod.DUE_DATE_OVERRIDE .Add("DUE_DATE_OVERRIDE");
-                    pod.QTY_UPDATE_BYPASS .Add("QTY_UPDATE_BYPASS");
-                    pod.QTY_OVERRIDE_STATUS .Add("QTY_OVERRIDE_STATUS");
-                    pod.REVIEW_FLAG .Add("REVIEW_FLAG");
-                    pod.PS_URL .Add("PS_URL");
-                    pod.BUYER_TEAM .Add("BUYER_TEAM");
+                    pod.PRICE_UPDATE_BYPASS .Add(rowInit["PRICE_UPDATE_BYPASS"].ToString());
+                    pod.PRICE_UPDATE_OVERRIDE .Add(rowInit["PRICE_UPDATE_OVERRIDE"].ToString());
+                    pod.DUE_DATE_BYPASS .Add(rowInit["DUE_DATE_BYPASS"].ToString());
+                    pod.DUE_DATE_OVERRIDE .Add(rowInit["DUE_DATE_OVERRIDE"].ToString());
+                    pod.QTY_UPDATE_BYPASS .Add(rowInit["QTY_UPDATE_BYPASS"].ToString());
+                    pod.QTY_OVERRIDE_STATUS .Add(rowInit["QTY_OVERRIDE_STATUS"].ToString());
+                    pod.REVIEW_FLAG .Add(rowInit["REVIEW_FLAG"].ToString());
+                    pod.PS_URL .Add(rowInit["PS_URL"].ToString());
+                    pod.BUYER_TEAM .Add(rowInit["BUYER_TEAM"].ToString());
 
                 }
                 catch (Exception ex)
