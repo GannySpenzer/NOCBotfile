@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="3e7469f6-38a7-4529-9c8c-571a761c4440" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
+    <GenerateTaskBasedAsynchronousMethod>true</GenerateTaskBasedAsynchronousMethod>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings />
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <UseSerializerForFaults>true</UseSerializerForFaults>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="https://sdi.custhelp.com/services/soap/connect/soap?wsdl=typed" Protocol="http" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="RightNow.wsdl" MetadataType="Wsdl" ID="5dd8313e-8641-4add-8ee7-ac7197b3064e" SourceId="1" SourceUrl="https://sdi.custhelp.com/services/soap/connect/soap?wsdl=typed" />
+    <MetadataFile FileName="soap.xsd" MetadataType="Schema" ID="c16fa475-4b7b-4fe3-9fd1-4f34ec661419" SourceId="1" SourceUrl="https://sdi.custhelp.com/services/soap/connect/soap?xsd=nullfields" />
+    <MetadataFile FileName="soap1.xsd" MetadataType="Schema" ID="dacf3519-7ef7-412a-a000-8d39320600c8" SourceId="1" SourceUrl="https://sdi.custhelp.com/services/soap/connect/soap?xsd=metadata" />
+    <MetadataFile FileName="soap2.xsd" MetadataType="Schema" ID="278d4995-e0a0-444e-804d-a23e8e356dd1" SourceId="1" SourceUrl="https://sdi.custhelp.com/services/soap/connect/soap?xsd=generic" />
+    <MetadataFile FileName="soap3.xsd" MetadataType="Schema" ID="33de7716-6f96-4ff3-8397-07d8ee8ae9d7" SourceId="1" SourceUrl="https://sdi.custhelp.com/services/soap/connect/soap?xsd=faults" />
+    <MetadataFile FileName="soap4.xsd" MetadataType="Schema" ID="e19db016-6b52-417e-a01f-8fa195d83596" SourceId="1" SourceUrl="https://sdi.custhelp.com/services/soap/connect/soap?xsd=base" />
+    <MetadataFile FileName="soap5.xsd" MetadataType="Schema" ID="7b41f678-632a-4724-9b13-2dec02fe3217" SourceId="1" SourceUrl="https://sdi.custhelp.com/services/soap/connect/soap?xsd=objects" />
+    <MetadataFile FileName="soap6.xsd" MetadataType="Schema" ID="c9077158-4854-4bf8-ab7d-d6ccebbbfe45" SourceId="1" SourceUrl="https://sdi.custhelp.com/services/soap/connect/soap?xsd=messagestyped" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>
