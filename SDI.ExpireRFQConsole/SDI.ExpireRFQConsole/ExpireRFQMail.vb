@@ -56,12 +56,13 @@ Module ExpireRFQMail
         'query to fetch the day 25
         'strSQLString = "select * from PS_ISA_ORD_INTF_LN A, PS_ISA_ORD_INTF_HD B" & vbCrLf & _
         '        " where B.ORIGIN = 'RFQ' AND A.Order_NO = B.Order_No AND TO_CHAR(A.Approval_Dttm + 24, 'DD-MON-YYYY') = TO_CHAR(CURRENT_DATE, 'DD-MON-YYYY')"
-        strSQLString = "SELECT S.DTTM_STAMP, A.* FROM ps_isa_ord_intf_ln A, PS_ISAORDSTATUSLOG S WHERE a.isa_line_status='QTS' AND  A.ORDER_NO=S.ORDER_NO and A.isa_intfc_ln = S.isa_intfc_ln AND a.isa_line_status = S.isa_line_status AND S.DTTM_STAMP = TO_CHAR(SYSDATE - 24, 'DD-MON-YYYY')"
+        strSQLString = "SELECT S.DTTM_STAMP, A.* FROM ps_isa_ord_intf_ln A, PS_ISAORDSTATUSLOG S WHERE a.isa_line_status='QTS' AND  A.ORDER_NO=S.ORDER_NO and A.isa_intfc_ln = S.isa_intfc_ln AND a.isa_line_status = S.isa_line_status AND TO_CHAR(S.DTTM_STAMP, 'DD-MON-YYYY') = TO_CHAR(SYSDATE - 24, 'DD-MON-YYYY')"
 
 
         Dim dtrAppReader As OleDbDataReader = GetReader(strSQLString)
 
         'To get Employye Email ID
+
 
 
         If dtrAppReader.HasRows() = True Then
@@ -110,7 +111,7 @@ Module ExpireRFQMail
         'strSQLString = "select * from PS_ISA_ORD_INTF_LN A, PS_ISA_ORD_INTF_HD B" & vbCrLf & _
         '        " where B.ORIGIN = 'RFQ' AND A.Order_NO = B.Order_No AND TO_CHAR(A.Approval_Dttm + 29, 'DD-MON-YYYY') = TO_CHAR(CURRENT_DATE, 'DD-MON-YYYY')"
 
-        strSQLString = "SELECT S.DTTM_STAMP, A.* FROM ps_isa_ord_intf_ln A, PS_ISAORDSTATUSLOG S WHERE a.isa_line_status='QTS' AND  A.ORDER_NO=S.ORDER_NO and A.isa_intfc_ln = S.isa_intfc_ln AND a.isa_line_status = S.isa_line_status AND S.DTTM_STAMP = TO_CHAR(SYSDATE - 29, 'DD-MON-YYYY') order by S.DTTM_STAMP desc"
+        strSQLString = "SELECT S.DTTM_STAMP, A.* FROM ps_isa_ord_intf_ln A, PS_ISAORDSTATUSLOG S WHERE a.isa_line_status='QTS' AND  A.ORDER_NO=S.ORDER_NO and A.isa_intfc_ln = S.isa_intfc_ln AND a.isa_line_status = S.isa_line_status AND TO_CHAR(S.DTTM_STAMP, 'DD-MON-YYYY') = TO_CHAR(SYSDATE - 29, 'DD-MON-YYYY') order by S.DTTM_STAMP desc"
 
         dtrAppReader = GetReader(strSQLString)
         If dtrAppReader.HasRows() = True Then
@@ -157,7 +158,7 @@ Module ExpireRFQMail
         ''strSQLString = "select * from PS_ISA_ORD_INTF_LN A, PS_ISA_ORD_INTF_HD B" & vbCrLf & _
         ''        " where B.ORIGIN = 'RFQ' AND A.Order_NO = B.Order_No AND TO_CHAR(A.Approval_Dttm + 30, 'DD-MON-YYYY') = TO_CHAR(CURRENT_DATE, 'DD-MON-YYYY')"
 
-        strSQLString = "SELECT S.DTTM_STAMP, A.* FROM ps_isa_ord_intf_ln A, PS_ISAORDSTATUSLOG S WHERE a.isa_line_status='QTS' AND  A.ORDER_NO=S.ORDER_NO and A.isa_intfc_ln = S.isa_intfc_ln AND a.isa_line_status = S.isa_line_status AND S.DTTM_STAMP <= TO_CHAR(SYSDATE - 30, 'DD-MON-YYYY') order by S.DTTM_STAMP desc"
+        strSQLString = "SELECT S.DTTM_STAMP, A.* FROM ps_isa_ord_intf_ln A, PS_ISAORDSTATUSLOG S WHERE a.isa_line_status='QTS' AND  A.ORDER_NO=S.ORDER_NO and A.isa_intfc_ln = S.isa_intfc_ln AND a.isa_line_status = S.isa_line_status AND TO_CHAR(S.DTTM_STAMP, 'DD-MON-YYYY') <= TO_CHAR(SYSDATE - 30, 'DD-MON-YYYY') order by S.DTTM_STAMP desc"
 
         dtrAppReader = GetReader(strSQLString)
         If dtrAppReader.HasRows() = True Then
@@ -357,7 +358,7 @@ Module ExpireRFQMail
                    DbUrl.Substring(DbUrl.Length - 4).ToUpper = "DEVL" Or _
                DbUrl.Substring(DbUrl.Length - 4).ToUpper = "RPTG" Then
             Mailer.To = "WebDev@sdi.com;avacorp@sdi.com"
-            Mailer.Subject = "<<TEST SITE>> SDiExchange - RFQ Alert Notification " & orderNum
+            Mailer.Subject = "<<TEST SITE>> SDiExchange - Customer Approval Required For Order " & orderNum
         Else
             Mailer.To = empEmail1
             Mailer.Subject = "SDiExchange - Customer Approval Required For Order - " & orderNum
@@ -567,9 +568,9 @@ Module ExpireRFQMail
 
             ''strOraSelectQuery = "select * from SYSADM8.PS_ISA_ORD_INTF_LN where ORDER_NO = '" & ordNumber & "' AND TO_CHAR(Approval_Dttm + 30, 'DD-MON-YYYY') = TO_CHAR(CURRENT_DATE, 'DD-MON-YYYY')"
             If DateInterval = "30" Then
-                strOraSelectQuery = "SELECT S.DTTM_STAMP, A.* FROM ps_isa_ord_intf_ln A, PS_ISAORDSTATUSLOG S WHERE a.isa_line_status='QTS' AND A.ORDER_NO= '" & ordNumber & "' AND A.ORDER_NO=S.ORDER_NO and A.isa_intfc_ln = S.isa_intfc_ln AND a.isa_line_status = S.isa_line_status AND S.DTTM_STAMP <= TO_CHAR(SYSDATE - '" & DateInterval & "', 'DD-MON-YYYY')"
+                strOraSelectQuery = "SELECT S.DTTM_STAMP, A.* FROM ps_isa_ord_intf_ln A, PS_ISAORDSTATUSLOG S WHERE a.isa_line_status='QTS' AND A.ORDER_NO= '" & ordNumber & "' AND A.ORDER_NO=S.ORDER_NO and A.isa_intfc_ln = S.isa_intfc_ln AND a.isa_line_status = S.isa_line_status AND TO_CHAR(S.DTTM_STAMP, 'DD-MON-YYYY') <= TO_CHAR(SYSDATE - '" & DateInterval & "', 'DD-MON-YYYY')"
             Else
-                strOraSelectQuery = "SELECT S.DTTM_STAMP, A.* FROM ps_isa_ord_intf_ln A, PS_ISAORDSTATUSLOG S WHERE a.isa_line_status='QTS' AND A.ORDER_NO= '" & ordNumber & "' AND A.ORDER_NO=S.ORDER_NO and A.isa_intfc_ln = S.isa_intfc_ln AND a.isa_line_status = S.isa_line_status AND S.DTTM_STAMP = TO_CHAR(SYSDATE - '" & DateInterval & "', 'DD-MON-YYYY')"
+                strOraSelectQuery = "SELECT S.DTTM_STAMP, A.* FROM ps_isa_ord_intf_ln A, PS_ISAORDSTATUSLOG S WHERE a.isa_line_status='QTS' AND A.ORDER_NO= '" & ordNumber & "' AND A.ORDER_NO=S.ORDER_NO and A.isa_intfc_ln = S.isa_intfc_ln AND a.isa_line_status = S.isa_line_status AND TO_CHAR(S.DTTM_STAMP, 'DD-MON-YYYY') = TO_CHAR(SYSDATE - '" & DateInterval & "', 'DD-MON-YYYY')"
             End If
 
             dsOrdLnItems = GetAdapter(strOraSelectQuery)
