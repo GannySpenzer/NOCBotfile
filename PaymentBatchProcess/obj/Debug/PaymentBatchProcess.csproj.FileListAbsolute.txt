@@ -1,0 +1,6 @@
+D:\bk files\Avasoft_Utility\Avasoft_Utility\PaymentBatchProcess\PaymentBatchProcess\bin\Debug\BanquestUtility.exe.config
+D:\bk files\Avasoft_Utility\Avasoft_Utility\PaymentBatchProcess\PaymentBatchProcess\obj\Debug\BanquestUtility.exe
+D:\bk files\Avasoft_Utility\Avasoft_Utility\PaymentBatchProcess\PaymentBatchProcess\obj\Debug\BanquestUtility.pdb
+D:\bk files\Avasoft_Utility\Avasoft_Utility\PaymentBatchProcess\PaymentBatchProcess\bin\Debug\BanquestUtility.exe
+D:\bk files\Avasoft_Utility\Avasoft_Utility\PaymentBatchProcess\PaymentBatchProcess\bin\Debug\BanquestUtility.pdb
+D:\bk files\Avasoft_Utility\Avasoft_Utility\PaymentBatchProcess\PaymentBatchProcess\obj\Debug\PaymentBatchProcess.csprojResolveAssemblyReference.cache
