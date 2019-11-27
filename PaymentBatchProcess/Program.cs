@@ -59,8 +59,8 @@ namespace BanquestUtility
                     wbclient.Headers["Content-type"] = "application/json";
                     wbclient.Encoding = Encoding.UTF8;
                     DateTime dttm_current = DateTime.Now;                    
-                    string date_from = dttm_current.AddDays(-6).ToString("yyyy-MM-dd");
-                    string date_to = dttm_current.AddDays(-5).ToString("yyyy-MM-dd");
+                    string date_from = dttm_current.AddDays(-1).ToString("yyyy-MM-dd");
+                    string date_to = dttm_current.ToString("yyyy-MM-dd");
                     string mainurl = "";
                     
                     mainurl = baseurl + "api/CreditCard/Getbatch?date_from=" + date_from + "&date_to=" + date_to + "";
