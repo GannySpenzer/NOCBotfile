@@ -13,42 +13,8 @@ using OSVCService;
 
 namespace OSVCService
 {
-    public class Batcher : POOverrideReloadDAL
+    public class Batcher : PODData
     {
-
-        public List<string> ACTION_ITEM = new List<string>();
-        public List<string> CLIENT = new List<string>();
-        public List<string> SITE = new List<string>();
-        public List<string> BUSINESS_UNIT = new List<string>();
-        public List<string> PO_ID = new List<string>();
-        public List<string> LINE_NUMBER = new List<string>();
-        public List<DateTime> DATE_ACKNOWLEDGED = new List<DateTime>();
-        public List<string> VENDOR_ID = new List<string>();
-        public List<string> VENDOR_NAME = new List<string>();
-        public List<DateTime> PO_DATE = new List<DateTime>();
-        public List<string> BUYER_ID = new List<string>();
-        public List<string> OPERATOR_ID = new List<string>();
-        public List<string> SHIPTO_ID = new List<string>();
-        public List<string> ITEM_ID = new List<string>();
-        public List<int> PO_QUANTITY = new List<int>();
-        public List<int> QTY_ACKNOWLEDGED = new List<int>();
-        public List<string> PO_PRICE = new List<string>();
-        public List<string> PRICE_ACKNOWLEDGED = new List<string>();
-        public List<string> CURRENCY = new List<string>();
-        public List<string> CURRENCY_ACKNOWLEDGED = new List<string>();
-        public List<string> UNIT_MEASURE = new List<string>();
-        public List<string> UOM_ACKNOWLEDGED = new List<string>();
-        public List<DateTime> PO_DUE_DATE = new List<DateTime>();
-        public List<DateTime> DUE_DATE_ACKNOWLEDGED = new List<DateTime>();
-        public List<string> PRICE_UPDATE_BYPASS = new List<string>();
-        public List<string> PRICE_UPDATE_OVERRIDE = new List<string>();
-        public List<string> DUE_DATE_BYPASS = new List<string>();
-        public List<string> DUE_DATE_OVERRIDE = new List<string>();
-        public List<string> QTY_UPDATE_BYPASS = new List<string>();
-        public List<string> QTY_OVERRIDE_STATUS = new List<string>();
-        public List<string> REVIEW_FLAG = new List<string>();
-        public List<string> PS_URL = new List<string>();
-        public List<string> BUYER_TEAM = new List<string>();
 
         DateTime dateparse;
 
@@ -59,6 +25,7 @@ namespace OSVCService
         int dtResponseRowsCount = 0;
 
         RightNowSyncPortClient _client;
+        List<AccountInfo> _acctInfo = new List<AccountInfo>();
 
         // InitializeLogger start here
         public Logger m_oLogger;
@@ -259,8 +226,7 @@ namespace OSVCService
             gfs.Add(createGenericField("Date_Acknowledged", ItemsChoiceType.DateTimeValue , date_acknowledged ));
             gfs.Add(createGenericField("Vendor_ID", ItemsChoiceType.StringValue, vendor_id));
             gfs.Add(createGenericField("Vendor_Name", ItemsChoiceType.StringValue, vendor_name ));
-            gfs.Add(createGenericField("PO_Date", ItemsChoiceType.DateValue, po_date ));
-            gfs.Add(createGenericField("Buyer_ID", ItemsChoiceType.StringValue, buyer_id ));
+            gfs.Add(createGenericField("PO_Date", ItemsChoiceType.DateValue, po_date ));            
             gfs.Add(createGenericField("Operator_ID", ItemsChoiceType.StringValue, operator_id));
             gfs.Add(createGenericField("Shipto_ID", ItemsChoiceType.StringValue, shipto_id ));
             gfs.Add(createGenericField("Item_ID", ItemsChoiceType.StringValue, item_id ));
@@ -282,7 +248,26 @@ namespace OSVCService
             gfs.Add(createGenericField("Qty_Override_Status", ItemsChoiceType.StringValue, qty_override_status ));
             gfs.Add(createGenericField("Review_Flag", ItemsChoiceType.StringValue, review_flag));
             gfs.Add(createGenericField("PS_URL", ItemsChoiceType.StringValue, ps_url ));
-            gfs.Add(createGenericField("Buyer_Team", ItemsChoiceType.StringValue, buyer_team));
+
+            //gfs.Add(createGenericField("Buyer_ID", ItemsChoiceType.StringValue, buyer_id));
+            //gfs.Add(createGenericField("Buyer_Team", ItemsChoiceType.StringValue, buyer_team));
+            try
+            {
+                if (buyer_id.Trim() != "")
+                    gfs.Add(createAccountMenuFieldByName("Buyer_ID", buyer_id));
+            }
+            catch (Exception ex)
+            {
+            }
+
+            try
+            {
+                if (buyer_team.Trim() != "")
+                    gfs.Add(createAccountMenuFieldByName("Buyer_Team", buyer_team));
+            }
+            catch (Exception ex)
+            {
+            }
 
 
             go.GenericFields = gfs.ToArray();
@@ -367,5 +352,80 @@ namespace OSVCService
             gf.DataValue.Items = new object[] { Value };
             return gf;
         }
+
+            private GenericField createMenuGenericField(string fieldName, long fieldID)
+        {
+            GenericField gf = new GenericField();
+
+            NamedID fid = new NamedID();
+            fid.ID = new ID();
+            fid.ID.idSpecified = true;
+            fid.ID.id = fieldID;
+
+            gf = createGenericField(fieldName, ItemsChoiceType.NamedIDValue, fid);
+
+            return gf;
+        }
+
+        private GenericField createAccountMenuFieldByName(string fieldName, string accountName)
+        {
+
+            GenericField gf = new GenericField();
+
+
+            if (_acctInfo.Count < 1)
+            {
+                QueryAccountObjectsSample();
+            }
+
+            AccountInfo ai = _acctInfo.Find(a => a.LookupName == accountName.Replace(".", " "));
+
+            gf = createMenuGenericField(fieldName, ai.id);
+
+            return gf;
+        }
+
+        public void QueryAccountObjectsSample()
+        {
+            ClientInfoHeader clientInfoHeader = new ClientInfoHeader();
+            clientInfoHeader.AppID = "Basic Objects Sample";
+            APIAccessRequestHeader apiAccessRequestHeader = new APIAccessRequestHeader();
+
+            String queryString = "Select Account FROM Account;";
+
+            Account accountTemplate = new Account();
+
+            RNObject[] objectTemplates = new RNObject[] { accountTemplate };
+
+            try
+            {
+                QueryResultData[] queryObjects;
+                _client.QueryObjects(clientInfoHeader, apiAccessRequestHeader, queryString, objectTemplates, 10000, out queryObjects);
+                RNObject[] rnObjects = queryObjects[0].RNObjectsResult;
+
+                foreach (RNObject obj in rnObjects)
+                {
+                    Account acct = (Account)obj;
+
+                    _acctInfo.Add(new AccountInfo() { id = acct.ID.id, LookupName = acct.LookupName });
+                    System.Console.WriteLine("Account ID: " + acct.ID.id + " Name: " + acct.LookupName);
+
+                }
+
+            }
+            catch (FaultException ex)
+            {
+                Console.WriteLine(ex.Code);
+                Console.WriteLine(ex.Message);
+            }
+
+        }
     }
+
+    public class AccountInfo
+    {
+        public long id { get; set; }
+        public string LookupName { get; set; }
+    }
+
 }
