@@ -233,7 +233,7 @@ namespace OSVCService
             string req_hold_flag, DateTime req_line_add_date, string manufacturer,
             string manufacturer_part_number, string description, string requisition_comments,
             string charge_cd, string workorder, string priority_flag,
-            string status_age, string ps_url, string buyer_team)
+            int status_age, string ps_url, string buyer_team)
         {
             GenericObject go = new GenericObject();
 
@@ -249,8 +249,8 @@ namespace OSVCService
             gfs.Add(createGenericField("Site_Name", ItemsChoiceType.StringValue, site_name));
             gfs.Add(createGenericField("Ship_to_ID", ItemsChoiceType.StringValue, ship_to_id ));
             gfs.Add(createGenericField("Requestor_ID", ItemsChoiceType.StringValue, requestor_id));
-            gfs.Add(createGenericField("Requisition_Date", ItemsChoiceType.DateTimeValue, requisition_date));
-            gfs.Add(createGenericField("Requisition_ID", ItemsChoiceType.StringValue, requestor_id ));
+            gfs.Add(createGenericField("Requisition_Date", ItemsChoiceType.DateValue, requisition_date));
+            gfs.Add(createGenericField("Requisition_ID", ItemsChoiceType.StringValue, requisition_id  ));
             gfs.Add(createGenericField("Line_Number", ItemsChoiceType.StringValue, line_number ));
             gfs.Add(createGenericField("Inventory_Item_ID", ItemsChoiceType.StringValue , inventory_item_id ));
             gfs.Add(createGenericField("Qty_Req", ItemsChoiceType.IntegerValue , qty_req ));
@@ -266,17 +266,36 @@ namespace OSVCService
             gfs.Add(createGenericField("Manufacturer", ItemsChoiceType.StringValue, manufacturer ));
             gfs.Add(createGenericField("Manufacturer_part_number", ItemsChoiceType.StringValue, manufacturer_part_number ));
             gfs.Add(createGenericField("Description", ItemsChoiceType.StringValue , description));
-            gfs.Add(createGenericField("Requisiton_Comments", ItemsChoiceType.StringValue , requisition_comments ));
+            gfs.Add(createGenericField("Requisition_Comments", ItemsChoiceType.StringValue , requisition_comments ));
             gfs.Add(createGenericField("Charge_CD", ItemsChoiceType.StringValue, charge_cd));
             gfs.Add(createGenericField("Workorder", ItemsChoiceType.StringValue, workorder ));
             gfs.Add(createGenericField("Priority_Flag", ItemsChoiceType.StringValue, priority_flag ));
-            gfs.Add(createGenericField("Status_Age", ItemsChoiceType.StringValue, status_age ));
+            gfs.Add(createGenericField("Status_Age", ItemsChoiceType.IntegerValue , status_age ));
             gfs.Add(createGenericField("PS_URL", ItemsChoiceType.StringValue, ps_url));
 
+            //if (price_req.Length > 10)
+            //{
+            //    Console.Write(price_req.ToString());
+            //}
             //gfs.Add(createGenericField("Buyer_ID", ItemsChoiceType.NamedIDValue, buyer_id));
             //gfs.Add(createGenericField("Buyer_Team", ItemsChoiceType.NamedIDValue , buyer_team));
-            gfs.Add(createAccountMenuFieldByName  ("Buyer_ID", buyer_id));
-            gfs.Add(createAccountMenuFieldByName("Buyer_Team", buyer_team));
+            try
+            {
+                if (buyer_id.Trim() != "")
+                    gfs.Add(createAccountMenuFieldByName("Buyer_ID", buyer_id));
+            }
+            catch (Exception ex)
+            {
+            }
+
+            try
+            {
+                if (buyer_team.Trim() != "")
+                    gfs.Add(createAccountMenuFieldByName("Buyer_Team", buyer_team));
+            }
+            catch (Exception ex)
+            {
+            }
 
 
             go.GenericFields = gfs.ToArray();
@@ -387,7 +406,7 @@ namespace OSVCService
                 QueryAccountObjectsSample();
             }
 
-            AccountInfo ai = _acctInfo.Find(a => a.LookupName == accountName);
+            AccountInfo ai = _acctInfo.Find(a => a.LookupName == accountName.Replace(".", " "));
 
             gf = createMenuGenericField(fieldName, ai.id);
 

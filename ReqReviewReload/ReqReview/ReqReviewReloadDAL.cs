@@ -38,7 +38,7 @@ namespace ReqReviewReload1
         public List<string> CHARGE_CD = new List<string>();
         public List<string> WORKORDER = new List<string>();
         public List<string> PRIORITY_FLAG = new List<string>();
-        public List<string> STATUS_AGE = new List<string>();
+        public List<int> STATUS_AGE = new List<int>();
         public List<string> PS_URL = new List<string>();
         public List<string> BUYER_TEAM = new List<string>();
     }
@@ -89,7 +89,7 @@ namespace ReqReviewReload1
                 strSQLstring += "G.DESCR as Site_Name, \n";
                 strSQLstring += "C.SHIPTO_ID as Ship_to_ID, \n";
                 strSQLstring += "A.REQUESTOR_ID as Requestor_ID, \n";
-                strSQLstring += "B.BUYER_ID as Buyer_ID, \n";
+                strSQLstring += "NVL(B.BUYER_ID, ' ') as Buyer_ID, \n";
                 strSQLstring += "TO_CHAR(A.REQ_DT, 'YYYY-MM-DD') as Requisition_Date, \n";
                 strSQLstring += "B.REQ_ID as Requisition_ID, \n";
                 strSQLstring += "B.LINE_NBR as Line_Number, \n";
@@ -112,9 +112,10 @@ namespace ReqReviewReload1
                 strSQLstring += "D.ISA_CUST_CHARGE_CD AS Charge_Code, \n";
                 strSQLstring += "D.ISA_WORK_ORDER_NO AS Workorder,\n";
                 strSQLstring += "Q.ISA_PRIORITY_FLAG AS Priority_Flag,\n";
-                strSQLstring += "TRUNC(SYSDATE) - D.ADD_DTTM AS Status_Age,\n";
+                //strSQLstring += "TRUNC(SYSDATE) - D.ADD_DTTM AS Status_Age,\n";
+                strSQLstring += "TRUNC(SYSDATE) - TRUNC(D.ADD_DTTM) AS Status_Age,\n";
                 strSQLstring += "' ' as PS_URL,\n";
-                strSQLstring += "R.ROLEUSER AS Buyer_Team,\n";
+                strSQLstring += "NVL(R.ROLEUSER, ' ') AS Buyer_Team,\n";
                 strSQLstring += "' ' as PROCESS_FLAG\n";
 
                 strSQLstring += "FROM SYSADM8.PS_REQ_HDR A,\n";
@@ -195,6 +196,7 @@ namespace ReqReviewReload1
                 strSQLstring += "      when e.business_unit = 'SDM00' then 'SDI_SITE_MANAGER_SDM'\n";
                 strSQLstring += "      else 'OTHER' end = r.rolename(+)\n";
                 strSQLstring += "AND e.DEPTID = T.DEPTID)";
+                //strSQLstring += "AND e.DEPTID = T.DEPTID AND ROWNUM < 2)";
 
                 m_oLogger.LogMessage("CreateTable", "PeopleSoft connection string : " + OracleConString);
                 m_oLogger.LogMessage("CreateTable", "Query To create the ReqReview temp data table: " + strSQLstring);
@@ -431,7 +433,7 @@ namespace ReqReviewReload1
                     req.CHARGE_CD .Add(rowInit["CHARGE_CODE"].ToString());
                     req.WORKORDER .Add(rowInit["WORKORDER"].ToString());
                     req.PRIORITY_FLAG .Add(rowInit["PRIORITY_FLAG"].ToString());
-                    req.STATUS_AGE .Add(rowInit["STATUS_AGE"].ToString());
+                    req.STATUS_AGE .Add(Convert.ToInt32 ( rowInit["STATUS_AGE"]));
                     req.PS_URL.Add(rowInit["PS_URL"].ToString());
                     req.BUYER_TEAM.Add(rowInit["BUYER_TEAM"].ToString());
 
