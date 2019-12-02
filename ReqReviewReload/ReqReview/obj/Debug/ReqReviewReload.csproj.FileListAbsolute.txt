@@ -1,0 +1,7 @@
+C:\A_ReqReview\ReqReview\ReqReview\obj\Debug\ReqReview.exe
+C:\A_ReqReview\ReqReview\ReqReview\obj\Debug\ReqReview.pdb
+C:\A_ReqReview\ReqReview\ReqReview\bin\ReqReview.exe.config
+C:\A_ReqReview\ReqReview\ReqReview\bin\ReqReview.exe
+C:\A_ReqReview\ReqReview\ReqReview\bin\ReqReview.pdb
+C:\A_ReqReview\ReqReview\ReqReview\bin\Newtonsoft.Json.dll
+C:\A_ReqReview\ReqReview\ReqReview\obj\Debug\ReqReviewReload.csprojResolveAssemblyReference.cache
