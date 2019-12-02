@@ -10,7 +10,7 @@ using System.Configuration;
 
 namespace ExpediterReload1
 {
-    class Logger
+    public class Logger
     {
         private string m_sLogFileSpec;
 
@@ -21,8 +21,16 @@ namespace ExpediterReload1
                 if (!System.IO.Directory.Exists(sLogPath))
                     System.IO.Directory.CreateDirectory(sLogPath);
 
-                // m_sLogFileSpec = sLogPath & "\" & sFilePrefix & Now.ToString("_yyyyMMdd_HHmmtt") & ".log"
-                LogFileSpec = sLogPath + @"\" + sFilePrefix + DateTime.Now.ToString("_yyyyMMdd_HHmmtt") + ".log";
+                m_sLogFileSpec = sLogPath + @"\" + sFilePrefix + DateTime.Now.ToString("_yyyyMMdd_HHmmtt") + ".log";
+                if (LogFileSpec == "")
+                {
+                    LogFileSpec = sLogPath + @"\" + sFilePrefix + DateTime.Now.ToString("_yyyyMMdd_HHmmtt") + ".log";
+                }
+                else
+                {
+                    LogFileSpec = m_sLogFileSpec;
+                }
+
             }
             catch (Exception ex)
             {

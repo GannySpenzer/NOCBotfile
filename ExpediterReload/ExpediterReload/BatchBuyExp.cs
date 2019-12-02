@@ -12,42 +12,22 @@ using System.ServiceModel.Channels;
 
 namespace OSVCService 
 {
-    public class Batcher
+    public class Batcher : BEData
     {
 
-        List<string> ACTION_ITEMS = new List<string>();
-        List<string> BUSINESS_UNIT = new List<string>();
-        List<string> BUYER_ID = new List<string>();
-        List<string> BUYER_TEAM = new List<string>();
-        List<string> CLIENT = new List<string>();
-        List<string> DESCRIPTION = new List<string>();
-        List<string> EXPEDITING_COMMENTS = new List<string>();
-        List<string> INVENTORY_BUSINESS_UNIT = new List<string>();
-        List<string> ITEM = new List<string>();
-        //List<string> LAST_COMMENT_DATE = new List<string>();
-        List<DateTime> LAST_COMMENT_DATE = new List<DateTime>();
-        List<string> LAST_OPERATOR = new List<string>();
-        List<string> LINE_NUMBER = new List<string>();
-        //List<string> PO_DATE = new List<string>();
-        List<DateTime> PO_DATE = new List<DateTime>();
-        List<string> PO_ID = new List<string>();
-        List<string> PS_URL = new List<string>();
-        List<string> PRIORITY_FLAG = new List<string>();
-        List<string> PROBLEM_CODE = new List<string>();
-        List<string> SITE_NAME = new List<string>();
-        List<int> STATUS_AGE = new List<int>();
-        List<string> VENDOR_ID = new List<string>();
-        List<string> VENDOR_NAME = new List<string>();
         DateTime dateparse;
 
         int iLastVal = 0;
         int modValue = 1000;
         string strResp = "SUCCESS";
 
+        public int dtResponseRowsCount = 0;
+
         RightNowSyncPortClient _client;
+        List<AccountInfo> _acctInfo = new List<AccountInfo>();
 
         // InitializeLogger start here
-        //Logger m_oLogger;
+        Logger m_oLogger;
         //string sLogPath = Environment.CurrentDirectory;
 
         DataTable dtResponse = new DataTable();
@@ -55,18 +35,9 @@ namespace OSVCService
         //Set the API Username and Password
         public Batcher(string strauth, string strpass)
         {
-            //EndpointAddress endPointAddr = new EndpointAddress("https://sdi.custhelp.com/services/soap/connect/soap");
-            //BasicHttpBinding binding = new BasicHttpBinding(BasicHttpSecurityMode.TransportWithMessageCredential);
-            //binding.Security.Message.ClientCredentialType = BasicHttpMessageCredentialType.UserName;
-            //binding.MaxReceivedMessageSize = 147483775; // Set max buffer size to 10MB for large files
-            //binding.MaxBufferSize = 147483775;
-            // The send timeout must be altered since there is so much data to retrieve
-            //binding.SendTimeout = new TimeSpan(6, 6, 6); // (Set to 5 minutes)
 
-            //_client = new RightNowSyncPortClient(binding, endPointAddr );
             _client = new RightNowSyncPortClient();
-            //_client.ClientCredentials.UserName.UserName = "API_User";
-            //_client.ClientCredentials.UserName.Password = "qD28#!ddnq";
+
             _client.ClientCredentials.UserName.UserName = strauth;
             _client.ClientCredentials.UserName.Password = strpass;
 
@@ -76,95 +47,119 @@ namespace OSVCService
 
         }
 
-        public void CreateBuyExpBatch(out string sResponse)
+        public void CreateBuyExpBatch(BEData beIn, Logger m_oLogger, out string sResponse)
         {
-            getData();
-            if (ACTION_ITEMS.Count > 0)
-            {
-                buildBatchRequestItems();
-            }
+            ACTION_ITEMS = beIn.ACTION_ITEMS;
+            BUSINESS_UNIT  = beIn.BUSINESS_UNIT ;
+            BUYER_ID = beIn.BUYER_ID;
+            BUYER_TEAM = beIn.BUYER_TEAM;
+            CLIENT = beIn.CLIENT;
+            DESCRIPTION = beIn.DESCRIPTION;
+            EXPEDITING_COMMENTS = beIn.EXPEDITING_COMMENTS;
+            INVENTORY_BUSINESS_UNIT = beIn.INVENTORY_BUSINESS_UNIT;
+            ITEM = beIn.ITEM;
+            LAST_COMMENT_DATE = beIn.LAST_COMMENT_DATE;
+            LAST_OPERATOR = beIn.LAST_OPERATOR;
+            LINE_NUMBER = beIn.LINE_NUMBER;
+            PO_DATE = beIn.PO_DATE;
+            PO_ID = beIn.PO_ID;
+            PS_URL = beIn.PS_URL;
+            PRIORITY_FLAG = beIn.PRIORITY_FLAG;
+            PROBLEM_CODE = beIn.PROBLEM_CODE;
+            SITE_NAME = beIn.SITE_NAME;
+            STATUS_AGE = beIn.STATUS_AGE;
+            VENDOR_ID = beIn.VENDOR_ID;
+            VENDOR_NAME = beIn.VENDOR_NAME;
+
+            dtResponseRowsCount = ACTION_ITEMS.Count();
+
+            buildBatchRequestItems(m_oLogger);
+
             sResponse = strResp;
-        }
-
-        public void getData()
-        {
-            Logger m_oLogger;
-            string sLogPath = Environment.CurrentDirectory;
-            if (!sLogPath.EndsWith(@"\"))
-                sLogPath += @"\";
-            sLogPath += "Logs";
-            m_oLogger = new Logger(sLogPath, "ExpediterReload");
-            m_oLogger.LogMessage("BatchBuyExp", "Entered BatchBuyExp class");
-
-
-            //STEP #3 - QUERY TABLE AND POST NEW DATA 
-            m_oLogger.LogMessage("ExpediterReload", "Query table started");
-            ExpediterReloadDAL objGetExpediterReloadDAL = new ExpediterReloadDAL();
-            dtResponse = objGetExpediterReloadDAL.getExpediterData(m_oLogger);
-            if (dtResponse.Rows.Count == 0)
-            {
-                m_oLogger.LogMessage("ExpediterReload", "Query returned no records.");
-                return;
-            }
-            else
-                m_oLogger.LogMessage("ExpediterReload", "POST ExpediterReload data started.");
-            for (int i = 0; i < dtResponse.Rows.Count; i++)
-            {
-                DataRow rowInit;
-                rowInit = dtResponse.Rows[i];
-
-                try
-                {
-                    ACTION_ITEMS.Add(rowInit["ACTION_ITEMS"].ToString());
-                    BUSINESS_UNIT.Add(rowInit["BUSINESS_UNIT"].ToString());
-                    BUYER_ID.Add(rowInit["BUYER_ID"].ToString());
-                    BUYER_TEAM.Add(rowInit["BUYER_TEAM"].ToString());                    
-                    CLIENT.Add(rowInit["CLIENT"].ToString());
-                    DESCRIPTION.Add(rowInit["DESCRIPTION"].ToString());
-                    EXPEDITING_COMMENTS.Add(rowInit["EXPEDITING_COMMENTS"].ToString());
-                    INVENTORY_BUSINESS_UNIT.Add(rowInit["BUSINESS_UNIT_IN"].ToString());
-                    ITEM.Add(rowInit["ITEM"].ToString());
-
-                    string LAST_COMMENT_DATEtest = rowInit["LAST_COMMENT_DATE"].ToString();
-                    dateparse = DateTime.Parse(LAST_COMMENT_DATEtest);
-                    //LAST_COMMENT_DATE.Add(dateparse.ToString("yyyy-MM-ddTHH:mm:ss.000Z"));
-                    LAST_COMMENT_DATE.Add(dateparse);
-
-                    LAST_OPERATOR.Add(rowInit["LAST_OPERATOR"].ToString());
-                    LINE_NUMBER.Add(rowInit["LINE_NBR"].ToString());
-
-                    string PO_DATEtest = rowInit["PO_DATE"].ToString();
-                    dateparse = DateTime.Parse(PO_DATEtest);
-                    //PO_DATE.Add(dateparse.ToString("yyyy-MM-ddTHH:mm:ss.000Z"));
-                    PO_DATE.Add(dateparse);
-
-                    PO_ID.Add(rowInit["PO_ID"].ToString());
-                    PS_URL.Add(" ");                                        //?????
-                    PRIORITY_FLAG.Add(rowInit["PRIORITY_FLAG"].ToString());              
-                    PROBLEM_CODE.Add(rowInit["PROBLEM_CODE"].ToString());
-                    SITE_NAME.Add(" ");                                     //?????
-                    STATUS_AGE.Add(Convert.ToInt16( rowInit["STATUS_AGE"]));
-                    VENDOR_ID.Add(rowInit["VENDOR_ID"].ToString());
-                    VENDOR_NAME.Add(rowInit["VENDOR"].ToString());
-                }
-                catch (Exception ex)
-                {
-                    m_oLogger.LogMessage("ExpeditorReload", "Error trying to parse data at line " + i.ToString(), ex);
-
-                }
-
-            }
-
-            m_oLogger.LogMessage("ExpediterReload", "Query table and parse successful.");
-
-
 
         }
+
+        //public void getData()
+        //{
+        //    Logger m_oLogger;
+        //    string sLogPath = Environment.CurrentDirectory;
+        //    if (!sLogPath.EndsWith(@"\"))
+        //        sLogPath += @"\";
+        //    sLogPath += "Logs";
+        //    m_oLogger = new Logger(sLogPath, "ExpediterReload");
+        //    m_oLogger.LogMessage("BatchBuyExp", "Entered BatchBuyExp class");
+
+
+        //    //STEP #3 - QUERY TABLE AND POST NEW DATA 
+        //    m_oLogger.LogMessage("ExpediterReload", "Query table started");
+        //    ExpediterReloadDAL objGetExpediterReloadDAL = new ExpediterReloadDAL();
+        //    dtResponse = objGetExpediterReloadDAL.getExpediterData(m_oLogger);
+        //    if (dtResponse.Rows.Count == 0)
+        //    {
+        //        m_oLogger.LogMessage("ExpediterReload", "Query returned no records.");
+        //        return;
+        //    }
+        //    else
+        //        m_oLogger.LogMessage("ExpediterReload", "POST ExpediterReload data started.");
+        //    for (int i = 0; i < dtResponse.Rows.Count; i++)
+        //    {
+        //        DataRow rowInit;
+        //        rowInit = dtResponse.Rows[i];
+
+        //        try
+        //        {
+        //            ACTION_ITEMS.Add(rowInit["ACTION_ITEMS"].ToString());
+        //            BUSINESS_UNIT.Add(rowInit["BUSINESS_UNIT"].ToString());
+        //            BUYER_ID.Add(rowInit["BUYER_ID"].ToString());
+        //            BUYER_TEAM.Add(rowInit["BUYER_TEAM"].ToString());                    
+        //            CLIENT.Add(rowInit["CLIENT"].ToString());
+        //            DESCRIPTION.Add(rowInit["DESCRIPTION"].ToString());
+        //            EXPEDITING_COMMENTS.Add(rowInit["EXPEDITING_COMMENTS"].ToString());
+        //            INVENTORY_BUSINESS_UNIT.Add(rowInit["BUSINESS_UNIT_IN"].ToString());
+        //            ITEM.Add(rowInit["ITEM"].ToString());
+
+        //            string LAST_COMMENT_DATEtest = rowInit["LAST_COMMENT_DATE"].ToString();
+        //            dateparse = DateTime.Parse(LAST_COMMENT_DATEtest);
+        //            //LAST_COMMENT_DATE.Add(dateparse.ToString("yyyy-MM-ddTHH:mm:ss.000Z"));
+        //            LAST_COMMENT_DATE.Add(dateparse);
+
+        //            LAST_OPERATOR.Add(rowInit["LAST_OPERATOR"].ToString());
+        //            LINE_NUMBER.Add(rowInit["LINE_NBR"].ToString());
+
+        //            string PO_DATEtest = rowInit["PO_DATE"].ToString();
+        //            dateparse = DateTime.Parse(PO_DATEtest);
+        //            //PO_DATE.Add(dateparse.ToString("yyyy-MM-ddTHH:mm:ss.000Z"));
+        //            PO_DATE.Add(dateparse);
+
+        //            PO_ID.Add(rowInit["PO_ID"].ToString());
+        //            PS_URL.Add(" ");                                        //?????
+        //            PRIORITY_FLAG.Add(rowInit["PRIORITY_FLAG"].ToString());              
+        //            PROBLEM_CODE.Add(rowInit["PROBLEM_CODE"].ToString());
+        //            SITE_NAME.Add(" ");                                     //?????
+        //            STATUS_AGE.Add(Convert.ToInt16( rowInit["STATUS_AGE"]));
+        //            VENDOR_ID.Add(rowInit["VENDOR_ID"].ToString());
+        //            VENDOR_NAME.Add(rowInit["VENDOR"].ToString());
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            m_oLogger.LogMessage("ExpeditorReload", "Error trying to parse data at line " + i.ToString(), ex);
+
+        //        }
+
+        //    }
+
+        //    m_oLogger.LogMessage("ExpediterReload", "Query table and parse successful.");
+
+
+
+        //}
 
         //You can have up to 100 items in a batch. The function that is part of the batch
         //can have up to 1000 objects so you can essentially have 100,000 records created in one call
-        public void buildBatchRequestItems()
+        public void buildBatchRequestItems(Logger m_oLogger)
         {
+            m_oLogger.LogMessage("BatchBuyExp", "Entered BatchBuyExp class");
+
             try
             {
 
@@ -172,7 +167,7 @@ namespace OSVCService
 
                 //for (int i = 0; i < ACTION_ITEMS.Count() / modValue; i++)
                 int p = 0;
-                while (iLastVal != ACTION_ITEMS.Count())
+                while (iLastVal != dtResponseRowsCount )
                 {
                     requestItems[p] = createNewBuyExpBatchRequest();
                     requestItems[p].CommitAfter = true;
@@ -188,24 +183,20 @@ namespace OSVCService
 
                 System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
 
-                submitBatch(requestItems);
+                submitBatch(requestItems, m_oLogger);
             }
             catch (Exception ex)
             {
+                strResp = "FAILURE";
+                m_oLogger.LogMessage("BuyExpReload", "BuyExpReload submitBatch Failure: " + ex.ToString());
 
             }
         }
 
 
         //Submit the batch and read the response if needed
-        public void submitBatch(BatchRequestItem[] requestItems)
+        public void submitBatch(BatchRequestItem[] requestItems, Logger m_oLogger)
         {
-                Logger m_oLogger;
-                string sLogPath = Environment.CurrentDirectory;
-                if (!sLogPath.EndsWith(@"\"))
-                    sLogPath += @"\";
-                sLogPath += "Logs";
-                m_oLogger = new Logger(sLogPath, "ExpediterReload");
                 m_oLogger.LogMessage("BatchBuyExp", "Entered submitBatch class");
 
                 ClientInfoHeader clientInfoHeader = new ClientInfoHeader();
@@ -242,7 +233,7 @@ namespace OSVCService
                         {
                             GenericObject newObj = (GenericObject)obj;
                             //System.Console.WriteLine("New BuyExp ID: " + newObj.ID.id);
-                            m_oLogger.LogMessage("ExpeditorReload", "BatchBuyExp submitBatch Response: " + newObj.ID.id.ToString());
+                            //m_oLogger.LogMessage("ExpeditorReload", "BatchBuyExp submitBatch Response: " + newObj.ID.id.ToString());
                         }
                     }
                 }
@@ -282,7 +273,6 @@ namespace OSVCService
             gfs.Add(createGenericField("Description", ItemsChoiceType.StringValue, Description));
             gfs.Add(createGenericField("Problem_Code", ItemsChoiceType.StringValue, Problem_Code));
             gfs.Add(createGenericField("Expediting_Comments", ItemsChoiceType.StringValue, Expediting_Comments));
-            gfs.Add(createGenericField("Buyer_ID", ItemsChoiceType.StringValue, Buyer_ID));
             gfs.Add(createGenericField("Vendor_ID", ItemsChoiceType.StringValue, Vendor_ID));
             gfs.Add(createGenericField("Vendor_Name", ItemsChoiceType.StringValue, Vendor_Name));
             gfs.Add(createGenericField("Last_Operator", ItemsChoiceType.StringValue, Last_Operator));
@@ -291,8 +281,27 @@ namespace OSVCService
             gfs.Add(createGenericField("Priority_Flag", ItemsChoiceType.StringValue, Priority_Flag));
             gfs.Add(createGenericField("Status_Age", ItemsChoiceType.IntegerValue, Status_Age));
             gfs.Add(createGenericField("Site_Name", ItemsChoiceType.StringValue, Site_Name));
-            gfs.Add(createGenericField("Buyer_Team", ItemsChoiceType.StringValue, Buyer_Team));
             gfs.Add(createGenericField("PS_URL", ItemsChoiceType.StringValue, PS_URL));
+
+            //gfs.Add(createGenericField("Buyer_ID", ItemsChoiceType.StringValue, Buyer_ID));
+            //gfs.Add(createGenericField("Buyer_Team", ItemsChoiceType.StringValue, Buyer_Team));
+            try
+            {
+                if (Buyer_ID.Trim() != "")
+                    gfs.Add(createAccountMenuFieldByName("Buyer_ID", Buyer_ID));
+            }
+            catch (Exception ex)
+            {
+            }
+
+            try
+            {
+                if (Buyer_Team.Trim() != "")
+                    gfs.Add(createAccountMenuFieldByName("Buyer_Team", Buyer_Team));
+            }
+            catch (Exception ex)
+            {
+            }
 
             go.GenericFields = gfs.ToArray();
 
@@ -320,7 +329,7 @@ namespace OSVCService
             {
                 //foreach (var item in ACTION_ITEMS)
                 //while (iLastVal % modValue != 0 || (iLastVal / modValue) == 0 || iLastVal == ACTION_ITEMS.Count())
-                while (iLastVal != ACTION_ITEMS.Count())
+                while (iLastVal != dtResponseRowsCount)
                 {
                     genArray[n] = getBuyExpGenericObject(ACTION_ITEMS[iLastVal], CLIENT[iLastVal], PO_DATE[iLastVal], BUSINESS_UNIT[iLastVal], PO_ID[iLastVal], LINE_NUMBER[iLastVal], ITEM[iLastVal], DESCRIPTION[iLastVal], PROBLEM_CODE[iLastVal], EXPEDITING_COMMENTS[iLastVal], BUYER_ID[iLastVal], VENDOR_ID[iLastVal], VENDOR_NAME[iLastVal], LAST_OPERATOR[iLastVal], LAST_COMMENT_DATE[iLastVal], INVENTORY_BUSINESS_UNIT[iLastVal], PRIORITY_FLAG[iLastVal], STATUS_AGE [iLastVal], SITE_NAME[iLastVal], BUYER_TEAM[iLastVal], PS_URL[iLastVal]);
                     //GenericObject go1 = getBuyExpGenericObject("Test1","Test1",DateTime.Now,"Test1","Test1","Test1","Test1","Test1","Test1","Test1","Test1","Test1","Test1","Test1",DateTime.Now,"Test1","Test1",0,"Test1","Test1","Test1");
@@ -372,5 +381,83 @@ namespace OSVCService
             gf.DataValue.Items = new object[] { Value };
             return gf;
         }
+
+                private GenericField createMenuGenericField(string fieldName, long fieldID)
+        {
+            GenericField gf = new GenericField();
+
+            NamedID fid = new NamedID();
+            fid.ID = new ID();
+            fid.ID.idSpecified = true;
+            fid.ID.id = fieldID;
+
+            gf = createGenericField(fieldName, ItemsChoiceType.NamedIDValue, fid);
+
+            return gf;
+        }
+
+        private GenericField createAccountMenuFieldByName(string fieldName, string accountName)
+        {
+
+            GenericField gf = new GenericField();
+
+
+            if (_acctInfo.Count < 1)
+            {
+                QueryAccountObjectsSample();
+            }
+
+            AccountInfo ai = _acctInfo.Find(a => a.LookupName == accountName.Replace(".", " "));
+
+            gf = createMenuGenericField(fieldName, ai.id);
+
+            return gf;
+        }
+
+        public void QueryAccountObjectsSample()
+        {
+            ClientInfoHeader clientInfoHeader = new ClientInfoHeader();
+            clientInfoHeader.AppID = "Basic Objects Sample";
+            APIAccessRequestHeader apiAccessRequestHeader = new APIAccessRequestHeader();
+
+            String queryString = "Select Account FROM Account;";
+
+            Account accountTemplate = new Account();
+
+            RNObject[] objectTemplates = new RNObject[] { accountTemplate };
+
+            try
+            {
+                QueryResultData[] queryObjects;
+                _client.QueryObjects(clientInfoHeader, apiAccessRequestHeader, queryString, objectTemplates, 10000, out queryObjects);
+                RNObject[] rnObjects = queryObjects[0].RNObjectsResult;
+
+                foreach (RNObject obj in rnObjects)
+                {
+                    Account acct = (Account)obj;
+
+                    _acctInfo.Add(new AccountInfo() { id = acct.ID.id, LookupName = acct.LookupName });
+                    System.Console.WriteLine("Account ID: " + acct.ID.id + " Name: " + acct.LookupName);
+
+                }
+
+            }
+            catch (FaultException ex)
+            {
+                Console.WriteLine(ex.Code);
+                Console.WriteLine(ex.Message);
+            }
+            //catch (SoapException ex)
+            //{
+            //    Console.WriteLine(ex.Code);
+            //    Console.WriteLine(ex.Message);
+            //}
+        }
+    }
+
+    public class AccountInfo
+    {
+        public long id { get; set; }
+        public string LookupName { get; set; }
     }
 }

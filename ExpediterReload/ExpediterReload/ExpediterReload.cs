@@ -28,7 +28,7 @@ namespace ExpediterReload
             Exception exErrorMsg;
             string resultSet = "";
             string processFlag = " ";
-            
+
             DataTable dtResponse = new DataTable();
 
             //string ACTION_ITEMS = " ";
@@ -76,7 +76,7 @@ namespace ExpediterReload
 
             using (var client = new WebClient())
             {
-                
+
                 //set default parameters
                 testOrProd = ConfigurationManager.AppSettings["TestOrProd"];
                 if (testOrProd == "TEST")
@@ -94,7 +94,7 @@ namespace ExpediterReload
                     password = ConfigurationManager.AppSettings["prodPassword"];
 
                 }
-                    
+
                 {
 
                     string basicAuthBase641;
@@ -102,7 +102,7 @@ namespace ExpediterReload
                     client.Headers.Add("Authorization", String.Format("Basic {0}", basicAuthBase641));
                     //client.Headers.Add("Content-Type:application/json");
                     client.Headers.Add("OSvC-CREST-Application-Context", "SDI Integration");
-                    
+
                     //STEP #1 - QUERY EXISTING DATA 
 
                     //var result = client.UploadString(serviceURL, resultSet.ToString());
@@ -121,9 +121,9 @@ namespace ExpediterReload
                         m_oLogger.LogMessageWeb("ExpediterReload", "QUERYING Oracle Data failed", "QUERYING Oracle Data failed");
                         return;
                     }
-                    
+
                     RootObject  bo = JsonConvert.DeserializeObject<RootObject>(resultSet);
-                    
+
                     //var objects = JArray.Parse(resultSet);
                     m_oLogger.LogMessage("ExpediterReload", "DELETE Oracle Data started");
                     //try
@@ -152,7 +152,7 @@ namespace ExpediterReload
                     {
                         double delTimes = 0;
                         if (Convert.ToInt16(bo.items[0].rows.Count) > 0)
-                            delTimes = Math.Ceiling(Convert.ToDouble (bo.items[0].rows.Count) / 1000);
+                            delTimes = Math.Ceiling(Convert.ToDouble(bo.items[0].rows.Count) / 1000);
                         string strDelQuery = "";
                         if (delTimes > 0)
                         {
@@ -160,7 +160,7 @@ namespace ExpediterReload
                             {
                                 strDelQuery += "Delete From CO.BuyExp LIMIT 1000;";
                             }
-                            client.OpenRead (serviceURL2 + strDelQuery);
+                            client.OpenRead(serviceURL2 + strDelQuery);
                             m_oLogger.LogMessage("ExpediterReload", "DELETE Oracle Data of " + bo.items[0].rows.Count.ToString() + " records successful.");
                         }
                     }
@@ -271,138 +271,109 @@ namespace ExpediterReload
 
                     try
                     {
-                        ////////////////////////////////////////////////////test//////////////////////////////////////
-                        //DataRow[] rows = dtResponse.Select();
+                        ExpediterReloadDAL dal = new ExpediterReloadDAL();
+                        dal.CreateTable(m_oLogger);
 
+                        if (dal.dtResponseRowsCount > 0)
+                        {
+                            while (dal.gotAllData == "N")
+                            {
+                                BEData bed = dal.getData(m_oLogger);
 
-                        ////List<ExpediterReloadBO> target = rows.Where(row => row.Field<string>("ITEM") == ITEM  )
-                        //List<ExpediterReloadBO> target = dtResponse.AsEnumerable()
-                        //    .Select (row => new ExpediterReloadBO
-                        //    {
-                        //        Action_Items = ACTION_ITEMS ,
-                        //        Business_Unit = BUSINESS_UNIT,  
-                        //        Buyer_ID = BUYER_ID ,
-                        //        Buyer_Team = BUYER_TEAM,
-                        //        Client = CLIENT ,
-                        //        Description = DESCRIPTION ,
-                        //        Expediting_Comments = EXPEDITING_COMMENTS ,
-                        //        Inventory_Business_Unit = INVENTORY_BUSINESS_UNIT ,
-                        //        Item = ITEM ,
-                        //        Last_Comment_Date = LAST_COMMENT_DATE ,
-                        //        Last_Operator = LAST_OPERATOR ,
-                        //        Line_Number = LINE_NUMBER ,
-                        //        PO_Date = PO_DATE ,
-                        //        PO_ID = PO_ID ,
-                        //        PS_URL = PS_URL,
-                        //        Priority_Flag = PRIORITY_FLAG,
-                        //        Problem_Code = PROBLEM_CODE ,
-                        //        Site_Name = SITE_NAME ,
-                        //        Status_Age = STATUS_AGE ,
-                        //        Vendor_ID = VENDOR_ID ,
-                        //        Vendor_Name = VENDOR_NAME 
-                        //    }).ToList();
-                        //string json1 = JsonConvert.SerializeObject(target, Formatting.None);
-                        //json1 = json1.Remove(0, 1);
-                        //json1 = json1.Remove(json1.Length - 1);
-                        ////////////////////////////////////////////////////test//////////////////////////////////////
+                                //new batch SoapUI code
+                                Batcher batcher = new Batcher(authorization, password);
+                                batcher.CreateBuyExpBatch(bed, m_oLogger, out strResponse);
 
-                        //single post REST method
-                        //StringBuilder sbInit = new StringBuilder();
-                        //string xmlStr = string.Empty;
-                        //string xmlStringInit = string.Empty;
-                        //string dir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-                        //using (StreamReader sr2 = new StreamReader(dir + "/BuyExpPost.txt"))
-                        //{
-
-                        //    xmlStr = sr2.ReadToEnd();
-                        //    sbInit.AppendFormat(xmlStr, ACTION_ITEMS, BUSINESS_UNIT, BUYER_ID, BUYER_TEAM, CLIENT, DESCRIPTION, EXPEDITING_COMMENTS, INVENTORY_BUSINESS_UNIT, ITEM, LAST_COMMENT_DATE, LAST_OPERATOR, LINE_NUMBER, PO_DATE, PO_ID, PS_URL, PRIORITY_FLAG, PROBLEM_CODE, SITE_NAME, STATUS_AGE, VENDOR_ID, VENDOR_NAME);
-                        //    xmlStringInit = sbInit.ToString();
-                        //}
-                        //client.UploadString(serviceURL2, xmlStringInit);
-                        ///////////////////////////////////////////////////////
-
-                        //new batch SoapUI code
-                        Batcher batcher = new Batcher(authorization, password );
-                        batcher.CreateBuyExpBatch(out strResponse );
-
+                                dal.UpdateTable(m_oLogger);
+                            }
                         }
+                    }
                     catch (Exception ex)
                     {
                         strResponse = "FAILURE";
                         exErrorMsg = ex;
                     }
 
-                    //catch (Exception ex)
+                    ////////////////////////////////////////////////////test//////////////////////////////////////
+                    //DataRow[] rows = dtResponse.Select();
+
+
+                    ////List<ExpediterReloadBO> target = rows.Where(row => row.Field<string>("ITEM") == ITEM  )
+                    //List<ExpediterReloadBO> target = dtResponse.AsEnumerable()
+                    //    .Select (row => new ExpediterReloadBO
+                    //    {
+                    //        Action_Items = ACTION_ITEMS ,
+                    //        Business_Unit = BUSINESS_UNIT,  
+                    //        Buyer_ID = BUYER_ID ,
+                    //        Buyer_Team = BUYER_TEAM,
+                    //        Client = CLIENT ,
+                    //        Description = DESCRIPTION ,
+                    //        Expediting_Comments = EXPEDITING_COMMENTS ,
+                    //        Inventory_Business_Unit = INVENTORY_BUSINESS_UNIT ,
+                    //        Item = ITEM ,
+                    //        Last_Comment_Date = LAST_COMMENT_DATE ,
+                    //        Last_Operator = LAST_OPERATOR ,
+                    //        Line_Number = LINE_NUMBER ,
+                    //        PO_Date = PO_DATE ,
+                    //        PO_ID = PO_ID ,
+                    //        PS_URL = PS_URL,
+                    //        Priority_Flag = PRIORITY_FLAG,
+                    //        Problem_Code = PROBLEM_CODE ,
+                    //        Site_Name = SITE_NAME ,
+                    //        Status_Age = STATUS_AGE ,
+                    //        Vendor_ID = VENDOR_ID ,
+                    //        Vendor_Name = VENDOR_NAME 
+                    //    }).ToList();
+                    //string json1 = JsonConvert.SerializeObject(target, Formatting.None);
+                    //json1 = json1.Remove(0, 1);
+                    //json1 = json1.Remove(json1.Length - 1);
+                    ////////////////////////////////////////////////////test//////////////////////////////////////
+
+                    //single post REST method
+                    //StringBuilder sbInit = new StringBuilder();
+                    //string xmlStr = string.Empty;
+                    //string xmlStringInit = string.Empty;
+                    //string dir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                    //using (StreamReader sr2 = new StreamReader(dir + "/BuyExpPost.txt"))
                     //{
-                    //    m_oLogger.LogMessage("ExpediterReload", "POST ExpediterReload failed at row:" + i.ToString());
-                    //    return;
+
+                    //    xmlStr = sr2.ReadToEnd();
+                    //    sbInit.AppendFormat(xmlStr, ACTION_ITEMS, BUSINESS_UNIT, BUYER_ID, BUYER_TEAM, CLIENT, DESCRIPTION, EXPEDITING_COMMENTS, INVENTORY_BUSINESS_UNIT, ITEM, LAST_COMMENT_DATE, LAST_OPERATOR, LINE_NUMBER, PO_DATE, PO_ID, PS_URL, PRIORITY_FLAG, PROBLEM_CODE, SITE_NAME, STATUS_AGE, VENDOR_ID, VENDOR_NAME);
+                    //    xmlStringInit = sbInit.ToString();
                     //}
+                    //client.UploadString(serviceURL2, xmlStringInit);
+                    ///////////////////////////////////////////////////////
 
-
-                    //if (i == (dtResponse.Rows.Count -1))
-                    //        {
-                    //            strResponse = "SUCCESS";
-                    //        }
-
-                            /*
-                            {
-                            "Action_Items": "Test",
-                            "Business_Unit": "Test",
-                            "Buyer_ID": "Test",
-                            "Buyer_Team": "Test",
-                            "Client": "Test",
-                            "Description": "Test",
-                            "Expediting_Comments": "Test",
-                            "Inventory_Business_Unit": "Test",
-                            "Item": "Test",
-                            "Last_Comment_Date": "2019-07-12T01:01:34.000Z",
-                            "Last_Operator": "Test",
-                            "Line_Number": "Test",
-                            "PO_Date": "2019-07-12T01:01:34.000Z",
-                            "PO_ID": "Test",
-                            "PS_URL": "Test",
-                            "Priority_Flag": "Test",
-                            "Problem_Code": "Test",
-                            "Site_Name": "Test",
-                            "Status_Age": 10,
-                            "Vendor_ID": "Test",
-                            "Vendor_Name": "Test"
-                            }
-                            */
-                        }
-
-                    // Console.WriteLine(result);
-                    //var parsed = JObject.Parse(result);
-                    //strResponse = parsed.SelectToken("RequestStatus").Value<string>();
 
                     m_oLogger.LogMessage("ExpediterReload", "POST ExpediterReload data to Solvay server status " + strResponse);
 
                     if (strResponse.ToUpper() != "SUCCESS")
                     {
-                        m_oLogger.LogMessage("ExpediterReload", "POST ExpediterReload data to Solvay server status " + strResponse  );
+                        m_oLogger.LogMessage("ExpediterReload", "POST ExpediterReload data to Solvay server status " + strResponse);
                         m_oLogger.LogMessageWeb("ExpediterReload", "POST ExpediterReload data to Solvay server status " + strResponse, "POST ExpediterReload data to Solvay server status " + strResponse);
 
                     }
 
 
                 }
-            
 
-            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-            //if (strResponse.ToUpper() == "SUCCESS")
-            //{
-            //    processFlag = "I";
-            //}
-            //else
-            //{
-            //    processFlag = "E"; //error
-            //}
-            //objWMReceiptsMappingDAL.UpdateWMReceiptMappingData(m_oLogger, processFlag);
+                //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-            m_oLogger.LogMessage("Main", "ExpediterReload End");
+                //if (strResponse.ToUpper() == "SUCCESS")
+                //{
+                //    processFlag = "I";
+                //}
+                //else
+                //{
+                //    processFlag = "E"; //error
+                //}
+                //objWMReceiptsMappingDAL.UpdateWMReceiptMappingData(m_oLogger, processFlag);
+
+                m_oLogger.LogMessage("Main", "ExpediterReload End");
+
+            }
 
         }
-
     }
 }
