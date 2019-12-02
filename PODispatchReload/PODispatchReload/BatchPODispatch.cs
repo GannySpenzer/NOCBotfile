@@ -12,34 +12,8 @@ using System.ServiceModel.Channels;
 
 namespace OSVCService
 {
-    public class Batcher : PODispatchReloadDAL
+    public class Batcher : PODData 
     {
-
-        public List<string> ACTION_ITEM = new List<string>();
-        public List<string> CLIENT = new List<string>();
-        public List<string> VENDOR_NAME = new List<string>();
-        public List<DateTime> PO_DATE = new List<DateTime>();
-        public List<string> PO_ID = new List<string>();
-        public List<string> LINE_NUMBER = new List<string>();
-        public List<string> ITEM_ID = new List<string>();
-        public List<string> INITIAL_DISP_METHOD = new List<string>();
-        public List<string> INITIAL_USER = new List<string>();
-        public List<DateTime> INITIAL_DIS_DTTM = new List<DateTime>();
-        public List<string> BUYER_ID = new List<string>();
-        public List<string> VENDOR_ID = new List<string>();
-        public List<string> VENDOR_EMAIL = new List<string>();
-        public List<string> VENDOR_DEFAULT = new List<string>();
-        public List<string> PROBLEM_CODE = new List<string>();
-        public List<string> COMMENTS = new List<string>();
-        public List<string> USER_ID = new List<string>();
-        public List<string> REQ_DISP_OVERRIDE = new List<string>();
-        public List<string> PRIORITY_FLAG = new List<string>();
-        public List<string> INVENTORY_BUSINESS_UNIT = new List<string>();
-        public List<string> HDR_COMMENTS = new List<string>();
-        public List<string> COMMENT_TYPE = new List<string>();
-        public List<string> SITE_NAME = new List<string>();
-        public List<string> PS_URL = new List<string>();
-        public List<string> BUYER_TEAM = new List<string>();
 
         DateTime dateparse;
 
@@ -50,6 +24,7 @@ namespace OSVCService
         int dtResponseRowsCount = 0;
 
         RightNowSyncPortClient _client;
+        List<AccountInfo> _acctInfo = new List<AccountInfo>();
 
         // InitializeLogger start here
         public Logger m_oLogger;
@@ -241,7 +216,6 @@ namespace OSVCService
             gfs.Add(createGenericField("Initial_Disp_Method", ItemsChoiceType.StringValue, initial_disp_method ));
             gfs.Add(createGenericField("Initial_User", ItemsChoiceType.StringValue, initial_user));
             gfs.Add(createGenericField("Initial_Disp_DTTM", ItemsChoiceType.DateTimeValue , initial_dis_dttm ));
-            gfs.Add(createGenericField("Buyer_ID", ItemsChoiceType.StringValue , Buyer_id ));
             gfs.Add(createGenericField("Vendor_ID", ItemsChoiceType.StringValue, vendor_id));
             gfs.Add(createGenericField("Vendor_Email", ItemsChoiceType.StringValue , vendor_email ));
             gfs.Add(createGenericField("Vendor_Default", ItemsChoiceType.StringValue, vendor_default ));
@@ -255,7 +229,26 @@ namespace OSVCService
             gfs.Add(createGenericField("Comment_Type", ItemsChoiceType.StringValue , comment_type));
             gfs.Add(createGenericField("Site_Name", ItemsChoiceType.StringValue, site_name ));
             gfs.Add(createGenericField("PS_URL", ItemsChoiceType.StringValue , ps_url ));
-            gfs.Add(createGenericField("Buyer_Team", ItemsChoiceType.StringValue , buyer_team ));
+
+            //gfs.Add(createGenericField("Buyer_ID", ItemsChoiceType.StringValue, Buyer_id));
+            //gfs.Add(createGenericField("Buyer_Team", ItemsChoiceType.StringValue, buyer_team));
+            try
+            {
+                if (Buyer_id.Trim() != "")
+                    gfs.Add(createAccountMenuFieldByName("Buyer_ID", Buyer_id));
+            }
+            catch (Exception ex)
+            {
+            }
+
+            try
+            {
+                if (buyer_team.Trim() != "")
+                    gfs.Add(createAccountMenuFieldByName("Buyer_Team", buyer_team));
+            }
+            catch (Exception ex)
+            {
+            }
 
 
             go.GenericFields = gfs.ToArray();
@@ -339,5 +332,84 @@ namespace OSVCService
             gf.DataValue.Items = new object[] { Value };
             return gf;
         }
+
+            private GenericField createMenuGenericField(string fieldName, long fieldID)
+        {
+            GenericField gf = new GenericField();
+
+            NamedID fid = new NamedID();
+            fid.ID = new ID();
+            fid.ID.idSpecified = true;
+            fid.ID.id = fieldID;
+
+            gf = createGenericField(fieldName, ItemsChoiceType.NamedIDValue, fid);
+
+            return gf;
+        }
+
+        private GenericField createAccountMenuFieldByName(string fieldName, string accountName)
+        {
+
+            GenericField gf = new GenericField();
+
+
+            if (_acctInfo.Count < 1)
+            {
+                QueryAccountObjectsSample();
+            }
+
+            AccountInfo ai = _acctInfo.Find(a => a.LookupName == accountName.Replace(".", " "));
+
+            gf = createMenuGenericField(fieldName, ai.id);
+
+            return gf;
+        }
+
+        public void QueryAccountObjectsSample()
+        {
+            ClientInfoHeader clientInfoHeader = new ClientInfoHeader();
+            clientInfoHeader.AppID = "Basic Objects Sample";
+            APIAccessRequestHeader apiAccessRequestHeader = new APIAccessRequestHeader();
+
+            String queryString = "Select Account FROM Account;";
+
+            Account accountTemplate = new Account();
+
+            RNObject[] objectTemplates = new RNObject[] { accountTemplate };
+
+            try
+            {
+                QueryResultData[] queryObjects;
+                _client.QueryObjects(clientInfoHeader, apiAccessRequestHeader, queryString, objectTemplates, 10000, out queryObjects);
+                RNObject[] rnObjects = queryObjects[0].RNObjectsResult;
+
+                foreach (RNObject obj in rnObjects)
+                {
+                    Account acct = (Account)obj;
+
+                    _acctInfo.Add(new AccountInfo() { id = acct.ID.id, LookupName = acct.LookupName });
+                    System.Console.WriteLine("Account ID: " + acct.ID.id + " Name: " + acct.LookupName);
+
+                }
+
+            }
+            catch (FaultException ex)
+            {
+                Console.WriteLine(ex.Code);
+                Console.WriteLine(ex.Message);
+            }
+            //catch (SoapException ex)
+            //{
+            //    Console.WriteLine(ex.Code);
+            //    Console.WriteLine(ex.Message);
+            //}
+        }
     }
+
+    public class AccountInfo
+    {
+        public long id { get; set; }
+        public string LookupName { get; set; }
+    }
+
 }

@@ -116,7 +116,7 @@ namespace PODispatchReload1
                 strSQLstring += "A.DISP_METHOD as INITIAL_DISP_METHOD,\n";
                 strSQLstring += "A.OPRID as INITIAL_USER, \n";
                 strSQLstring += "A.DATETIME_DISP as INITIAL_DISPATCH_DTTM, \n";
-                strSQLstring += "B.BUYER_ID as BUYER_ID, \n";
+                strSQLstring += "NVL(B.BUYER_ID, ' ') as BUYER_ID, \n";
                 strSQLstring += "B.VENDOR_ID as VENDOR_ID,\n";
                 strSQLstring += "I.EMAILID as VENDOR_EMAIL, \n";
                 strSQLstring += "J.DISP_METHOD as VENDOR_DEFAULT, \n";
@@ -129,7 +129,7 @@ namespace PODispatchReload1
                 strSQLstring += "NVL(O.COMMENTS_2000, ' ') as HDR_COMMENTS, \n";
                 strSQLstring += "' 'as REQ_SHIP_METHOD,\n";
                 strSQLstring += "B.hold_status as PO_HOLD_FLAG,\n";
-                strSQLstring += "N.roleuser as BUYER_TEAM,\n";
+                strSQLstring += "NVL(N.roleuser, ' ') as BUYER_TEAM,\n";
                 strSQLstring += "' ' as PS_URL,\n";
                 strSQLstring += "NVL(O20X.XLATLONGNAME, ' ') as COMMENT_TYPE,\n";
                 strSQLstring += "' ' as PROCESS_FLAG\n";
@@ -453,13 +453,13 @@ namespace PODispatchReload1
                 }
                 catch (Exception ex)
                 {
-                    m_oLogger.LogMessage("MatchExcepReload", "Error trying to parse data at line " + i.ToString(), ex);
+                    m_oLogger.LogMessage("PODispatchReload", "Error trying to parse data at line " + i.ToString(), ex);
 
                 }
 
             }
 
-            m_oLogger.LogMessage("MatchExcepReload", "Query table and parse successful.");
+            m_oLogger.LogMessage("PODispatchReload", "Query table and parse successful.");
             return pod;
 
         }
