@@ -147,7 +147,6 @@ namespace SAErrorReload1
                 dtResponse = oleDBExecuteReader(strSQLstring);
 
                 strSQLstring = "SELECT Process_Flag from SDIX_SAERRORTEMP";
-                strSQLstring += " WHERE Rownum < 11";
                 dtResponse = oleDBExecuteReader(strSQLstring);
                 dtResponseRowsCount = dtResponse.Rows.Count;
 
@@ -367,23 +366,23 @@ namespace SAErrorReload1
                     sae.DAYS_SINCE_SOURCE_DATE.Add(Convert.ToInt32(rowInit["DAYS_SINCE_SOURCE_DATE"]));
                     sae.DAYS_SINCE_LAST_MODIFIED.Add(Convert.ToInt32(rowInit["DAYS_SINCE_LAST_MODIFIED"]));
 
-                    if (rowInit["EXCEPTION_DATE"].ToString().Trim() != "")
-                    {
-                        sae.EXCEPTION_DATE.Add(Convert.ToDateTime(rowInit["EXCEPTION_DATE"]));
-                    }
-                    else
-                    {
-                        sae.EXCEPTION_DATE.Add(DateTime.Now);
-                    }
+                    //if (rowInit["EXCEPTION_DATE"].ToString().Trim() != "")
+                    //{
+                    //    sae.EXCEPTION_DATE.Add(Convert.ToDateTime(rowInit["EXCEPTION_DATE"]));
+                    //}
+                    //else
+                    //{
+                    //    sae.EXCEPTION_DATE.Add(DateTime.Now);
+                    //}
 
-                    if (rowInit["EXCEPTION_NUM_DAYS"].ToString().Trim() == "")
-                    {
-                        sae.EXCEPTION_NUM_DAYS.Add(0);
-                    }
-                    else
-                    {
-                        sae.EXCEPTION_NUM_DAYS.Add(Convert.ToInt32(rowInit["EXCEPTION_NUM_DAYS"]));
-                    }
+                    //if (rowInit["EXCEPTION_NUM_DAYS"].ToString().Trim() == "")
+                    //{
+                    //    sae.EXCEPTION_NUM_DAYS.Add(0);
+                    //}
+                    //else
+                    //{
+                    //    sae.EXCEPTION_NUM_DAYS.Add(Convert.ToInt32(rowInit["EXCEPTION_NUM_DAYS"]));
+                    //}
 
                     sae.SHIPTO_ID .Add(rowInit["SHIPTO_ID"].ToString());
                     sae.PRIORITY_FLAG .Add(rowInit["PRIORITY_FLAG"].ToString());

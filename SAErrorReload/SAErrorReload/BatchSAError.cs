@@ -196,7 +196,7 @@ namespace OSVCService
             string req_line, DateTime  req_date, string vendor_id,
             string vendor_name, string requisition_price, DateTime source_date,
             DateTime  todays_date, DateTime date_last_modified , int days_since_source_date,
-            int days_since_last_modified, DateTime exception_date, int exception_num_days,
+            int days_since_last_modified, //DateTime exception_date, int exception_num_days,
             string shipto_id, string priority_flag, string site_name,
             string ps_url, string buyer_team)
         {
@@ -227,8 +227,8 @@ namespace OSVCService
             gfs.Add(createGenericField("Date_Last_Modified", ItemsChoiceType.DateValue , date_last_modified ));
             gfs.Add(createGenericField("Days_Since_Source_Date", ItemsChoiceType.IntegerValue , days_since_source_date ));
             gfs.Add(createGenericField("Days_Since_Last_Modified", ItemsChoiceType.IntegerValue , days_since_last_modified ));
-            gfs.Add(createGenericField("Exception_Date", ItemsChoiceType.DateValue  , exception_date ));
-            gfs.Add(createGenericField("Exception_Number_days", ItemsChoiceType.IntegerValue , exception_num_days ));
+            //gfs.Add(createGenericField("Exception_Date", ItemsChoiceType.DateValue  , exception_date ));
+            //gfs.Add(createGenericField("Exception_Number_days", ItemsChoiceType.IntegerValue , exception_num_days ));
             gfs.Add(createGenericField("Shipto_ID", ItemsChoiceType.StringValue , shipto_id ));
             gfs.Add(createGenericField("Priority_Flag", ItemsChoiceType.StringValue, priority_flag ));
             gfs.Add(createGenericField("Site_Name", ItemsChoiceType.StringValue, site_name ));
@@ -287,12 +287,14 @@ namespace OSVCService
                 //while (iLastVal % modValue != 0 || (iLastVal / modValue) == 0 || iLastVal == ACTION_ITEMS.Count())
                 while (iLastVal != dtResponseRowsCount)
                 {
-                    genArray[n] = getBuyExpGenericObject(ACTION_ITEM[iLastVal], CLIENT[iLastVal], DESCRIPTION [iLastVal], BUYER_ID [iLastVal], ITEM [iLastVal], STOCK_TYPE [iLastVal], STAGE_STATUS [iLastVal],
-                        MESSAGE [iLastVal], REQ_ID [iLastVal], REQ_LINE [iLastVal], REQ_DATE [iLastVal], VENDOR_ID [iLastVal], VENDOR_NAME [iLastVal], REQUISITION_PRICE [iLastVal],
-                        SOURCE_DATE [iLastVal], TODAYS_DATE [iLastVal], DATE_LAST_MODIFIED [iLastVal], DAYS_SINCE_SOURCE_DATE [iLastVal], DAYS_SINCE_LAST_MODIFIED [iLastVal], EXCEPTION_DATE [iLastVal], EXCEPTION_NUM_DAYS [iLastVal],
-                        SHIPTO_ID [iLastVal], PRIORITY_FLAG [iLastVal], SITE_NAME [iLastVal], PS_URL [iLastVal], BUYER_TEAM [iLastVal]);
-                    //GenericObject go1 = getBuyExpGenericObject("Test1","Test1",DateTime.Now,"Test1","Test1","Test1","Test1","Test1","Test1","Test1","Test1","Test1","Test1","Test1",DateTime.Now,"Test1","Test1",0,"Test1","Test1","Test1");
-                    //GenericObject go2 = getBuyExpGenericObject("Test2", "Test2", DateTime.Now, "Test2", "Test2", "Test2", "Test2", "Test2", "Test2", "Test2", "Test2", "Test2", "Test2", "Test2", DateTime.Now, "Test2", "Test2", 0, "Test2", "Test2", "Test2");
+                    //genArray[n] = getBuyExpGenericObject(ACTION_ITEM[iLastVal], CLIENT[iLastVal], DESCRIPTION [iLastVal], BUYER_ID [iLastVal], ITEM [iLastVal], STOCK_TYPE [iLastVal], STAGE_STATUS [iLastVal],
+                    //    MESSAGE [iLastVal], REQ_ID [iLastVal], REQ_LINE [iLastVal], REQ_DATE [iLastVal], VENDOR_ID [iLastVal], VENDOR_NAME [iLastVal], REQUISITION_PRICE [iLastVal],
+                    //    SOURCE_DATE [iLastVal], TODAYS_DATE [iLastVal], DATE_LAST_MODIFIED [iLastVal], DAYS_SINCE_SOURCE_DATE [iLastVal], DAYS_SINCE_LAST_MODIFIED [iLastVal], EXCEPTION_DATE [iLastVal], EXCEPTION_NUM_DAYS [iLastVal],
+                    //    SHIPTO_ID [iLastVal], PRIORITY_FLAG [iLastVal], SITE_NAME [iLastVal], PS_URL [iLastVal], BUYER_TEAM [iLastVal]);
+                    genArray[n] = getBuyExpGenericObject(ACTION_ITEM[iLastVal], CLIENT[iLastVal], DESCRIPTION[iLastVal], BUYER_ID[iLastVal], ITEM[iLastVal], STOCK_TYPE[iLastVal], STAGE_STATUS[iLastVal],
+                        MESSAGE[iLastVal], REQ_ID[iLastVal], REQ_LINE[iLastVal], REQ_DATE[iLastVal], VENDOR_ID[iLastVal], VENDOR_NAME[iLastVal], REQUISITION_PRICE[iLastVal],
+                        SOURCE_DATE[iLastVal], TODAYS_DATE[iLastVal], DATE_LAST_MODIFIED[iLastVal], DAYS_SINCE_SOURCE_DATE[iLastVal], DAYS_SINCE_LAST_MODIFIED[iLastVal], 
+                        SHIPTO_ID[iLastVal], PRIORITY_FLAG[iLastVal], SITE_NAME[iLastVal], PS_URL[iLastVal], BUYER_TEAM[iLastVal]);
 
                     n += 1;
                     iLastVal += 1;
