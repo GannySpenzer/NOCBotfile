@@ -1,0 +1,7 @@
+C:\A_SAErrorReload\SAErrorReload\SAErrorReload\obj\Debug\SAErrorReload.exe
+C:\A_SAErrorReload\SAErrorReload\SAErrorReload\obj\Debug\SAErrorReload.pdb
+C:\A_SAErrorReload\SAErrorReload\SAErrorReload\obj\Debug\SAErrorReload.csprojResolveAssemblyReference.cache
+C:\A_SAErrorReload\SAErrorReload\SAErrorReload\bin\SAErrorReload.exe.config
+C:\A_SAErrorReload\SAErrorReload\SAErrorReload\bin\SAErrorReload.exe
+C:\A_SAErrorReload\SAErrorReload\SAErrorReload\bin\SAErrorReload.pdb
+C:\A_SAErrorReload\SAErrorReload\SAErrorReload\bin\Newtonsoft.Json.dll
