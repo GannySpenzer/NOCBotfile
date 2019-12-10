@@ -32,7 +32,7 @@
     <SccProvider>SAK</SccProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -40,6 +40,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -51,7 +52,19 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <!--
     <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="Oracle.DataAccess, Version=4.121.2.0, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=AMD64">
+	Used in SDIMobile.csproj
+	 <Reference Include="Oracle.DataAccess, Version=4.121.2.0, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+	  
+	  Below points to the version saved in sdixz\bin (runtime v 2.0.50727 v 2.112.3.0)
+	-->
+    <Reference Include="Oracle.DataAccess, Version=4.121.2.0, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\Oracle.DataAccess.dll</HintPath>
+    </Reference>
     <Reference Include="Spire.Barcode">
       <HintPath>..\packages\Spire.Office.3.0\lib\net40\Spire.Barcode.dll</HintPath>
     </Reference>
@@ -105,14 +118,31 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="WinSCPnet, Version=1.6.5.9925, Culture=neutral, PublicKeyToken=2271ec4a3c56d0bf, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>WinSCP\WinSCPnet.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
+    <None Include="AvaSoftOriginalFiles\AVASOFT_Original_Program.cs.old" />
+    <None Include="Backup\DraftQuantumView.bkp" />
+    <None Include="Backup\QuantumView.bkp.12419" />
+    <None Include="Backup\QuantumView.bkp.12519" />
+    <None Include="Backup\Copy of QuantumView.cs.bkp.1206" />
+    <None Include="Backup\QuantumView.bkp.120919" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Scripting.cs" />
+    <Compile Include="Utility\QuantumDbUtility.cs" />
+    <Compile Include="Utility\QuantumEmailUtility.cs" />
+    <Compile Include="Utility\QuantumUtility.cs" />
+    <Compile Include="QuantumView.cs" />
+    <None Include="AvaSoftOriginalFiles\AVASOFT_Original_Scripting.cs.old" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Documentation\CSV_File_Guide_V8 - Jan2016.pdf" />
+    <None Include="Documentation\Quantum Utility Documentation.docx" />
+    <None Include="Documentation\Quantum_Code_Documentation.xlsx" />
+    <None Include="Documentation\SDiExchange com Manual Project.pdf" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -135,6 +165,20 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="SampleFiles\QVD_ALT_sdiinc_20191115_110106_627_SDIQVD.TAB..txt" />
+    <Content Include="SampleFiles\QVD_ALT_sdiinc_20191119_150122_223_SDIQVD.txt" />
+    <Content Include="SampleFiles\TEST_MATCH.TXT" />
+    <Content Include="SupportFiles\SDIX_UPSQUANTUMVIEW_LOG.sql" />
+    <Content Include="SupportFiles\WinSCP\license-dotnet.txt" />
+    <Content Include="SupportFiles\WinSCP\license-winscp.txt" />
+    <Content Include="SupportFiles\WinSCP\net40\WinSCPnet.dll" />
+    <Content Include="SupportFiles\WinSCP\netstandard2.0\WinSCPnet.dll" />
+    <Content Include="SupportFiles\WinSCP\readme_automation.txt" />
+    <Content Include="SupportFiles\WinSCP\WinSCP.exe" />
+    <Content Include="SupportFiles\WinSCP\WinSCPnet.dll" />
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
