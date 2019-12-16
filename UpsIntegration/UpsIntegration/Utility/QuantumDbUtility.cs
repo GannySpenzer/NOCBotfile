@@ -173,9 +173,10 @@ namespace UpsIntegration
             try
             {
 
-               QuantumUtility.logError("-- CONN: " +  dbConn.ConnectionString);
-                QuantumUtility.logError("-- SQL: " + getSql(sql, param) );
-                OleDbCommand command = new OleDbCommand(getSql(sql, param), dbConn);
+                QuantumUtility.logErrorFile("******* " + DateTime.Today.ToLongDateString() + " " + DateTime.Today.ToLongTimeString() + " *************");
+                QuantumUtility.logErrorFile("-- CONN: " + dbConn.ConnectionString);
+               QuantumUtility.logErrorFile("-- SQL: " + getSql(sql, param) );
+                OleDbCommand command = new OleDbCommand(getSql(sql, param ), dbConn);
                // for (int i = 0; i < param.Length; i++)
                    // command.Parameters.Add(new OleDbParameter( i.ToString(), param[i]));  
                 dbReader = command.ExecuteReader(); 
@@ -223,7 +224,7 @@ namespace UpsIntegration
         {
             try
             {
-               //QuantumUtility.logError("DB UPDATE SQL: " + getSql(sql, param));
+               QuantumUtility.logErrorFile("** " + DateTime.Today.ToLongDateString() + " " + DateTime.Today.ToLongTimeString() + " DB UPDATE SQL: " + getSql(sql, param));
                 OleDbCommand updateCommand = new OleDbCommand(getSql(sql, param), dbConn);
               /*  for (int i = 0; i < param.Length; i++)
                     updateCommand.Parameters.AddWithValue("@" + i.ToString(), param[i]); //updateCommand.Parameters.Add(new OleDbParameter( i.ToString(), param[i])); */
@@ -259,7 +260,9 @@ namespace UpsIntegration
 
                     newSql = newSql.Replace('@' + i.ToString() , sqlParams[i]); 
                     
-                } 
+                }
+                 newSql = newSql.Replace("  ", " ");
+                newSql = newSql.Replace("OR TRIM(PO.PO_ID) = ''", "");
             }
             catch (Exception e)
             {

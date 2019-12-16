@@ -3,11 +3,13 @@
 	/* use if ORA 11 - ups_quantumview_id number(11,0) NOT NULL 	constraint pk_ups_quantumview_id primary key, */
 	/* Use if ORA12C or higher - ups_quantumview_id number GENERATED ALWAYS AS IDENTITY, */
 	ups_filename varchar2(500) null,
-	po_id NVARCHAR2(250) null,
+	po_id VARCHAR2(25) null,
+	 po_id_options NVARCHAR2(250) null,
 	isa_asn_track_no VARCHAR2(30) null,
-	ups_sdi_match varchar2(20) null,
+	ups_sdi_match varchar2(45) null,
 	utility_action varchar2(250) null,
 	ups_file_location varchar2(500) null, 
+	user_message nvarchar2(1000) null, /* email message for user */
 	dttm_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
 );
 /* Use triggers for auto increment, if Oracle version is Oracle11  

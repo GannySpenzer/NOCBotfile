@@ -43,6 +43,7 @@ namespace UpsIntegration
         private static String tabDelimitedFile = @"C:\sdi\csvfiles\QVD_ALT_sdiinc_20191115_110106_627_SDIQVD.TAB.txt";
         private static String onlyDBMatchFile = @"C:\sdi\csvfiles\QVD_ALT_sdiinc_20191119_150122_223_SDIQVD.txt";
         private static String ShortMatchFile = @"C:\sdi\csvfiles\TEST_MATCH.TXT";
+
         public static void Main(String[] args)
         {
             try
@@ -52,32 +53,29 @@ namespace UpsIntegration
                 fromFtp.extension = ".txt"; 
                 
                 fromFtp.filesize = 800000;
-
-                fromFtp.days = 5;  // GetConsoleDate();
-                prod_folder += @"\" + QuantumUtility.stripChars(DateTime.Today.Subtract(new TimeSpan(fromFtp.days, 0, 0, 0)).ToShortDateString(), "DATE") + @"\";
-                toFtp = new ftpData(prod_server, prod_folder, "anonymous", "anonymous"); 
-              //  toFtp.server = prod_server;
-                toFtp.filesize = 800000;
-
-                 QuantumUtility.logError("FTP FILES FROM: " + fromFtp.server  + fromFtp.directory + " to " + toFtp.server + toFtp.directory);
-                  QuantumUtility.cleanDirectory(toFtp.server + toFtp.directory);
-                  QuantumUtility.winSCP(fromFtp, toFtp); // QuantumUtility.doFtp(fromFtp, toFtp); //Use for individual runs
-
-                //Process Files downloaded to local directory                 
-                QuantumDbUtility.openDb(connStr, dbConn);
-                QuantumDbUtility.openDb(rptgStr, rptgConn);
+                fromFtp.days = 0;
                
-                if (dbConn.State.ToString() == "Open")
-                {
-                 // parseCsvFile(ShortMatchFile);
-                  parseDirectory(toFtp.server + toFtp.directory);  // parseCsvFile(@"C:\SDI\temp\QVD_ALT_sdiinc_20191123_010120_711_SDIQVD.txt"); //parseCsvFile( @"C:\SDI\csvfiles\QVD_ALT_sdiinc_20191115_120140_104_SDIQVD.txt");
-                }
-               QuantumDbUtility.closeDb( dbConn);
-               QuantumDbUtility.closeDb(rptgConn);
-             
+                //Run for each date entered at command line
+                if (args.Length >= 1)
+                    fromFtp.days = GetConsoleDays(args[0]);
+
+                  prod_folder += @"\" + QuantumUtility.stripChars(DateTime.Today.Subtract(new TimeSpan(fromFtp.days, 0, 0, 0)).ToShortDateString(), "DATE") + @"\";
+                  toFtp = new ftpData(prod_server, prod_folder, "anonymous", "anonymous");  
+                  toFtp.filesize = 800000;
+
+                  QuantumUtility.logError("FTP FILES FROM: " + fromFtp.server  + fromFtp.directory + " to " + toFtp.server + toFtp.directory);
+                  QuantumUtility.cleanDirectory(toFtp.server + toFtp.directory);
+                  QuantumUtility.winSCP(fromFtp, toFtp);
+
+                   QuantumDbUtility.openDb(connStr, dbConn);
+                   if (dbConn.State.ToString() == "Open")
+                    {
+                            //parseCsvFile(@"\\172.31.251.161\sdixdata\ftp\12_11_2019\12_10_2019\QVD_ALT_sdiinc_20191210_120143_357_SDIQVD.txt");
+                        parseDirectory(toFtp.server + toFtp.directory);  // parseCsvFile(ShortMatchFile);
+                    }
+                 QuantumDbUtility.closeDb( dbConn);             
                  
                 QuantumUtility.logError("Completed");
-                //Console.ReadLine();
             }
             catch (Exception e)
             {
@@ -97,7 +95,7 @@ namespace UpsIntegration
         {
             try
             {
-                QuantumUtility.logError("Parsing " + filename);
+                QuantumUtility.logError(DateTime.UtcNow.ToString("dd-MMM-yy hh:mm") + ": Parsing " + filename  );
                
                 String currentRow;
                 String[] header = null;
@@ -107,7 +105,7 @@ namespace UpsIntegration
                 StringReader rdr = new StringReader(File.ReadAllText(@filename));
                 QuantumFile qf = new QuantumFile();
                 List<KeyValuePair<String, int>> l_quantumFilePositions = new List<KeyValuePair<String, int>>();
-                 Char separator = '|';  //Sometimes they use pipes. Othertimes tabs
+                Char separator = '|';  //Sometimes they use pipes. Othertimes tabs
       
                  while((currentRow = rdr.ReadLine()) != null && rdr  != null    )
                  { 
@@ -131,11 +129,17 @@ namespace UpsIntegration
                      }
                      else
                      {
-
-                         parseRow(currentRow, qf, row, filename);
+                         if (currentRow.Contains("E1") || currentRow.Contains("D1") || currentRow.Contains("D2"))
+                             parseRow(currentRow, new QuantumFile(qf.quantumFilePositions), row, filename); //Separated out in case users decide to parse the Package value ref fields that might contain more than one entry - passing in a new qf object  to avoid value reuse, while maintiang the qfp
+                         else
+                             QuantumDbUtility.logError(dbConn, filename + " No matches on E1, D1 or D2");
                      }
                      rowCount++;
                  }
+
+                //After processing a file app should grab unique POIDs, user message, and track numbers
+                //id vendor email based on poid
+                //send lump email to users
             }
             catch (Exception e)
             {
@@ -148,48 +152,51 @@ namespace UpsIntegration
         public static void parseRow(String currentRow, QuantumFile qf, String[] row, String filename, String local_poid="")
         {
             try
-            { 
-                     
+            {          
                 List<KeyValuePair<String, int>> l_quantumFilePositions = new List<KeyValuePair<String, int>>();
-                OleDbDataReader dbReader;
+                OleDbDataReader dbReader = null;
                 String[] dbParams;
-                String sdix_ups_quantumview_log_sql = "insert into SDIX_UPS_QUANTUMVIEW_LOG  (ups_filename, po_id, isa_asn_track_no, utility_action, ups_file_location,   ups_sdi_match) values ('@0','@1','@2','@3','@4','@5' )";
+                String sdix_ups_quantumview_log_sql = "insert into SDIX_UPS_QUANTUMVIEW_LOG  (ups_filename, po_id_options, isa_asn_track_no, utility_action, ups_file_location,   ups_sdi_match, po_id, user_message) values ('@0','@1','@2','@3','@4','@5','@6','@7' )";
                 String[] sdix_ups_quantumview_log_params = null;
                 String[] ps_isa_xpd_comment_params = null;
-                Char separator = '|';  //Sometimes they use pipes. Othertimes tabs
-                /* New query on 11/26 based on new comments from M. Randall to use isa_asn_shipped for tracking number and ps_po_hdr for po_id */
-                String poFromSql = " FROM PS_PO_HDR PO  LEFT JOIN PS_ISA_ASN_SHIPPED SH ON PO.PO_ID = SH.PO_ID ";
-                String shFromSql = " FROM  PS_ISA_ASN_SHIPPED SH LEFT JOIN   PS_PO_HDR PO   ON SH.PO_ID =  PO.PO_ID  ";
-                String comFromSql = "   LEFT JOIN PS_ISA_XPD_COMMENT COM ON PO.PO_ID = COM.PO_ID AND COM.BUSINESS_UNIT = SH.BUSINESS_UNIT AND COM.LINE_NBR=SH.LINE_NBR AND COM.SCHED_NBR=SH.SCHED_NBR AND COM.OPRID=SH.OPRID ";
+                Char separator = '|';  //Sometimes they use pipes. Othertimes tabs 
+                String poFromSql = " FROM PS_PO_LINE_SHIP  PO  LEFT JOIN PS_ISA_ASN_SHIPPED SH ON PO.PO_ID = SH.PO_ID "; //switched form ps_po_hdr to ps_po_line_shipped to ps_po_line_ship
+               // String shFromSql = " FROM  PS_ISA_RECV_LN_ASN SH LEFT JOIN   PS_PO_HDR PO   ON SH.PO_ID =  PO.PO_ID  ";  //" FROM  PS_ISA_ASN_SHIPPED SH LEFT JOIN   PS_PO_HDR PO   ON SH.PO_ID =  PO.PO_ID  ";  switching from ps_isa_asn_shipped provided by m. randall to  PS_ISA_RECV_LN_ASN as reqpoststatus.aspx.vb uses that table
+                String shFromSql = "   JOIN   PS_PO_HDR PS  ON PO.PO_ID =  PS.PO_ID  "; 
+                 String comFromSql = "   LEFT JOIN PS_ISA_XPD_COMMENT COM ON PO.PO_ID = COM.PO_ID AND COM.BUSINESS_UNIT = PO.BUSINESS_UNIT AND COM.LINE_NBR=PO.LINE_NBR AND COM.SCHED_NBR=PO.SCHED_NBR   ";
                 String asnSelectSql =
                     "SELECT DISTINCT " +
-                      "PO.business_unit as PO_BUSINESS_UNIT," +
+                      "PO.business_unit as BUSINESS_UNIT," +
                       "PO.PO_ID as PO_ID," +
-                      "PO.PO_DT as PO_DT," +
-                      "PO.VENDOR_ID as VENDOR_ID, " +
-                      "PO.BUYER_ID as BUYER_ID," + //sometimes buyder_id has email address
-                      "SH.BUSINESS_UNIT as SH_BUSINESS_UNIT," +
-                      "SH.PO_ID as SH_PO_ID, " +
-                      "SH.ISA_ASN_TRACK_NO as SH_TRACK_NO, " +
-                      "SH.ISA_ASN_SHIP_DT as SH_SHIP_DT, " +
-                      "SH.LINE_NBR as SH_LINE_NBR, " +
-                      "SH.SCHED_NBR as SH_SCHED_NBR, " +
-                      "SH.OPRID as SH_OPRID, " +
+                      "PO.DUE_DT as DUE_DT, " + //  "PO.PO_DT as PO_DT," +
+                    //  "PO.VENDOR_ID as VENDOR_ID, " +
+                  ////    "PO.BUYER_ID as BUYER_ID," + //sometimes buyder_id has email address
+                 //     "SH.BUSINESS_UNIT as SH_BUSINESS_UNIT," +
+                  //    "SH.PO_ID as SH_PO_ID, " +
+                  //    "SH.ISA_ASN_TRACK_NO as SH_TRACK_NO, " +
+                  //    "SH.ISA_ASN_SHIP_DT as SH_SHIP_DT, " +
+                  //    "SH.LINE_NBR as SH_LINE_NBR, " +
+                 //     "SH.SCHED_NBR as SH_SCHED_NBR, " +
+                  ///    "SH.OPRID as SH_OPRID, " +
                       "COM.ISA_PROBLEM_CODE as ISA_PROBLEM_CODE , " +
-                      "COM.NOTES_1000 as NOTES_1000  ";
+                      "COM.NOTES_1000 as NOTES_1000 , " +
+                      "COM.LINE_NBR as COM_LINE_NBR, " +
+                      "COM.SCHED_NBR  as  COM_SCHED_NBR,  "  +  
+                      "PO.LINE_NBR as PO_LINE_NBR, " +
+                      "PO.SCHED_NBR  as  PO_SCHED_NBR  "    ;
 
                 //Note: Sometimes there are the same PO_Ids but different sched #s, I'm only pulling the most recent. Should I pull both? OR SHOULD I Just insert a new line altogether?
                 String whereSql = "WHERE " +
                       "(TRIM(SH.ISA_ASN_TRACK_No) = '@0'  OR " +
                       "TRIM(PO.PO_ID) = '@1' OR TRIM(PO.PO_ID) = '@2' OR " +
-                      "TRIM(PO.PO_ID) = '@3' OR TRIM(PO.PO_ID) = '@4'  OR  " +
+                      "TRIM(PO.PO_ID) = '@3' OR TRIM(PO.PO_ID) = '@4' OR  " +
                        "TRIM(PO.PO_ID) = '@5' OR TRIM(PO.PO_ID) = '@6' OR " +
-                      "TRIM(PO.PO_ID) = '@7' OR TRIM(PO.PO_ID) = '@8' OR   " +
-                      "TRIM(PO.PO_ID) = '@9'  " + 
+                      "TRIM(PO.PO_ID) = '@7' OR TRIM(PO.PO_ID) = '@8' OR " +
+                      "TRIM(PO.PO_ID) = '@9' " + 
                       " ) " + 
-                       "and rownum =1 ORDER BY SH.ISA_ASN_SHIP_DT desc"; 
+                       "and rownum =1  ORDER BY PO.DUE_DT DESC";// ORDER BY SH.ISA_ASN_SHIP_DT desc"; 
          
-                        dbReader = null;
+                        
                         /* Process All the Sub Rows */
                         if (currentRow.Contains(separator)) //only get if currentrow uses pipe
                         {
@@ -214,34 +221,12 @@ namespace UpsIntegration
                                 qf.ShipmentReferenceNumberValue1 = row[qf.quantumFilePositions.First(x => x.Key == "ShipmentReferenceNumberValue1").Value];
                                 qf.ShipmentReferenceNumberValue2 = row[qf.quantumFilePositions.First(x => x.Key == "ShipmentReferenceNumberValue2").Value];
                                 qf.PackageReferenceNumberValue1 = row[qf.quantumFilePositions.First(x => x.Key == "PackageReferenceNumberValue1").Value];
-                                qf.PackageReferenceNumberValue2 = row[qf.quantumFilePositions.First(x => x.Key == "PackageReferenceNumberValue2").Value];
-
-                             /*   //    if package value ref 1 contains a field separated by ?, & or , - then split up into separate poids
-                                if (qf.PackageReferenceNumberValue1.Contains(",")  )
-                                {
-                                    String[] poid = qf.PackageReferenceNumberValue1.Split(',');
-                                    foreach(var po in poid)
-                                        parseRow(currentRow, qf, row, filename  , po );
-                                }
-                                if (qf.PackageReferenceNumberValue1.Contains("&"))
-                                {
-                                    String[] poid = qf.PackageReferenceNumberValue1.Split(',');
-                                    foreach (var po in poid)
-                                        parseRow(currentRow, qf, row, filename, po );
-                                }
-                                if (qf.PackageReferenceNumberValue1.Contains("/"))
-                                {
-                                    String[] poid = qf.PackageReferenceNumberValue1.Split('/');
-                                    foreach (var po in poid)
-                                        parseRow(currentRow, qf, row, filename, po);
-                                }*/
-                                
+                                qf.PackageReferenceNumberValue2 = row[qf.quantumFilePositions.First(x => x.Key == "PackageReferenceNumberValue2").Value]; 
                             }
                             else
                             {
                                 qf.TrackingNumber = QuantumUtility.RegSearch(currentRow, "[A-Z0-9]{18}");
-                                String rowNoSpace = (QuantumUtility.stripChars(QuantumUtility.stripChars(currentRow, "PO"), "PARTIAL")).Replace("\t", " ");
-                                // QuantumUtility.logError(rowNoSpace);
+                                String rowNoSpace = (QuantumUtility.stripChars(QuantumUtility.stripChars(currentRow, "PO"), "PARTIAL")).Replace("\t", " "); 
                                 qf.PackageReferenceNumberValue1 = QuantumUtility.RegSearch(rowNoSpace, "\\b[A-Z]{1,3}[0-9]{1}[A-Z0-9]{5,8}\\b"); //FInd value closest to recent format of po id 
                             }
                              
@@ -261,92 +246,99 @@ namespace UpsIntegration
                                        QuantumUtility.stripChars( local_poid, "partial")
                               };
                            
-                            sdix_ups_quantumview_log_params = new String[6]      {  filename.Replace(toFtp.server + toFtp.directory,""),  
+                            sdix_ups_quantumview_log_params = new String[8]      {  filename.Replace(toFtp.server + toFtp.directory,""),  
                                        String.Join(" || ", dbParams,1,dbParams.Length-1) ,
                                        qf.TrackingNumber, 
                                        "NOTHING",
                                        toFtp.server + toFtp.directory, 
-                                       "TRUE: PS_ISA_ASN_SHIPPED"
+                                       "TRUE: PS_PO_LINE_SHIP",
+                                       qf.ps_po_id,
+                                       ""
                                     }; 
 
                             //Grab Matching Data
-                            dbReader = QuantumDbUtility.executeDbReader(dbConn, asnSelectSql + shFromSql + comFromSql + whereSql, dbParams);
-                            if (!dbReader.HasRows || dbReader == null)
-                            {
-                                dbReader = QuantumDbUtility.executeDbReader(dbConn, asnSelectSql + poFromSql + comFromSql + whereSql, dbParams);
-                                sdix_ups_quantumview_log_params[5] = "TRUE: PS_PO_HDR";
-                            }
+                            dbReader = QuantumDbUtility.executeDbReader(dbConn, asnSelectSql + poFromSql + comFromSql + whereSql, dbParams);
+                       
 
                             if (dbReader.HasRows)
                             {
-                                while (dbReader.Read())
-                                {
+                                
+                                while (dbReader.Read() )
+                                { 
                                     //Set PO_ID
                                     if (!String.IsNullOrEmpty(dbReader["PO_ID"].ToString()))
+                                    {
                                         qf.ps_po_id = dbReader["PO_ID"].ToString();
-                                    else if (!String.IsNullOrEmpty(dbReader["SH_PO_ID"].ToString()))
+                                        sdix_ups_quantumview_log_params[6] = qf.ps_po_id;
+                                    }
+                                   /*  else if (!String.IsNullOrEmpty(dbReader["SH_PO_ID"].ToString()))
                                         qf.ps_po_id = dbReader["SH_PO_ID"].ToString();
-
-                                    //Set Tracking Number
-                                    if (!String.IsNullOrEmpty(dbReader["SH_TRACK_NO"].ToString()))
-                                        qf.TrackingNumber = dbReader["SH_TRACK_NO"].ToString();
+                                     if (!String.IsNullOrEmpty(dbReader["ISA_PROBLEM_CODE"].ToString()))
+                                         qf.isa_problem_code = dbReader["ISA_PROBLEM_CODE"].ToString();
+                                     
+                                    * //Set Tracking Number
+                                     if (!String.IsNullOrEmpty(dbReader["SH_TRACK_NO"].ToString()))
+                                         qf.TrackingNumber = dbReader["SH_TRACK_NO"].ToString();
+                                    */
 
                                     //Set Comments 
                                     if (!String.IsNullOrEmpty(dbReader["NOTES_1000"].ToString()))
                                         qf.ps_notes_1000 = dbReader["NOTES_1000"].ToString();
 
                                     //Grab BU
-                                    if (!String.IsNullOrEmpty(dbReader["PO_BUSINESS_UNIT"].ToString()))
-                                        qf.business_unit = dbReader["PO_BUSINESS_UNIT"].ToString();
-                                    else if (!String.IsNullOrEmpty(dbReader["SH_BUSINESS_UNIT"].ToString()))
-                                        qf.business_unit = dbReader["SH_BUSINESS_UNIT"].ToString();
+                                    if (!String.IsNullOrEmpty(dbReader["BUSINESS_UNIT"].ToString()))
+                                        qf.business_unit = dbReader["BUSINESS_UNIT"].ToString();
+                                   /* else if (!String.IsNullOrEmpty(dbReader["SH_BUSINESS_UNIT"].ToString()))
+                                        qf.business_unit = dbReader["SH_BUSINESS_UNIT"].ToString(); */
 
-                                    qf.ps_notes_1000_new = qf.ps_notes_1000;
-                                    if (!qf.ps_notes_1000.Contains("Tracking Number"))
-                                        qf.ps_notes_1000_new += "-Tracking Number:" + qf.TrackingNumber;
+                                    //Set SCHED
+                                     if (!String.IsNullOrEmpty(dbReader["COM_SCHED_NBR"].ToString()))
+                                        qf.ps_sched_nbr= dbReader["COM_SCHED_NBR"].ToString();
+                                    else 
+                                        if (!String.IsNullOrEmpty(dbReader["PO_SCHED_NBR"].ToString()))
+                                            qf.ps_sched_nbr = dbReader["PO_SCHED_NBR"].ToString();
+
+                                    //Set Line
+                                    if (!String.IsNullOrEmpty(dbReader["COM_LINE_NBR"].ToString()))
+                                        qf.ps_sched_nbr = dbReader["COM_LINE_NBR"].ToString();
+                                    else  
+                                        if (!String.IsNullOrEmpty(dbReader["PO_LINE_NBR"].ToString()))
+                                            qf.ps_sched_nbr = dbReader["PO_LINE_NBR"].ToString(); 
+
+                                  //  qf.ps_notes_1000_new = qf.ps_notes_1000; Since this is history don't need to pull previous notes field
                                     if (!qf.ps_notes_1000.Contains("PO#:"))
                                         qf.ps_notes_1000_new += "-PO#:" + qf.ps_po_id;
-                                    if (!qf.ps_notes_1000.Contains("Record Type:"))
+                                    if (!qf.ps_notes_1000_new.Contains("Number:"))
+                                        qf.ps_notes_1000_new += "-Tracking Number:" + qf.TrackingNumber;
+                                    if (!qf.ps_notes_1000.Contains("Type:"))
                                         qf.ps_notes_1000_new += "-Record Type:" + qf.RecordType;
-                                    if (!qf.ps_notes_1000.Contains("Signed:") && !String.IsNullOrEmpty(qf.SignedForBy))
-                                        qf.ps_notes_1000_new += "-Signed:" + qf.SignedForBy;
                                     if (!qf.ps_notes_1000.Contains("Delivered:") && !String.IsNullOrEmpty(qf.DeliveryLocation))
                                         qf.ps_notes_1000_new += "-Delivered:" + qf.DeliveryLocation;
+                                    if (!qf.ps_notes_1000.Contains("Signed:") && !String.IsNullOrEmpty(qf.SignedForBy))
+                                        qf.ps_notes_1000_new += "-Signed:" + qf.SignedForBy;
                                     if (!qf.ps_notes_1000.Contains("Error:") && !String.IsNullOrEmpty(qf.ExceptionResolutionDescription))
                                         qf.ps_notes_1000_new += "-Exception Error:" + qf.ExceptionResolutionDescription;
                                     if (!qf.ps_notes_1000.Contains("Delivery:") && !String.IsNullOrEmpty(qf.RescheduledDeliveryDate))
-                                        qf.ps_notes_1000_new += "-Rescheduled Delivery:" + qf.RescheduledDeliveryDate;
+                                        qf.ps_notes_1000_new += "-Rescheduled Delivery:" + qf.RescheduledDeliveryDate; 
 
-                                    ps_isa_xpd_comment_params = new String[8] { qf.business_unit, qf.ps_po_id, QuantumUtility.returnNull(dbReader["SH_LINE_NBR"].ToString()), QuantumUtility.returnNull(dbReader["SH_SCHED_NBR"].ToString()), 
-                                         QuantumUtility.returnNull(dbReader["ISA_PROBLEM_CODE"].ToString()), qf.ps_notes_1000_new, QuantumUtility.returnNull(dbReader["SH_OPRID"].ToString()) , DateTime.Now.ToString("dd-MMM-yy")};
-
-                                    if (!String.IsNullOrEmpty(qf.ps_notes_1000)) // && updateStar
+                                    ps_isa_xpd_comment_params = new String[8] { qf.business_unit, qf.ps_po_id, qf.ps_line_nbr, qf.ps_sched_nbr, 
+                                        qf.isa_problem_code  , qf.ps_notes_1000_new, "SDIX" /* QuantumUtility.returnNull(dbReader["SH_OPRID"].ToString()) */,
+                                         DateTime.UtcNow.ToString("dd-MMM-yy hh:mm:ss.fffffff00 tt").ToUpper()  }; 
+                                  
+                                    if (!String.IsNullOrEmpty(qf.ps_notes_1000_new))
                                     {
-                                        QuantumDbUtility.executeDbUpdate(dbConn, "Update PS_ISA_XPD_COMMENT SET NOTES_1000= '@5' WHERE PO_ID='@1' and " +
-                                            " BUSINESS_UNIT='@0' and LINE_NBR=@2 and SCHED_NBR=@3 and OPRID='@6' ", ps_isa_xpd_comment_params);
-                                        QuantumUtility.logError("   -- Updated PS_ISA_XPD_COMMENT.NOTES_1000, PO: " + qf.ps_po_id); //indicate num of rows updated
-
-                                        sdix_ups_quantumview_log_params[3] = "Updated PS_ISA_XPD_COMMENT.NOTES_1000-PARAMS: " + String.Join(",", ps_isa_xpd_comment_params);
+                                        sdix_ups_quantumview_log_params[7] = qf.ps_notes_1000_new;
+                                        QuantumDbUtility.executeDbUpdate(dbConn, "Insert into PS_ISA_XPD_COMMENT (BUSINESS_UNIT, PO_ID, LINE_NBR, SCHED_NBR, ISA_PROBLEM_CODE, NOTES_1000, OPRID, DTTM_STAMP) values ('@0', '@1',@2, @3,'@4','@5','@6','@7') ", ps_isa_xpd_comment_params);
+                                        sdix_ups_quantumview_log_params[3] = "INSERTED PS_ISA_XPD_COMMENT.NOTES_1000";// +String.Join(",", ps_isa_xpd_comment_params);
                                         QuantumDbUtility.executeDbUpdate(dbConn, sdix_ups_quantumview_log_sql, sdix_ups_quantumview_log_params);
-                                    }
-                                    else if (!String.IsNullOrEmpty(qf.ps_notes_1000_new))
-                                    {
-                                        ps_isa_xpd_comment_params[4] = qf.RecordType; //*** WHAT DO I USE FOR ISA_PROBLEM_CODE IF IT IS AN INSERT?
-                                        //What happens when there's a match on POID='AM00173902' in ps_po_hdr,but there's no corresponding line_nbr, Sched_nbr or oprid from the ship table? Use 0s?
-                                        //verify before inserting into notes row doesn't already exist
-                                        //verify the test data appears in the UI
-                                        QuantumDbUtility.executeDbUpdate(dbConn, "Insert into PS_ISA_XPD_COMMENT (BUSINESS_UNIT, PO_ID, LINE_NBR, SCHED_NBR, ISA_PROBLEM_CODE, NOTES_1000, OPRID) values ('@0', '@1',@2, @3,'@4','@5','@6') ", ps_isa_xpd_comment_params);
-                                        QuantumUtility.logError("   -- Inserted PO: " + qf.ps_po_id + "- PARAMS: " + String.Join(",", ps_isa_xpd_comment_params)); //note: get all of the required fields to insert
-                                        sdix_ups_quantumview_log_params[3] = "INSERTED PS_ISA_XPD_COMMENT.NOTES_1000-PARAMS: " + String.Join(",", ps_isa_xpd_comment_params);
-                                        QuantumDbUtility.executeDbUpdate(dbConn, sdix_ups_quantumview_log_sql, sdix_ups_quantumview_log_params);
+                                        QuantumUtility.logError("   -- Inserted using PO ID " + qf.ps_po_id ); //note: get all of the required fields to insert
                                     }
 
-                                    //3. Use Vendor_ID to grab user's email address. Either save message to batch email table or send email immediately
-                                
+                                    //3. Use Vendor_ID to grab user's email address. Either save message to batch email table or send email immediately 
                                 }
                                  
                             }
-                            if (!dbReader.HasRows || dbReader == null)
+                            else if (!dbReader.HasRows || dbReader == null)
                             {
                                 sdix_ups_quantumview_log_params[5] = "FALSE";
                                 QuantumUtility.logError("   -- Match not made on " + String.Join(",", dbParams));
@@ -362,20 +354,20 @@ namespace UpsIntegration
             }
         }
 
-        public static String GetConsoleDate()
+        public static String GetConsoleDate(String input)
         {
             String days = ""; 
             try
             {
-                QuantumUtility.logError("What date do you want to FTP files for? Use format dd//mm//yyyy or hit enter for today");
-                String input = Console.ReadLine();
+                //QuantumUtility.logError("What date do you want to FTP files for? Use format dd//mm//yyyy or hit enter for today");
+                //String input = Console.ReadLine();
                 if (!String.IsNullOrEmpty(input))
                 {
                     DateTime consoleDate = DateTime.Parse(input);
                     if (consoleDate > DateTime.Today)
                     {
                         QuantumUtility.logError("Provided date " + consoleDate.ToShortDateString() + " is greater than today, " + DateTime.Today.ToShortDateString());
-                        return GetConsoleDate();
+                        //return GetConsoleDate();
                     }
                     else days = QuantumUtility.stripChars(consoleDate.ToShortDateString(), "DATE");
                     if (DateTime.Today.Subtract(consoleDate).TotalDays  > 15)
@@ -385,26 +377,27 @@ namespace UpsIntegration
             catch (Exception e)
             {
                 QuantumUtility.logError("Format incorrect." + e.ToString());
-                return GetConsoleDate();
+                //return GetConsoleDate();
             }
             QuantumUtility.logError("Grabbing files from " + days + " days ago ");
             return days;
         }
-        public static int GetConsoleDays()
+
+        public static int GetConsoleDays(String input)
         {
             int days = 0; 
 
             try
             {
-                QuantumUtility.logError("What date do you want to FTP files for? Use format dd//mm//yyyy or hit enter for today");
-                String input = Console.ReadLine(); 
+                //QuantumUtility.logError("What date do you want to FTP files for? Use format dd//mm//yyyy or hit enter for today");
+                //String input = Console.ReadLine(); 
                 if (!String.IsNullOrEmpty(input))
                 {
                     DateTime consoleDate = DateTime.Parse(input);
                     if (consoleDate > DateTime.Today)
                     {
                         QuantumUtility.logError("Provided date " + consoleDate.ToShortDateString() + " is greater than today, " + DateTime.Today.ToShortDateString());
-                        return GetConsoleDays();
+                        //return GetConsoleDays();
                     }
                     if (consoleDate <= DateTime.Today)
                         days = Convert.ToInt32(DateTime.Today.Subtract(consoleDate).TotalDays);
@@ -415,7 +408,7 @@ namespace UpsIntegration
             catch (Exception e)
             {
                 QuantumUtility.logError("Format incorrect. " + e.ToString());
-                return GetConsoleDays();
+                //return GetConsoleDays();
             }
             QuantumUtility.logError("Grabbing files from " + days + " days ago ");
             return days;
@@ -477,6 +470,9 @@ namespace UpsIntegration
         public String ps_notes_1000_new="";
         public String ps_po_id="";
         public String business_unit = "";
+        public String isa_problem_code = "SH";
+        public String ps_sched_nbr = "0";
+        public String ps_line_nbr = "0";
         public List<KeyValuePair<String, int>> quantumFilePositions;
 
         public QuantumFile()
@@ -496,6 +492,25 @@ namespace UpsIntegration
             quantumFilePositions.Add(new KeyValuePair<String, int>("DeliveryLocation",0));
             quantumFilePositions.Add(new KeyValuePair<String, int>("SignedForBy", 0));
             quantumFilePositions.Add(new KeyValuePair<String, int>("BillToAccountNumber",0));
+        }
+
+        public QuantumFile(List<KeyValuePair<String, int>> qfp)
+        {
+            quantumFilePositions = qfp;
+            quantumFilePositions.Add(new KeyValuePair<String, int>("RecordType", 68)); //COL 85 without white space reduced
+            quantumFilePositions.Add(new KeyValuePair<String, int>("ShipperNumber", 89));
+            quantumFilePositions.Add(new KeyValuePair<String, int>("ShipmentReferenceNumberValue1", 0));
+            quantumFilePositions.Add(new KeyValuePair<String, int>("ShipmentReferenceNumberValue2", 0));
+            quantumFilePositions.Add(new KeyValuePair<String, int>("TrackingNumber", 277));
+            quantumFilePositions.Add(new KeyValuePair<String, int>("PackageReferenceNumberValue1", 76)); //COL 177 with tabs 
+            quantumFilePositions.Add(new KeyValuePair<String, int>("PackageReferenceNumberValue2", 317));
+            quantumFilePositions.Add(new KeyValuePair<String, int>("ExceptionResolutionType", 0));
+            quantumFilePositions.Add(new KeyValuePair<String, int>("ExceptionResolutionDescription", 0));
+            quantumFilePositions.Add(new KeyValuePair<String, int>("RescheduledDeliveryDate", 0));
+            quantumFilePositions.Add(new KeyValuePair<String, int>("RescheduledDeliveryTime", 0));
+            quantumFilePositions.Add(new KeyValuePair<String, int>("DeliveryLocation", 0));
+            quantumFilePositions.Add(new KeyValuePair<String, int>("SignedForBy", 0));
+            quantumFilePositions.Add(new KeyValuePair<String, int>("BillToAccountNumber", 0));
         }
     }
 }

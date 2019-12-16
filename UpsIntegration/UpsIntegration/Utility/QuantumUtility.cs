@@ -108,17 +108,28 @@ namespace UpsIntegration
                     newValue = Regex.Replace(newValue, " ", "");
                     newValue = Regex.Replace(newValue, "-", "");
                     newValue = Regex.Replace(newValue, "#", "");
-                    newValue = Regex.Replace(newValue, ":", ""); 
+                    newValue = Regex.Replace(newValue, ":", "");
+                    newValue = Regex.Replace(newValue, ".", "");
+                    newValue = Regex.Replace(newValue, "SDI", "");
+                    newValue = Regex.Replace(newValue, "ORDER", "");
+                    newValue = Regex.Replace(newValue, "REQ", "");
                 }
                 if (stripType == "PO")
                 {
+                    newValue = newValue.Replace("SDI PO ", "");
+                    newValue = newValue.Replace("PO: ", "");
                     newValue = newValue.Replace("PO : ", "PO");
                     newValue = newValue.Replace("PO # ", "PO");
+                    newValue = newValue.Replace("PO #", "");
                     newValue = newValue.Replace("PO# ", "PO");
                     newValue = newValue.Replace("PO: ", "PO");
                     newValue = newValue.Replace("PO#", "PO");
                     newValue = newValue.Replace("PO:", "PO");
                     newValue = newValue.Replace("POPO", "PO");
+                    newValue = newValue.Replace("PO ", "PO");
+                    newValue = newValue.Replace("P.O.", "");
+                    newValue = newValue.Replace("REQ#", "");
+                    newValue = newValue.Replace("ORDER ", "");
                 }
                 if (stripType == "DATE")
                 {
