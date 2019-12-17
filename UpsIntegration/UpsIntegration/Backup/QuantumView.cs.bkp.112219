@@ -1,0 +1,232 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Spire.Xls;
+using System.Data;
+using System.Data.SqlClient;
+using System.IO;
+using Microsoft.VisualBasic.FileIO;
+using System.Data.OleDb;
+using System.Configuration;
+using UpsIntegration;
+
+namespace UpsIntegration
+{
+    /** QuantumUtility
+*  Processes CSV files based upon tracking information
+*  
+*  Comments:
+*  Is there a global config file that holds connection string based upon prod/various test servers?
+     *  Do you want the Notes_1000 field in the PS table updated or do you want to create an SDIX table that holds the updated tracking comment and then update expedite.aspx and expedite.aspx.vb to pull from the sdix_tracking.comment field?
+ **/
+    class QuantumView
+    {
+        private static SqlConnection dbConn = new SqlConnection();
+        private static String connStr = "Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User Id=sdiexchange;Data Source=STAR";
+
+        public static void Main(String[] args)
+        {
+            try
+            {
+                //FTP Files
+                ftpData fromFtp = new ftpData();
+                fromFtp.server = "ftp://speedtest.tele2.net/";
+                fromFtp.userid = "anonymous";
+                fromFtp.password = "anonymous";
+                fromFtp.extension = ".txt";
+
+                ftpData toFtp = new ftpData();
+                toFtp.server  = "c:/";
+                toFtp.directory = "sdi/temp";
+                toFtp.filesize = 800000;
+                 
+                QuantumUtility.doFtp(fromFtp, toFtp);
+
+                //Process Files downloaded to local directory
+                QuantumDbUtility.openDb(connStr, dbConn);
+                parseDirectory(toFtp.server + toFtp.directory); //parseCsvFile( @"C:\SDI\csvfiles\QVD_ALT_sdiinc_20191115_120140_104_SDIQVD.txt");
+                QuantumDbUtility.closeDb(connStr, dbConn);
+                 
+                Console.ReadLine();
+            }
+            catch (Exception e)
+            {
+                QuantumUtility.logError(e);
+            }
+        }
+
+        /**
+         * ParseCSVFile
+         *  Run through each row 
+         * 
+         * */
+        public static void parseCsvFile(String filename)
+        {
+            try
+            {
+                QuantumUtility.logError("Parsing " + filename);
+                String currentRow;
+                String[] header = null;
+                String[] row = null;
+                int rowCount = 0;
+                int colCount = 0; 
+                StringReader rdr = new StringReader(File.ReadAllText(@filename));
+                QuantumFile qf = new QuantumFile();
+                List<KeyValuePair<String, int>> l_quantumFilePositions = new List<KeyValuePair<String, int>>();
+
+                 while((currentRow = rdr.ReadLine()) != null )
+                 { 
+                     //1. Grab header use to identify column positions 
+                     if (rowCount == 0)
+                     {
+                         header = currentRow.Split('|');
+                         colCount = header.Length; 
+
+                         foreach (KeyValuePair<String, int> q in qf.quantumFilePositions)
+                         {
+                             if (Array.IndexOf(header, q.Key) >= 0)
+                             { 
+                                 l_quantumFilePositions.Add(new KeyValuePair<String, int>(q.Key, Array.IndexOf(header, q.Key) )); 
+                             }
+                         }
+                         qf.quantumFilePositions = l_quantumFilePositions;
+                     }
+                     else
+                     {
+                          row =  currentRow.Split('|'); 
+                          qf.RecordType = row[ qf.quantumFilePositions.First(x => x.Key == "RecordType").Value ]   ;
+                          qf.TrackingNumber = row[qf.quantumFilePositions.First(x => x.Key == "TrackingNumber").Value];
+                          qf.RescheduledDeliveryDate = row[qf.quantumFilePositions.First(x => x.Key == "RescheduledDeliveryDate").Value];
+                          qf.SignedForBy = row[qf.quantumFilePositions.First(x => x.Key == "SignedForBy").Value];
+                          qf.ShipperNumber = row[qf.quantumFilePositions.First(x => x.Key == "ShipperNumber").Value];
+                          qf.ShipmentReferenceNumberValue1 = row[qf.quantumFilePositions.First(x => x.Key == "ShipmentReferenceNumberValue1").Value];
+
+                          if (qf.RecordType == "E1" || qf.RecordType == "D2" || qf.RecordType == "D1")
+                          {
+                              
+                              QuantumUtility.logError(qf.TrackingNumber + " " + qf.RecordType );
+
+                              /* 1. Use this query using track number/purchase order  to verify necessary data - need to also add other id option outside of tracking number, in case not populated in ps tables */
+                              String asnSql = 
+                                  "SELECT  " +
+                                  "ASSN.ISA_ASN_TRACK_NO, ASSN.isa_asn_ship_dt, DD.Due_date, COM.Notes_1000,"  + //Grab key fields 
+                                  "A.buyer_id, A.Vendor_id, A.Vendor_name_short, " + //Grab vendor to know who to email
+                                  "ASSN.business_unit, ASSN.receiver_id, ASSN.recv_ln_nbr,  DD.po_id, DD.sched_nbr" + //Grab PK fields in case need later  
+                                "FROM     " +
+                                    "PS_ISA_RECV_LN_ASN ASSN," +
+	                                "PS_ISA_EXPED_XREF A," +
+	                                "PS_ISA_XPD_DUEDATE DD," +
+	                                "PS_ISA_XPD_COMMENT COM" +
+                                "WHERE  " +
+                                     "(ASSN.business_unit =  A.Business_unit and A.Business_unit = COM.business_unit and a.business_unit=dd.business_unit " +
+	                                 "AND A.po_id = COM.po_id  and DD.po_id = A.po_id " +
+                                     "AND  A.LINE_NBR = ASSN.RECV_LN_NBR and ASSN.RECV_LN_NBR = COM.LINE_NBR and COM.line_nbr = DD.line_nbr  " +
+	                                 "AND A.SCHED_NBR = DD.SCHED_NBR and DD.SCHED_NBR = COM.SCHED_NBR )" +
+                                     "AND (ASSN.ISA_ASN_TRACK_No = @0  OR A.PO_ID = @1 or  A.PO_ID= @2)" ;
+                                     //Insert OR HERE to search on purchasing order in case tracking not available
+                                        
+                               SqlDataReader dbReader = QuantumDbUtility.executeDBReader(dbConn, asnSql,new String[2]{qf.TrackingNumber, qf.ShipperNumber, qf.ShipmentReferenceNumberValue1} );
+
+                              //2. Update com table with data from CSV file
+                              while (dbReader.Read())
+                              {
+                                  qf.receiverid = dbReader[0].ToString();
+                                  qf.ps_po_id = dbReader[10].ToString();
+                                  qf.ps_notes_1000 = dbReader[3].ToString();
+                                  switch (qf.RecordType)
+                                  {
+                                      case "D1":
+                                          qf.ps_notes_1000_new = qf.ps_notes_1000 + "Tracking Number: " + qf.TrackingNumber + ", PO #: " + qf.ps_po_id + ", Updated on  " + ;
+                                          break;
+                                      case "D2":
+                                          qf.ps_notes_1000_new = qf.ps_notes_1000 + "Tracking Number Confirmed: " + qf.TrackingNumber + ", Delivered: " + qf.DeliveryLocation + ", Signed By: " + qf.SignedForBy;
+                                          break;
+                                      case "E1":
+                                          qf.ps_notes_1000_new = qf.ps_notes_1000 + "Tracking Number Issue: " + qf.TrackingNumber + ", Exception Error: " + qf.ExceptionResolutionDescription + ", Rescheduled Delivery : " + qf.RescheduledDeliveryDate;
+                                          break;
+                                      default:
+                                          break;
+                                  }
+
+                                   /* Update Com field   */
+                                  String updateComSql = "Update PS_ISA_XPD_COMMENT.NOTES_1000= @0 WHERE "; //add PKs into where clause
+                                  QuantumDbUtility.executeDBReader(dbConn, updateComSql, new String[1] {  qf.ps_notes_1000_new } ); 
+                              }
+                              
+                              //3. Use Vendor_ID to grab user's email address. Either save message to batch email table or send email immediately
+                          }
+                     }
+                     rowCount++;
+                 }
+            }
+            catch (Exception e)
+            {
+                QuantumUtility.logError(e);
+            }
+        }
+
+        /* ParseDirectory
+         *  Processes all downloaded CSV files
+         * */
+        public static void parseDirectory(String  dir)
+        { 
+            if (Directory.Exists(dir))
+            { 
+                foreach (System.IO.FileInfo file in (new DirectoryInfo(@dir)).GetFiles())
+                {
+                    parseCsvFile(file.ToString());
+                }
+            }
+        }
+    }
+     
+    /* QuantumFile: 
+     *  This class holds row data from the CSV file and relevant data from the PS tables
+     *  Each field represents a relevant column 
+     *  As each CSV/TXT file might vary in the column data provided, the enumeration quantumFilePositions will identify the relevant columns
+     */
+
+    public class QuantumFile
+    {
+        public String receiverid;
+        public String SubscriptionNumber = "";
+        public String SubscriptionFileName = ""; 
+        public String RecordType = "";
+        public String ShipperNumber = "";
+        public String ShipmentReferenceNumberValue1 = "";
+        public String TrackingNumber = "";
+        public String PackageReferenceNumberValue1 = "";
+        public String PackageReferenceNumberType2 = "";
+        public String ExceptionResolutionType = "";
+        public String ExceptionResolutionDescription = "";
+        public String RescheduledDeliveryDate = "";
+        public String RescheduledDeliveryTime = "";
+        public String DeliveryLocation = "";
+        public String BillToAccountNumber = "";
+        public String SignedForBy = "";
+        public String ps_notes_1000;
+        public String ps_notes_1000_new;
+        public String ps_po_id;
+        public List<KeyValuePair<String, int>> quantumFilePositions;
+
+        public QuantumFile()
+        {
+            quantumFilePositions = new List<KeyValuePair<String,int>>();
+            quantumFilePositions.Add(new KeyValuePair<String, int>("RecordType",0));
+            quantumFilePositions.Add(new KeyValuePair<String, int>("ShipperNumber",0));
+            quantumFilePositions.Add(new KeyValuePair<String, int>("ShipmentReferenceNumberValue1",0));
+            quantumFilePositions.Add(new KeyValuePair<String, int>("TrackingNumber",0));
+            quantumFilePositions.Add(new KeyValuePair<String, int>("PackageReferenceNumberValue1",0));
+            quantumFilePositions.Add(new KeyValuePair<String, int>("PackageReferenceNumberType2",0));
+            quantumFilePositions.Add(new KeyValuePair<String, int>("ExceptionResolutionType",0));
+            quantumFilePositions.Add(new KeyValuePair<String, int>("ExceptionResolutionDescription",0));
+            quantumFilePositions.Add(new KeyValuePair<String, int>("RescheduledDeliveryDate",0));
+            quantumFilePositions.Add(new KeyValuePair<String, int>("RescheduledDeliveryTime",0));
+            quantumFilePositions.Add(new KeyValuePair<String, int>("DeliveryLocation",0));
+            quantumFilePositions.Add(new KeyValuePair<String, int>("SignedForBy", 0));
+            quantumFilePositions.Add(new KeyValuePair<String, int>("BillToAccountNumber",0));
+        }
+    }
+}
