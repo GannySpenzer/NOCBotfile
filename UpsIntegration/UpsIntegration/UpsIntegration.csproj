@@ -130,7 +130,9 @@
     <None Include="Backup\QuantumView.bkp.12519" />
     <None Include="Backup\Copy of QuantumView.cs.bkp.1206" />
     <None Include="Backup\QuantumView.bkp.120919" />
+    <None Include="Backup\Copy of QuantumView.121119.bkp" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <None Include="Backup\Copy of QuantumUtility.bkp-121119bd" />
     <Compile Include="Utility\QuantumDbUtility.cs" />
     <Compile Include="Utility\QuantumEmailUtility.cs" />
     <Compile Include="Utility\QuantumUtility.cs" />
@@ -139,8 +141,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Backup\QuantumView.cs.bkp.112219" />
     <None Include="Documentation\CSV_File_Guide_V8 - Jan2016.pdf" />
     <None Include="Documentation\Quantum Utility Documentation.docx" />
+    <None Include="Documentation\Quantum Utility Documentation2.docx" />
+    <None Include="Documentation\Quantum Utility Documentation3.docx" />
     <None Include="Documentation\Quantum_Code_Documentation.xlsx" />
     <None Include="Documentation\SDiExchange com Manual Project.pdf" />
     <None Include="packages.config" />
