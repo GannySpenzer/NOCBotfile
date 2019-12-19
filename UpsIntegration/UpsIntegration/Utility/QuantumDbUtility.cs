@@ -166,19 +166,17 @@ namespace UpsIntegration
             return dbReader;
         }
 
-        public static OleDbDataReader executeDbReader(OleDbConnection dbConn, String sql, String[] param)
+        public static OleDbDataReader executeDbReader(OleDbConnection dbConn, String sql, String[] param=null)
         {
             OleDbDataReader  dbReader = null;
-
+            String newSql = sql;
             try
             {
-
-                QuantumUtility.logErrorFile("******* " + DateTime.Today.ToLongDateString() + " " + DateTime.Today.ToLongTimeString() + " *************");
-                QuantumUtility.logErrorFile("-- CONN: " + dbConn.ConnectionString);
-               QuantumUtility.logErrorFile("-- SQL: " + getSql(sql, param) );
-                OleDbCommand command = new OleDbCommand(getSql(sql, param ), dbConn);
-               // for (int i = 0; i < param.Length; i++)
-                   // command.Parameters.Add(new OleDbParameter( i.ToString(), param[i]));  
+                if (param ==null || param.Length > 0)
+                    newSql = getSql(newSql, param);
+                QuantumUtility.logErrorFile("-- SQL: " + newSql );//+ "\n" + dbConn.ConnectionString ); 
+                OleDbCommand command = new OleDbCommand(newSql, dbConn);
+                command.CommandTimeout = 310; //Adding as 45 sec queries in Sql Developer timeout via the utility
                 dbReader = command.ExecuteReader(); 
 
 
@@ -220,12 +218,15 @@ namespace UpsIntegration
             }
         }
 
-        public static void executeDbUpdate(OleDbConnection dbConn, String sql, String[] param)
+        public static void executeDbUpdate(OleDbConnection dbConn, String sql, String[] param=null)
         {
+            String newSql = sql;
             try
             {
-               QuantumUtility.logErrorFile("** " + DateTime.Today.ToLongDateString() + " " + DateTime.Today.ToLongTimeString() + " DB UPDATE SQL: " + getSql(sql, param));
-                OleDbCommand updateCommand = new OleDbCommand(getSql(sql, param), dbConn);
+                 if (param.Length > 0    )
+                  newSql = getSql(newSql, param);
+               QuantumUtility.logErrorFile("** " + DateTime.Now.ToShortDateString() + " " +  DateTime.Now.TimeOfDay + " DB UPDATE SQL: " + newSql);
+                OleDbCommand updateCommand = new OleDbCommand(newSql, dbConn);
               /*  for (int i = 0; i < param.Length; i++)
                     updateCommand.Parameters.AddWithValue("@" + i.ToString(), param[i]); //updateCommand.Parameters.Add(new OleDbParameter( i.ToString(), param[i])); */
                 updateCommand.ExecuteNonQuery();
@@ -254,12 +255,14 @@ namespace UpsIntegration
             String newSql = oldSql;
             try
             {
-                 
+               if (sqlParams != null)
                 for (int i = 0; i < sqlParams.Length; i++)
                 {
 
-                    newSql = newSql.Replace('@' + i.ToString() , sqlParams[i]); 
-                    
+                    newSql = newSql.Replace('@' + i.ToString() , sqlParams[i]);
+
+                    // for (int i = 0; i < param.Length; i++)
+                    // command.Parameters.Add(new OleDbParameter( i.ToString(), param[i]));  
                 }
                  newSql = newSql.Replace("  ", " ");
                 newSql = newSql.Replace("OR TRIM(PO.PO_ID) = ''", "");

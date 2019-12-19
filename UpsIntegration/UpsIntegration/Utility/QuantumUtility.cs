@@ -72,7 +72,7 @@ namespace UpsIntegration
             try
             {
                 String dir = @"C:\temp\error\";
-                String file = "quantumerror.txt";
+                String file = stripChars( DateTime.Now.ToShortDateString() )  +  "quantum.txt";
                 if (!Directory.Exists(dir))
                     Directory.CreateDirectory(dir);
                 if (!File.Exists(dir + file))
@@ -105,18 +105,25 @@ namespace UpsIntegration
                     newValue = Regex.Replace(value, "\\D", ""); //Replace all non-digit chars
                 if (stripType=="PARTIAL")
                 {
+                    newValue = Regex.Replace(newValue, "SDI PO#", "");
                     newValue = Regex.Replace(newValue, " ", "");
                     newValue = Regex.Replace(newValue, "-", "");
                     newValue = Regex.Replace(newValue, "#", "");
                     newValue = Regex.Replace(newValue, ":", "");
                     newValue = Regex.Replace(newValue, ".", "");
+                    newValue = Regex.Replace(newValue, "/", "");
                     newValue = Regex.Replace(newValue, "SDI", "");
                     newValue = Regex.Replace(newValue, "ORDER", "");
                     newValue = Regex.Replace(newValue, "REQ", "");
+
                 }
                 if (stripType == "PO")
                 {
+
+                    newValue = newValue.Replace("PO.", "");
+                    newValue = newValue.Replace("SDI", "");
                     newValue = newValue.Replace("SDI PO ", "");
+                    newValue = newValue.Replace("SDI PO#", "");
                     newValue = newValue.Replace("PO: ", "");
                     newValue = newValue.Replace("PO : ", "PO");
                     newValue = newValue.Replace("PO # ", "PO");
