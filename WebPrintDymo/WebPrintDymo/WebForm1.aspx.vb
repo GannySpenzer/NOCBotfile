@@ -9,7 +9,7 @@
         Dim sDescr As String = ""
         'Dim sItemID As String = ""
 
-
+        'test new line here
         sItemID = "C100004334"
         sDescr = "Some Label Description"
 
