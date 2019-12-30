@@ -95,7 +95,7 @@ namespace ExpediterReload
                 strSQLstring += "q.ISA_PRIORITY_FLAG as PRIORITY_FLAG,\n";
                 strSQLstring += "trunc(sysdate) - trunc(b.DTTM_STAMP) as STATUS_AGE,\n";
                 strSQLstring += "NVL(R.ROLEUSER, ' ') as BUYER_TEAM,\n";
-                strSQLstring += "' ' as PS_URL,\n";
+                strSQLstring += "U.url || '/EMPLOYEE/ERP/c/MANAGE_PURCHASE_ORDERS.PURCHASE_ORDER.GBL?Page=PO_LINE&Action=U&BUSINESS_UNIT=' || A.BUSINESS_UNIT || '&PO_ID=' || A.PO_ID || '&TargetFrameName=None' as PS_URL,\n";
                 strSQLstring += "' ' as PROCESS_FLAG\n";
 
                 strSQLstring += "FROM sysadm8.PS_ISA_EXPED_XREF A,\n";
@@ -107,7 +107,9 @@ namespace ExpediterReload
                 strSQLstring += "SDIEXCHANGE.sdix_problm_code Z,\n";
                 strSQLstring += "sysadm8.ps_isa_req_bi_info Q,\n";
                 strSQLstring += "sysadm8.ps_rte_cntl_ruser R,\n";
-                strSQLstring += "SYSADM8.PS_DEPT_TBL T\n";
+                strSQLstring += "SYSADM8.PS_DEPT_TBL T,\n";
+                strSQLstring += "SYSADM8.ps_PTSF_URLDEFN_VW U\n";
+
                 strSQLstring += "WHERE A.BUSINESS_UNIT = B.BUSINESS_UNIT\n";
                 strSQLstring += "AND A.PO_ID = B.PO_ID\n";
                 strSQLstring += "AND A.LINE_NBR = B.LINE_NBR\n";
@@ -139,7 +141,11 @@ namespace ExpediterReload
                 strSQLstring += "when S.business_unit = 'ISA00' then 'SDI_PROCURE_SUPERVISOR'\n";
                 strSQLstring += "when S.business_unit = 'SDM00' then 'SDI_SITE_MANAGER_SDM'\n";
                 strSQLstring += "else 'OTHER' end = r.rolename(+)\n";
-                strSQLstring += "AND S.DEPTID = T.DEPTID) "; // AND ROWNUM < 1501";
+                strSQLstring += "AND S.DEPTID = T.DEPTID\n";
+                strSQLstring += "AND U.URL_ID = 'EMP_SERVLET') "; // AND ROWNUM < 1501";
+                // AND ROWNUM < 1501";
+
+
                 m_oLogger.LogMessage("getExpediterData", "PeopleSoft connection string : " + OracleConString);
                 m_oLogger.LogMessage("getExpediterData", "Query To get the Expediter data: " + strSQLstring);
                 dtResponse = oleDBExecuteReader(strSQLstring);
@@ -279,7 +285,7 @@ namespace ExpediterReload
                     bed.PO_DATE.Add(dateparse);
 
                     bed.PO_ID.Add(rowInit["PO_ID"].ToString());
-                    bed.PS_URL.Add(" ");                                        //?????
+                    bed.PS_URL.Add(rowInit["PS_URL"].ToString());                                        //?????
                     bed.PRIORITY_FLAG.Add(rowInit["PRIORITY_FLAG"].ToString());  
                     bed.PROBLEM_CODE.Add(rowInit["PROBLEM_CODE"].ToString());
                     bed.SITE_NAME.Add(" ");                                     //?????
