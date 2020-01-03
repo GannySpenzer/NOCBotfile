@@ -114,7 +114,7 @@ namespace ReqReviewReload1
                 strSQLstring += "Q.ISA_PRIORITY_FLAG AS Priority_Flag,\n";
                 //strSQLstring += "TRUNC(SYSDATE) - D.ADD_DTTM AS Status_Age,\n";
                 strSQLstring += "TRUNC(SYSDATE) - TRUNC(D.ADD_DTTM) AS Status_Age,\n";
-                strSQLstring += "' ' as PS_URL,\n";
+                strSQLstring += "U.url || '/EMPLOYEE/ERP/c/REQUISITION_ITEMS.REQUISITIONS.GBL?Page=REQ_FORM&Action=U&BUSINESS_UNIT=' || B.BUSINESS_UNIT || '&REQ_ID=' || B.REQ_ID || '&TargetFrameName=None' as PS_URL,\n";
                 strSQLstring += "NVL(R.ROLEUSER, ' ') AS Buyer_Team,\n";
                 strSQLstring += "' ' as PROCESS_FLAG\n";
 
@@ -132,7 +132,8 @@ namespace ReqReviewReload1
                 strSQLstring += "     SYSADM8.PS_DEPT_TBL T,\n";
                 strSQLstring += "     SYSADM8.PS_ISA_REQ_BI_INFO Q,\n";
                 strSQLstring += "     SYSADM8.PS_RTE_CNTL_RUSER R,\n";
-                strSQLstring += "     SYSADM8.PS_VENDOR V\n";
+                strSQLstring += "     SYSADM8.PS_VENDOR V,\n";
+                strSQLstring += "     SYSADM8.ps_PTSF_URLDEFN_VW U \n";
 
                 strSQLstring += "WHERE A.BUSINESS_UNIT IN('ISA00','SDM00','CST00')\n";
                 strSQLstring += "and A.REQ_STATUS IN('P','A')\n";
@@ -195,7 +196,8 @@ namespace ReqReviewReload1
                 strSQLstring += "      when e.business_unit = 'ISA00' then 'SDI_PROCURE_SUPERVISOR'\n";
                 strSQLstring += "      when e.business_unit = 'SDM00' then 'SDI_SITE_MANAGER_SDM'\n";
                 strSQLstring += "      else 'OTHER' end = r.rolename(+)\n";
-                strSQLstring += "AND e.DEPTID = T.DEPTID)";
+                strSQLstring += "AND e.DEPTID = T.DEPTID\n";
+                strSQLstring += "AND U.url_id = 'EMP_SERVLET')";
                 //strSQLstring += "AND e.DEPTID = T.DEPTID AND ROWNUM < 2)";
 
                 m_oLogger.LogMessage("CreateTable", "PeopleSoft connection string : " + OracleConString);
