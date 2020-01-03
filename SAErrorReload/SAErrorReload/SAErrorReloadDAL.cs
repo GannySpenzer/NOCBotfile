@@ -105,11 +105,11 @@ namespace SAErrorReload1
                 strSQLstring += "d.SHIPTO_ID as Shipto_ID, \n";
                 strSQLstring += "q.isa_priority_flag as Priority_Flag,\n";
                 strSQLstring += "NVL(r.roleuser, ' ') as Buyer_Team,\n";
-                strSQLstring += "' ' as PS_URL,\n";
+                strSQLstring += "U.url || '/EMPLOYEE/ERP/c/MANAGE_PURCHASE_ORDERS.PO_SRC_ANALYSIS.GBL?Page=PO_SRC_ANALYSIS&Action=U&BUSINESS_UNIT=' || B.BUSINESS_UNIT || '&REQ_ID=' || B.REQ_ID || '&TargetFrameName=None' as PS_URL,\n";
                 strSQLstring += "' ' as PROCESS_FLAG\n";
 
                 strSQLstring += "FROM sysadm8.PS_REQ_HDR B, sysadm8.PS_PO_ITM_STG D, sysadm8.PS_DEPT_TBL E, sysadm8.ps_req_ln_distrib A, sysadm8.XLATTABLE_VW c, sysadm8.ps_msg_Cat_VW G,\n";
-                strSQLstring += " sysadm8.ps_rte_cntl_ruser R, sysadm8.ps_vendor V, sysadm8.ps_isa_req_bi_info q\n";
+                strSQLstring += " sysadm8.ps_rte_cntl_ruser R, sysadm8.ps_vendor V, sysadm8.ps_isa_req_bi_info q, sysadm8.ps_ptsf_urldefn_vw u \n";
 
                 strSQLstring += "  WHERE d.BUSINESS_UNIT IN('ISA00','CST00','SDM00')\n";
                 strSQLstring += "     AND D.STAGE_STATUS IN('E','V' )\n";
@@ -135,11 +135,14 @@ namespace SAErrorReload1
                 strSQLstring += "and a.business_unit = q.business_unit\n";
                 strSQLstring += "and a.req_id = q.req_id\n";
                 strSQLstring += "and a.line_nbr = q.line_nbr\n";
+                strSQLstring += "AND U.url_id = 'EMP_SERVLET'\n";
+
                 //strSQLstring += "AND ROWNUM < 11\n";
                 strSQLstring += "  GROUP BY  'Error',  DECODE(E.ACCOUNTING_OWNER, ' ', 'Inactive Site', E.ACCOUNTING_OWNER),  E.DESCR,  d.BUYER_ID,  \n";
                 strSQLstring += "  d.INV_ITEM_ID,  DECODE(d.INV_ITEM_ID, ' ', 'NSTK', 'STK'),  c.xlatlongname, g.message_text, d.REQ_ID, d.line_nbr ,  d.SCHED_NBR,d.vendor_id, v.name1, d.price_req,  \n";
                 strSQLstring += "  TO_CHAR(B.REQ_DT, 'YYYY-MM-DD'),  TO_CHAR(D.SOURCE_DATE, 'YYYY-MM-DD'),  SYSDATE,  SUBSTR(TO_CHAR(D.DATETIME_MODIFIED, 'YYYY-MM-DD'), 1, 10),  \n";
-                strSQLstring += "  ROUND(SYSDATE - TO_DATE(TO_CHAR(D.SOURCE_DATE, 'YYYY-MM-DD'), 'YYYY-MM-DD')),d.SHIPTO_ID, q.isa_priority_flag, r.roleuser, ' '\n";
+                strSQLstring += "  ROUND(SYSDATE - TO_DATE(TO_CHAR(D.SOURCE_DATE, 'YYYY-MM-DD'), 'YYYY-MM-DD')),d.SHIPTO_ID, q.isa_priority_flag, r.roleuser, \n";
+                strSQLstring +="   U.url || '/EMPLOYEE/ERP/c/MANAGE_PURCHASE_ORDERS.PO_SRC_ANALYSIS.GBL?Page=PO_SRC_ANALYSIS&Action=U&BUSINESS_UNIT=' || B.BUSINESS_UNIT || '&REQ_ID=' || B.REQ_ID || '&TargetFrameName=None' \n";
                 strSQLstring += ")"; // order by 17";
 
                 m_oLogger.LogMessage("CreateTable", "PeopleSoft connection string : " + OracleConString);
