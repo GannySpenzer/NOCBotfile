@@ -118,7 +118,7 @@ namespace POOverrideReload1
                 strSQLstring += "A.ISA_QTY_UPDBYP as QTY_UPDATE_BYPASS, \n";
                 strSQLstring += "A.ISA_QTY_UPD_OV as QTY_OVERRIDE_STATUS, \n";
                 strSQLstring += "A.ISA_STAT_RVW_FLG as REVIEW_FLAG,\n";
-                strSQLstring += "' ' as PS_URL,\n";
+                strSQLstring += "U.url || '/EMPLOYEE/ERP/c/MANAGE_PURCHASE_ORDERS.PURCHASE_ORDER.GBL?Page=PO_LINE&Action=U&BUSINESS_UNIT=' || A.BUSINESS_UNIT || '&PO_ID=' || a.po_ID || '&TargetFrameName=None' as PS_URL,\n";
                 strSQLstring += "NVL(R.ROLEUSER, ' ') as BUYER_TEAM,\n";
                 strSQLstring += "' ' AS PROCESS_FLAG\n";
 
@@ -127,7 +127,8 @@ namespace POOverrideReload1
                 strSQLstring += "sysadm8.PS_PO_LINE_DISTRIB D,\n";
                 strSQLstring += "SYSADM8.PS_DEPT_TBL T,\n";
                 strSQLstring += "SYSADM8.PS_RTE_CNTL_RUSER R,\n";
-                strSQLstring += "SYSADM8.PS_VENDOR V\n";
+                strSQLstring += "SYSADM8.PS_VENDOR V,\n";
+                strSQLstring += "SYSADM8.ps_PTSF_URLDEFN_VW U\n";
 
                 strSQLstring += "WHERE A.BUSINESS_UNIT IN('ISA00','CST00','SDM00')\n";
                 strSQLstring += "AND A.DATETIME_ADDED > sysdate - 730\n";
@@ -150,7 +151,8 @@ namespace POOverrideReload1
                 strSQLstring += "when D.business_unit = 'SDM00' then 'SDI_SITE_MANAGER_SDM'\n";
                 strSQLstring += "else 'OTHER' end = r.rolename(+)\n";
                 strSQLstring += "AND D.DEPTID = T.DEPTID\n";
-                strSQLstring += "AND A.VENDOR_ID = V.VENDOR_ID)\n";
+                strSQLstring += "AND A.VENDOR_ID = V.VENDOR_ID\n";
+                strSQLstring += "AND U.URL_ID = 'EMP_SERVLET')";
 
                 m_oLogger.LogMessage("CreateTable", "PeopleSoft connection string : " + OracleConString);
                 m_oLogger.LogMessage("CreateTable", "Query To create the POOverride temp data table: " + strSQLstring);
