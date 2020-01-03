@@ -163,7 +163,7 @@ namespace MatchExcepReload
                 strSQLstring += "A.DWR_DAYS_ASSIGNED as DAYS_ASSIGNED,\n";
                 strSQLstring += "A.DWR_AGING3 as ASSIGNED_AGING,\n";
                 strSQLstring += "NVL(R.ROLEUSER, ' ') as BUYER_TEAM,\n";
-                strSQLstring += "' ' as PS_URL,\n";
+                strSQLstring += "UU.url || '/EMPLOYEE/ERP/c/MANAGE_PURCHASE_ORDERS.PURCHASE_ORDER.GBL?Page=PO_LINE&Action=U&BUSINESS_UNIT=' || B.BUSINESS_UNIT || '&PO_ID=' || b.po_ID || '&TargetFrameName=None' as PS_URL,\n";
                 strSQLstring += "' ' as PROCESS_FLAG\n";
 
                 strSQLstring += "FROM\n";
@@ -174,7 +174,8 @@ namespace MatchExcepReload
                 strSQLstring += "sysadm8.DW_APX_USERS U,\n";
                 strSQLstring += "sysadm8.PS_VENDOR V,\n";
                 strSQLstring += "sysadm8.ps_dept_Tbl T,\n";
-                strSQLstring += "sysadm8.ps_rte_cntl_ruser R\n";
+                strSQLstring += "sysadm8.ps_rte_cntl_ruser R,\n";
+                strSQLstring += "SYSADM8.ps_PTSF_URLDEFN_VW UU\n";
 
                 strSQLstring += "WHERE\n";
                 strSQLstring += "A.BUSINESS_UNIT = B.BUSINESS_UNIT(+)\n";
@@ -198,7 +199,8 @@ namespace MatchExcepReload
                 strSQLstring += "and case \n";
                 strSQLstring += "when d.business_unit = 'ISA00' then 'SDI_PROCURE_SUPERVISOR'\n";
                 strSQLstring += "when d.business_unit = 'SDM00' then 'SDI_SITE_MANAGER_SDM'\n";
-                strSQLstring += "else 'OTHER' end = r.rolename(+))\n";
+                strSQLstring += "else 'OTHER' end = r.rolename(+)\n";
+                strSQLstring += "AND UU.url_id = 'EMP_SERVLET')";
                 m_oLogger.LogMessage("CreateTable", "PeopleSoft connection string : " + OracleConString);
                 m_oLogger.LogMessage("CreateTable", "Query To create the MatchExcep temp data table: " + strSQLstring);
                 dtResponse = oleDBExecuteReader(strSQLstring);
