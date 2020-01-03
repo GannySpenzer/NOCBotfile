@@ -130,7 +130,7 @@ namespace PODispatchReload1
                 strSQLstring += "' 'as REQ_SHIP_METHOD,\n";
                 strSQLstring += "B.hold_status as PO_HOLD_FLAG,\n";
                 strSQLstring += "NVL(N.roleuser, ' ') as BUYER_TEAM,\n";
-                strSQLstring += "' ' as PS_URL,\n";
+                strSQLstring += "U.url || '/EMPLOYEE/ERP/c/MANAGE_PURCHASE_ORDERS.PURCHASE_ORDER.GBL?Page=PO_LINE&Action=U&BUSINESS_UNIT=' || a.BUSINESS_UNIT || '&PO_ID=' || a.po_ID || '&TargetFrameName=None' as PS_URL,\n";
                 strSQLstring += "NVL(O20X.XLATLONGNAME, ' ') as COMMENT_TYPE,\n";
                 strSQLstring += "' ' as PROCESS_FLAG\n";
 
@@ -162,7 +162,8 @@ namespace PODispatchReload1
                 strSQLstring += "sysadm8.PS_VENDOR_ADDR I,\n";
                 strSQLstring += "sysadm8.PS_VENDOR_LOC J, \n";
                 strSQLstring += "sysadm8.PS_ISA_REQ_BI_INFO L,\n";
-                strSQLstring += "sysadm8.ps_dept_tbl T \n";
+                strSQLstring += "sysadm8.ps_dept_tbl T, \n";
+                strSQLstring += "SYSADM8.ps_PTSF_URLDEFN_VW U\n";
 
                 strSQLstring += "WHERE (O20X.EFFDT = (SELECT MAX(EFFDT) \n";
                 strSQLstring += "FROM sysadm8.PSXLATITEM TB WHERE TB.FIELDNAME=O20X.FIELDNAME \n";
@@ -219,7 +220,8 @@ namespace PODispatchReload1
                 strSQLstring += "     AND D.REQ_LINE_NBR = L.LINE_NBR\n";
                 strSQLstring += "     AND ( F.ISA_PROBLEM_CODE <> 'BP'\n";
                 strSQLstring += "     OR F.ISA_PROBLEM_CODE IS NULL)\n";
-                strSQLstring += "     and d.deptid = t.deptid)\n";
+                strSQLstring += "     and d.deptid = t.deptid\n";
+                strSQLstring += "     AND U.url_id = 'EMP_SERVLET')";
 
                 m_oLogger.LogMessage("CreateTable", "PeopleSoft connection string : " + OracleConString);
                 m_oLogger.LogMessage("CreateTable", "Query To create the PODispatch temp data table: " + strSQLstring);
