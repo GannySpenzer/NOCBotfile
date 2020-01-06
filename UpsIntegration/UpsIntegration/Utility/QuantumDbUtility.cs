@@ -22,6 +22,13 @@ namespace UpsIntegration
 
     class QuantumDbUtility
     {
+        private static String defaultStr = "Provider=OraOLEDB.Oracle;User Id=sdiexchange;Password=sd1exchange;Data Source=STAR.WORLD;Connection Timeout=310;";
+        private static String rptgStr = "Provider=OraOLEDB.Oracle;User Id=sdiexchange;Password=sd1exchange;Data Source=RPTG.WORLD;Connection Timeout=310;";
+        private static OleDbConnection dbConn  = new OleDbConnection();
+        public QuantumDbUtility()
+        {
+            dbConn= openDb(defaultStr);
+        }
         public static void openDb(String connStr, SqlConnection dbConn)
         {
             try
@@ -49,7 +56,7 @@ namespace UpsIntegration
             return dbConn;
         }
 
-        public static OracleConnection openDb(String connStr)
+     /*   public static OracleConnection openDb(String connStr)
         {
             OracleConnection dbConn = new OracleConnection();
             try
@@ -63,8 +70,8 @@ namespace UpsIntegration
             }
             return dbConn;
         }
-
-       /* public static OleDbConnection  openDb(String connStr)
+        */
+        public static OleDbConnection  openDb(String connStr)
         {
             OleDbConnection dbConn = new OleDbConnection();
             try
@@ -77,7 +84,7 @@ namespace UpsIntegration
                 QuantumUtility.logError(e);
             }
             return dbConn;
-        }*/
+        } 
 
         public static void  openDb(String connStr, OleDbConnection dbConn)
         { 
@@ -136,10 +143,7 @@ namespace UpsIntegration
             SqlDataReader dbReader = null;
             try
             {
-              //  QuantumUtility.logError( getSql(sql, param) );
                 SqlCommand command = new SqlCommand(getSql(sql,param), dbConn);
-                /* for (int i=0; i < param.Length; i++)
-                    command.Parameters.AddWithValue("@" + i.ToString(), param[i]);  //command.Parameters.Add(new SqlParameter( i.ToString(), param[i])); */
                 dbReader = command.ExecuteReader();
             }
             catch (Exception e)
@@ -174,12 +178,10 @@ namespace UpsIntegration
             {
                 if (param ==null || param.Length > 0)
                     newSql = getSql(newSql, param);
-                QuantumUtility.logErrorFile("-- SQL: " + newSql );//+ "\n" + dbConn.ConnectionString ); 
+              //  QuantumUtility.logErrorFile("-- SQL: " + newSql );//+ "\n" + dbConn.ConnectionString ); 
                 OleDbCommand command = new OleDbCommand(newSql, dbConn);
                 command.CommandTimeout = 310; //Adding as 45 sec queries in Sql Developer timeout via the utility
                 dbReader = command.ExecuteReader(); 
-
-
             }
             catch (Exception e)
             {
@@ -222,13 +224,11 @@ namespace UpsIntegration
         {
             String newSql = sql;
             try
-            {
-                 if (param.Length > 0    )
+            { 
+                if (param != null && param.Length > 0)
                   newSql = getSql(newSql, param);
-               QuantumUtility.logErrorFile("** " + DateTime.Now.ToShortDateString() + " " +  DateTime.Now.TimeOfDay + " DB UPDATE SQL: " + newSql);
+             //  QuantumUtility.logErrorFile("** " + DateTime.Now.ToShortDateString() + " " +  DateTime.Now.TimeOfDay + " DB UPDATE SQL: " + newSql);
                 OleDbCommand updateCommand = new OleDbCommand(newSql, dbConn);
-              /*  for (int i = 0; i < param.Length; i++)
-                    updateCommand.Parameters.AddWithValue("@" + i.ToString(), param[i]); //updateCommand.Parameters.Add(new OleDbParameter( i.ToString(), param[i])); */
                 updateCommand.ExecuteNonQuery();
                
             }

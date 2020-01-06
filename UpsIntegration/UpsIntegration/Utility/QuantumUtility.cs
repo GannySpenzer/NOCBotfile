@@ -42,6 +42,32 @@ namespace UpsIntegration
                 System.Console.WriteLine(ee.ToString());
             }
         }
+        public static void logErrorFile(Exception error, String dir = @"C:\temp\error\")
+        {
+            try
+            { 
+                String file = stripChars(DateTime.Now.ToShortDateString()) + "quantum.txt";
+                if (!Directory.Exists(dir))
+                    Directory.CreateDirectory(dir);
+                if (!File.Exists(dir + file))
+                {
+                    using (StreamWriter sw = File.CreateText(dir + file))
+                        sw.WriteLine("----------------------------" + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToShortTimeString() + "-----------------------------------");
+                }
+                using (StreamWriter sw = File.AppendText(dir + file))
+                {
+                    sw.WriteLine(error.ToString());
+                    sw.WriteLine(error.Message);
+                    sw.WriteLine(error.Source);
+                    sw.WriteLine(error.StackTrace);
+                    sw.WriteLine(error.TargetSite);
+                }
+            }
+            catch (Exception e)
+            {
+                logError(e);
+            }
+        }
 
         /*
          * Log Error (String)
@@ -67,11 +93,10 @@ namespace UpsIntegration
             return returnVal;
         }
 
-        public static void logErrorFile(String error)
+        public static void logErrorFile(String error, String dir = @"C:\temp\error\")
         {
             try
-            {
-                String dir = @"C:\temp\error\";
+            { 
                 String file = stripChars( DateTime.Now.ToShortDateString() )  +  "quantum.txt";
                 if (!Directory.Exists(dir))
                     Directory.CreateDirectory(dir);
@@ -423,6 +448,7 @@ namespace UpsIntegration
             this.server=server;
             this.userid=userid;
             this.password=password;
+            this.startDate = DateTime.Now;
         }
 
         public ftpData(String server, String directory, String userid, String password)
@@ -431,6 +457,7 @@ namespace UpsIntegration
             this.directory = directory;
             this.userid = userid;
             this.password = password;
+            this.startDate = DateTime.Now;
         }
    
         public ftpData(ftpData ftpdata) : this()

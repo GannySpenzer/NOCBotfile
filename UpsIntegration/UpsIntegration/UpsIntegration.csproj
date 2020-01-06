@@ -113,6 +113,10 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Web.Services" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -124,6 +128,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Backup\Copy of QuantumView.cs.122719" />
+    <Compile Include="Web References\SDiEmailUtilityService\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.map</DependentUpon>
+    </Compile>
     <None Include="AvaSoftOriginalFiles\AVASOFT_Original_Program.cs.old" />
     <None Include="Backup\DraftQuantumView.bkp" />
     <None Include="Backup\QuantumView.bkp.12419" />
@@ -133,11 +143,26 @@
     <None Include="Backup\Copy of QuantumView.121119.bkp" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="Backup\Copy of QuantumUtility.bkp-121119bd" />
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
     <Compile Include="Utility\QuantumDbUtility.cs" />
-    <Compile Include="Utility\QuantumEmailUtility.cs" />
+    <None Include="Backup\QuantumEmailUtility.cs.01022020" />
     <Compile Include="Utility\QuantumUtility.cs" />
     <Compile Include="QuantumView.cs" />
     <None Include="AvaSoftOriginalFiles\AVASOFT_Original_Scripting.cs.old" />
+    <None Include="Documentation\Quantum Utility Documentation4.docx" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="Web References\SDiEmailUtilityService\EmailServices.wsdl" />
+    <None Include="Web References\SDiEmailUtilityService\Reference.map">
+      <Generator>MSDiscoCodeGenerator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -146,6 +171,7 @@
     <None Include="Documentation\Quantum Utility Documentation.docx" />
     <None Include="Documentation\Quantum Utility Documentation2.docx" />
     <None Include="Documentation\Quantum Utility Documentation3.docx" />
+    <None Include="Documentation\QuantumViewAPI.zip" />
     <None Include="Documentation\Quantum_Code_Documentation.xlsx" />
     <None Include="Documentation\SDiExchange com Manual Project.pdf" />
     <None Include="packages.config" />
@@ -182,8 +208,27 @@
     <Content Include="SupportFiles\WinSCP\readme_automation.txt" />
     <Content Include="SupportFiles\WinSCP\WinSCP.exe" />
     <Content Include="SupportFiles\WinSCP\WinSCPnet.dll" />
+    <None Include="Web References\SDiEmailUtilityService\EmailServices.disco" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <WebReferences Include="Web References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <WebReferenceUrl Include="http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx">
+      <UrlBehavior>Dynamic</UrlBehavior>
+      <RelPath>Web References\SDiEmailUtilityService\</RelPath>
+      <UpdateFromURL>http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx</UpdateFromURL>
+      <ServiceLocationURL>
+      </ServiceLocationURL>
+      <CachedDynamicPropName>
+      </CachedDynamicPropName>
+      <CachedAppSettingsObjectName>Settings</CachedAppSettingsObjectName>
+      <CachedSettingsPropName>UpsIntegration_SDiEmailUtilityService_EmailServices</CachedSettingsPropName>
+    </WebReferenceUrl>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Backup\SearchPage\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
