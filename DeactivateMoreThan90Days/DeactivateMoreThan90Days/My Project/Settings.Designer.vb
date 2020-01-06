@@ -15,7 +15,7 @@ Option Explicit On
 Namespace My
     
     <Global.System.Runtime.CompilerServices.CompilerGeneratedAttribute(),  _
-     Global.System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "10.0.0.0"),  _
+     Global.System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "11.0.0.0"),  _
      Global.System.ComponentModel.EditorBrowsableAttribute(Global.System.ComponentModel.EditorBrowsableState.Advanced)>  _
     Partial Friend NotInheritable Class MySettings
         Inherits Global.System.Configuration.ApplicationSettingsBase
@@ -129,8 +129,18 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=P"& _ 
-            "ROD")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute(" Your SDiExchange Account has been deactivated due to more than 90 days inactivit"& _ 
+            "y")>  _
+        Public ReadOnly Property onError_emailSubject() As String
+            Get
+                Return CType(Me("onError_emailSubject"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=R"& _ 
+            "PTG")>  _
         Public ReadOnly Property oraCNString1() As String
             Get
                 Return CType(Me("oraCNString1"),String)
@@ -139,11 +149,12 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute(" Your SDiExchange Account has been deactivated due to more than 90 days inactivit"& _ 
-            "y")>  _
-        Public ReadOnly Property onError_emailSubject() As String
+         Global.System.Configuration.DefaultSettingValueAttribute("'I0A01','I0A02','I0A03','I0A04','I0A05','I0A06','I0A07','I0A08','I0A09','I0A10','"& _ 
+            "I0A11','I0A12','I0A13','I0A14','I0A15','I0A16','I0A17','I0A18','I0A19','I0A20','"& _ 
+            "I0A21','I0A22','I0A24','I0A25','ISA00','SDM00'")>  _
+        Public ReadOnly Property ExcludedBusinessUnits() As String
             Get
-                Return CType(Me("onError_emailSubject"),String)
+                Return CType(Me("ExcludedBusinessUnits"),String)
             End Get
         End Property
     End Class

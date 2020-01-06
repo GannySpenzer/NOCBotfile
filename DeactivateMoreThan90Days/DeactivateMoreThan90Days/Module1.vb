@@ -101,6 +101,14 @@ Module Module1
 
         If Not bError Then
 
+            '   List of Excluded Business Units
+            Dim strListBU As String = ""
+            Try
+                strListBU = My.Settings("ExcludedBusinessUnits").ToString.Trim
+            Catch ex As Exception
+                strListBU = ""
+            End Try
+
             Console.WriteLine("Started Update part of 'DEACTIVATE - Not Active 90 Days' process")
             Console.WriteLine("")
 
@@ -109,6 +117,10 @@ Module Module1
                 "WHERE (LAST_ACTIVITY IS NULL AND ACTIVE_STATUS = 'A') OR " & vbCrLf & _
                 "(LAST_ACTIVITY IS NOT NULL AND ACTIVE_STATUS = 'A' AND LAST_ACTIVITY < (SYSDATE - 100))" & vbCrLf & _
                 ""
+
+            If Trim(strListBU) <> "" Then
+                strSqlString = strSqlString & " AND BUSINESS_UNIT NOT IN (" & strListBU & ")"
+            End If
 
             Try
 
@@ -171,6 +183,11 @@ Module Module1
                                     "WHERE (LAST_ACTIVITY IS NULL AND ACTIVE_STATUS = 'A') OR " & vbCrLf & _
                                     "(LAST_ACTIVITY IS NOT NULL AND ACTIVE_STATUS = 'A' AND LAST_ACTIVITY < (SYSDATE - 100))" & vbCrLf & _
                                     ""
+
+                                If Trim(strListBU) <> "" Then
+                                    strSqlString = strSqlString & " AND BUSINESS_UNIT NOT IN (" & strListBU & ")"
+                                End If
+
                                 Try
                                     rowsUpdated = ORDBAccess.ExecNonQuery(strSqlString, connectOR)
                                     If rowsUpdated = 0 Then

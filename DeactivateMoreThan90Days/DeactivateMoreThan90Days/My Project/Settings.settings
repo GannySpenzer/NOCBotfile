@@ -26,11 +26,14 @@
     <Setting Name="logPath" Type="System.String" Scope="Application">
       <Value Profile="(Default)">C:\Program Files (x86)\SDI\DeactivateNotActive90Days\Logs</Value>
     </Setting>
-    <Setting Name="oraCNString1" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=PROD</Value>
-    </Setting>
     <Setting Name="onError_emailSubject" Type="System.String" Scope="Application">
       <Value Profile="(Default)"> Your SDiExchange Account has been deactivated due to more than 90 days inactivity</Value>
+    </Setting>
+    <Setting Name="oraCNString1" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=RPTG</Value>
+    </Setting>
+    <Setting Name="ExcludedBusinessUnits" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">'I0A01','I0A02','I0A03','I0A04','I0A05','I0A06','I0A07','I0A08','I0A09','I0A10','I0A11','I0A12','I0A13','I0A14','I0A15','I0A16','I0A17','I0A18','I0A19','I0A20','I0A21','I0A22','I0A24','I0A25','ISA00','SDM00'</Value>
     </Setting>
   </Settings>
 </SettingsFile>
