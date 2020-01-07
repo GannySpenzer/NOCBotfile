@@ -9,6 +9,15 @@
         Dim sDescr As String = ""
         'Dim sItemID As String = ""
 
+        Dim zz As New DYMO.DymoAddIn()
+        Dim yy As New Dymo.DymoLabels()
+
+        yy.SetField("ItemID_1", sItemID)
+        yy.SetField("Description", sDescr)
+        zz.StartPrintJob()
+        zz.Print(1, True)
+
+
         'test new line here
         sItemID = "C100004334"
         sDescr = "Some Label Description"
