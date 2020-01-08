@@ -43,58 +43,44 @@ Module Module1
 
     Private Function buildstatchgout() As Boolean
 
-        ' get XML file of sites that require email
-        Dim strXMLDir As String = rootDir & "\EmailSites.xml"
-        Dim xmldata As New XmlDocument
-        Dim sr As System.IO.StreamReader
-        Dim XMLContent As String
-        Dim jobNode As XmlNode
-        sr = New System.IO.StreamReader(strXMLDir)
-        XMLContent = sr.ReadToEnd()
-        sr.Close()
-        xmldata.LoadXml(XMLContent)
-        Dim jj As XmlNode = xmldata.ChildNodes(2)
-        jobNode = xmldata.ChildNodes(1)
-        Dim dsRows As New DataSet
-        dsRows.ReadXml(New XmlNodeReader(jobNode))
         Dim I As Integer
         Dim bolErrorSomeWhere As Boolean
 
         Dim connectionString As String = ConfigurationManager.AppSettings("OLEDBconString")
         connectOR = New OleDbConnection(connectionString)
 
-        ' check stock
-        For I = 0 To dsRows.Tables(0).Rows.Count - 1
-            If dsRows.Tables(0).Rows(I).Item("SITESTK") = "Y" Then
-                objStreamWriter.WriteLine("  StatChg Email send stock emails for " & dsRows.Tables(0).Rows(I).Item("SITEBU"))
-                buildstatchgout = checkStock(dsRows.Tables(0).Rows(I).Item("SITEBU"), dsRows.Tables(0).Rows(I).Item("SITESTART"))
-                'buildstatchgout = False
-                If buildstatchgout = True Then
-                    bolErrorSomeWhere = True
-                End If
-            End If
-        Next
+        Dim dsBU As DataSet
+        dsBU = GetBU()
 
-        ' check non-stock
-        For I = 0 To dsRows.Tables(0).Rows.Count - 1
-            If dsRows.Tables(0).Rows(I).Item("SITENSTK") = "Y" Then
-                objStreamWriter.WriteLine("  StatChg Email send nonstock emails for " & dsRows.Tables(0).Rows(I).Item("SITEBU"))
-                buildstatchgout = checkNonStock(dsRows.Tables(0).Rows(I).Item("SITEBU"), dsRows.Tables(0).Rows(I).Item("SITESTART"))
+        If Not dsBU Is Nothing Then
+            ' check stock
+            For I = 0 To dsBU.Tables(0).Rows.Count - 1
+                objStreamWriter.WriteLine("  StatChg Email send stock emails for " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                buildstatchgout = checkStock(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
                 If buildstatchgout = True Then
                     bolErrorSomeWhere = True
                 End If
-            End If
-        Next
+            Next
 
-        For I = 0 To dsRows.Tables(0).Rows.Count - 1
-            If dsRows.Tables(0).Rows(I).Item("ALLSTATUS") = "Y" Then
-                objStreamWriter.WriteLine("  StatChg Email send allstatus emails for " & dsRows.Tables(0).Rows(I).Item("SITEBU"))
-                buildstatchgout = checkAllStatus_7(dsRows.Tables(0).Rows(I).Item("SITEBU"), dsRows.Tables(0).Rows(I).Item("SITESTART"))
+            ' check non-stock
+            For I = 0 To dsBU.Tables(0).Rows.Count - 1
+                objStreamWriter.WriteLine("  StatChg Email send nonstock emails for " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                buildstatchgout = checkNonStock(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
                 If buildstatchgout = True Then
                     bolErrorSomeWhere = True
                 End If
-            End If
-        Next
+            Next
+
+            For I = 0 To dsBU.Tables(0).Rows.Count - 1
+                objStreamWriter.WriteLine("  StatChg Email send allstatus emails for " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                buildstatchgout = checkAllStatus_7(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                If buildstatchgout = True Then
+                    bolErrorSomeWhere = True
+                End If
+            Next
+        Else
+
+        End If
 
         '7 is stock
         'R is non-stock
@@ -112,7 +98,41 @@ Module Module1
 
     End Function
 
-    Private Function checkNonStock(ByVal strBU As String, ByVal dtrStartDate As String) As Boolean
+    Private Function GetBU() As DataSet
+        Dim ds As System.Data.DataSet = New System.Data.DataSet
+        Try
+            ''Dim getBuQuery As String = "SELECT  A.ISA_BUSINESS_UNIT as BUSINESS_UNIT,A.ISA_BUSINESS_UNIT || ' - ' || B.descr  as  DESCRIPTION FROM  SYSADM8.PS_ISA_ENTERPRISE A, SYSADM8.PS_LOCATION_TBL B WHERE  B.location =  'L'|| substr(A.ISA_BUSINESS_UNIT,2) || '-01' AND A.BU_STATUS = '1' AND B.EFFDT = (SELECT MAX(A_ED.EFFDT) FROM PS_LOCATION_TBL A_ED WHERE B.SETID = A_ED.SETID AND B.LOCATION = A_ED.LOCATION AND A_ED.EFFDT <= SYSDATE) ORDER BY A.ISA_BUSINESS_UNIT"
+            Dim getBuQuery As String = "SELECT  A.ISA_BUSINESS_UNIT as BUSINESS_UNIT,A.ISA_BUSINESS_UNIT || ' - ' || B.descr  as  DESCRIPTION FROM  SYSADM8.PS_ISA_ENTERPRISE A, SYSADM8.PS_LOCATION_TBL B WHERE  B.location =  'L'|| substr(A.ISA_BUSINESS_UNIT,2) || '-01' AND A.BU_STATUS = '1' AND B.EFFDT = (SELECT MAX(A_ED.EFFDT) FROM PS_LOCATION_TBL A_ED WHERE B.SETID = A_ED.SETID AND B.LOCATION = A_ED.LOCATION AND A_ED.EFFDT <= SYSDATE)"
+            Dim Command As OleDbCommand = New OleDbCommand(getBuQuery, connectOR)
+            If connectOR.State = ConnectionState.Open Then
+                'do nothing
+            Else
+                connectOR.Open()
+            End If
+
+            Dim dataAdapter As OleDbDataAdapter = _
+                        New OleDbDataAdapter(Command)
+            Try
+                dataAdapter.Fill(ds)
+                connectOR.Close()
+            Catch ex As Exception
+
+            End Try
+            If Not ds Is Nothing Then
+                If ds.Tables(0).Rows.Count() > 0 Then
+                    Return ds
+                Else
+                    Return Nothing
+                End If
+            Else
+                Return Nothing
+            End If
+        Catch ex As Exception
+            Return Nothing
+        End Try
+    End Function
+
+    Private Function checkNonStock(ByVal strBU As String) As Boolean
 
         Dim dteStrDate As DateTime
         Dim dteEndDate As DateTime
@@ -133,7 +153,6 @@ Module Module1
                 " PS_RECV_LN_SHIP E" & vbCrLf & _
                 " WHERE A.BUSINESS_UNIT_OM = '" & strBU & "'" & vbCrLf & _
                 " AND A.ADD_DTTM > TO_DATE('" & dteStrDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
-                " AND A.ADD_DTTM > TO_DATE('" & dtrStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
                 " AND A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf & _
                 " AND A.ORDER_NO = B.ORDER_NO" & vbCrLf & _
                 " AND A.BUSINESS_UNIT_OM = C.BUSINESS_UNIT" & vbCrLf & _
@@ -206,7 +225,11 @@ Module Module1
             Dim strDesc254 As String = ds.Tables(0).Rows(I).Item("DESCR254_MIXED")
             Dim strorigin As String = ds.Tables(0).Rows(I).Item("Origin")
 
-            strSQLstring = "INSERT INTO PS_ISA_ORDSTAT_EML" & vbCrLf & _
+            Dim ChkExistsLog As Boolean = ChkExistnLog(strBUSINESSUNITOM, strORDERNO, strINTFCLINENUM, "0", "0", strEMPLID, "RET")
+            connectOR.Open()
+
+            If Not ChkExistsLog Then
+                strSQLstring = "INSERT INTO PS_ISA_ORDSTAT_EML" & vbCrLf & _
                         " VALUES ('" & strBUSINESSUNITOM & "'," & vbCrLf & _
                         " '" & strORDERNO & "'," & vbCrLf & _
                         " '" & strINTFCLINENUM & "'," & vbCrLf & _
@@ -218,27 +241,34 @@ Module Module1
                         " 'RET', '')" & vbCrLf
 
 
-            Dim command1 As OleDbCommand
-            command1 = New OleDbCommand(strSQLstring, connectOR)
-            Try
-                Dim rowsaffected As Integer
-                rowsaffected = command1.ExecuteNonQuery
-                If Not rowsaffected = 1 Then
-                    objStreamWriter.WriteLine("  StatChg Email NSTK send insert orders for " & ds.Tables(0).Rows(I).Item("ORDER_NO") & " " & _
-                     ds.Tables(0).Rows(I).Item("LINE_NBR") & " " & _
-                                        ds.Tables(0).Rows(I).Item("RECEIVER_ID") & " " & _
-                                        ds.Tables(0).Rows(I).Item("RECV_LN_NBR"))
+                Dim command1 As OleDbCommand
+                command1 = New OleDbCommand(strSQLstring, connectOR)
+                Try
+                    Dim rowsaffected As Integer
+                    rowsaffected = command1.ExecuteNonQuery
+                    If Not rowsaffected = 1 Then
+                        objStreamWriter.WriteLine("  StatChg Email NSTK send insert orders for " & ds.Tables(0).Rows(I).Item("ORDER_NO") & " " & _
+                         ds.Tables(0).Rows(I).Item("LINE_NBR") & " " & _
+                                            ds.Tables(0).Rows(I).Item("RECEIVER_ID") & " " & _
+                                            ds.Tables(0).Rows(I).Item("RECV_LN_NBR"))
+                        checkNonStock = True
+                    End If
+                    command1.Dispose()
+                Catch ex As Exception
+                    objStreamWriter.WriteLine("  StatChg Email NSTK send insert error for " & ds.Tables(0).Rows(I).Item("ORDER_NO") & " " & _
+                        ds.Tables(0).Rows(I).Item("LINE_NBR") & " " & _
+                        ds.Tables(0).Rows(I).Item("RECEIVER_ID") & " " & _
+                        ds.Tables(0).Rows(I).Item("RECV_LN_NBR"))
+                    objStreamWriter.WriteLine(ex.ToString)
                     checkNonStock = True
-                End If
-                command1.Dispose()
-            Catch ex As Exception
-                objStreamWriter.WriteLine("  StatChg Email NSTK send insert error for " & ds.Tables(0).Rows(I).Item("ORDER_NO") & " " & _
-                    ds.Tables(0).Rows(I).Item("LINE_NBR") & " " & _
-                    ds.Tables(0).Rows(I).Item("RECEIVER_ID") & " " & _
-                    ds.Tables(0).Rows(I).Item("RECV_LN_NBR"))
-                objStreamWriter.WriteLine(ex.ToString)
+                End Try
+            Else
+                objStreamWriter.WriteLine("  StatChg Email NSTK send insert already exists in PS_ISA_ORDSTAT_EML table for order no " & ds.Tables(0).Rows(I).Item("ORDER_NO") & " " & _
+                        ds.Tables(0).Rows(I).Item("LINE_NBR") & " " & _
+                        ds.Tables(0).Rows(I).Item("RECEIVER_ID") & " " & _
+                        ds.Tables(0).Rows(I).Item("RECV_LN_NBR"))
                 checkNonStock = True
-            End Try
+            End If            
         Next
         objStreamWriter.WriteLine("  StatChg Email NSTK send select orders = " & ds.Tables(0).Rows.Count & " for" & strBU)
 
@@ -251,7 +281,7 @@ Module Module1
 
     End Function
 
-    Private Function checkStock(ByVal strbu As String, ByVal dtrStartDate As String) As Boolean
+    Private Function checkStock(ByVal strbu As String) As Boolean
         ' the union all in the sql below - diferences between top and bot
         ' bot " AND E.CONFIRMED_FLAG = 'Y'" & vbCrLf & _
         ' 
@@ -265,7 +295,6 @@ Module Module1
                 " PS_MASTER_ITEM_TBL E" & vbCrLf & _
                 " WHERE A.BUSINESS_UNIT_OM = '" & strbu & "'" & vbCrLf & _
                 " AND A.ADD_DTTM > TO_DATE('" & dteStrDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
-                " AND A.ADD_DTTM > TO_DATE('" & dtrStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
                 " AND A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf & _
                 " AND A.ORDER_NO = B.ORDER_NO" & vbCrLf & _
                 " AND B.INV_ITEM_ID <> ' '" & vbCrLf & _
@@ -334,8 +363,10 @@ Module Module1
             Dim strDesc254S As String = ds.Tables(0).Rows(I).Item("DESCR60")
             Dim strorigin As String = ds.Tables(0).Rows(I).Item("Origin")
 
-
-            strSQLstring = "INSERT INTO PS_ISA_ORDSTAT_EML" & vbCrLf & _
+            Dim ChkExistsLog As Boolean = ChkExistnLog(strBUSINESSUNITOM, strORDERNO, strINTFCLINENUM, strORDERINTLINENO, strDEMANDLINENO, strEMPLID, "7")
+            connectOR.Open()
+            If Not ChkExistsLog Then
+                strSQLstring = "INSERT INTO PS_ISA_ORDSTAT_EML" & vbCrLf & _
                         " VALUES ('" & strBUSINESSUNITOM & "'," & vbCrLf & _
                         " '" & strORDERNO & "'," & vbCrLf & _
                         " '" & strINTFCLINENUM & "'," & vbCrLf & _
@@ -345,30 +376,33 @@ Module Module1
                         " '" & strEMPLID & "'," & vbCrLf & _
                          " '7', '')" & vbCrLf
 
-
-
-
-
-            Dim command1 As OleDbCommand
-            command1 = New OleDbCommand(strSQLstring, connectOR)
-            Try
-                Dim rowsaffected As Integer
-                rowsaffected = command1.ExecuteNonQuery
-                If Not rowsaffected = 1 Then
-                    objStreamWriter.WriteLine("  StatChg Email send insert error for " & ds.Tables(0).Rows(I).Item("ORDER_NO") & " " & _
-                    ds.Tables(0).Rows(I).Item("INTFC_LINE_NUM") & " " & _
-                    ds.Tables(0).Rows(I).Item("ORDER_INT_LINE_NO") & " " & _
-                    ds.Tables(0).Rows(I).Item("DEMAND_LINE_NO"))
+                Dim command1 As OleDbCommand
+                command1 = New OleDbCommand(strSQLstring, connectOR)
+                Try
+                    Dim rowsaffected As Integer
+                    rowsaffected = command1.ExecuteNonQuery
+                    If Not rowsaffected = 1 Then
+                        objStreamWriter.WriteLine("  StatChg Email send insert error for " & ds.Tables(0).Rows(I).Item("ORDER_NO") & " " & _
+                        ds.Tables(0).Rows(I).Item("INTFC_LINE_NUM") & " " & _
+                        ds.Tables(0).Rows(I).Item("ORDER_INT_LINE_NO") & " " & _
+                        ds.Tables(0).Rows(I).Item("DEMAND_LINE_NO"))
+                        checkStock = True
+                    End If
+                    command1.Dispose()
+                Catch ex As Exception
+                    objStreamWriter.WriteLine("  StatChg Email send insert orders for " & ds.Tables(0).Rows(I).Item("ORDER_NO") & " " & _
+                        ds.Tables(0).Rows(I).Item("INTFC_LINE_NUM") & " " & _
+                        ds.Tables(0).Rows(I).Item("ORDER_INT_LINE_NO") & " " & _
+                        ds.Tables(0).Rows(I).Item("DEMAND_LINE_NO"))
                     checkStock = True
-                End If
-                command1.Dispose()
-            Catch ex As Exception
-                objStreamWriter.WriteLine("  StatChg Email send insert orders for " & ds.Tables(0).Rows(I).Item("ORDER_NO") & " " & _
-                    ds.Tables(0).Rows(I).Item("INTFC_LINE_NUM") & " " & _
-                    ds.Tables(0).Rows(I).Item("ORDER_INT_LINE_NO") & " " & _
-                    ds.Tables(0).Rows(I).Item("DEMAND_LINE_NO"))
+                End Try
+            Else
+                objStreamWriter.WriteLine("  StatChg Email send insert already exists in PS_ISA_ORDSTAT_EML table for order no " & ds.Tables(0).Rows(I).Item("ORDER_NO") & " " & _
+                        ds.Tables(0).Rows(I).Item("INTFC_LINE_NUM") & " " & _
+                        ds.Tables(0).Rows(I).Item("ORDER_INT_LINE_NO") & " " & _
+                        ds.Tables(0).Rows(I).Item("DEMAND_LINE_NO"))
                 checkStock = True
-            End Try
+            End If            
         Next
 
         objStreamWriter.WriteLine("  StatChg Email STK send select orders = " & ds.Tables(0).Rows.Count & " for" & strbu)
@@ -378,6 +412,36 @@ Module Module1
 
         End Try
 
+    End Function
+
+    Private Function ChkExistnLog(ByVal strbu As String, ByVal strordno As String, ByVal ln_no As String, ByVal ordintln As String, ByVal dmnd_ln As String, ByVal strEmpId As String,
+                                  ByVal ln_status As String) As Boolean
+        Dim strquery As String = "SELECT * FROM PS_ISA_ORDSTAT_EML WHERE business_unit_om = '" + strbu + "' AND ORDER_NO='" + strordno + "' AND LINE_NBR = " + ln_no + " AND ORDER_INT_LINE_NO = " + ordintln + " AND DEMAND_LINE_NO = " + dmnd_ln + " AND EMPLID='" + strEmpId + "' AND ISA_LINE_STATUS = '" + ln_status + "'"
+        Dim ChkExists As Boolean = False
+        Try
+            'If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
+            '    connectOR.Close()
+            'End If
+
+            Dim dSet As New DataSet
+            dSet = ORDBAccess.GetAdapter(strquery, connectOR)
+
+            If Not dSet Is Nothing Then
+                If dSet.Tables(0).Rows.Count > 0 Then
+                    ChkExists = True
+                Else
+
+                End If
+            Else
+
+            End If
+            'If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
+            '    connectOR.Close()
+            'End If
+        Catch ex As Exception
+
+        End Try
+        Return ChkExists
     End Function
 
     Private Function buildNotifyReceiver(ByVal strOrderStatus As String) As Boolean
@@ -400,7 +464,7 @@ Module Module1
                 " A.EMPLID, A.ISA_LINE_STATUS AS ISA_ORDER_STATUS," & vbCrLf & _
                 " B.INV_ITEM_ID, B.QTY_SH_ACCPT AS QTY_LN_ACCPT," & vbCrLf & _
                 " B.DESCR254_MIXED , D.ISA_EMPLOYEE_EMAIL," & vbCrLf & _
-                " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH, B.PO_ID, H.Origin" & vbCrLf & _
+                " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH, B.PO_ID, H.Origin " & vbCrLf & _
                 " FROM PS_ISA_ORDSTAT_EML A," & vbCrLf & _
                 " PS_RECV_LN_SHIP B," & vbCrLf & _
                 " PS_ISA_USERS_TBL D," & vbCrLf & _
@@ -449,11 +513,12 @@ Module Module1
             Dim dsEmail As New DataTable
             Dim dr As DataRow
             dsEmail.Columns.Add("Order No.")
-            dsEmail.Columns.Add("Line Nbr")
+            dsEmail.Columns.Add("Line Number")
             dsEmail.Columns.Add("Description")
             dsEmail.Columns.Add("Qty")
             dsEmail.Columns.Add("Work Order Number")
             dsEmail.Columns.Add("P.O. #: ")
+            dsEmail.Columns.Add("Line Notes")
             For I = 0 To ds.Tables(0).Rows.Count - 1
 
                 dr = dsEmail.NewRow()
@@ -465,6 +530,10 @@ Module Module1
                 dr.Item(5) = ds.Tables(0).Rows(I).Item("PO_ID")
                 'WORK_ORDER_NO
 
+                Dim ln_notes As String = ""
+                ln_notes = GetLineNotes(Convert.ToString(ds.Tables(0).Rows(I).Item("ORDER_NO")), Convert.ToString(ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM")), Convert.ToString(ds.Tables(0).Rows(I).Item("LINE_NBR")))
+                dr.Item(6) = ln_notes
+                connectOR.Open()
                 dsEmail.Rows.Add(dr)
                 'take this code down below so u can have multiple Order num's per email.
                 Dim strEmail_test As String = ";tom.rapp@sdi.com"
@@ -559,7 +628,7 @@ Module Module1
                 " B.INV_ITEM_ID, B.QTY_PICKED, B.QTY_BACKORDER," & vbCrLf & _
                 " C.DESCR60, D.ISA_EMPLOYEE_EMAIL," & vbCrLf & _
                 " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH," & vbCrLf & _
-                " C.INV_ITEM_ID, H.Origin" & vbCrLf & _
+                " C.INV_ITEM_ID, H.Origin " & vbCrLf & _
                 " FROM PS_ISA_ORDSTAT_EML A," & vbCrLf & _
                 " SYSADM8.PS_IN_DEMAND B," & vbCrLf & _
                 " PS_MASTER_ITEM_TBL C," & vbCrLf & _
@@ -622,6 +691,7 @@ Module Module1
             dsEmail.Columns.Add("Back Ordered")
             dsEmail.Columns.Add("Order Number")
             dsEmail.Columns.Add("Work Order Number")
+            dsEmail.Columns.Add("Line Notes")
             For I = 0 To ds.Tables(0).Rows.Count - 1
 
                 dr = dsEmail.NewRow()
@@ -631,8 +701,10 @@ Module Module1
                 dr.Item(3) = ds.Tables(0).Rows(I).Item("QTY_BACKORDER")
                 dr.Item(4) = ds.Tables(0).Rows(I).Item("ORDER_NO")
                 dr.Item(5) = ds.Tables(0).Rows(I).Item("WORK_ORDER_NO")
-
-
+                Dim ln_notes As String = ""
+                ln_notes = GetLineNotes(Convert.ToString(ds.Tables(0).Rows(I).Item("ORDER_NO")), Convert.ToString(ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM")), Convert.ToString(ds.Tables(0).Rows(I).Item("LINE_NBR")))
+                dr.Item(6) = ln_notes
+                connectOR.Open()
 
                 decQtyOrdered = getQtyOrdered(ds.Tables(0).Rows(I).Item("ORDER_NO"), _
                                               ds.Tables(0).Rows(I).Item("LINE_NBR"), _
@@ -655,22 +727,6 @@ Module Module1
                 Dim strEmailTo As String = ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL")
                 Dim strOrderNo As String = ds.Tables(0).Rows(I).Item("ORDER_NO")
                 Dim strBu As String = ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM")
-
-                '' check is processed order is ASCEND order
-                'Dim bIsAscend As Boolean = False
-                'If Trim(strBu) <> "" Then
-                '    bIsAscend = IsBuAscend(strBu)
-                'End If
-
-                'If bIsAscend Then
-                '    Dim strAscendEmail As String = GetAscendEmailAddress(strBu, strOrderNo, connectOR)
-                '    If Not strAscendEmail Is Nothing Then
-                '        If Trim(strAscendEmail) <> "" Then
-                '            strEmailTo = strAscendEmail
-                '        End If
-                '    End If
-
-                'End If
 
                 If I = ds.Tables(0).Rows.Count - 1 Then
                     sendCustEmail(dsEmail, _
@@ -822,13 +878,21 @@ Module Module1
 
         dtgEmail.DataSource = dsEmail
         dtgEmail.DataBind()
-
+        dtgEmail.BorderColor = Gray
+        dtgEmail.HeaderStyle.BackColor = System.Drawing.Color.LightGray
+        dtgEmail.HeaderStyle.Font.Bold = True
+        dtgEmail.HeaderStyle.ForeColor = Black
+        WebControls.Unit.Percentage(90)
         dtgEmail.CellPadding = 3
         'dtgEmail.Width.Percentage(90)
 
         'dtgPO.Columns(9).ItemStyle.HorizontalAlign = HorizontalAlign.Center
         dtgEmail.RenderControl(htmlTWnstk)
         dataGridHTML = SBnstk.ToString()
+
+        ''Get Order Notes here
+        Dim Ord_notes As String = ""
+        Ord_notes = GetOrderNotes(strOrderNo, strbu)
 
         Dim strPurchaserName As String = strFirstName & _
             " " & strLastName
@@ -851,6 +915,10 @@ Module Module1
         End If
         strbodydetl = strbodydetl & "&nbsp;<BR>"
         strbodydetl = strbodydetl & "Order contents:<br>"
+        strbodydetl = strbodydetl & "&nbsp;<BR>"
+        If Not (String.IsNullOrEmpty(Ord_notes)) Then
+            strbodydetl = strbodydetl & "Customer Notes: " & Ord_notes & " <br> "
+        End If
         strbodydetl = strbodydetl & "&nbsp;</p>"
         strbodydetl = strbodydetl & "<TABLE cellSpacing='1' cellPadding='1' width='100%' border='0'>" & vbCrLf
         strbodydetl = strbodydetl + "<TR><TD Class='DetailRow' width='100%'>" & dataGridHTML & "</TD></TR>"
@@ -871,7 +939,7 @@ Module Module1
             connectOR.DataSource.ToUpper = "DEVL" Or _
             connectOR.DataSource.ToUpper = "STAR" Or _
             connectOR.DataSource.ToUpper = "PLGR" Then
-            Mailer.To = "WEBDEV@sdi.com"
+            Mailer.To = "webdev@sdi.com"
         Else
             Mailer.To = strPurchaserEmail
         End If
@@ -885,6 +953,7 @@ Module Module1
             SDIEmailService.EmailUtilityServices("MailandStore", Mailer.From, Mailer.To, Mailer.Subject, String.Empty, "webdev@sdi.com", Mailer.Body, "StatusChangeEmail0", MailAttachmentName, MailAttachmentbytes.ToArray())
         Else
             Mailer.Subject = "SDiExchange - Order Status " & strOrderNo & " is Ready for Pickup"
+            SDIEmailService.EmailUtilityServices("MailandStore", Mailer.From, Mailer.To, Mailer.Subject, String.Empty, "webdev@sdi.com", Mailer.Body, "StatusChangeEmail0", MailAttachmentName, MailAttachmentbytes.ToArray())
         End If
 
         ''Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
@@ -985,7 +1054,7 @@ Module Module1
 
     End Function
 
-    Private Function checkAllStatus_7(ByVal strBU As String, ByVal dtrStartDate As String) As Boolean
+    Private Function checkAllStatus_7(ByVal strBU As String) As Boolean
         Dim strSQLstring As String
         Dim dteEndDate As DateTime = Now
 
@@ -1064,20 +1133,28 @@ Module Module1
 
         dteEndDate.AddSeconds(1)
 
+        ''to stop the previous old emails
+        Dim date2 As DateTime = #1/7/2019#
+        'Dim rslt As Integer = DateTime.Compare(date2, dteStartDate)
+
+        If date2 > dteStartDate Then
+            dteStartDate = Now.AddDays(-1).ToString("MM/dd/yyyy")
+        End If        
+
         ' stock items will get item id from the ps_isa_ord_intfc_l table  but description from the PS_MASTER_ITEM_TB
         ' non-stock items  has no item-id num and gets description from the ps_isa_ord_intfc_l
         ' PS_ISAORDSTATUSLOG the line number points to the line number in ps_isa_ord_intfc_l
         ' DO NOT SELECT G.ISA_ORDER_STATUS = '6'  WE ARE GETTING IT UP TOP.
         '         '  
 
-        strSQLstring = "SELECT H.ISA_IOL_OP_NAME as STATUS_CODE, TBL.* FROM (SELECT distinct G.BUSINESS_UNIT_OM, G.BUSINESS_UNIT_OM AS G_BUS_UNIT, D.BUSINESS_UNIT, D.ISA_EMPLOYEE_ID, A.ORDER_NO,B.ISA_WORK_ORDER_NO As WORK_ORDER_NO, B.ISA_INTFC_LN AS line_nbr," & vbCrLf & _
+        strSQLstring = "SELECT * FROM (SELECT H.ISA_IOL_OP_NAME as STATUS_CODE, TBL.* FROM (SELECT distinct G.BUSINESS_UNIT_OM, G.BUSINESS_UNIT_OM AS G_BUS_UNIT, D.BUSINESS_UNIT, D.ISA_EMPLOYEE_ID, A.ORDER_NO,B.ISA_WORK_ORDER_NO As WORK_ORDER_NO, B.ISA_INTFC_LN AS line_nbr," & vbCrLf & _
                  " B.ISA_EMPLOYEE_ID AS EMPLID, B.ISA_LINE_STATUS as ORDER_TYPE," & vbCrLf & _
                  " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, " & vbCrLf   '  & _
         'If bIsAscend Then
         '    ' add Ascend e-mail field
         '    strSQLstring += " AB.EMAIL_ADDRESS AS ASCEND_EMAIL_ADDRESS," & vbCrLf
         'End If
-        strSQLstring += "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','1','NEW','2','DSP','3','ORD','3','RSV','3','PKA','4','PKP','4','DLP','5','RCP','5','RCF','6','PKQ','5','DLO','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','1') AS OLD_ORDER_STATUS," & vbCrLf & _
+        strSQLstring += "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','01','QTW','02','QTC','03','QTS','04','CST','05','VND','06','APR','07','QTA','08','QTR','09','RFA','10','RFR','11','RFC','12','RCF','13','RCP','14','CNC','15','DLF','16','00') AS OLD_ORDER_STATUS," & vbCrLf & _
                  " (SELECT E.XLATLONGNAME" & vbCrLf & _
                                 " FROM XLATTABLE E" & vbCrLf & _
                                 " WHERE E.EFFDT =" & vbCrLf & _
@@ -1120,8 +1197,8 @@ Module Module1
                  " AND UPPER(B.ISA_EMPLOYEE_ID) = UPPER(D.ISA_EMPLOYEE_ID)) TBL, PS_ISA_USERS_PRIVS H " & vbCrLf & _
                  " WHERE H.BUSINESS_UNIT = TBL.BUSINESS_UNIT " & vbCrLf & _
                  " AND TBL.EMPLID = H.ISA_EMPLOYEE_ID " & vbCrLf & _
-                 " AND SUBSTR(H.ISA_IOL_OP_NAME,10) = TBL.OLD_ORDER_STATUS " & vbCrLf & _
-                 " AND H.ISA_IOL_OP_VALUE = 'Y' " & vbCrLf & _
+                 " AND SUBSTR(H.ISA_IOL_OP_NAME, 9) = TBL.OLD_ORDER_STATUS " & vbCrLf & _
+                 " AND H.ISA_IOL_OP_VALUE = 'Y') WHERE ORDER_TYPE = ISA_ORDER_STATUS " & vbCrLf & _
                   " ORDER BY ORDER_NO, LINE_NBR, DTTM_STAMP"
         ' this is set up in the user priveleges when giving out the status code priveleges in ISOL under Add/Change User
         ' matches the orserstatus emails set up for with the order status in PS_ISAORDSTATUSLOG
@@ -1174,11 +1251,12 @@ Module Module1
         dsEmail.Columns.Add("Non-Stock Item Description")
         dsEmail.Columns.Add("Stock Item Description")
         dsEmail.Columns.Add("Item ID")
-        dsEmail.Columns.Add("Line Nbr")
+        dsEmail.Columns.Add("Line Number")
         dsEmail.Columns.Add("Time")
         dsEmail.Columns.Add("Status Code")
         dsEmail.Columns.Add("Work Order Number")
         dsEmail.Columns.Add("PO #")
+        dsEmail.Columns.Add("Line Notes")
 
         Dim strdescription As String = " "
         Dim strEmailTo As String = " "
@@ -1187,7 +1265,7 @@ Module Module1
             Dim strStatus_code As String = " "
             Try
                 strStatus_code = ds.Tables(0).Rows(I).Item("STATUS_CODE")
-                strStatus_code = strStatus_code.Substring(9)
+                strStatus_code = strStatus_code.Substring(8)
 
             Catch ex As Exception
                 strStatus_code = " "
@@ -1224,6 +1302,10 @@ Module Module1
             dr1.Item(3) = ds.Tables(0).Rows(I).Item("STOCK_DESCRIPTION")
             dr1.Item(4) = ds.Tables(0).Rows(I).Item("INV_ITEM_ID")
             dr1.Item(5) = ds.Tables(0).Rows(I).Item("LINE_NBR")
+            Dim ln_notes As String = ""
+            ln_notes = GetLineNotes(stroderno, strBU, strlineno)
+            dr1.Item(10) = ln_notes
+            connectOR.Open()
             dr1.Item(6) = ds.Tables(0).Rows(I).Item("DTTM_STAMP")
             If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
                 connectOR.Close()
@@ -1253,17 +1335,6 @@ Module Module1
             End If
             strEmailTo = ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL")
 
-            'If bIsAscend Then
-            '    Dim strAscendEmail As String = GetAscendEmailAddress(strBU, stroderno, connectOR)
-            '    If Not strAscendEmail Is Nothing Then
-            '        If Trim(strAscendEmail) <> "" Then
-            '            strEmailTo = strAscendEmail
-            '        End If
-            '    End If
-
-            'End If
-
-            'Dim strEmail_test As String = String.Empty
             If I = ds.Tables(0).Rows.Count - 1 Then
 
                 sendCustEmail1(dsEmail, _
@@ -1277,7 +1348,8 @@ Module Module1
                 ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
                 ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
                 strEmailTo, _
-                ds.Tables(0).Rows(I).Item("Origin"))
+                ds.Tables(0).Rows(I).Item("Origin"),
+                strBU)
 
                 dsEmail.Clear()
                 If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
@@ -1299,19 +1371,15 @@ Module Module1
                ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"), _
                ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"), _
                strEmailTo, _
-               ds.Tables(0).Rows(I).Item("Origin"))
-               
+               ds.Tables(0).Rows(I).Item("Origin"),
+               strBU)
+
                 dsEmail.Clear()
-
-
                 If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
                     connectOR.Close()
                 End If
-
             End If
-
         Next
-        
 
         If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
             connectOR.Close()
@@ -1320,7 +1388,63 @@ Module Module1
         'If strBU <> "I0256" Then
         bolerror1 = updateEnterprise(strBU, dteEndDate)
         'End If
+    End Function
 
+    Function GetOrderNotes(ByVal OrderNo As String, ByVal BU As String) As String
+
+        Dim strSQLstring As String = ""
+        Dim Order_notes As String = ""
+
+        strSQLstring = "SELECT ISA_LINE_NOTES FROM SYSADM8.PS_ISA_ORDLN_NOTE WHERE ORDER_NO ='" & OrderNo & "' AND ISA_INTFC_LN = 0 AND BUSINESS_UNIT_OM = '" & BU & "'"
+
+        Try
+            objStreamWriter.WriteLine("  GetOrderNotes: " & strSQLstring)
+
+            If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
+                connectOR.Close()
+            End If
+            connectOR.Open()
+            Order_notes = ORDBAccess.GetScalar(strSQLstring, connectOR)
+            connectOR.Close()
+        Catch ex As Exception
+            Try
+                connectOR.Close()
+            Catch ex3 As Exception
+
+            End Try
+        End Try
+        Return Order_notes
+    End Function
+
+    Function GetLineNotes(ByVal OrderNo As String, ByVal BU As String, ByVal strLnNotes As String) As String
+
+        Dim strSQLstring As String = ""
+        Dim Order_notes As String = ""
+        Dim ds As DataSet
+
+        strSQLstring = "SELECT ISA_LINE_NOTES FROM SYSADM8.PS_ISA_ORDLN_NOTE WHERE ORDER_NO = '" + OrderNo + "' AND business_unit_om = '" + BU + "' AND isa_intfc_ln = " + strLnNotes + ""
+
+        Try
+            objStreamWriter.WriteLine("  GetOrderNotes: " & strSQLstring)
+
+            If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
+                connectOR.Close()
+            End If
+            connectOR.Open()
+            ds = ORDBAccess.GetAdapter(strSQLstring, connectOR)
+            If Not ds Is Nothing Then
+                If ds.Tables(0).Rows.Count > 0 Then
+                    Order_notes = Convert.ToString(ds.Tables(0).Rows(0).Item("ISA_LINE_NOTES"))
+                Else
+
+                End If
+            Else
+
+            End If
+        Catch ex As Exception
+            
+        End Try
+        Return Order_notes
     End Function
 
     Private Function GetAscendEmailAddress(ByVal strBu As String, ByVal strOrderNo As String, ByVal connectOR As OleDbConnection) As String
@@ -1389,7 +1513,8 @@ Module Module1
                           ByVal strLineNbr As String, _
                           ByVal strFirstName As String, _
                           ByVal strLastName As String, _
-                          ByVal strEmail As String, ByVal strorgin As String)
+                          ByVal strEmail As String, ByVal strorgin As String,
+                          ByVal strBU As String)
 
         Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
         Dim MailAttachmentName As String()
@@ -1432,6 +1557,10 @@ Module Module1
         dtgEmail1.RenderControl(htmlTWnstk1)
         dataGridHTML1 = SBnstk1.ToString()
 
+        ''Get Order Notes here
+        Dim Ord_notes As String = ""
+        Ord_notes = GetOrderNotes(strOrderNo, strBU)
+
         'Dim strPurchaserName As String = strCustID
         Dim strPurchaserName As String = strFirstName & _
            " " & strLastName
@@ -1443,6 +1572,11 @@ Module Module1
         strbodydet1 = strbodydet1 & "<p >Hello " & strPurchaserName & ",</p>"
         'strbodydet1 = strbodydet1 & "&nbsp;<BR>" 
         strbodydet1 = strbodydet1 & "<p style='font-weight:bold;'>Order Number: " & strOrderNo & " </p> "
+
+        If Not (String.IsNullOrEmpty(Ord_notes)) Then
+            strbodydet1 = strbodydet1 & "<p style='font-weight:bold;'>Customer Notes: " & Ord_notes & " </p> "
+        End If
+
         strbodydet1 = strbodydet1 & "<p style='font-weight:bold;'>Order contents: </p>"
         'strbodydet1 = strbodydet1 & "&nbsp;<BR>"
         ' strbodydet1 = strbodydet1 & "Order Status:  " & strOrderStatDesc & " <br>"
@@ -1469,12 +1603,14 @@ Module Module1
             connectOR.DataSource.ToUpper = "DEVL" Or _
             connectOR.DataSource.ToUpper = "STAR" Or _
             connectOR.DataSource.ToUpper = "PLGR" Then
-            Mailer1.To = "WEBDEV@sdi.com"
+            Mailer1.To = "webdev@sdi.com"
+            Mailer1.Subject = "<<TEST SITE>>SDiExchange - Order Status records for Order Number: " & strOrderNo
         Else
             Mailer1.To = strPurchaserEmail
+            Mailer1.Subject = "SDiExchange - Order Status records for Order Number: " & strOrderNo
         End If
 
-        Mailer1.Subject = "SDiExchange - Order Status records for Order Number: " & strOrderNo
+
         Mailer1.BodyFormat = System.Web.Mail.MailFormat.Html
 
         SDIEmailService.EmailUtilityServices("MailandStore", Mailer1.From, Mailer1.To, Mailer1.Subject, String.Empty, "webdev@sdi.com", Mailer1.Body, "StatusChangeEmail1", MailAttachmentName, MailAttachmentbytes.ToArray())
