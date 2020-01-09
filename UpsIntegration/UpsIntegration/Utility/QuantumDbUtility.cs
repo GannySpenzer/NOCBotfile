@@ -22,8 +22,7 @@ namespace UpsIntegration
 
     class QuantumDbUtility
     {
-        private static String defaultStr = "Provider=OraOLEDB.Oracle;User Id=sdiexchange;Password=sd1exchange;Data Source=STAR.WORLD;Connection Timeout=310;";
-        private static String rptgStr = "Provider=OraOLEDB.Oracle;User Id=sdiexchange;Password=sd1exchange;Data Source=RPTG.WORLD;Connection Timeout=310;";
+        private static String defaultStr = "Provider=OraOLEDB.Oracle;User Id=sdiexchange;Password=sd1exchange;Data Source=STAR.WORLD;Connection Timeout=310;"; 
         private static OleDbConnection dbConn  = new OleDbConnection();
         public QuantumDbUtility()
         {
@@ -178,7 +177,7 @@ namespace UpsIntegration
             {
                 if (param ==null || param.Length > 0)
                     newSql = getSql(newSql, param);
-              //  QuantumUtility.logErrorFile("-- SQL: " + newSql );//+ "\n" + dbConn.ConnectionString ); 
+               // QuantumUtility.logError("-- SQL: " + newSql );//+ "\n" + dbConn.ConnectionString ); 
                 OleDbCommand command = new OleDbCommand(newSql, dbConn);
                 command.CommandTimeout = 310; //Adding as 45 sec queries in Sql Developer timeout via the utility
                 dbReader = command.ExecuteReader(); 
@@ -227,7 +226,7 @@ namespace UpsIntegration
             { 
                 if (param != null && param.Length > 0)
                   newSql = getSql(newSql, param);
-             //  QuantumUtility.logErrorFile("** " + DateTime.Now.ToShortDateString() + " " +  DateTime.Now.TimeOfDay + " DB UPDATE SQL: " + newSql);
+               // QuantumUtility.logError("** " + DateTime.Now.ToShortDateString() + " " +  DateTime.Now.TimeOfDay + " DB UPDATE SQL: " + newSql);
                 OleDbCommand updateCommand = new OleDbCommand(newSql, dbConn);
                 updateCommand.ExecuteNonQuery();
                
@@ -242,7 +241,7 @@ namespace UpsIntegration
         {
             try
             {
-                executeDbUpdate(dbConn,  "insert into SDIX_UPS_QUANTUMVIEW_ERROR (error) values ('@0')",   new String[1]   { error });
+                executeDbUpdate(dbConn,  "insert into SDIX_UPS_QUANTUMVIEW_ERROR (errormsg) values ('@0')",   new String[1]   { error.Replace("'","") });
             }
             catch (Exception e)
             {
@@ -266,6 +265,7 @@ namespace UpsIntegration
                 }
                  newSql = newSql.Replace("  ", " ");
                 newSql = newSql.Replace("OR TRIM(PO.PO_ID) = ''", "");
+                newSql = newSql.Replace("TRIM(SH.ISA_ASN_TRACK_No) = '' OR", "");
             }
             catch (Exception e)
             {

@@ -26,7 +26,7 @@ CREATE OR REPLACE TRIGGER sdix_trgr_ups_quantumview_id
  Create table SDIX_UPS_QUANTUMVIEW_ERROR (
 	/* use if ORA 11 - ups_quantumview_error_id number(11,0) NOT NULL 	constraint pk_ups_quantumview_id primary key, */
 	/* Use if ORA12C or higher - ups_quantumview_error_id number GENERATED ALWAYS AS IDENTITY, */
-	error varchar2(1000) null,  
+	errormsg varchar2(2000) null,  
 	dttm_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
 );
 

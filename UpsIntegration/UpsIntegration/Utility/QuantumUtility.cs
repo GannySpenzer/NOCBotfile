@@ -144,7 +144,7 @@ namespace UpsIntegration
                 }
                 if (stripType == "PO")
                 {
-
+       
                     newValue = newValue.Replace("PO.", "");
                     newValue = newValue.Replace("SDI", "");
                     newValue = newValue.Replace("SDI PO ", "");

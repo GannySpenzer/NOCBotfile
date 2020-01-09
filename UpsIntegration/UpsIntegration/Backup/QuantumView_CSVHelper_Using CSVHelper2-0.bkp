@@ -10,7 +10,9 @@ using System.Configuration;
 using UpsIntegration;
 using Oracle.DataAccess.Client;
 using System.Data.OleDb;
-using System.Globalization; 
+using System.Globalization;
+using CsvHelper; 
+
 using UpsIntegration.SDiEmailUtilityService;
 
 /*
@@ -32,6 +34,7 @@ namespace UpsIntegration
     {
         private static OleDbConnection dbConn = new OleDbConnection();
         private static OleDbConnection rptgConn = new OleDbConnection();
+        private static String defaultStr = "Provider=OraOLEDB.Oracle;User Id=sdiexchange;Password=sd1exchange;Data Source=STAR.WORLD;Connection Timeout=410;";
         private static String rptgStr = "Provider=OraOLEDB.Oracle;User Id=sdiexchange;Password=sd1exchange;Data Source=RPTG.WORLD;Connection Timeout=410;";
         private static String connStr = rptgStr;
 
@@ -39,7 +42,10 @@ namespace UpsIntegration
         private static ftpData upsData = new ftpData("ftp2.ups.com", "/", "sdiinc0318", "pR2cn9E");
         private static String prod_server = @"\\172.31.251.161\sdixdata\ftp";
         private static String prod_folder = @"\" + DateTime.Today.Month + "_" + DateTime.Today.Day + "_" + DateTime.Today.Year; 
-        private static ftpData toFtp = new ftpData(@"C:\sdi\", @"csvfiles\", "anonymous", "anonymous");  
+        private static ftpData toFtp = new ftpData(@"C:\sdi\", @"csvfiles\", "anonymous", "anonymous");
+        private static String tabDelimitedFile = @"C:\sdi\csvfiles\QVD_ALT_sdiinc_20191115_110106_627_SDIQVD.TAB.txt";
+        private static String onlyDBMatchFile = @"C:\sdi\csvfiles\QVD_ALT_sdiinc_20191119_150122_223_SDIQVD.txt";
+        private static String ShortMatchFile = @"C:\sdi\csvfiles\TEST_MATCH.TXT";
 
         public static void Main(String[] args)
         {
@@ -68,7 +74,7 @@ namespace UpsIntegration
                 QuantumDbUtility.openDb(connStr, dbConn);
                 if (dbConn.State.ToString() == "Open")
                 {
-                    parseDirectory(toFtp.server + toFtp.directory);  // parseCsvFile(ShortMatchFile);
+                     parseDirectory(toFtp.server + toFtp.directory);  // parseCsvFile(ShortMatchFile);
                     batchMail();
                 }
                 QuantumDbUtility.closeDb(dbConn);
@@ -96,17 +102,18 @@ namespace UpsIntegration
                          qv_LOG.isa_asn_track_no as isa_asn_track_no ,
                          qv_LOG.UPS_RECORD_TYPE as RECORD_TYPE,
                             qv_LOG.UPS_DELIVERY_TYPE as DELIVERY_TYPE,
-                        /* DISTR.BUSINESS_UNIT, */
-                         /* DISTR.req_id, Requestion ID ,*/
-                         /* INTF_LN.ISA_EMPLOYEE_ID USER ID ,*/
-                         /*INTF_LN.order_no requesition id  id ,*/
-                         /*INTF_LN.OPRID_APPROVED_BY,
+                         DISTR.BUSINESS_UNIT,
+                         DISTR.req_id /*Requestion ID */,
+                         INTF_LN.ISA_EMPLOYEE_ID /* USER ID */,
+                         INTF_LN.order_no /*requesition id  id */,
+                         INTF_LN.OPRID_APPROVED_BY,
                          INTF_LN.SHIP_TO_CUST_ID ,
-                        trunc(current_timestamp) as current_timestamp, */
-                         /* USR.FIRST_NAME_SRCH,  USR.ISA_USER_NAME, commenting out as redundant first names with different spellings can can redundancy */                         
+                        trunc(current_timestamp) as current_timestamp,
+                         /*USR.FIRST_NAME_SRCH,  USR.ISA_USER_NAME, commenting out as redundant first names with different spellings can can redundancy */                         
                          qv_LOG.USER_MESSAGE  as USER_MESSAGE 
                          /*  Line Nbr fields - commenting out to avoid redundancy 
-                         INTF_LN.ISA_INTFC_LN , DISTR.LINE_NBR  Line nbr ,*/
+                         INTF_LN.ISA_INTFC_LN    ,
+                         DISTR.LINE_NBR  Line nbr ,*/
                          FROM sdix_ups_quantumview_log qv_LOG 
                            JOIN PS_PO_LINE_DISTRIB DISTR on  qv_LOG.PO_ID =  DISTR.PO_ID 
                          LEFT JOIN  PS_ISA_ORD_INTF_LN INTF_LN on DISTR.req_id=INTF_LN.order_no and DISTR.LINE_NBR =  INTF_LN. isa_intfc_ln 
@@ -191,7 +198,7 @@ namespace UpsIntegration
          * Question: Should I use the ISA_ASN_SHIP_VIA like 'UPS%' filter? to avoid nabbing fedex - is this field always completed?
          * * select * from PS_ISA_XPD_COMMENT where (PO_id like  'E3919%' or po_id like '%8044%' or PO_ID like '%0210214800' or PO_ID='0210214800'  or DTTM_STAMP >='15-Nov-2019') and rownum < 10 2016 earliest date for PLGR & RPTG 
          * */
-        public static void parseCsvFile(String filename)
+        public static void parseCsvFileManually(String filename)
         {
             try
             {
@@ -236,7 +243,7 @@ namespace UpsIntegration
                         {
                             //Verify row contains valid data or skip
                             if (currentRow.Contains("E1") || currentRow.Contains("D1") || currentRow.Contains("D2"))
-                                parseRow(currentRow, new QuantumFile(qf.quantumFilePositions), row, filename); //Separated out in case users decide to parse the Package value ref fields that might contain more than one entry - passing in a new qf object  to avoid value reuse, while maintiang the qfp
+                                parseRowManually(currentRow, new QuantumFile(qf.quantumFilePositions), row, filename); //Separated out in case users decide to parse the Package value ref fields that might contain more than one entry - passing in a new qf object  to avoid value reuse, while maintiang the qfp
                         }
                         rowCount++;
                     }
@@ -256,10 +263,160 @@ namespace UpsIntegration
             }
         }
 
-      
+        public static void parseCsvFile(String filename)
+        {
+            try
+            {
+                QuantumUtility.logError(DateTime.Now.ToShortDateString() + " " + DateTime.Now.TimeOfDay + ": Parsing " + filename);
+                QuantumUtility.logErrorFile(DateTime.Now.ToShortDateString() + " " + DateTime.Now.TimeOfDay + ": Parsing " + filename, toFtp.server + toFtp.directory);
+
+              
+                StringReader rdr = new StringReader(File.ReadAllText(@filename));
+                  
+                String file = File.ReadAllText(filename);
+                if (file.ToString().Contains("E1") || file.ToString().Contains("D1") || file.ToString().Contains("D2")) //12/27/19 - verify data is in file before processing
+                {
+                   /*  using (var csv = new CsvReader(rdr))
+                    {
+                        var qfrecords = csv.GetRecords<QuantumFile>().ToList();
+                        foreach (var qf in qfrecords)
+                            parseRecord(qf, filename);
+                    }*/
+                    var csv = new CsvReader(rdr);
+                    csv.Configuration.RegisterClassMap<QuantumFileMap>();
+                    csv.Configuration.Delimiter = "|";
+                    //csv.Configuration.MemberTypes = CsvHelper.Configuration.MemberTypes.Fields;
+                    //csv.Read() ;
+                   // csv.ReadHeader();
+                    while (csv.Read())
+                    {
+                        QuantumFile qf =csv.GetRecord<QuantumFile>();
+                        Console.WriteLine(qf.TrackingNumber);
+                        if (csv.CurrentRecord.Contains("E1") || csv.CurrentRecord.Contains("D1") || csv.CurrentRecord.Contains("D2"))
+                        parseRecord(qf, filename);
+                    }
+                }
+                else
+                {
+                    QuantumDbUtility.logError(dbConn, filename + " No matches on E1, D1 or D2");
+                    QuantumUtility.logErrorFile(" ---  No matches on E1, D1 or D2", toFtp.server + toFtp.directory);
+                }  
+            }
+            catch (Exception e)
+            {
+                QuantumUtility.logError(e);
+                QuantumUtility.logErrorFile(e, toFtp.server + toFtp.directory);
+                QuantumDbUtility.logError(dbConn, e.ToString());
+            }
+        }
+
+         
+        public static void parseRecord(QuantumFile qf, String filename)
+        {
+            try
+            {
+                OleDbDataReader dbReader = null;
+                String[] dbParams;
+                String sdix_ups_quantumview_log_sql = "insert into SDIX_UPS_QUANTUMVIEW_LOG  (ups_filename, po_id_options, isa_asn_track_no, ups_file_location,   po_id,  user_message, ups_record_type, ups_delivery_type, ups_sdi_match) values ('@0','@1','@2','@3','@4','@5','@6','@7','@8' )";
+                String[] sdix_ups_quantumview_log_params = null;    //String[] ps_isa_xpd_comment_params = null;
+                String poFromSql = " FROM PS_PO_LINE_SHIP  PO  LEFT JOIN PS_ISA_ASN_SHIPPED SH ON PO.PO_ID = SH.PO_ID "; //switched form ps_po_hdr to ps_po_line_shipped to ps_po_line_ship   // String shFromSql = " FROM  PS_ISA_RECV_LN_ASN SH LEFT JOIN   PS_PO_HDR PO   ON SH.PO_ID =  PO.PO_ID  ";  //" FROM  PS_ISA_ASN_SHIPPED SH LEFT JOIN   PS_PO_HDR PO   ON SH.PO_ID =  PO.PO_ID  ";  switching from ps_isa_asn_shipped provided by m. randall to  PS_ISA_RECV_LN_ASN as reqpoststatus.aspx.vb uses that table
+                String shFromSql = "   JOIN   PS_PO_HDR PS  ON PO.PO_ID =  PS.PO_ID  ";
+                String asnSelectSql = new StringBuilder(@"  SELECT DISTINCT   PO.business_unit as BUSINESS_UNIT, PO.PO_ID as PO_ID,  PO.DUE_DT as DUE_DT   ").ToString();
+
+                //Note: Sometimes there are the same PO_Ids but different sched #s, I'm only pulling the most recent. Should I pull both? OR SHOULD I Just insert a new line altogether?
+                String whereSql = "WHERE " +
+                      "(TRIM(SH.ISA_ASN_TRACK_No) = '@0'  OR " +
+                      "TRIM(PO.PO_ID) = '@1' OR TRIM(PO.PO_ID) = '@2' OR " +
+                      "TRIM(PO.PO_ID) = '@3' OR TRIM(PO.PO_ID) = '@4' OR  " +
+                       "TRIM(PO.PO_ID) = '@5' OR TRIM(PO.PO_ID) = '@6' OR " +
+                      "TRIM(PO.PO_ID) = '@7' OR TRIM(PO.PO_ID) = '@8' OR " +
+                      "TRIM(PO.PO_ID) = '@9' " +
+                      " ) " +
+                       "and rownum =1  ORDER BY PO.DUE_DT DESC";// ORDER BY SH.ISA_ASN_SHIP_DT desc"; 
+ 
+                if (qf.RecordType == "E1" || qf.RecordType == "D2" || qf.RecordType == "D1")
+                {
+                   
+                    QuantumUtility.logError(" - Processing " + qf.TrackingNumber + " " + qf.RecordType + " " + qf.PackageReferenceNumberValue1 + " " + qf.PackageReferenceNumberValue2  );
+                    QuantumUtility.logErrorFile(" - Processing " + qf.TrackingNumber + " " + qf.RecordType + " " + qf.PackageReferenceNumberValue1 + " " + qf.PackageReferenceNumberValue2  , toFtp.server + toFtp.directory);
+
+                    //Set Query params with resulting data - verify the various poid possibilities are at least greater than 8/10 (the expected po size is 10 and not just standard nums)
+                    dbParams = new String[10]  {
+                                       qf.TrackingNumber, 
+                                       qf.PackageReferenceNumberValue1,
+                                       qf.PackageReferenceNumberValue2,
+                                        qf.PackageReferenceNumberValue1.Length >=10 ? QuantumUtility.stripChars(qf.PackageReferenceNumberValue1,"partial") : "",
+                                        qf.PackageReferenceNumberValue2.Length >=10 ?QuantumUtility.stripChars(qf.PackageReferenceNumberValue2,"partial") : "",
+                                       qf.PackageReferenceNumberValue1.Length >=10 ?QuantumUtility.stripChars(qf.PackageReferenceNumberValue1,"PO"): "",
+                                       qf.PackageReferenceNumberValue2.Length >=10 ? QuantumUtility.stripChars(qf.PackageReferenceNumberValue2,"PO" ): "",
+                                        qf.ShipmentReferenceNumberValue1.Length >= 10? QuantumUtility.stripChars(qf.ShipmentReferenceNumberValue1,"partial"): "",
+                                       qf.ShipmentReferenceNumberValue2.Length >= 10 ? QuantumUtility.stripChars(qf.ShipmentReferenceNumberValue2,"partial"): "",
+                                         qf.PackageReferenceNumberValue1.Replace("PO ","")
+                              };
+
+                    sdix_ups_quantumview_log_params = new String[9]      {  
+                                        filename.Replace(toFtp.server + toFtp.directory,""),  
+                                       String.Join(" || ", dbParams,1,dbParams.Length-1) ,
+                                       qf.TrackingNumber,  
+                                       toFtp.server + toFtp.directory,  
+                                       qf.ps_po_id,
+                                       qf.ps_notes_1000_new,
+                                       qf.RecordType,
+                                       getRecordDeliveryType(qf.RecordType),
+                                       "FALSE"
+                                    };
+                    //Grab Matching Data
+                    dbReader = QuantumDbUtility.executeDbReader(dbConn, asnSelectSql + poFromSql + shFromSql + whereSql, dbParams);
+
+                    if (dbReader.HasRows)
+                    {
+                        while (dbReader.Read())
+                        {
+                            //Set PO_ID
+                            if (!String.IsNullOrEmpty(dbReader["PO_ID"].ToString()))
+                            {
+                                qf.ps_po_id = dbReader["PO_ID"].ToString();
+                                sdix_ups_quantumview_log_params[4] = qf.ps_po_id;
+                            }
+
+                            if ( !String.IsNullOrEmpty(qf.DeliveryLocation))
+                                qf.ps_notes_1000_new += " Delivered To: " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(qf.DeliveryLocation.ToLower()) + " " +  CultureInfo.CurrentCulture.TextInfo.ToTitleCase(qf.UPSLocation.ToLower());
+                            if ( !String.IsNullOrEmpty(qf.SignedForBy))
+                                qf.ps_notes_1000_new += " Signed By: " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(qf.SignedForBy.ToLower());
+                            if (  !String.IsNullOrEmpty(qf.ExceptionResolutionDescription))
+                                qf.ps_notes_1000_new += " Rescheduled Delivery Reason: " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(qf.ExceptionResolutionDescription.ToLower()) + " " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(qf.ExceptionReasonDescription.ToLower());
+                            if (  !String.IsNullOrEmpty(qf.RescheduledDeliveryDate))
+                                qf.ps_notes_1000_new += " Rescheduled Delivery Date: " + qf.RescheduledDeliveryDate;
+                            if (  !String.IsNullOrEmpty(qf.ScheduledDeliveryDate))
+                                qf.ps_notes_1000_new += " Original Delivery Date: " + qf.ScheduledDeliveryDate;
+                            if (!String.IsNullOrEmpty(qf.PackageActivityDate))
+                                qf.ps_notes_1000_new += " Last Processed by UPS On: " + qf.PackageActivityDate;
+                            sdix_ups_quantumview_log_params[8] = "TRUE";
+                            sdix_ups_quantumview_log_params[5] = qf.ps_notes_1000_new;
+
+                            QuantumDbUtility.executeDbUpdate(dbConn, sdix_ups_quantumview_log_sql, sdix_ups_quantumview_log_params);
+                            QuantumUtility.logError("   -- Inserted using PO ID " + qf.ps_po_id); //note: get all of the required fields to insert
+                            QuantumUtility.logErrorFile("   -- Inserted using PO ID " + qf.ps_po_id, toFtp.server + toFtp.directory); //note: get all of the required fields to insert
+                        }
+                    }
+                    else if (!dbReader.HasRows || dbReader == null)
+                    {
+                        QuantumUtility.logError("   -- Match not made on " + String.Join(",", dbParams));
+                        QuantumUtility.logErrorFile("   -- Match not made on " + String.Join(",", dbParams), toFtp.server + toFtp.directory);
+                        QuantumDbUtility.executeDbUpdate(dbConn, sdix_ups_quantumview_log_sql, sdix_ups_quantumview_log_params);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                QuantumUtility.logError(e);
+                QuantumUtility.logErrorFile(e, toFtp.server + toFtp.directory);
+                QuantumDbUtility.logError(dbConn, e.ToString());
+            }
+        }
 
         /* Manually coded parser */
-        public static void parseRow(String currentRow, QuantumFile qf, String[] row, String filename, String local_poid = "")
+        public static void parseRowManually(String currentRow, QuantumFile qf, String[] row, String filename, String local_poid = "")
         {
             try
             {
@@ -345,8 +502,6 @@ namespace UpsIntegration
                                        QuantumUtility.stripChars( local_poid, "partial")
                               };
 
-                    if (qf.ps_notes_1000_new == "")
-                        qf.ps_notes_1000_new = "No shipping data provided by UPS other than delivery status";
                     sdix_ups_quantumview_log_params = new String[9]      {  
                                         filename.Replace(toFtp.server + toFtp.directory,""),  
                                        String.Join(" || ", dbParams,1,dbParams.Length-1) ,
@@ -504,7 +659,27 @@ namespace UpsIntegration
         }
     }
 
-   
+    public sealed class QuantumFileMap : CsvHelper.Configuration.CsvClassMap<QuantumFile>
+    {
+        public  override void CreateMap() //QuantumFilePositionsMap()
+        {
+            Map(m => m.ExceptionReasonDescription).Name("ExceptionReasonDescription");
+            Map(m => m.ExceptionResolutionDescription).Name("ExceptionResolutionDescription");
+            Map(m => m.PackageActivityDate).Name("PackageActivityDate");
+            Map(m => m.PackageReferenceNumberValue1).Name("PackageReferenceNumberValue1");
+            Map(m => m.PackageReferenceNumberValue2 ).Name("PackageReferenceNumberValue2");
+            Map(m => m.RecordType ).Name("RecordType");
+            Map(m => m.RescheduledDeliveryDate ).Name("RescheduledDeliveryDate");
+            Map(m => m.ScheduledDeliveryDate ).Name("ScheduledDeliveryDate");
+            Map(m => m.ShipmentReferenceNumberValue1).Name("ShipmentReferenceNumberValue1");
+            Map(m => m.ShipmentReferenceNumberValue2).Name("ShipmentReferenceNumberValue2");
+            Map(m => m.ShipperNumber ).Name("ShipperNumber");
+            Map(m => m.SignedForBy ).Name("SignedForBy");
+            Map(m => m.TrackingNumber ).Name("TrackingNumber");
+            Map(m => m.UPSLocation ).Name("UPSLocation");
+            Map(m => m.DeliveryLocation ).Name("DeliveryLocation");
+         }
+    }
 
     /* QuantumFile: 
      *  This class holds row data from the CSV file and relevant data from the PS tables

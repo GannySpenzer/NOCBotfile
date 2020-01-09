@@ -129,6 +129,62 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Backup\Copy of QuantumView.cs.122719" />
+    <None Include="Backup\QuantumView.bkp.1082020" />
+    <None Include="Backup\QuantumView_CSVHelper_Using CSVHelper2-0.bkp" />
+    <Compile Include="SupportFiles\CsvHelper\Configuration\CsvClassMap.cs" />
+    <Compile Include="SupportFiles\CsvHelper\Configuration\CsvClassMapCollection.cs" />
+    <Compile Include="SupportFiles\CsvHelper\Configuration\CsvClassMap`1.cs" />
+    <Compile Include="SupportFiles\CsvHelper\Configuration\CsvConfiguration.cs" />
+    <Compile Include="SupportFiles\CsvHelper\Configuration\CsvConfigurationException.cs" />
+    <Compile Include="SupportFiles\CsvHelper\Configuration\CsvPropertyMap.cs" />
+    <Compile Include="SupportFiles\CsvHelper\Configuration\CsvPropertyMapCollection.cs" />
+    <Compile Include="SupportFiles\CsvHelper\Configuration\CsvPropertyMapComparer.cs" />
+    <Compile Include="SupportFiles\CsvHelper\Configuration\CsvPropertyMapData.cs" />
+    <Compile Include="SupportFiles\CsvHelper\Configuration\CsvPropertyReferenceMap.cs" />
+    <Compile Include="SupportFiles\CsvHelper\Configuration\DefaultCsvClassMap`1.cs" />
+    <Compile Include="SupportFiles\CsvHelper\CsvBadDataException.cs" />
+    <Compile Include="SupportFiles\CsvHelper\CsvFactory.cs" />
+    <Compile Include="SupportFiles\CsvHelper\CsvHelperException.cs" />
+    <Compile Include="SupportFiles\CsvHelper\CsvMissingFieldException.cs" />
+    <Compile Include="SupportFiles\CsvHelper\CsvParser.cs" />
+    <Compile Include="SupportFiles\CsvHelper\CsvParserException.cs" />
+    <Compile Include="SupportFiles\CsvHelper\CsvReader.cs" />
+    <Compile Include="SupportFiles\CsvHelper\CsvReaderException.cs" />
+    <Compile Include="SupportFiles\CsvHelper\CsvWriter.cs" />
+    <Compile Include="SupportFiles\CsvHelper\CsvWriterException.cs" />
+    <Compile Include="SupportFiles\CsvHelper\ExceptionHelper.cs" />
+    <Compile Include="SupportFiles\CsvHelper\ICsvFactory.cs" />
+    <Compile Include="SupportFiles\CsvHelper\ICsvParser.cs" />
+    <Compile Include="SupportFiles\CsvHelper\ICsvReader.cs" />
+    <Compile Include="SupportFiles\CsvHelper\ICsvReaderRow.cs" />
+    <Compile Include="SupportFiles\CsvHelper\ICsvWriter.cs" />
+    <None Include="SupportFiles\CsvHelper\Properties\AssemblyInfo.cs.bkp" />
+    <Compile Include="SupportFiles\CsvHelper\ReflectionHelper.cs" />
+    <Compile Include="SupportFiles\CsvHelper\StringHelper.cs" />
+    <Compile Include="SupportFiles\CsvHelper\TypeConversion\BooleanConverter.cs" />
+    <Compile Include="SupportFiles\CsvHelper\TypeConversion\ByteConverter.cs" />
+    <Compile Include="SupportFiles\CsvHelper\TypeConversion\CharConverter.cs" />
+    <Compile Include="SupportFiles\CsvHelper\TypeConversion\CsvTypeConverterException.cs" />
+    <Compile Include="SupportFiles\CsvHelper\TypeConversion\DateTimeConverter.cs" />
+    <Compile Include="SupportFiles\CsvHelper\TypeConversion\DecimalConverter.cs" />
+    <Compile Include="SupportFiles\CsvHelper\TypeConversion\DefaultTypeConverter.cs" />
+    <Compile Include="SupportFiles\CsvHelper\TypeConversion\DoubleConverter.cs" />
+    <Compile Include="SupportFiles\CsvHelper\TypeConversion\EnumConverter.cs" />
+    <Compile Include="SupportFiles\CsvHelper\TypeConversion\EnumerableConverter.cs" />
+    <Compile Include="SupportFiles\CsvHelper\TypeConversion\GuidConverter.cs" />
+    <Compile Include="SupportFiles\CsvHelper\TypeConversion\Int16Converter.cs" />
+    <Compile Include="SupportFiles\CsvHelper\TypeConversion\Int32Converter.cs" />
+    <Compile Include="SupportFiles\CsvHelper\TypeConversion\Int64Converter.cs" />
+    <Compile Include="SupportFiles\CsvHelper\TypeConversion\ITypeConverter.cs" />
+    <Compile Include="SupportFiles\CsvHelper\TypeConversion\NullableConverter.cs" />
+    <Compile Include="SupportFiles\CsvHelper\TypeConversion\SByteConverter.cs" />
+    <Compile Include="SupportFiles\CsvHelper\TypeConversion\SingleConverter.cs" />
+    <Compile Include="SupportFiles\CsvHelper\TypeConversion\StringConverter.cs" />
+    <Compile Include="SupportFiles\CsvHelper\TypeConversion\TypeConverterFactory.cs" />
+    <Compile Include="SupportFiles\CsvHelper\TypeConversion\TypeConverterOptions.cs" />
+    <Compile Include="SupportFiles\CsvHelper\TypeConversion\UInt16Converter.cs" />
+    <Compile Include="SupportFiles\CsvHelper\TypeConversion\UInt32Converter.cs" />
+    <Compile Include="SupportFiles\CsvHelper\TypeConversion\UInt64Converter.cs" />
     <Compile Include="Web References\SDiEmailUtilityService\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -158,6 +214,8 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <None Include="SupportFiles\CsvHelper\CsvHelper.csproj" />
+    <None Include="SupportFiles\CsvHelper\CsvHelper.snk" />
     <None Include="Web References\SDiEmailUtilityService\EmailServices.wsdl" />
     <None Include="Web References\SDiEmailUtilityService\Reference.map">
       <Generator>MSDiscoCodeGenerator</Generator>
@@ -197,9 +255,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="SampleFiles\QVD_ALT_sdiinc_20191115_110106_627_SDIQVD.TAB..txt" />
-    <Content Include="SampleFiles\QVD_ALT_sdiinc_20191119_150122_223_SDIQVD.txt" />
-    <Content Include="SampleFiles\TEST_MATCH.TXT" />
+    <Content Include="SampleFiles\TABDELIMITED_QVD_ALT_sdiinc_20191115_110106_627_SDIQVD.TAB..txt" />
+    <Content Include="SampleFiles\ONLYTRACKINGIDMATCH_QVD_ALT_sdiinc_20191119_150122_223_SDIQVD.txt" />
+    <Content Include="SampleFiles\QUICK_MATCH.TXT" />
     <Content Include="SupportFiles\SDIX_UPSQUANTUMVIEW_LOG.sql" />
     <Content Include="SupportFiles\WinSCP\license-dotnet.txt" />
     <Content Include="SupportFiles\WinSCP\license-winscp.txt" />
@@ -228,6 +286,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Backup\SearchPage\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
