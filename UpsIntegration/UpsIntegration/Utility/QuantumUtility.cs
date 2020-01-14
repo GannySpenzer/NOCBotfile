@@ -126,12 +126,15 @@ namespace UpsIntegration
             String newValue = value;
             try
             {
+                newValue = Regex.Replace(newValue, "SIMENTAL", "");
+
                 if (stripType == "ALL")
                     newValue = Regex.Replace(value, "\\D", ""); //Replace all non-digit chars
-                if (stripType=="PARTIAL")
+                if (stripType=="PARTIAL" )
                 {
                     newValue = Regex.Replace(newValue, "SDI PO#", "");
-                    newValue = Regex.Replace(newValue, " ", "");
+                    newValue = Regex.Replace(newValue, @"[/s]+" , "");
+                    newValue = Regex.Replace(newValue, "-", "");
                     newValue = Regex.Replace(newValue, "-", "");
                     newValue = Regex.Replace(newValue, "#", "");
                     newValue = Regex.Replace(newValue, ":", "");
@@ -140,11 +143,16 @@ namespace UpsIntegration
                     newValue = Regex.Replace(newValue, "SDI", "");
                     newValue = Regex.Replace(newValue, "ORDER", "");
                     newValue = Regex.Replace(newValue, "REQ", "");
-
+                    newValue = Regex.Replace(newValue, "INVOICE", "");
+                    newValue = Regex.Replace(newValue, "ORDER", "");
+                    newValue = Regex.Replace(newValue, "MAINT", "");
+                    newValue = Regex.Replace(newValue, "CUST", "");
+                    newValue = Regex.Replace(newValue, "PURCHASE", "");
                 }
                 if (stripType == "PO")
                 {
-       
+                    newValue = newValue.Replace("MAINT", "");
+                    newValue = newValue.Replace("PO; ", "");
                     newValue = newValue.Replace("PO.", "");
                     newValue = newValue.Replace("SDI", "");
                     newValue = newValue.Replace("SDI PO ", "");
@@ -161,8 +169,35 @@ namespace UpsIntegration
                     newValue = newValue.Replace("PO ", "PO");
                     newValue = newValue.Replace("P.O.", "");
                     newValue = newValue.Replace("REQ#", "");
-                    newValue = newValue.Replace("ORDER ", "");
+                    newValue = newValue.Replace("INVOICE", "");
+                    newValue = newValue.Replace("ORDER", "");
+                    newValue = newValue.Replace("MAINT", "");
+                    newValue = newValue.Replace("SDI", "");
+                    newValue = newValue.Replace("CUST", "");
+                    newValue = Regex.Replace(newValue, "PO", "");
+                    newValue = Regex.Replace(newValue, @"[/s]+", "");
+                    newValue = Regex.Replace(newValue, "PURCHASE", "");
                 }
+                if (stripType == "PO2")
+                { 
+                    newValue = Regex.Replace(newValue, @"[/s]+", "");
+                    newValue = newValue.Replace("-", "");
+                    newValue = newValue.Replace("; ", "");
+                    newValue = newValue.Replace(".", "");
+                    newValue = newValue.Replace("#", "");
+                    newValue = newValue.Replace("SDI", "");
+                    newValue = newValue.Replace("MAINT", "");
+                    newValue = newValue.Replace("_", "");
+                    newValue = newValue.Replace(",", "");
+                    newValue = newValue.Replace(":", "");
+                    newValue = newValue.Replace("REQ", "");
+                    newValue = newValue.Replace("ORDER", "");
+                    newValue = newValue.Replace("PO", "");
+                    newValue = newValue.Replace("PT", "");
+                    newValue = newValue.Replace("CUST", "");
+                    newValue = Regex.Replace(newValue, "PURCHASE", "");
+                    newValue = Regex.Replace(newValue, "INVOICE", "");
+                 }
                 if (stripType == "DATE")
                 {
                     newValue = newValue.Replace(" ", "_");

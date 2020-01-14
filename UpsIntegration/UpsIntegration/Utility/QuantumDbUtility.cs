@@ -217,7 +217,7 @@ namespace UpsIntegration
             {
                 QuantumUtility.logError(e);
             }
-        }
+        } 
 
         public static void executeDbUpdate(OleDbConnection dbConn, String sql, String[] param=null)
         {
@@ -226,7 +226,7 @@ namespace UpsIntegration
             { 
                 if (param != null && param.Length > 0)
                   newSql = getSql(newSql, param);
-               // QuantumUtility.logError("** " + DateTime.Now.ToShortDateString() + " " +  DateTime.Now.TimeOfDay + " DB UPDATE SQL: " + newSql);
+            // QuantumUtility.logError("** " + DateTime.Now.ToShortDateString() + " " +  DateTime.Now.TimeOfDay + " DB UPDATE SQL: " + newSql);
                 OleDbCommand updateCommand = new OleDbCommand(newSql, dbConn);
                 updateCommand.ExecuteNonQuery();
                
@@ -254,17 +254,21 @@ namespace UpsIntegration
             String newSql = oldSql;
             try
             {
-               if (sqlParams != null)
-                for (int i = 0; i < sqlParams.Length; i++)
+                if (sqlParams != null)
                 {
+                  
+                    for (int i = 0; i < sqlParams.Length; i++)
+                    {
 
-                    newSql = newSql.Replace('@' + i.ToString() , sqlParams[i]);
+                        newSql = newSql.Replace('@' + i.ToString(), sqlParams[i]);
 
-                    // for (int i = 0; i < param.Length; i++)
-                    // command.Parameters.Add(new OleDbParameter( i.ToString(), param[i]));  
+                        // for (int i = 0; i < param.Length; i++)
+                        // command.Parameters.Add(new OleDbParameter( i.ToString(), param[i]));  
+                    }
                 }
-                 newSql = newSql.Replace("  ", " ");
-                newSql = newSql.Replace("OR TRIM(PO.PO_ID) = ''", "");
+                newSql = System.Text.RegularExpressions.Regex.Replace(newSql, @"'@\d'", "''");
+                newSql = System.Text.RegularExpressions.Regex.Replace(newSql, @"[\s]+", " ");
+                newSql = newSql.Replace("OR TRIM(PO.PO_ID) = ''", ""); 
                 newSql = newSql.Replace("TRIM(SH.ISA_ASN_TRACK_No) = '' OR", "");
             }
             catch (Exception e)

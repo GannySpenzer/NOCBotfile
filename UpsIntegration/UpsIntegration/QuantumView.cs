@@ -32,7 +32,7 @@ namespace UpsIntegration
     {
         private static OleDbConnection dbConn = new OleDbConnection();
         private static OleDbConnection rptgConn = new OleDbConnection();
-        private static String rptgStr = "Provider=OraOLEDB.Oracle;User Id=sdiexchange;Password=sd1exchange;Data Source=RPTG.WORLD;Connection Timeout=410;";
+        private static String rptgStr = "Provider=OraOLEDB.Oracle;User Id=sdiexchange;Password=sd1exchange;Data Source=RPTG.WORLD;Connection Timeout=1200;";
         private static String connStr = rptgStr;
 
         private static ftpData testFtp = new ftpData("speedtest.tele2.net", "anonymous", "anonymous");
@@ -89,8 +89,7 @@ namespace UpsIntegration
                 //using ps_isa_ord_intf_lN and/or PS_ISA_USERS_TBL  or PS_ISA_PODUEDTMON  based on ConsoleUtilities\PODueDtchangeEmail.vb 
                 StringBuilder sql = new StringBuilder(@"
                          select distinct  
-                         USR.LAST_NAME_SRCH as LAST_NAME,   
-                         USR.ISA_EMPLOYEE_EMAIL as ISA_EMPLOYEE_EMAIL,
+                         USR.LAST_NAME_SRCH as LAST_NAME,    USR.ISA_EMPLOYEE_EMAIL as ISA_EMPLOYEE_EMAIL,
                          DISTR.PO_ID as DISTR_PO_ID,
                          qv_LOG.PO_ID as PO_ID,
                          qv_LOG.isa_asn_track_no as isa_asn_track_no ,
@@ -119,7 +118,7 @@ namespace UpsIntegration
                          USR.LAST_NAME_SRCH,
                          USR.ISA_EMPLOYEE_EMAIL, 
                          qv_LOG.PO_ID, qv_LOG.isa_asn_track_no ");
-
+                 
                 OleDbDataReader dbReader = null;
                 String email = "";
                 String message = "";
@@ -128,17 +127,21 @@ namespace UpsIntegration
                 String hdr = "";
                 String poid = "";
                 String track_no = "";
+                String testurl = @"http://zeustest.sdi.com:8083/ZEUSRPTG/QuantumView.aspx";
+                String url = @"https://www.sdizeus.com";
                 int rowcount = 0;
+                String toemail = "anita.nicholson@sdi.com";
                 dbReader = QuantumDbUtility.executeDbReader(dbConn, sql.ToString(), new String[] { toFtp.startDate.ToString("dd-MMM-yy hh:mm:ss.fffffff00 tt").ToUpper(), DateTime.Now.ToString("dd-MMM-yy hh:mm:ss.fffffff00 tt").ToUpper() });
                 EmailServices sdiemail = new EmailServices();
                 if (dbReader != null && dbReader.HasRows)
                 {
                     while (dbReader.Read())
-                    { 
+                    {
+                        toemail = dbReader["ISA_EMPLOYEE_EMAIL"].ToString();
                         if (dbReader["LAST_NAME"].ToString() != lname)
                         {
                             if (!String.IsNullOrEmpty(message))
-                                sdiemail.EmailUtilityServices("Mail", "SDIExchADMIN@sdi.com", "anita.nicholson@sdi.com",
+                                sdiemail.EmailUtilityServices("Mail", "SDIExchADMIN@sdi.com", toemail,
                                       "SDI Purchase Order Update " + DateTime.Now.ToShortDateString(), "", "",
                                       hdr + "<ul>" + message + "</ul>",
                                       "SDIERRMAIL", new string[0], new Byte[0][]);
@@ -147,8 +150,9 @@ namespace UpsIntegration
                             email = dbReader["ISA_EMPLOYEE_EMAIL"].ToString();
 
                             hdr = "To: " + lname + " (" + email + ")" + newline + newline;
-                            hdr += "Greetings! Below find the latest shipping information received from UPS on your products." +
-                            "The below email lists the available shipping history for the available UPS tracking numbers grouped by Purchase Order Number. " + newline + newline; 
+                            hdr += "Below find the latest shipping information received from UPS on your products." +
+                            "The below email lists the available shipping history for the available UPS tracking numbers grouped by Purchase Order Number. "  +
+                            "You can continue to track your packages at " + url + newline + newline; 
                         }
                         if (poid != dbReader["PO_ID"].ToString())
                         {
@@ -162,14 +166,14 @@ namespace UpsIntegration
                             track_no = dbReader["isa_asn_track_no"].ToString();
                             if (!String.IsNullOrEmpty(dbReader["USER_MESSAGE"].ToString()))
                             {
-                                message += "<li style='margin-left: 25px;  list-style-type: circle;'><i>Greetings. Your package " + track_no + " is " + dbReader["DELIVERY_TYPE"].ToString()  + ".</i> " + 
+                                message += "<li style='margin-left: 25px;  list-style-type: circle;'><i>Package " + track_no + " is " + dbReader["DELIVERY_TYPE"].ToString()  + ".</i> " + 
                                         dbReader["USER_MESSAGE"].ToString() + "</li>";
                             }
                         }
                         QuantumUtility.logErrorFile("Mailing User " + rowcount++, toFtp.server + toFtp.directory );
                     }
                     //Send one last time - in case all under the same name
-                    sdiemail.EmailUtilityServices("Mail", "SDIExchADMIN@sdi.com", "anita.nicholson@sdi.com",
+                    sdiemail.EmailUtilityServices("Mail", "SDIExchADMIN@sdi.com", toemail,
                          "SDI Purchase Order Update " + DateTime.Now.ToShortDateString(), "", "",
                          hdr + "<ul>" + message + "</ul>",
                          "SDIERRMAIL", new string[0], new Byte[0][]);
@@ -269,24 +273,20 @@ namespace UpsIntegration
                 String sdix_ups_quantumview_log_sql = "insert into SDIX_UPS_QUANTUMVIEW_LOG  (ups_filename, po_id_options, isa_asn_track_no, ups_file_location,   po_id,  user_message, ups_record_type, ups_delivery_type, ups_sdi_match) values ('@0','@1','@2','@3','@4','@5','@6','@7','@8' )";
                 String[] sdix_ups_quantumview_log_params = null;    //String[] ps_isa_xpd_comment_params = null;
                 Char separator = '|';  //Sometimes they use pipes. Othertimes tabs 
-                String poFromSql = " FROM PS_PO_LINE_SHIP  PO  LEFT JOIN PS_ISA_ASN_SHIPPED SH ON PO.PO_ID = SH.PO_ID "; //switched form ps_po_hdr to ps_po_line_shipped to ps_po_line_ship   // String shFromSql = " FROM  PS_ISA_RECV_LN_ASN SH LEFT JOIN   PS_PO_HDR PO   ON SH.PO_ID =  PO.PO_ID  ";  //" FROM  PS_ISA_ASN_SHIPPED SH LEFT JOIN   PS_PO_HDR PO   ON SH.PO_ID =  PO.PO_ID  ";  switching from ps_isa_asn_shipped provided by m. randall to  PS_ISA_RECV_LN_ASN as reqpoststatus.aspx.vb uses that table
+                String poFromSql = " FROM PS_PO_LINE_SHIP  PO  LEFT JOIN PS_ISA_ASN_SHIPPED SH ON PO.PO_ID = SH.PO_ID "; //switched form ps_po_hdr to ps_po_line_shipped to ps_po_line_ship, ps_po_line_ship adds 15 sec, but it returns the estimated shipping due date   // String shFromSql = " FROM  PS_ISA_RECV_LN_ASN SH LEFT JOIN   PS_PO_HDR PO   ON SH.PO_ID =  PO.PO_ID  ";  //" FROM  PS_ISA_ASN_SHIPPED SH LEFT JOIN   PS_PO_HDR PO   ON SH.PO_ID =  PO.PO_ID  ";  switching from ps_isa_asn_shipped provided by m. randall to  PS_ISA_RECV_LN_ASN as reqpoststatus.aspx.vb uses that table
                 String shFromSql = "   JOIN   PS_PO_HDR PS  ON PO.PO_ID =  PS.PO_ID  ";
                 String comFromSql = shFromSql + "   LEFT JOIN PS_ISA_XPD_COMMENT COM ON PO.PO_ID = COM.PO_ID AND COM.BUSINESS_UNIT = PO.BUSINESS_UNIT AND COM.LINE_NBR=PO.LINE_NBR AND COM.SCHED_NBR=PO.SCHED_NBR   ";
-                String asnSelectSql = new StringBuilder(@"  SELECT DISTINCT  
-                        PO.business_unit as BUSINESS_UNIT, PO.PO_ID as PO_ID,  PO.DUE_DT as DUE_DT  
+                String asnSelectSql =  "  SELECT DISTINCT   PO.business_unit as BUSINESS_UNIT, PO.PO_ID as PO_ID,  PO.DUE_DT as DUE_DT " ; 
                          /* , PO.VENDOR_ID as VENDOR_ID,    PO.BUYER_ID as BUYER_ID,     SH.BUSINESS_UNIT as SH_BUSINESS_UNIT,   SH.PO_ID as SH_PO_ID,  
                          SH.ISA_ASN_TRACK_NO as SH_TRACK_NO,    SH.ISA_ASN_SHIP_DT as SH_SHIP_DT,   SH.LINE_NBR as SH_LINE_NBR,   SH.SCHED_NBR as SH_SCHED_NBR, 
                          SH.OPRID as SH_OPRID,   COM.ISA_PROBLEM_CODE as ISA_PROBLEM_CODE ,   COM.NOTES_1000 as NOTES_1000 ,  OM.LINE_NBR as COM_LINE_NBR,  
-                       COM.SCHED_NBR  as  COM_SCHED_NBR,     PO.LINE_NBR as PO_LINE_NBR,    PO.SCHED_NBR  as  PO_SCHED_NBR  */ ").ToString();
+                       COM.SCHED_NBR  as  COM_SCHED_NBR,     PO.LINE_NBR as PO_LINE_NBR,    PO.SCHED_NBR  as  PO_SCHED_NBR  */ 
 
                 //Note: Sometimes there are the same PO_Ids but different sched #s, I'm only pulling the most recent. Should I pull both? OR SHOULD I Just insert a new line altogether?
                 String whereSql = "WHERE " +
-                      "(TRIM(SH.ISA_ASN_TRACK_No) = '@0'  OR " +
-                      "TRIM(PO.PO_ID) = '@1' OR TRIM(PO.PO_ID) = '@2' OR " +
-                      "TRIM(PO.PO_ID) = '@3' OR TRIM(PO.PO_ID) = '@4' OR  " +
-                       "TRIM(PO.PO_ID) = '@5' OR TRIM(PO.PO_ID) = '@6' OR " +
-                      "TRIM(PO.PO_ID) = '@7' OR TRIM(PO.PO_ID) = '@8' OR " +
-                      "TRIM(PO.PO_ID) = '@9' " +
+                      "(TRIM(SH.ISA_ASN_TRACK_No) = '@0'  OR  TRIM(PO.PO_ID) = '@1' OR TRIM(PO.PO_ID) = '@2' OR " +
+                      "TRIM(PO.PO_ID) = '@3' OR TRIM(PO.PO_ID) = '@4' OR   TRIM(PO.PO_ID) = '@5' OR TRIM(PO.PO_ID) = '@6' OR " +
+                      "TRIM(PO.PO_ID) = '@7' OR TRIM(PO.PO_ID) = '@8' OR  TRIM(PO.PO_ID) = '@9' " +
                       " ) " +
                        "and rownum =1  ORDER BY PO.DUE_DT DESC";// ORDER BY SH.ISA_ASN_SHIP_DT desc"; 
 
@@ -334,32 +334,30 @@ namespace UpsIntegration
                     //Set Query params with resulting data - verify the various poid possibilities are at least greater than 8/10 (the expected po size is 10 and not just standard nums)
                     dbParams = new String[10]  {
                                        qf.TrackingNumber, 
-                                       qf.PackageReferenceNumberValue1,
-                                       qf.PackageReferenceNumberValue2,
+                                       qf.PackageReferenceNumberValue1.Length >=10 ? qf.PackageReferenceNumberValue1 : "",
+                                       qf.PackageReferenceNumberValue2.Length >=10 ? qf.PackageReferenceNumberValue2 :"" ,
                                         qf.PackageReferenceNumberValue1.Length >=10 ? QuantumUtility.stripChars(qf.PackageReferenceNumberValue1,"partial") : "",
                                         qf.PackageReferenceNumberValue2.Length >=10 ?QuantumUtility.stripChars(qf.PackageReferenceNumberValue2,"partial") : "",
                                        qf.PackageReferenceNumberValue1.Length >=10 ?QuantumUtility.stripChars(qf.PackageReferenceNumberValue1,"PO"): "",
                                        qf.PackageReferenceNumberValue2.Length >=10 ? QuantumUtility.stripChars(qf.PackageReferenceNumberValue2,"PO" ): "",
                                         qf.ShipmentReferenceNumberValue1.Length >= 10? QuantumUtility.stripChars(qf.ShipmentReferenceNumberValue1,"partial"): "",
                                        qf.ShipmentReferenceNumberValue2.Length >= 10 ? QuantumUtility.stripChars(qf.ShipmentReferenceNumberValue2,"partial"): "",
-                                       QuantumUtility.stripChars( local_poid, "partial")
+                                       QuantumUtility.stripChars( qf.PackageReferenceNumberValue1, "PO2")
                               };
-
-                    if (qf.ps_notes_1000_new == "")
-                        qf.ps_notes_1000_new = "No shipping data provided by UPS other than delivery status";
+                    dbParams = dbParams.Distinct().ToArray();
                     sdix_ups_quantumview_log_params = new String[9]      {  
                                         filename.Replace(toFtp.server + toFtp.directory,""),  
                                        String.Join(" || ", dbParams,1,dbParams.Length-1) ,
                                        qf.TrackingNumber,  
                                        toFtp.server + toFtp.directory,  
                                        qf.ps_po_id,
-                                       qf.ps_notes_1000_new,
+                                       qf.ps_notes_1000,
                                        qf.RecordType,
                                        getRecordDeliveryType(qf.RecordType),
                                        "FALSE"
                                     };
                     //Grab Matching Data
-                    dbReader = QuantumDbUtility.executeDbReader(dbConn, asnSelectSql + poFromSql + shFromSql + whereSql, dbParams);
+                    dbReader = QuantumDbUtility.executeDbReader(dbConn, asnSelectSql + poFromSql + shFromSql + whereSql, dbParams );
 
                     if (dbReader.HasRows)
                     {
@@ -371,7 +369,7 @@ namespace UpsIntegration
                                 qf.ps_po_id = dbReader["PO_ID"].ToString();
                                 sdix_ups_quantumview_log_params[4] = qf.ps_po_id;
                             }
-                           
+                          
                             if (!qf.ps_notes_1000.Contains("Delivered") && !String.IsNullOrEmpty(qf.DeliveryLocation))
                                 qf.ps_notes_1000_new += " Delivered To: " + 
                                     CultureInfo.CurrentCulture.TextInfo.ToTitleCase(qf.DeliveryLocation.ToLower()) + " " + 
@@ -387,6 +385,9 @@ namespace UpsIntegration
                             if (!String.IsNullOrEmpty(qf.PackageActivityDate))
                                 qf.ps_notes_1000_new += " Last Processed by UPS On: " + qf.PackageActivityDate;
                             sdix_ups_quantumview_log_params[8] = "TRUE";
+
+                            if (String.IsNullOrEmpty(qf.ps_notes_1000_new) || qf.ps_notes_1000_new.Length < 1)
+                                qf.ps_notes_1000_new = qf.ps_notes_1000;
                             sdix_ups_quantumview_log_params[5] = qf.ps_notes_1000_new;
  
                             QuantumDbUtility.executeDbUpdate(dbConn, sdix_ups_quantumview_log_sql, sdix_ups_quantumview_log_params);
@@ -531,7 +532,7 @@ namespace UpsIntegration
         public String DeliveryLocation = "";
         public String BillToAccountNumber = "";
         public String SignedForBy = "";
-        public String ps_notes_1000 = "";
+        public String ps_notes_1000 = "No additional shipping data provided by UPS outside delivery status";
         public String ps_notes_1000_new = "";
         public String ps_po_id = "";
         public String business_unit = "";
