@@ -148,7 +148,7 @@ namespace UpsIntegration
                     newValue = Regex.Replace(newValue, "MAINT", "");
                     newValue = Regex.Replace(newValue, "CUST", "");
                     newValue = Regex.Replace(newValue, "PURCHASE", "");
-                }
+                } 
                 if (stripType == "PO")
                 {
                     newValue = newValue.Replace("MAINT", "");
@@ -270,6 +270,9 @@ namespace UpsIntegration
                 using (WinSCP.Session session = new WinSCP.Session())
                 {
                     // Connect
+                    String dir = Directory.GetCurrentDirectory().Substring(0,Directory.GetCurrentDirectory().Length - @"\bin\Debug".Length) + @"\SupportFiles\WinSCP" ;
+                      
+                  session.ExecutablePath = @dir + @"\WinSCP.exe";
                     session.Open(sessionOptions);
                     WinSCP.RemoteDirectoryInfo directory = session.ListDirectory(fromFtp.directory); 
                     WinSCP.TransferOperationResult dr = null;

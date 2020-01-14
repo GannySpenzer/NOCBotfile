@@ -208,7 +208,9 @@
     <Content Include="SupportFiles\WinSCP\net40\WinSCPnet.dll" />
     <Content Include="SupportFiles\WinSCP\netstandard2.0\WinSCPnet.dll" />
     <Content Include="SupportFiles\WinSCP\readme_automation.txt" />
-    <Content Include="SupportFiles\WinSCP\WinSCP.exe" />
+    <Content Include="SupportFiles\WinSCP\WinSCP.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="SupportFiles\WinSCP\WinSCPnet.dll" />
     <None Include="Web References\SDiEmailUtilityService\EmailServices.disco" />
   </ItemGroup>
