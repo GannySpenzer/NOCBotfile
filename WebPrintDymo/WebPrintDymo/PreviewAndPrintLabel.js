@@ -179,8 +179,35 @@
                 }
 
                 //alert(printersSelect.value);
-                label.print(printersSelect.value);
+                //label.print(printersSelect.value);
                 //label.print("unknown printer");
+
+                var labelSet = new dymo.label.framework.LabelSetBuilder();
+                var record = labelSet.addRecord();
+                record.setText("TEXT", "DUMMY");
+                
+                var params = dymo.label.framework.createLabelWriterPrintParamsXml({ copies: 2 });
+                //now params contains <LabelWriterPrintParams><Copies>2</Copies><PrintQuality>Text</PrintQuality><TwinTurboRoll>Right</TwinTurboRoll></LabelWriterPrintParams>
+                var printJob = label.printAndPollStatus(printersSelect.value, params, labelSet.toString(), function (printJob, printJobStatus) {
+                    // output status
+                    var statusStr = 'Job Status: ' + printJobStatus.statusMessage;
+
+                    var result = (printJobStatus.status != dymo.label.framework.PrintJobStatus.ProcessingError
+                    && printJobStatus.status != dymo.label.framework.PrintJobStatus.Finished);
+
+                    // reenable when the job is done (either success or fail)
+                    //printButton.disabled = result;
+
+                    //if (!result)
+                    //    statusStr = '';
+
+                    //setTextContent(jobStatusMessageSpan, statusStr);
+
+                    return result;
+
+                }, 1000);
+
+
             }
             catch (e) {
                 alert(e.message || e);
