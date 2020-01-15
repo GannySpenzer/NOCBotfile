@@ -29,7 +29,7 @@ namespace UpsIntegration
      *  Do you want the Notes_1000 field in the PS table updated or do you want to create an SDIX table that holds the updated tracking comment and then update expedite.aspx and expedite.aspx.vb to pull from the sdix_tracking.comment field?
  **/
     class QuantumView
-    {
+    { 
         private static OleDbConnection dbConn = new OleDbConnection();
         private static OleDbConnection rptgConn = new OleDbConnection();
         private static String rptgStr = "Provider=OraOLEDB.Oracle;User Id=sdiexchange;Password=sd1exchange;Data Source=RPTG.WORLD;Connection Timeout=1200;";

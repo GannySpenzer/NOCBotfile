@@ -255,22 +255,25 @@ namespace UpsIntegration
          */
         public static void winSCP(ftpData fromFtp, ftpData toFtp)
         {
-            try
+            try 
             {
                 // Set up session options
                 WinSCP.SessionOptions sessionOptions = new WinSCP.SessionOptions
                 {
-                    Protocol = WinSCP.Protocol.Ftp,
+                    //Protocol = WinSCP.Protocol.Ftp, //commented out 1/15
+                    Protocol = WinSCP.Protocol.Sftp, //Added 1/15/20 
                     HostName = fromFtp.server,
                     UserName = fromFtp.userid,
                     Password = fromFtp.password,
-                    FtpSecure = WinSCP.FtpSecure.Explicit,
+                  //  FtpSecure = WinSCP.FtpSecure.Explicit, //commented out 1/15
+                    PortNumber = 10022,//Added 1/15/20 
+                    SshHostKeyFingerprint = "ssh-rsa 2048 HUBqpoH+WHd0kyyrHu9LX0IHUoFblmq041+cowtLumk=", //Added 1/15/20 from winscp manual session
                 }; 
 
                 using (WinSCP.Session session = new WinSCP.Session())
                 {
                     // Connect
-                    String dir = Directory.GetCurrentDirectory().Substring(0,Directory.GetCurrentDirectory().Length - @"\bin\Debug".Length) + @"\SupportFiles\WinSCP" ;
+                    String dir = Directory.GetCurrentDirectory().Substring(0,Directory.GetCurrentDirectory().Length - @"\bin\Debug".Length) + @"\SupportFiles\WinSCP" ; //added 1/14
                       
                   session.ExecutablePath = @dir + @"\WinSCP.exe";
                     session.Open(sessionOptions);
