@@ -155,6 +155,7 @@
     <Compile Include="Utility\QuantumUtility.cs" />
     <Compile Include="QuantumView.cs" />
     <None Include="AvaSoftOriginalFiles\AVASOFT_Original_Scripting.cs.old" />
+    <None Include="Documentation\Quantum Utility Documentation012020.docx" />
     <None Include="Documentation\Quantum Utility Documentation4.docx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

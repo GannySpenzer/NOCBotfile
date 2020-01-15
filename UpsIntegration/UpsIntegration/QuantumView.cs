@@ -40,6 +40,7 @@ namespace UpsIntegration
         private static String prod_server = @"\\172.31.251.161\sdixdata\ftp";
         private static String prod_folder = @"\" + DateTime.Today.Month + "_" + DateTime.Today.Day + "_" + DateTime.Today.Year; 
         private static ftpData toFtp = new ftpData(@"C:\sdi\", @"csvfiles\", "anonymous", "anonymous");  
+        private  static EmailServices sdiemail = new EmailServices();
 
         public static void Main(String[] args)
         {
@@ -62,14 +63,25 @@ namespace UpsIntegration
 
                 QuantumUtility.logError("FTP FILES FROM: " + fromFtp.server + fromFtp.directory + " to " + toFtp.server + toFtp.directory);
                 QuantumUtility.logErrorFile("FTP FILES FROM: " + fromFtp.server + fromFtp.directory + " to " + toFtp.server + toFtp.directory, toFtp.server + toFtp.directory);
-               QuantumUtility.cleanDirectory(toFtp.server + toFtp.directory);
-                QuantumUtility.winSCP(fromFtp, toFtp);
+                String awsErr = QuantumUtility.cleanDirectory(toFtp.server + toFtp.directory);
+                String ftpErr = QuantumUtility.winSCP(fromFtp, toFtp);
 
                 QuantumDbUtility.openDb(connStr, dbConn);
-                if (dbConn.State.ToString() == "Open")
+                if (dbConn.State.ToString() == "Open" && String.IsNullOrEmpty(ftpErr) && String.IsNullOrEmpty(awsErr))
                 {
                     parseDirectory(toFtp.server + toFtp.directory);  // parseCsvFile(ShortMatchFile);
-                    batchMail();
+                    batchMail(); 
+                }
+                else
+                {
+                    //Added 1/15/20 - Alert WebDev if DB, FTP or AWS connection is down
+                    sdiemail.EmailUtilityServices("Mail", "SDIExchADMIN@sdi.com", "WebDev@sdi.com",
+                                     "ConsoleUtility: QuantumView Issue " + toFtp.startDate.ToShortDateString(), "", "",
+                                    "There is either difficulty connecting to the SDI Database, SDI AWS Drive or UPS FTP Server. See below. \n\n" +
+                                    "<b>DATABASE:</b> " + dbConn.Database + "returns error: " + (dbConn.State.ToString() == "Open"? "No Error." : "DB Conn is " + dbConn.State.ToString() + ". Please investigate"   ) + "\n" +
+                                    "<b>FTP SERVER:</b> " + fromFtp.directory + " returns error: " + (String.IsNullOrEmpty(ftpErr) ? "No Error." : "Contact UPS QuantumView Support-- " + ftpErr) + "\n" +
+                                    "<b>AWS Directory:</b> " + toFtp.directory + " returns error: " + (String.IsNullOrEmpty(awsErr) ? "No Error." : "Check the AWS Network Connection-- " + awsErr) + "\n",  
+                                     "SDIERRMAIL", new string[0], new Byte[0][]);
                 }
                 QuantumDbUtility.closeDb(dbConn);
                 QuantumUtility.logError("Completed");
@@ -132,7 +144,7 @@ namespace UpsIntegration
                 int rowcount = 0;
                 String toemail = "anita.nicholson@sdi.com";
                 dbReader = QuantumDbUtility.executeDbReader(dbConn, sql.ToString(), new String[] { toFtp.startDate.ToString("dd-MMM-yy hh:mm:ss.fffffff00 tt").ToUpper(), DateTime.Now.ToString("dd-MMM-yy hh:mm:ss.fffffff00 tt").ToUpper() });
-                EmailServices sdiemail = new EmailServices();
+               
                 if (dbReader != null && dbReader.HasRows)
                 {
                     while (dbReader.Read())

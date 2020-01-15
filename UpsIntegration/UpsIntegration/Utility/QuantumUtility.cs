@@ -125,13 +125,13 @@ namespace UpsIntegration
         {
             String newValue = value;
             try
-            {
+            { 
                 newValue = Regex.Replace(newValue, "SIMENTAL", "");
 
                 if (stripType == "ALL")
                     newValue = Regex.Replace(value, "\\D", ""); //Replace all non-digit chars
                 if (stripType=="PARTIAL" )
-                {
+                { 
                     newValue = Regex.Replace(newValue, "SDI PO#", "");
                     newValue = Regex.Replace(newValue, @"[/s]+" , "");
                     newValue = Regex.Replace(newValue, "-", "");
@@ -151,6 +151,7 @@ namespace UpsIntegration
                 } 
                 if (stripType == "PO")
                 {
+                    newValue = newValue.Replace("CUSTP.O.NO.", "");
                     newValue = newValue.Replace("MAINT", "");
                     newValue = newValue.Replace("PO; ", "");
                     newValue = newValue.Replace("PO.", "");
@@ -253,7 +254,7 @@ namespace UpsIntegration
          * Use this for more secure FTP
          * Deliberately using WinSCP prefix  for this method
          */
-        public static void winSCP(ftpData fromFtp, ftpData toFtp)
+        public static String winSCP(ftpData fromFtp, ftpData toFtp)
         {
             try 
             {
@@ -295,10 +296,12 @@ namespace UpsIntegration
                          }
                     }
                 }
+                return "";
             }
             catch (Exception e)
             {
                 logError(e);
+                return e.ToString();
             }
         }
         /* doFTP: 
@@ -375,7 +378,7 @@ namespace UpsIntegration
         /*
          * CleanDirectory: Removes any data from local directory
          */
-        public static void cleanDirectory(String dir)
+        public static String cleanDirectory(String dir)
         {
             try
             {
@@ -388,10 +391,12 @@ namespace UpsIntegration
                     Directory.Delete(dir);
                 }
                 Directory.CreateDirectory(dir);
+                return "";
             }
             catch (Exception e)
             {
                 logError(e);
+                return e.ToString();
             }
         }
 
