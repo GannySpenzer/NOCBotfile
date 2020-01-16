@@ -73,7 +73,7 @@ namespace UpsIntegration
                     batchMail(); 
                 }
                 else
-                {
+                { 
                     //Added 1/15/20 - Alert WebDev if DB, FTP or AWS connection is down
                     sdiemail.EmailUtilityServices("Mail", "SDIExchADMIN@sdi.com", "WebDev@sdi.com",
                                      "ConsoleUtility: QuantumView Issue " + toFtp.startDate.ToShortDateString(), "", "",
