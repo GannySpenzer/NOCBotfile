@@ -10,6 +10,7 @@ namespace MergeTest2
     {
         static void Main(string[] args)
         {
+            string strTest = "Test!";
         }
     }
 }
