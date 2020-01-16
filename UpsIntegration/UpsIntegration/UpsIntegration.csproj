@@ -11,7 +11,12 @@
     <AssemblyName>UpsIntegration</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <PublishUrl>publish\</PublishUrl>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <PublishUrl>C:\SDI\InsiteOnline3.1\InsiteOnline 3.1\ConsoleUtilities\UpsIntegration\DEPLOY\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
     <UpdateEnabled>false</UpdateEnabled>
@@ -21,15 +26,11 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationRevision>6</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
+    <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <SccProjectName>SAK</SccProjectName>
-    <SccLocalPath>SAK</SccLocalPath>
-    <SccAuxPath>SAK</SccAuxPath>
-    <SccProvider>SAK</SccProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>x64</PlatformTarget>
@@ -50,6 +51,18 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>0B4F765D216C9B0FD0CDAE0C6312A81E2132477B</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>UpsIntegration_TemporaryKey.pfx</ManifestKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>true</GenerateManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
     <!--
@@ -161,6 +174,7 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <None Include="UpsIntegration_TemporaryKey.pfx" />
     <None Include="Web References\SDiEmailUtilityService\EmailServices.wsdl" />
     <None Include="Web References\SDiEmailUtilityService\Reference.map">
       <Generator>MSDiscoCodeGenerator</Generator>
@@ -168,7 +182,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Backup\QuantumView.cs.bkp.112219" />
     <None Include="Documentation\CSV_File_Guide_V8 - Jan2016.pdf" />
     <None Include="Documentation\Quantum Utility Documentation.docx" />
@@ -203,15 +219,21 @@
     <Content Include="SampleFiles\TABDELIMITED_QVD_ALT_sdiinc_20191115_110106_627_SDIQVD.TAB..txt" />
     <Content Include="SampleFiles\ONLYTRACKINGIDMATCH_QVD_ALT_sdiinc_20191119_150122_223_SDIQVD.txt" />
     <Content Include="SampleFiles\QUICK_MATCH.TXT" />
-    <Content Include="SupportFiles\SDIX_UPSQUANTUMVIEW_LOG.sql" />
+    <None Include="SupportFiles\SDIX_UPSQUANTUMVIEW_LOG.bkp">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <Content Include="SupportFiles\SDIX_UPS_QUANTUMVIEW_ERROR.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SupportFiles\SDIX_UPS_QUANTUMVIEW_LOG.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="SupportFiles\WinSCP\license-dotnet.txt" />
     <Content Include="SupportFiles\WinSCP\license-winscp.txt" />
     <Content Include="SupportFiles\WinSCP\net40\WinSCPnet.dll" />
     <Content Include="SupportFiles\WinSCP\netstandard2.0\WinSCPnet.dll" />
     <Content Include="SupportFiles\WinSCP\readme_automation.txt" />
-    <Content Include="SupportFiles\WinSCP\WinSCP.exe">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <Content Include="SupportFiles\WinSCP\WinSCP.exe" />
     <Content Include="SupportFiles\WinSCP\WinSCPnet.dll" />
     <None Include="Web References\SDiEmailUtilityService\EmailServices.disco" />
   </ItemGroup>

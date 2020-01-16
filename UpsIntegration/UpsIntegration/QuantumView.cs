@@ -35,17 +35,21 @@ namespace UpsIntegration
         private static String rptgStr = "Provider=OraOLEDB.Oracle;User Id=sdiexchange;Password=sd1exchange;Data Source=RPTG.WORLD;Connection Timeout=1200;";
         private static String connStr = rptgStr;
 
-        private static ftpData testFtp = new ftpData("speedtest.tele2.net", "anonymous", "anonymous");
-        private static ftpData upsData = new ftpData("ftp2.ups.com", "/", "sdiinc0318", "pR2cn9E");
+        private static ftpData testFtp = new ftpData("speedtest.tele2.net", "anonymous", "anonymous" );
+        private static ftpData upsData = new ftpData("ftp2.ups.com", "/", "sdiinc0318", "pR2cn9E" );
         private static String prod_server = @"\\172.31.251.161\sdixdata\ftp";
         private static String prod_folder = @"\" + DateTime.Today.Month + "_" + DateTime.Today.Day + "_" + DateTime.Today.Year; 
-        private static ftpData toFtp = new ftpData(@"C:\sdi\", @"csvfiles\", "anonymous", "anonymous");  
+        private static ftpData toFtp = new ftpData(@"C:\sdi\", @"csvfiles\", "anonymous", "anonymous" );  
         private  static EmailServices sdiemail = new EmailServices();
+        private static int defaultPort = 10022;
+        private static String dbErr = "";
 
         public static void Main(String[] args)
         {
             try
             {
+                AppDomain.CurrentDomain.SetData("APP_CONFIG_FILE", "App.config"); //Added 1/16 
+           
                 //FTP Files  
                 ftpData fromFtp = upsData;
                 fromFtp.extension = ".txt";
@@ -53,12 +57,16 @@ namespace UpsIntegration
                 fromFtp.filesize = 800000;
                 fromFtp.days = 0;
 
+                if (!String.IsNullOrEmpty(ConfigurationManager.AppSettings["port"]))
+                    defaultPort = Convert.ToInt32(ConfigurationManager.AppSettings["port"]);
+                fromFtp.port = defaultPort;
+
                 //Run for each date entered at command line
                 if (args.Length >= 1)
                     fromFtp.days = GetConsoleDays(args[0]);
 
                 prod_folder += @"\" + QuantumUtility.stripChars(DateTime.Today.Subtract(new TimeSpan(fromFtp.days, 0, 0, 0)).ToShortDateString(), "DATE") + @"\";
-                toFtp = new ftpData(prod_server, prod_folder, "anonymous", "anonymous");
+                toFtp = new ftpData(prod_server, prod_folder, "anonymous", "anonymous" );
                 toFtp.filesize = 800000;
 
                 QuantumUtility.logError("FTP FILES FROM: " + fromFtp.server + fromFtp.directory + " to " + toFtp.server + toFtp.directory);
@@ -66,25 +74,33 @@ namespace UpsIntegration
                 String awsErr = QuantumUtility.cleanDirectory(toFtp.server + toFtp.directory);
                 String ftpErr = QuantumUtility.winSCP(fromFtp, toFtp);
 
+                if (!String.IsNullOrEmpty(ConfigurationManager.AppSettings["defaultConn"])) 
+                    connStr =ConfigurationManager.AppSettings["defaultConn"] ;
+          
                 QuantumDbUtility.openDb(connStr, dbConn);
-                if (dbConn.State.ToString() == "Open" && String.IsNullOrEmpty(ftpErr) && String.IsNullOrEmpty(awsErr))
+                 dbErr = QuantumDbUtility.checkDb(dbConn, new String[2] {"SDIX_UPS_QUANTUMVIEW_LOG", "SDIX_UPS_QUANTUMVIEW_ERROR" }, @"SupportFiles/"); //added 1\16
+                
+                if (dbConn.State.ToString() == "Open" && String.IsNullOrEmpty(ftpErr) && String.IsNullOrEmpty(awsErr) && String.IsNullOrEmpty(dbErr))
                 {
+                  
                     parseDirectory(toFtp.server + toFtp.directory);  // parseCsvFile(ShortMatchFile);
                     batchMail(); 
                 }
                 else
-                { 
+                {
                     //Added 1/15/20 - Alert WebDev if DB, FTP or AWS connection is down
-                    sdiemail.EmailUtilityServices("Mail", "SDIExchADMIN@sdi.com", "WebDev@sdi.com",
-                                     "ConsoleUtility: QuantumView Issue " + toFtp.startDate.ToShortDateString(), "", "",
-                                    "There is either difficulty connecting to the SDI Database, SDI AWS Drive or UPS FTP Server. See below. \n\n" +
-                                    "<b>DATABASE:</b> " + dbConn.Database + "returns error: " + (dbConn.State.ToString() == "Open"? "No Error." : "DB Conn is " + dbConn.State.ToString() + ". Please investigate"   ) + "\n" +
-                                    "<b>FTP SERVER:</b> " + fromFtp.directory + " returns error: " + (String.IsNullOrEmpty(ftpErr) ? "No Error." : "Contact UPS QuantumView Support-- " + ftpErr) + "\n" +
-                                    "<b>AWS Directory:</b> " + toFtp.directory + " returns error: " + (String.IsNullOrEmpty(awsErr) ? "No Error." : "Check the AWS Network Connection-- " + awsErr) + "\n",  
-                                     "SDIERRMAIL", new string[0], new Byte[0][]);
+                    String msg = "There is either difficulty connecting to the SDI Database, SDI AWS Drive or UPS FTP Server. See below.<br> \n\n" +
+                                    "<b>DATABASE</b> (" + dbConn.ConnectionString + ") returns: " + (dbConn.State.ToString() == "Open" && String.IsNullOrEmpty(dbErr) ? "No Error." : dbErr + " DB Conn is " + dbConn.State.ToString() + ". Please investigate") + "<br>\n" +
+                                    "<b>FTP SERVER</b> (" + fromFtp.server + fromFtp.directory + ") returns: " + (String.IsNullOrEmpty(ftpErr) ? "No Error." : "Contact UPS QuantumView Support-- " + ftpErr) + "<br>\n" +
+                                    "<b>AWS Directory</b> (" + toFtp.server + toFtp.directory + ") returns: " + (String.IsNullOrEmpty(awsErr) ? "No Error." : "Check the AWS Network Connection-- " + awsErr) + "<br>\n";                   
+                      sdiemail.EmailUtilityServices("Mail", "SDIExchADMIN@sdi.com", "WebDev@sdi.com", "ConsoleUtility: QuantumView Issue " + toFtp.startDate.ToShortDateString(), "", "", msg,  "SDIERRMAIL", new string[0], new Byte[0][]);
+                        if (dbConn.State.ToString() == "Open") QuantumDbUtility.logError(dbConn, msg);                      
+                    QuantumUtility.logError(msg);
                 }
+                 
                 QuantumDbUtility.closeDb(dbConn);
                 QuantumUtility.logError("Completed");
+                Console.ReadKey();
             }
             catch (Exception e)
             {
@@ -282,6 +298,7 @@ namespace UpsIntegration
                 List<KeyValuePair<String, int>> l_quantumFilePositions = new List<KeyValuePair<String, int>>();
                 OleDbDataReader dbReader = null;
                 String[] dbParams;
+                String sqlerror = "";
                 String sdix_ups_quantumview_log_sql = "insert into SDIX_UPS_QUANTUMVIEW_LOG  (ups_filename, po_id_options, isa_asn_track_no, ups_file_location,   po_id,  user_message, ups_record_type, ups_delivery_type, ups_sdi_match) values ('@0','@1','@2','@3','@4','@5','@6','@7','@8' )";
                 String[] sdix_ups_quantumview_log_params = null;    //String[] ps_isa_xpd_comment_params = null;
                 Char separator = '|';  //Sometimes they use pipes. Othertimes tabs 
@@ -293,7 +310,6 @@ namespace UpsIntegration
                          SH.ISA_ASN_TRACK_NO as SH_TRACK_NO,    SH.ISA_ASN_SHIP_DT as SH_SHIP_DT,   SH.LINE_NBR as SH_LINE_NBR,   SH.SCHED_NBR as SH_SCHED_NBR, 
                          SH.OPRID as SH_OPRID,   COM.ISA_PROBLEM_CODE as ISA_PROBLEM_CODE ,   COM.NOTES_1000 as NOTES_1000 ,  OM.LINE_NBR as COM_LINE_NBR,  
                        COM.SCHED_NBR  as  COM_SCHED_NBR,     PO.LINE_NBR as PO_LINE_NBR,    PO.SCHED_NBR  as  PO_SCHED_NBR  */ 
-
                 //Note: Sometimes there are the same PO_Ids but different sched #s, I'm only pulling the most recent. Should I pull both? OR SHOULD I Just insert a new line altogether?
                 String whereSql = "WHERE " +
                       "(TRIM(SH.ISA_ASN_TRACK_No) = '@0'  OR  TRIM(PO.PO_ID) = '@1' OR TRIM(PO.PO_ID) = '@2' OR " +
@@ -402,15 +418,15 @@ namespace UpsIntegration
                                 qf.ps_notes_1000_new = qf.ps_notes_1000;
                             sdix_ups_quantumview_log_params[5] = qf.ps_notes_1000_new;
  
-                            QuantumDbUtility.executeDbUpdate(dbConn, sdix_ups_quantumview_log_sql, sdix_ups_quantumview_log_params);
-                            QuantumUtility.logError("   -- Inserted using PO ID " + qf.ps_po_id ); //note: get all of the required fields to insert
-                            QuantumUtility.logErrorFile("   -- Inserted using PO ID " + qf.ps_po_id, toFtp.server + toFtp.directory); //note: get all of the required fields to insert
+                            sqlerror = QuantumDbUtility.executeDbUpdate(dbConn, sdix_ups_quantumview_log_sql, sdix_ups_quantumview_log_params);
+                            QuantumUtility.logError("   -- Inserted using PO ID " + qf.ps_po_id +  " " + sqlerror ); //note: get all of the required fields to insert
+                            QuantumUtility.logErrorFile("   -- Inserted using PO ID " + qf.ps_po_id + " " + sqlerror, toFtp.server + toFtp.directory); //note: get all of the required fields to insert
                         }
                     }
                     else if (!dbReader.HasRows || dbReader == null)
                     {
-                        QuantumUtility.logError("   -- Match not made on " + String.Join(",", dbParams) ); 
-                        QuantumUtility.logErrorFile("   -- Match not made on " + String.Join(",", dbParams), toFtp.server + toFtp.directory);
+                        QuantumUtility.logError("   -- Match not made on " + String.Join(",", dbParams) + " " + sqlerror );
+                        QuantumUtility.logErrorFile("   -- Match not made on " + String.Join(",", dbParams) + " " + sqlerror, toFtp.server + toFtp.directory);
                         QuantumDbUtility.executeDbUpdate(dbConn, sdix_ups_quantumview_log_sql, sdix_ups_quantumview_log_params);
                     }
                 }

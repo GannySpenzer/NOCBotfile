@@ -1,10 +1,11 @@
 ﻿ /* Log Result of QuantumView Query */
- Create table SDIX_UPS_QUANTUMVIEW_LOG (
 	/* use if ORA 11 - ups_quantumview_id number(11,0) NOT NULL 	constraint pk_ups_quantumview_id primary key, */
 	/* Use if ORA12C or higher - ups_quantumview_id number GENERATED ALWAYS AS IDENTITY, */
+ Create table SDIX_UPS_QUANTUMVIEW_LOG (
 	ups_filename varchar2(500) null,
 	po_id VARCHAR2(25) null,
 	 po_id_options NVARCHAR2(250) null,
+	 sender_type varchar2(50) null,
 	isa_asn_track_no VARCHAR2(30) null,
 	ups_sdi_match varchar2(45) null,
 	ups_file_location varchar2(500) null, 
@@ -13,6 +14,15 @@
 		ups_delivery_type Varchar2(10) null,
 	dttm_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
 );
+
+	/* use if ORA 11 - ups_quantumview_error_id number(11,0) NOT NULL 	constraint pk_ups_quantumview_id primary key, */
+	/* Use if ORA12C or higher - ups_quantumview_error_id number GENERATED ALWAYS AS IDENTITY, */
+ Create table SDIX_UPS_QUANTUMVIEW_ERROR (
+	errormsg varchar2(2000) null,  
+	dttm_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
+);
+
+
 /* Use triggers for auto increment, if Oracle version is Oracle11  
 CREATE SEQUENCE sdix_seq_ups_quantumview_id START WITH 0;
 
@@ -22,14 +32,7 @@ CREATE OR REPLACE TRIGGER sdix_trgr_ups_quantumview_id
 			SELECT  sdix_seq_ups_quantumview_id.nextval INTO :new.ups_quantumview_id FROM dual;
 		END;
 		  */
-
- Create table SDIX_UPS_QUANTUMVIEW_ERROR (
-	/* use if ORA 11 - ups_quantumview_error_id number(11,0) NOT NULL 	constraint pk_ups_quantumview_id primary key, */
-	/* Use if ORA12C or higher - ups_quantumview_error_id number GENERATED ALWAYS AS IDENTITY, */
-	errormsg varchar2(2000) null,  
-	dttm_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
-);
-
+/*
 CREATE PROCEDURE SDIX_UPS_QUANTUMVIEW_FIND_TRACKNUM_POID  (
 	TRACKNUM in VARCHAR2, 
 	POID in VARCHAR2) 
@@ -77,3 +80,4 @@ AS
 									 
 END;
 
+*/

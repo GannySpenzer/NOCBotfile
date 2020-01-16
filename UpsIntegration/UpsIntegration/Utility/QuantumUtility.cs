@@ -267,7 +267,7 @@ namespace UpsIntegration
                     UserName = fromFtp.userid,
                     Password = fromFtp.password,
                   //  FtpSecure = WinSCP.FtpSecure.Explicit, //commented out 1/15
-                    PortNumber = 10022,//Added 1/15/20 
+                    PortNumber = fromFtp.port,//Added 1/15/20 
                     SshHostKeyFingerprint = "ssh-rsa 2048 HUBqpoH+WHd0kyyrHu9LX0IHUoFblmq041+cowtLumk=", //Added 1/15/20 from winscp manual session
                 }; 
 
@@ -275,8 +275,8 @@ namespace UpsIntegration
                 {
                     // Connect
                     String dir = Directory.GetCurrentDirectory().Substring(0,Directory.GetCurrentDirectory().Length - @"\bin\Debug".Length) + @"\SupportFiles\WinSCP" ; //added 1/14
-                      
-                  session.ExecutablePath = @dir + @"\WinSCP.exe";
+                      if (File.Exists(dir +  @"\WinSCP.exe"))
+                        session.ExecutablePath = @dir + @"\WinSCP.exe";
                     session.Open(sessionOptions);
                     WinSCP.RemoteDirectoryInfo directory = session.ListDirectory(fromFtp.directory); 
                     WinSCP.TransferOperationResult dr = null;
@@ -479,6 +479,7 @@ namespace UpsIntegration
         public DateTime endDate = new DateTime();
         public int filesize = 0;
         public int days=0;
+        public int port = 21;
 
         public ftpData()
         {
@@ -489,21 +490,21 @@ namespace UpsIntegration
 
         }
 
-        public ftpData(String server, String userid, String password)
+        public ftpData(String server, String userid, String password )
         {
             this.server=server;
             this.userid=userid;
             this.password=password;
-            this.startDate = DateTime.Now;
+            this.startDate = DateTime.Now; 
         }
 
-        public ftpData(String server, String directory, String userid, String password)
+        public ftpData(String server, String directory, String userid, String password )
         {
             this.server = server;
             this.directory = directory;
             this.userid = userid;
             this.password = password;
-            this.startDate = DateTime.Now;
+            this.startDate = DateTime.Now; 
         }
    
         public ftpData(ftpData ftpdata) : this()
@@ -513,6 +514,7 @@ namespace UpsIntegration
                 if (ftpdata.server.Length > 0) this.server = ftpdata.server;
                 if (ftpdata.userid.Length > 0) this.userid = ftpdata.userid;
                 if (ftpdata.password.Length > 0) this.password = ftpdata.password;
+                this.port = ftpdata.port;
             }
             catch (Exception e)
             {

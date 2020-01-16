@@ -189,6 +189,49 @@ namespace UpsIntegration
             return dbReader;
         }
 
+        /* Checks to see if table exists. If they don't, then run table creation scripts */
+        public static String checkDb(OleDbConnection dbConn, String[] tablenames, String  folder)
+        {
+            OleDbDataReader dbReader = null;
+            String sql = "";
+            String result = "";
+            String filename = "";
+
+            try
+            {
+                foreach (String tablename in tablenames)
+                {
+                    dbReader = executeDbReader(dbConn, "select count(*) as count from  ALL_TABLES where TABLE_NAME='@0'", new String[1] { tablename });
+
+                    if (dbReader.HasRows)
+                        while (dbReader.Read())
+                        {
+                            Console.WriteLine("DOES " + tablename + " exist: " + dbReader["count"].ToString());
+                            filename = folder +  tablename + ".sql";
+                            if (File.Exists(filename) && dbReader["count"].ToString() == "0")
+                            {
+                                Console.WriteLine("RUN " + filename + " : " + File.Exists(filename).ToString());
+                                sql = File.ReadAllText(@filename, Encoding.UTF8);
+                                sql = System.Text.RegularExpressions.Regex.Replace(sql, @"[\s]+", " ");
+                                if (!String.IsNullOrEmpty(sql))
+                                    result += executeDbUpdate(dbConn, @sql);
+                                else
+                                    result += "Could not find SQL";
+                            }
+                             
+                        }
+                }
+                return result;
+            } 
+            catch (Exception e)
+            {
+             //  QuantumUtility.logError(e);
+                logError(dbConn, e.ToString());
+                return e.ToString() + e.StackTrace.ToString();
+            }
+        }
+
+
         public static void executeDbUpdate(SqlConnection dbConn, String sql, String[]  param)
         {
             try
@@ -219,21 +262,27 @@ namespace UpsIntegration
             }
         } 
 
-        public static void executeDbUpdate(OleDbConnection dbConn, String sql, String[] param=null)
+        public static String  executeDbUpdate(OleDbConnection dbConn, String sql, String[] param=null)
         {
             String newSql = sql;
-            try
+            String result = "";
+            int res = 0;
+            try 
             { 
                 if (param != null && param.Length > 0)
                   newSql = getSql(newSql, param);
             // QuantumUtility.logError("** " + DateTime.Now.ToShortDateString() + " " +  DateTime.Now.TimeOfDay + " DB UPDATE SQL: " + newSql);
                 OleDbCommand updateCommand = new OleDbCommand(newSql, dbConn);
-                updateCommand.ExecuteNonQuery();
-               
+                res = updateCommand.ExecuteNonQuery();
+                if (res == 0)
+                    return "";
+                else
+                    return res.ToString();
             }
             catch (Exception e)
             {
-                QuantumUtility.logError(e);
+               // QuantumUtility.logError(e);
+                return e.ToString() + e.StackTrace.ToString();
             }
         }
 
