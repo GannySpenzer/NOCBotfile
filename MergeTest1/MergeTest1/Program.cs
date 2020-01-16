@@ -10,6 +10,7 @@ namespace MergeTest1
     {
         static void Main(string[] args)
         {
+            //test line 1
         }
     }
 }
