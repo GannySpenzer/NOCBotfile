@@ -100,7 +100,7 @@ namespace UpsIntegration
                  
                 QuantumDbUtility.closeDb(dbConn);
                 QuantumUtility.logError("Completed");
-                Console.ReadKey();
+                //Console.ReadKey();
             }
             catch (Exception e)
             {
@@ -386,7 +386,7 @@ namespace UpsIntegration
                                     };
                     //Grab Matching Data
                     dbReader = QuantumDbUtility.executeDbReader(dbConn, asnSelectSql + poFromSql + shFromSql + whereSql, dbParams );
-
+                    QuantumUtility.logErrorFile(QuantumDbUtility.getSql(asnSelectSql + poFromSql + shFromSql + whereSql, sdix_ups_quantumview_log_params), toFtp.server + toFtp.directory);
                     if (dbReader.HasRows)
                     {
                         while (dbReader.Read())
@@ -421,15 +421,17 @@ namespace UpsIntegration
                             sqlerror = QuantumDbUtility.executeDbUpdate(dbConn, sdix_ups_quantumview_log_sql, sdix_ups_quantumview_log_params);
                             QuantumUtility.logError("   -- Inserted using PO ID " + qf.ps_po_id +  " " + sqlerror ); //note: get all of the required fields to insert
                             QuantumUtility.logErrorFile("   -- Inserted using PO ID " + qf.ps_po_id + " " + sqlerror, toFtp.server + toFtp.directory); //note: get all of the required fields to insert
+                            QuantumUtility.logErrorFile(QuantumDbUtility.getSql(sdix_ups_quantumview_log_sql, sdix_ups_quantumview_log_params));
                         }
                     }
                     else if (!dbReader.HasRows || dbReader == null)
                     {
                         QuantumUtility.logError("   -- Match not made on " + String.Join(",", dbParams) + " " + sqlerror );
                         QuantumUtility.logErrorFile("   -- Match not made on " + String.Join(",", dbParams) + " " + sqlerror, toFtp.server + toFtp.directory);
+                        QuantumUtility.logErrorFile(QuantumDbUtility.getSql(sdix_ups_quantumview_log_sql, sdix_ups_quantumview_log_params), toFtp.server + toFtp.directory);
                         QuantumDbUtility.executeDbUpdate(dbConn, sdix_ups_quantumview_log_sql, sdix_ups_quantumview_log_params);
                     }
-                }
+                } 
             }
             catch (Exception e)
             {
