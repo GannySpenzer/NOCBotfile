@@ -146,17 +146,6 @@ Namespace My
                 Return CType(Me("oraCNString1"),String)
             End Get
         End Property
-        
-        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
-         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("'I0A01','I0A02','I0A03','I0A04','I0A05','I0A06','I0A07','I0A08','I0A09','I0A10','"& _ 
-            "I0A11','I0A12','I0A13','I0A14','I0A15','I0A16','I0A17','I0A18','I0A19','I0A20','"& _ 
-            "I0A21','I0A22','I0A24','I0A25','ISA00','SDM00'")>  _
-        Public ReadOnly Property ExcludedBusinessUnits() As String
-            Get
-                Return CType(Me("ExcludedBusinessUnits"),String)
-            End Get
-        End Property
     End Class
 End Namespace
 

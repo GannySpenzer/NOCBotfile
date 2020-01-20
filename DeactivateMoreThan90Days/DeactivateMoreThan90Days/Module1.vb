@@ -101,14 +101,6 @@ Module Module1
 
         If Not bError Then
 
-            '   List of Excluded Business Units
-            Dim strListBU As String = ""
-            Try
-                strListBU = My.Settings("ExcludedBusinessUnits").ToString.Trim
-            Catch ex As Exception
-                strListBU = ""
-            End Try
-
             Console.WriteLine("Started Update part of 'DEACTIVATE - Not Active 90 Days' process")
             Console.WriteLine("")
 
@@ -117,10 +109,6 @@ Module Module1
                 "WHERE (LAST_ACTIVITY IS NULL AND ACTIVE_STATUS = 'A') OR " & vbCrLf & _
                 "(LAST_ACTIVITY IS NOT NULL AND ACTIVE_STATUS = 'A' AND LAST_ACTIVITY < (SYSDATE - 100))" & vbCrLf & _
                 ""
-
-            If Trim(strListBU) <> "" Then
-                strSqlString = strSqlString & " AND BUSINESS_UNIT NOT IN (" & strListBU & ")"
-            End If
 
             Try
 
@@ -183,11 +171,6 @@ Module Module1
                                     "WHERE (LAST_ACTIVITY IS NULL AND ACTIVE_STATUS = 'A') OR " & vbCrLf & _
                                     "(LAST_ACTIVITY IS NOT NULL AND ACTIVE_STATUS = 'A' AND LAST_ACTIVITY < (SYSDATE - 100))" & vbCrLf & _
                                     ""
-
-                                If Trim(strListBU) <> "" Then
-                                    strSqlString = strSqlString & " AND BUSINESS_UNIT NOT IN (" & strListBU & ")"
-                                End If
-
                                 Try
                                     rowsUpdated = ORDBAccess.ExecNonQuery(strSqlString, connectOR)
                                     If rowsUpdated = 0 Then
@@ -269,7 +252,7 @@ Module Module1
                                                             Exit For
                                                         End If
                                                     End If
-                                                    
+
                                                 Else
                                                     intNotSent = intNotSent + 1
                                                     m_logger.WriteVerboseLog(rtn & " :: Email WAS NOT sent to (tried to send): " & strEmailAddress & " ; Account ID: " & strAccount & " ; User Name: " & strUserName)
@@ -290,7 +273,7 @@ Module Module1
 
                         End If
                     End If
-                   
+
                 End If '  If Not bError Then - Inner # 2
 
             End If  '  If Not bError Then - Inner # 1
