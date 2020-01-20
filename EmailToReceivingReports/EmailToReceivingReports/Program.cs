@@ -35,7 +35,8 @@ namespace EmailToReceivingReports
             string ProcessedFolderName = ConfigurationManager.AppSettings["ProcessedFolderName"];
             string DestinationPath = ConfigurationManager.AppSettings["DestinationPath"];
             string EmailIDAccount = ConfigurationManager.AppSettings["MailboxEmailID"];
-            string strBackOrderSubject = ConfigurationManager.AppSettings["FilterStoreRoomReport"];
+            string strBackOrderSubject1 = ConfigurationManager.AppSettings["FilterStoreRoomReport"];
+            string strBackOrderSubject2 = ConfigurationManager.AppSettings["FilterStoreRoomReport2"];
 
             string appPath = AppDomain.CurrentDomain.BaseDirectory;
             appPath = appPath.Substring(0, appPath.LastIndexOf("bin"));
@@ -80,7 +81,7 @@ namespace EmailToReceivingReports
                 log.WriteLine("*************************************Logs(" + String.Format(DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss")) + ")***********************************");
 
                 //Get the filtered Email With Subject in Inbox
-                FindItemsResults<Item> findResults = service.FindItems(fidProcessedParent, SetFilter(strBackOrderSubject), view);
+                FindItemsResults<Item> findResults = service.FindItems(fidProcessedParent, SetFilter(strBackOrderSubject1, strBackOrderSubject2), view);
                 log.WriteLine("Total Emails with filtered subject name is " + findResults.Items.Count() + ".");
 
                 moveToFolder = service.FindFolders(fidProcessedParent, fv);
@@ -286,6 +287,7 @@ namespace EmailToReceivingReports
             string DestinationPath = ConfigurationManager.AppSettings["DestinationPath"];
             string EmailIDAccount = ConfigurationManager.AppSettings["MailboxEmailID"];
             string strBackOrderSubject = ConfigurationManager.AppSettings["FilterBackOrderReport"];
+            string strBackOrderSubject2 = ConfigurationManager.AppSettings["FilterBackOrderReport2"];
 
             string appPath = AppDomain.CurrentDomain.BaseDirectory;
             appPath = appPath.Substring(0, appPath.LastIndexOf("bin"));
@@ -330,7 +332,7 @@ namespace EmailToReceivingReports
                 log.WriteLine("*************************************Logs(" + String.Format(DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss")) + ")***********************************");
 
                 //Get the filtered Email With Subject in Inbox
-                FindItemsResults<Item> findResults = service.FindItems(fidProcessedParent, SetFilter(strBackOrderSubject), view);
+                FindItemsResults<Item> findResults = service.FindItems(fidProcessedParent, SetFilter(strBackOrderSubject, strBackOrderSubject2), view);
                 log.WriteLine("Total Emails with filtered subject name is " + findResults.Items.Count() + ".");
 
                 moveToFolder = service.FindFolders(fidProcessedParent, fv);
@@ -528,11 +530,12 @@ namespace EmailToReceivingReports
             }
         }
 
-        private static SearchFilter SetFilter(string strSubject)
+        private static SearchFilter SetFilter(string strSubject1,string strSubject2)
         {
-            string FilterEmailWithSubject = strSubject;
+            string FilterEmailWithSubject = strSubject1;
             List<SearchFilter> searchFilterCollection = new List<SearchFilter>();
-            searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, FilterEmailWithSubject));
+            searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, strSubject1));
+            searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, strSubject2));
             //searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, FilterEmailWithSubject.ToLower()));         
             SearchFilter searchfiltr = new SearchFilter.SearchFilterCollection(LogicalOperator.Or, searchFilterCollection.ToArray());
             return searchfiltr;
