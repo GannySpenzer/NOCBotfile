@@ -256,6 +256,7 @@ namespace UpsIntegration
          */
         public static String winSCP(ftpData fromFtp, ftpData toFtp)
         {
+            String winError = "";
             try 
             {
                 // Set up session options
@@ -272,37 +273,61 @@ namespace UpsIntegration
                 }; 
 
                 using (WinSCP.Session session = new WinSCP.Session())
-                {
-                    // Connect
-                    String dir = Directory.GetCurrentDirectory().Substring(0,Directory.GetCurrentDirectory().Length - @"\bin\Debug".Length) + @"\SupportFiles\WinSCP" ; //added 1/14
-                      if (File.Exists(dir +  @"\WinSCP.exe"))
-                        session.ExecutablePath = @dir + @"\WinSCP.exe";
-                    session.Open(sessionOptions);
-                    WinSCP.RemoteDirectoryInfo directory = session.ListDirectory(fromFtp.directory); 
-                    WinSCP.TransferOperationResult dr = null;
-                    WinSCP.TransferOptions dloadOpts = new WinSCP.TransferOptions();
-                    dloadOpts.TransferMode = WinSCP.TransferMode.Automatic;
-                     foreach (WinSCP.RemoteFileInfo file in directory.Files)
-                     {
-                         if (!file.IsDirectory && file.Length <= fromFtp.filesize && 
-                             (file.LastWriteTime.Date == DateTime.Today.Subtract(new TimeSpan(fromFtp.days, 0, 0, 0)) //use to search on a specific date i.e. 5 days ago, etc.
-                              //|| (( fromFtp.startDate != DateTime.MinValue && fromFtp.endDate != DateTime.MinValue) &&  file.LastWriteTime.Date >= fromFtp.startDate.Date && file.LastWriteTime.Date <= fromFtp.endDate.Date) //use if you want to search in daterange
-                             ))                             
-                        {
-                            dr = session.GetFiles(file.Name, toFtp.server + toFtp.directory + file.Name, false, null); //note:  just pull down individuals   // dr =    session.GetFiles( "*"  , @"c:\sdi\temp\"     , false, dloadOpts); //note: can also just pull down all files and not individuals 
-                            logError(file.Name  + " Downloaded: "  + dr.IsSuccess );   //  logError( dr.IsSuccess + " " + dr.Failures.ToString() + session.SessionLogPath + session.ToString());
-                            dr.Check();  //  foreach (WinSCP.TransferEventArgs t in dr.Transfers) logError(t.FileName);
+                { 
+                    // Set Directory location. Depending on if running in bin or running from deployment install or using appconfig, could be in different places
+                    String dir = Directory.GetCurrentDirectory();
+                    String scpFolder =  @"\SupportFiles\WinSCP" ;
+                   
+                    if (dir.Contains("Debug"))
+                        dir = dir.Substring(0, Directory.GetCurrentDirectory().Length - @"\bin\Debug".Length) + @scpFolder; //added 1/14 
+                    else
+                        dir = dir + scpFolder;
+                    
+                   if ( !File.Exists(dir +  @"\WinSCP.exe") &&  
+                           !String.IsNullOrEmpty(System.Configuration.ConfigurationManager.AppSettings["winscpDir"]) && 
+                           Directory.Exists( System.Configuration.ConfigurationManager.AppSettings["winscpDir"] ) )
+                      {
+                          dir = System.Configuration.ConfigurationManager.AppSettings["winscpDir"]  ; //added 1/21     
+                      }
+                   if (File.Exists(dir + @"\WinSCP.exe"))
+                   {
+                       session.ExecutablePath = @dir + @"\WinSCP.exe";
+                       session.Open(sessionOptions);
+                       WinSCP.RemoteDirectoryInfo directory = session.ListDirectory(fromFtp.directory);
+                       WinSCP.TransferOperationResult dr = null;
+                       WinSCP.TransferOptions dloadOpts = new WinSCP.TransferOptions();
+                       dloadOpts.TransferMode = WinSCP.TransferMode.Automatic;
+                       foreach (WinSCP.RemoteFileInfo file in directory.Files)
+                       {
+                           if (!file.IsDirectory && file.Length <= fromFtp.filesize &&
+                               (file.LastWriteTime.Date == DateTime.Today.Subtract(new TimeSpan(fromFtp.days, 0, 0, 0)) //use to search on a specific date i.e. 5 days ago, etc.
+                               //|| (( fromFtp.startDate != DateTime.MinValue && fromFtp.endDate != DateTime.MinValue) &&  file.LastWriteTime.Date >= fromFtp.startDate.Date && file.LastWriteTime.Date <= fromFtp.endDate.Date) //use if you want to search in daterange
+                               ))
+                           {
+                               dr = session.GetFiles(file.Name, toFtp.server + toFtp.directory + file.Name, false, null); //note:  just pull down individuals   // dr =    session.GetFiles( "*"  , @"c:\sdi\temp\"     , false, dloadOpts); //note: can also just pull down all files and not individuals 
+                               logError(file.Name + " Downloaded: " + dr.IsSuccess);   //  logError( dr.IsSuccess + " " + dr.Failures.ToString() + session.SessionLogPath + session.ToString());
+                               dr.Check();  //  foreach (WinSCP.TransferEventArgs t in dr.Transfers) logError(t.FileName);
 
-                         }
-                    }
-                }
-                return "";
+                           }
+                       }
+                   } //if
+                   else
+                   {
+                       winError = "Please install WinSCP (https://winscp.net/eng/index.php). And update winscpDir in config file to point to that location. Current location is " + dir;
+                       logError(winError);
+                   }
+                    
+                } //using
+                
+               
             }
             catch (Exception e)
             {
                 logError(e);
-                return e.ToString();
+                winError +=  e.ToString();
             }
+          
+             return winError;
         }
         /* doFTP: 
          * Identifies multiple files in FTP folder based upon size restrictions, extension name, etc. for FTP.  

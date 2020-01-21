@@ -48,8 +48,11 @@ namespace UpsIntegration
         {
             try
             {
+                if (File.Exists("App.config"))
                 AppDomain.CurrentDomain.SetData("APP_CONFIG_FILE", "App.config"); //Added 1/16 
-           
+                else if (File.Exists("UpsIntegration.exe.config"))
+                AppDomain.CurrentDomain.SetData("APP_CONFIG_FILE", "UpsIntegration.exe.config"); //Added 1/16 
+
                 //FTP Files  
                 ftpData fromFtp = upsData;
                 fromFtp.extension = ".txt";
@@ -79,10 +82,10 @@ namespace UpsIntegration
           
                 QuantumDbUtility.openDb(connStr, dbConn);
                  dbErr = QuantumDbUtility.checkDb(dbConn, new String[2] {"SDIX_UPS_QUANTUMVIEW_LOG", "SDIX_UPS_QUANTUMVIEW_ERROR" }, @"SupportFiles/"); //added 1\16
-                
+              
                 if (dbConn.State.ToString() == "Open" && String.IsNullOrEmpty(ftpErr) && String.IsNullOrEmpty(awsErr) && String.IsNullOrEmpty(dbErr))
                 {
-                  
+                    QuantumUtility.logErrorFile(dbConn.ConnectionString, toFtp.server + toFtp.directory);
                     parseDirectory(toFtp.server + toFtp.directory);  // parseCsvFile(ShortMatchFile);
                     batchMail(); 
                 }
@@ -292,8 +295,8 @@ namespace UpsIntegration
 
         /* Manually coded parser */
         public static void parseRow(String currentRow, QuantumFile qf, String[] row, String filename, String local_poid = "")
-        {
-            try
+        { 
+            try 
             {
                 List<KeyValuePair<String, int>> l_quantumFilePositions = new List<KeyValuePair<String, int>>();
                 OleDbDataReader dbReader = null;
@@ -386,7 +389,7 @@ namespace UpsIntegration
                                     };
                     //Grab Matching Data
                     dbReader = QuantumDbUtility.executeDbReader(dbConn, asnSelectSql + poFromSql + shFromSql + whereSql, dbParams );
-                    QuantumUtility.logErrorFile(QuantumDbUtility.getSql(asnSelectSql + poFromSql + shFromSql + whereSql, sdix_ups_quantumview_log_params), toFtp.server + toFtp.directory);
+                   // QuantumUtility.logErrorFile(QuantumDbUtility.getSql(asnSelectSql + poFromSql + shFromSql + whereSql, sdix_ups_quantumview_log_params), toFtp.server + toFtp.directory);
                     if (dbReader.HasRows)
                     {
                         while (dbReader.Read())
@@ -421,14 +424,14 @@ namespace UpsIntegration
                             sqlerror = QuantumDbUtility.executeDbUpdate(dbConn, sdix_ups_quantumview_log_sql, sdix_ups_quantumview_log_params);
                             QuantumUtility.logError("   -- Inserted using PO ID " + qf.ps_po_id +  " " + sqlerror ); //note: get all of the required fields to insert
                             QuantumUtility.logErrorFile("   -- Inserted using PO ID " + qf.ps_po_id + " " + sqlerror, toFtp.server + toFtp.directory); //note: get all of the required fields to insert
-                            QuantumUtility.logErrorFile(QuantumDbUtility.getSql(sdix_ups_quantumview_log_sql, sdix_ups_quantumview_log_params));
+                            //QuantumUtility.logErrorFile(QuantumDbUtility.getSql(sdix_ups_quantumview_log_sql, sdix_ups_quantumview_log_params));
                         }
                     }
                     else if (!dbReader.HasRows || dbReader == null)
                     {
                         QuantumUtility.logError("   -- Match not made on " + String.Join(",", dbParams) + " " + sqlerror );
                         QuantumUtility.logErrorFile("   -- Match not made on " + String.Join(",", dbParams) + " " + sqlerror, toFtp.server + toFtp.directory);
-                        QuantumUtility.logErrorFile(QuantumDbUtility.getSql(sdix_ups_quantumview_log_sql, sdix_ups_quantumview_log_params), toFtp.server + toFtp.directory);
+                       // QuantumUtility.logErrorFile(QuantumDbUtility.getSql(sdix_ups_quantumview_log_sql, sdix_ups_quantumview_log_params), toFtp.server + toFtp.directory);
                         QuantumDbUtility.executeDbUpdate(dbConn, sdix_ups_quantumview_log_sql, sdix_ups_quantumview_log_params);
                     }
                 } 

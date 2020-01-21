@@ -16,7 +16,7 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
-    <PublishUrl>C:\SDI\InsiteOnline3.1\InsiteOnline 3.1\ConsoleUtilities\UpsIntegration\DEPLOY\</PublishUrl>
+    <PublishUrl>C:\SDI\InsiteOnline3.1\InsiteOnline 3.1\ConsoleUtilities\UpsIntegration\UPSINSTALLER\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
     <UpdateEnabled>false</UpdateEnabled>
@@ -26,7 +26,7 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>9</ApplicationRevision>
+    <ApplicationRevision>20</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -63,6 +63,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <SignManifests>true</SignManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Ups.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <!--
@@ -219,6 +222,7 @@
     <Content Include="SampleFiles\TABDELIMITED_QVD_ALT_sdiinc_20191115_110106_627_SDIQVD.TAB..txt" />
     <Content Include="SampleFiles\ONLYTRACKINGIDMATCH_QVD_ALT_sdiinc_20191119_150122_223_SDIQVD.txt" />
     <Content Include="SampleFiles\QUICK_MATCH.TXT" />
+    <Content Include="Ups.ico" />
     <None Include="SupportFiles\SDIX_UPSQUANTUMVIEW_LOG.bkp">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
