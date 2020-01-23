@@ -62,7 +62,7 @@
     <GenerateManifests>true</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <SignManifests>false</SignManifests>
+    <SignManifests>true</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Ups.ico</ApplicationIcon>
@@ -219,6 +219,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Documentation\Ups.ico" />
     <Content Include="SampleFiles\TABDELIMITED_QVD_ALT_sdiinc_20191115_110106_627_SDIQVD.TAB..txt" />
     <Content Include="SampleFiles\ONLYTRACKINGIDMATCH_QVD_ALT_sdiinc_20191119_150122_223_SDIQVD.txt" />
     <Content Include="SampleFiles\QUICK_MATCH.TXT" />
