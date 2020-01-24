@@ -24,8 +24,8 @@ Partial Class Form1
     Private Sub InitializeComponent()
         Me.Label1 = New System.Windows.Forms.Label()
         Me.Label2 = New System.Windows.Forms.Label()
-        Me.TextBox1 = New System.Windows.Forms.TextBox()
-        Me.TextBox2 = New System.Windows.Forms.TextBox()
+        Me.txtSource = New System.Windows.Forms.TextBox()
+        Me.txtResult = New System.Windows.Forms.TextBox()
         Me.Button1 = New System.Windows.Forms.Button()
         Me.SuspendLayout()
         '
@@ -45,19 +45,19 @@ Partial Class Form1
         Me.Label2.TabIndex = 1
         Me.Label2.Text = "Make sure results are strictly alpha-numeric"
         '
-        'TextBox1
+        'txtSource
         '
-        Me.TextBox1.Location = New System.Drawing.Point(31, 86)
-        Me.TextBox1.Name = "TextBox1"
-        Me.TextBox1.Size = New System.Drawing.Size(177, 20)
-        Me.TextBox1.TabIndex = 2
+        Me.txtSource.Location = New System.Drawing.Point(31, 86)
+        Me.txtSource.Name = "txtSource"
+        Me.txtSource.Size = New System.Drawing.Size(177, 20)
+        Me.txtSource.TabIndex = 2
         '
-        'TextBox2
+        'txtResult
         '
-        Me.TextBox2.Location = New System.Drawing.Point(291, 86)
-        Me.TextBox2.Name = "TextBox2"
-        Me.TextBox2.Size = New System.Drawing.Size(249, 20)
-        Me.TextBox2.TabIndex = 3
+        Me.txtResult.Location = New System.Drawing.Point(291, 86)
+        Me.txtResult.Name = "txtResult"
+        Me.txtResult.Size = New System.Drawing.Size(249, 20)
+        Me.txtResult.TabIndex = 3
         '
         'Button1
         '
@@ -74,8 +74,8 @@ Partial Class Form1
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(564, 261)
         Me.Controls.Add(Me.Button1)
-        Me.Controls.Add(Me.TextBox2)
-        Me.Controls.Add(Me.TextBox1)
+        Me.Controls.Add(Me.txtResult)
+        Me.Controls.Add(Me.txtSource)
         Me.Controls.Add(Me.Label2)
         Me.Controls.Add(Me.Label1)
         Me.Name = "Form1"
@@ -86,8 +86,8 @@ Partial Class Form1
     End Sub
     Friend WithEvents Label1 As System.Windows.Forms.Label
     Friend WithEvents Label2 As System.Windows.Forms.Label
-    Friend WithEvents TextBox1 As System.Windows.Forms.TextBox
-    Friend WithEvents TextBox2 As System.Windows.Forms.TextBox
+    Friend WithEvents txtSource As System.Windows.Forms.TextBox
+    Friend WithEvents txtResult As System.Windows.Forms.TextBox
     Friend WithEvents Button1 As System.Windows.Forms.Button
 
 End Class
