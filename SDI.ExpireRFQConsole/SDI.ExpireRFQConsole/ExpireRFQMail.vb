@@ -158,7 +158,7 @@ Module ExpireRFQMail
         ''strSQLString = "select * from PS_ISA_ORD_INTF_LN A, PS_ISA_ORD_INTF_HD B" & vbCrLf & _
         ''        " where B.ORIGIN = 'RFQ' AND A.Order_NO = B.Order_No AND TO_CHAR(A.Approval_Dttm + 30, 'DD-MON-YYYY') = TO_CHAR(CURRENT_DATE, 'DD-MON-YYYY')"
 
-        strSQLString = "SELECT S.DTTM_STAMP, A.* FROM ps_isa_ord_intf_ln A, PS_ISAORDSTATUSLOG S WHERE a.isa_line_status='QTS' AND  A.ORDER_NO=S.ORDER_NO and A.isa_intfc_ln = S.isa_intfc_ln AND a.isa_line_status = S.isa_line_status AND TO_CHAR(S.DTTM_STAMP, 'DD-MON-YYYY') <= TO_CHAR(SYSDATE - 30, 'DD-MON-YYYY') order by S.DTTM_STAMP desc"
+        strSQLString = "SELECT S.DTTM_STAMP, A.* FROM ps_isa_ord_intf_ln A, PS_ISAORDSTATUSLOG S WHERE a.isa_line_status='QTS' AND  A.ORDER_NO=S.ORDER_NO and A.isa_intfc_ln = S.isa_intfc_ln AND a.isa_line_status = S.isa_line_status AND TO_CHAR(S.DTTM_STAMP, 'DD-MON-YYYY') >= TO_CHAR(SYSDATE - 30, 'DD-MON-YYYY') order by S.DTTM_STAMP desc"
 
         dtrAppReader = GetReader(strSQLString)
         If dtrAppReader.HasRows() = True Then
