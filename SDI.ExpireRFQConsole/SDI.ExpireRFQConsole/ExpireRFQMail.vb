@@ -12,8 +12,8 @@ Imports System.Data.SqlClient
 
 Module ExpireRFQMail
     Dim objStreamWriter As StreamWriter
-    Dim rootDir As String = "C:\Program Files (x86)\SDI\SDI_ExpireRFQMailer"
-    Dim logpath As String = "C:\Program Files (x86)\SDI\SDI_ExpireRFQMailer\LOGS" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+    Dim rootDir As String = ConfigurationManager.AppSettings("LogPath")
+    Dim logpath As String = rootDir & "RFQExpireNotification" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
     Dim connectOR As New OleDbConnection(Convert.ToString(ConfigurationManager.AppSettings("OLEDBconString")))
 
     Sub Main()
