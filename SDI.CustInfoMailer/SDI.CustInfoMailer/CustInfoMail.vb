@@ -11,8 +11,8 @@ Imports System.Web.UI
 Module CustInfoMail
 
     Dim objStreamWriter As StreamWriter
-    Dim rootDir As String = "C:\Program Files (x86)\SDI\SDI_CustInfoMailer"
-    Dim logpath As String = "C:\Program Files (x86)\SDI\SDI_CustInfoMailer\LOGS" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+    Dim rootDir As String = ConfigurationManager.AppSettings("LogPath")
+    Dim logpath As String = rootDir & "CUSTInfoNoticationLog" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
     Dim connectOR As New OleDbConnection(Convert.ToString(ConfigurationManager.AppSettings("OLEDBconString")))
 
     Sub Main()
@@ -20,23 +20,36 @@ Module CustInfoMail
         Console.WriteLine("Start Cust Info Email Notification")
         Console.WriteLine("")
 
-        objStreamWriter = File.CreateText(logpath)
-        objStreamWriter.WriteLine("  Send emails out " & Now())
+        Dim log As StreamWriter
+        Dim fileStream As FileStream = Nothing
+        Dim logDirInfo As DirectoryInfo = Nothing
+        Dim logFileInfo As FileInfo = Nothing
 
-        Dim bolError As Boolean = buildstatchgout()
+        logFileInfo = New FileInfo(logpath)
+        logDirInfo = New DirectoryInfo(logFileInfo.DirectoryName)
 
-        If bolError = True Then
-            'SendEmail()
+        If Not logDirInfo.Exists Then logDirInfo.Create()
+
+        If Not logFileInfo.Exists Then
+            fileStream = logFileInfo.Create()
+        Else
+            fileStream = New FileStream(logpath, FileMode.Append)
         End If
 
+        log = New StreamWriter(fileStream)
 
-        objStreamWriter.WriteLine("  End of Cust Info Email Notification " & Now())
-        objStreamWriter.Flush()
-        objStreamWriter.Close()
+        log.WriteLine("*********************Logs(" + String.Format(DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss")) + ")***********************************")
+
+        log = buildstatchgout(log)
+
+        log.WriteLine("********************End of CUST info Email Notification Utility********************")
+
+        log.Close()
+
 
     End Sub
 
-    Private Function buildstatchgout() As Boolean
+    Private Function buildstatchgout(log As StreamWriter) As StreamWriter
 
         Dim bolErrorSomeWhere As Boolean
         Dim connectionString As String = ConfigurationManager.AppSettings("OLEDBconString")
@@ -49,6 +62,9 @@ Module CustInfoMail
 
         'query to fetch the line status as CST        
         'strSQLString = "select * from PS_ISA_ORD_INTF_LN where isa_LINE_STATUS='CST'"
+
+        log.WriteLine("------------------------------------------------------------------------------------------")
+        log.WriteLine("Start to fetch the orders that is need customer infromation, by using ISA_LINE_STATUS='CST' IN order line table")
 
         strSQLString = "select oln.BUSINESS_UNIT_OM, oln.ORDER_NO, oln.ISA_WORK_ORDER_NO " & vbCrLf & _
                         " , usr.ISA_EMPLOYEE_EMAIL , usr.PHONE_NUM, oln.OPRID_ENTERED_BY " & vbCrLf & _
@@ -63,21 +79,32 @@ Module CustInfoMail
         Dim dtrAppReader As OleDbDataReader = GetReader(strSQLString)
         If dtrAppReader.HasRows() = True Then
             While dtrAppReader.Read()
-                varResultCount = (dtrAppReader.Item(0)).ToString()
-                'Dim apprvBy As String = ""
-                'Dim apprvDat As String = ""
-                'apprvBy = dtrAppReader.Item("OPRID_APPROVED_BY").ToString
-                'apprvDat = dtrAppReader.Item("APPROVAL_DTTM").ToString
 
-                buildNotifyApprover(dtrAppReader.Item("BUSINESS_UNIT_OM"), dtrAppReader.Item("ORDER_NO"),
-                                    dtrAppReader.Item("ISA_WORK_ORDER_NO"), dtrAppReader.Item("ISA_REQUIRED_BY_DT"),
-                                    dtrAppReader.Item("OPRID_ENTERED_BY"), dtrAppReader.Item("ISA_EMPLOYEE_EMAIL"),
-                                    dtrAppReader.Item("PHONE_NUM"),
-                                    dtrAppReader.Item("ISA_EMPLOYEE_NAME"), dtrAppReader.Item("ISA_EMPLOYEE_NAME"))
+                Dim strEmpName As String = ""
+                Dim strORderNo As String = ""
+                Dim strEmail As String = ""
+
+                If Not IsDBNull(dtrAppReader.Item("ISA_EMPLOYEE_NAME")) Then
+                    strEmpName = Convert.ToString(dtrAppReader.Item("ISA_EMPLOYEE_NAME"))
+                End If
+
+                If Not IsDBNull(dtrAppReader.Item("ORDER_NO")) Then
+                    strORderNo = Convert.ToString(dtrAppReader.Item("ORDER_NO"))
+                End If
+
+                If Not IsDBNull(dtrAppReader.Item("ISA_EMPLOYEE_EMAIL")) Then
+                    strEmail = Convert.ToString(dtrAppReader.Item("ISA_EMPLOYEE_EMAIL"))
+                End If
+
+
+                log.WriteLine("OrderNo {0} is need more information from customer {1}", strORderNo, strEmpName)
+
+                buildNotifyApprover(strORderNo, strEmail, strEmpName)
 
             End While
             dtrAppReader.Close()
         Else
+            log.WriteLine("No record found to notify the employees")
             dtrAppReader.Close()
         End If
         Try
@@ -86,15 +113,11 @@ Module CustInfoMail
 
         End Try
 
-        Return bolErrorSomeWhere
+        Return log
 
     End Function
 
-    Public Sub buildNotifyApprover(ByVal businessUnit As String, ByVal orderNum As String,
-                                   ByVal workOrderNo As String, ByVal ReqDate As String,
-                                   ByVal OPREntBy As String, ByVal EmpEmail As String,
-                                   ByVal phoneNum As String,
-                                   ByVal EmpNme As String, ByVal SubmitDate As String)
+    Public Sub buildNotifyApprover(ByVal orderNum As String, ByVal EmpEmail As String, ByVal EmpNme As String)
 
 
 
@@ -106,11 +129,11 @@ Module CustInfoMail
         Dim strItemtype As String = ""
         Dim intGridloop As Integer
         Dim decOrderTot As Decimal
-      
+
         Dim dr As DataRow
         Dim dstcart2 As New DataTable
         Dim txtHdr As String = ""
-      
+
 
         ''Build Line item Grid
         Dim dtgcart As DataGrid
@@ -159,34 +182,7 @@ Module CustInfoMail
         strbodydetl = strbodydetl & "<p >Employee Name:" & EmpNme & ",<br>"
         strbodydetl = strbodydetl & "&nbsp;<br>"
 
-        'strbodydetl = strbodydetl & "<TD colspan=2>" & vbCrLf
-        'strbodydetl = strbodydetl & "&nbsp;</td></tr>" & vbCrLf
-        ''strbodydetl = strbodydetl & "<TD>" & vbCrLf
-        ''strbodydetl = strbodydetl & "<span style='font-weight:bold;'>SDI Requisition Number:</span> <span 'width:128px;'>&nbsp;" & stritemid & "</span></td>"
-        'strbodydetl = strbodydetl & "<tr><TD>" & vbCrLf
-        'strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Employee Name:</span> <span>&nbsp;" & EmpNme & "</span></td>"
-        'strbodydetl = strbodydetl & "<TD>" & vbCrLf
-        'strbodydetl = strbodydetl & "<span>&nbsp;</span></td></tr>" & vbCrLf
-        'strbodydetl = strbodydetl & "<TD>" & vbCrLf
-        'strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Employee Email:</span> <span>&nbsp;" & EmpEmail & "</span></td>"
-        'strbodydetl = strbodydetl & "<TD>" & vbCrLf
-        'strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Employee Phone#:</span> <span>&nbsp;" & phoneNum & "</span></td>" & vbCrLf
-        'strbodydetl = strbodydetl & "<TD>" & vbCrLf
-        'strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Work Order #:</span> <span>&nbsp;" & workOrderNo & "</span></td>" & vbCrLf
-        'strbodydetl = strbodydetl & "<TD>" & vbCrLf
-        'strbodydetl = strbodydetl & "<span>&nbsp;</span></td></tr>" & vbCrLf
-        'strbodydetl = strbodydetl & "<TD>" & vbCrLf
-        'strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Request by Date:</span> <span>&nbsp;" & ReqDate & "</span></td>"
-        'strbodydetl = strbodydetl & "<TD>" & vbCrLf
-        'strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Submit Date:</span> <span>&nbsp;" & Now() & "</span></td></tr>"
-        ''strbodydetl = strbodydetl & "<TD colspan='2'>" & vbCrLf
-        ''strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Notes:</span><br>"
-        ''strbodydetl = strbodydetl & "<textarea readonly='readonly' style='width:100%;'>" & dstcart2.Rows(0).Item(4) & "</textarea></td>" & vbCrLf
-        ''strbodydetl = strbodydetl & "<span>&nbsp;</span></td></tr>" & vbCrLf
-        ''strbodydetl = strbodydetl & "<TD>" & vbCrLf
-        ''strbodydetl = strbodydetl & "<span style='font-weight:bold;'>OPR Entered By:</span> <span>&nbsp;" & OPREntBy & "</span></td></table>"
-        'strbodydetl = strbodydetl & "&nbsp;<br>" & vbCrLf
-        
+
         'strbodydetl = strbodydetl & "<p>Processing for Order " & orderNum & " is currently on hold awaiting customer supplied information. Please provide the necessary information so processing can resume.</p>"
         strbodydetl = strbodydetl & "<p>Processing for " & orderNum & " order is currently suspended, awaiting additional customer information. Please contact your buyer.</P>"
         Mailer.Body = strbodyhead & strbodydetl
@@ -205,9 +201,10 @@ Module CustInfoMail
                    DbUrl.Substring(DbUrl.Length - 4).ToUpper = "DEVL" Or _
                DbUrl.Substring(DbUrl.Length - 4).ToUpper = "RPTG" Then
             Mailer.To = "WebDev@sdi.com;avacorp@sdi.com"
-            Mailer.Subject = "<<TEST SITE>> SDiExchange - Cust Info for the Item Status - CST - " & orderNum
+            Mailer.Subject = "<<TEST SITE>> SDiExchange - Customer Information Required For Order" & orderNum
         Else
             Mailer.To = EmpEmail
+            Mailer.Bcc = "WebDev@sdi.com;avacorp@sdi.com"
             Mailer.Subject = "SDiExchange - Customer Information Required For Order - " & orderNum
         End If
 
