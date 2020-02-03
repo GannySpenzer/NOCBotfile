@@ -450,7 +450,7 @@ namespace PODispatchReload1
                     pod.COMMENT_TYPE.Add(rowInit ["COMMENT_TYPE"].ToString ()); 
                     pod.SITE_NAME .Add(rowInit["SITE_NAME"].ToString());
                     pod.PS_URL .Add(rowInit["PS_URL"].ToString());
-                    pod.BUYER_TEAM .Add("BUYER_TEAM");
+                    pod.BUYER_TEAM .Add(rowInit["BUYER_TEAM"].ToString());
 
                 }
                 catch (Exception ex)
