@@ -105,10 +105,15 @@ Module Module1
             Console.WriteLine("")
 
             'get the list and send e-mails
-            strSqlString = "SELECT ISA_EMPLOYEE_ID,ACTIVE_STATUS,LAST_ACTIVITY,ISA_EMPLOYEE_EMAIL, ISA_USER_NAME FROM PS_ISA_USERS_TBL " & vbCrLf & _
-                "WHERE (LAST_ACTIVITY IS NULL AND ACTIVE_STATUS = 'A') OR " & vbCrLf & _
-                "(LAST_ACTIVITY IS NOT NULL AND ACTIVE_STATUS = 'A' AND LAST_ACTIVITY < (SYSDATE - 100))" & vbCrLf & _
-                ""
+            strSqlString = "SELECT A.ISA_EMPLOYEE_ID, A.BUSINESS_UNIT, B.NEXT_WEBREQ_ID, A.ACTIVE_STATUS, A.LAST_ACTIVITY, A.ISA_EMPLOYEE_EMAIL, A.ISA_USER_NAME  " & vbCrLf & _
+            " FROM PS_ISA_USERS_TBL A, PS_ISA_ENTERPRISE B  " & vbCrLf & _
+            " WHERE ((A.LAST_ACTIVITY IS NULL AND A.ACTIVE_STATUS = 'A') OR " & vbCrLf & _
+            " (A.LAST_ACTIVITY IS NOT NULL AND A.ACTIVE_STATUS = 'A' " & vbCrLf & _
+            " AND A.LAST_ACTIVITY < (SYSDATE - ((SELECT C.NEXT_WEBREQ_ID FROM PS_ISA_ENTERPRISE C WHERE A.BUSINESS_UNIT = C.ISA_BUSINESS_UNIT) + 10 ))) ) " & vbCrLf & _
+            " AND A.BUSINESS_UNIT NOT IN ('ISA00', 'SDM00') AND A.ISA_EMPLOYEE_ID NOT LIKE '%$%' AND B.BU_STATUS = '1' " & vbCrLf & _
+            " AND A.BUSINESS_UNIT = B.ISA_BUSINESS_UNIT " & vbCrLf & _
+            " ORDER BY A.ISA_USER_NAME " & vbCrLf & _
+            " "
 
             Try
 
@@ -168,9 +173,14 @@ Module Module1
 
                                 'deactivate - get rows afftected
                                 strSqlString = "UPDATE PS_ISA_USERS_TBL SET ACTIVE_STATUS = 'I' " & vbCrLf & _
-                                    "WHERE (LAST_ACTIVITY IS NULL AND ACTIVE_STATUS = 'A') OR " & vbCrLf & _
-                                    "(LAST_ACTIVITY IS NOT NULL AND ACTIVE_STATUS = 'A' AND LAST_ACTIVITY < (SYSDATE - 100))" & vbCrLf & _
-                                    ""
+                                    " WHERE ISA_EMPLOYEE_ID IN (SELECT A.ISA_EMPLOYEE_ID  " & vbCrLf & _
+                                    " FROM PS_ISA_USERS_TBL A, PS_ISA_ENTERPRISE B " & vbCrLf & _
+                                    " WHERE ((A.LAST_ACTIVITY IS NULL AND A.ACTIVE_STATUS = 'A') OR " & vbCrLf & _
+                                    " (A.LAST_ACTIVITY IS NOT NULL AND A.ACTIVE_STATUS = 'A' " & vbCrLf & _
+                                    " AND A.LAST_ACTIVITY < (SYSDATE - ((SELECT C.NEXT_WEBREQ_ID FROM PS_ISA_ENTERPRISE C WHERE A.BUSINESS_UNIT = C.ISA_BUSINESS_UNIT) + 10))) ) " & vbCrLf & _
+                                    " AND A.BUSINESS_UNIT NOT IN ('ISA00', 'SDM00') AND A.ISA_EMPLOYEE_ID NOT LIKE '%$%' AND B.BU_STATUS = '1' " & vbCrLf & _
+                                    " AND A.BUSINESS_UNIT = B.ISA_BUSINESS_UNIT ) "
+
                                 Try
                                     rowsUpdated = ORDBAccess.ExecNonQuery(strSqlString, connectOR)
                                     If rowsUpdated = 0 Then
