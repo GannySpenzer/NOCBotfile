@@ -66,15 +66,15 @@ Module CustInfoMail
         log.WriteLine("------------------------------------------------------------------------------------------")
         log.WriteLine("Start to fetch the orders that is need customer infromation, by using ISA_LINE_STATUS='CST' IN order line table")
 
-        strSQLString = "select oln.BUSINESS_UNIT_OM, oln.ORDER_NO, oln.ISA_WORK_ORDER_NO " & vbCrLf & _
+        strSQLString = "select oln.BUSINESS_UNIT_OM, oln.ORDER_NO,oln.isa_intfc_ln, oln.ISA_WORK_ORDER_NO " & vbCrLf & _
                         " , usr.ISA_EMPLOYEE_EMAIL , usr.PHONE_NUM, oln.OPRID_ENTERED_BY " & vbCrLf & _
-                        " , oln.ISA_REQUIRED_BY_DT, usr.ISA_EMPLOYEE_NAME" & vbCrLf & _
+                        "  , oln.ISA_REQUIRED_BY_DT, usr.ISA_EMPLOYEE_NAME,ohd.order_date ,RLN.buyer_id " & vbCrLf & _
                         "from PS_ISA_ORD_INTF_LN oln " & vbCrLf & _
-                        "join sdix_users_tbl usr on usr.ISA_EMPLOYEE_ID = oln.ISA_EMPLOYEE_ID" & vbCrLf & _
+                        "join sdix_users_tbl usr on usr.ISA_EMPLOYEE_ID = oln.ISA_EMPLOYEE_ID join PS_ISA_ORD_INTF_HD ohd on ohd.ORDER_NO = oln.ORDER_NO join PS_REQ_LINE RLN ON RLN.REQ_ID = oln.ORDER_NO AND RLN.LINE_NBR = oln.isa_intfc_ln " & vbCrLf & _
                         "where oln.isa_LINE_STATUS='CST'" & vbCrLf & _
                         " group by oln.BUSINESS_UNIT_OM, oln.ORDER_NO, oln.ISA_WORK_ORDER_NO " & vbCrLf & _
                         " , usr.ISA_EMPLOYEE_EMAIL , usr.PHONE_NUM, oln.OPRID_ENTERED_BY " & vbCrLf & _
-                        " , oln.ISA_REQUIRED_BY_DT, usr.ISA_EMPLOYEE_NAME"
+                        " , oln.ISA_REQUIRED_BY_DT, usr.ISA_EMPLOYEE_NAME, ohd.order_date,oln.isa_intfc_ln,RLN.buyer_id"
 
         Dim dtrAppReader As OleDbDataReader = GetReader(strSQLString)
         If dtrAppReader.HasRows() = True Then
@@ -83,6 +83,10 @@ Module CustInfoMail
                 Dim strEmpName As String = ""
                 Dim strORderNo As String = ""
                 Dim strEmail As String = ""
+                Dim Required_By_Dttm As String = ""
+                Dim strWorkONo As String = ""
+                Dim strOrdDate As String = ""
+                Dim strBuyer As String = ""
 
                 If Not IsDBNull(dtrAppReader.Item("ISA_EMPLOYEE_NAME")) Then
                     strEmpName = Convert.ToString(dtrAppReader.Item("ISA_EMPLOYEE_NAME"))
@@ -96,10 +100,26 @@ Module CustInfoMail
                     strEmail = Convert.ToString(dtrAppReader.Item("ISA_EMPLOYEE_EMAIL"))
                 End If
 
+                If Not IsDBNull(dtrAppReader.Item("ISA_REQUIRED_BY_DT")) Then
+                    Required_By_Dttm = CDate(dtrAppReader.Item("ISA_REQUIRED_BY_DT")).ToString("MM-dd-yyyy")
+                End If
+
+                If Not IsDBNull(dtrAppReader.Item("ISA_WORK_ORDER_NO")) Then
+                    strWorkONo = Convert.ToString(dtrAppReader.Item("ISA_WORK_ORDER_NO"))
+                End If
+
+                If Not IsDBNull(dtrAppReader.Item("order_date")) Then
+                    strOrdDate = CDate(dtrAppReader.Item("order_date")).ToString("MM-dd-yyyy")
+                End If
+
+                If Not IsDBNull(dtrAppReader.Item("buyer_id")) Then
+                    strBuyer = Convert.ToString(dtrAppReader.Item("buyer_id"))
+                End If
+
 
                 log.WriteLine("OrderNo {0} is need more information from customer {1}", strORderNo, strEmpName)
 
-                buildNotifyApprover(strORderNo, strEmail, strEmpName)
+                buildNotifyApprover(strORderNo, strEmail, strEmpName, Required_By_Dttm, strWorkONo, strOrdDate, strBuyer)
 
             End While
             dtrAppReader.Close()
@@ -117,9 +137,7 @@ Module CustInfoMail
 
     End Function
 
-    Public Sub buildNotifyApprover(ByVal orderNum As String, ByVal EmpEmail As String, ByVal EmpNme As String)
-
-
+    Public Sub buildNotifyApprover(ByVal orderNum As String, ByVal EmpEmail As String, ByVal EmpNme As String, ByVal Required_By_Dttm As String, ByVal strWorkONo As String, ByVal strOrdDate As String, ByVal strBuyer As String)
 
         Dim strPuncher As Boolean = False
         Dim I As Integer
@@ -177,14 +195,26 @@ Module CustInfoMail
         strbodydetl = strbodydetl & "<TR>" & vbCrLf
         strbodydetl = "<div>"
 
+        'strbodydetl = "&nbsp;" & vbCrLf
+        'strbodydetl = strbodydetl & "<div>"
+        'strbodydetl = strbodydetl & "<p>Employee Name:" & EmpNme & ",<br>"
+        'strbodydetl = strbodydetl & "&nbsp;<br></p>"
+
         strbodydetl = "&nbsp;" & vbCrLf
         strbodydetl = strbodydetl & "<div>"
-        strbodydetl = strbodydetl & "<p >Employee Name:" & EmpNme & ",<br>"
+        strbodydetl = strbodydetl & "<p ><span style='font-weight:bold;'>Employee Name: </span><span>   </span>" & EmpNme & "<br>"
         strbodydetl = strbodydetl & "&nbsp;<br>"
-
+        strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Order No: </span><span>    </span>" & orderNum & "<br>"
+        strbodydetl = strbodydetl & "&nbsp;<br>"
+        strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Work Order No: </span><span>   </span>" & strWorkONo & "<br>"
+        strbodydetl = strbodydetl & "&nbsp;<br>"
+        strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Orderd by Date: </span><span>  </span>" & strOrdDate & "<br>"
+        strbodydetl = strbodydetl & "&nbsp;<br>"
+        strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Request by Date: </span><span> </span>" & Required_By_Dttm & "<br>"
+        strbodydetl = strbodydetl & "&nbsp;<br></p>"
 
         'strbodydetl = strbodydetl & "<p>Processing for Order " & orderNum & " is currently on hold awaiting customer supplied information. Please provide the necessary information so processing can resume.</p>"
-        strbodydetl = strbodydetl & "<p>Processing for " & orderNum & " order is currently suspended, awaiting additional customer information. Please contact your buyer.</P>"
+        strbodydetl = strbodydetl & "<p>Processing for this order is currently in hold, awaiting additional customer information. Please contact your buyer " & strBuyer & ".</P>"
         Mailer.Body = strbodyhead & strbodydetl
 
         Mailer.Body = Mailer.Body & "<TABLE cellSpacing='1' cellPadding='1' width='100%' border='0'>" & vbCrLf
@@ -201,7 +231,7 @@ Module CustInfoMail
                    DbUrl.Substring(DbUrl.Length - 4).ToUpper = "DEVL" Or _
                DbUrl.Substring(DbUrl.Length - 4).ToUpper = "RPTG" Then
             Mailer.To = "WebDev@sdi.com;avacorp@sdi.com"
-            Mailer.Subject = "<<TEST SITE>> SDiExchange - Customer Information Required For Order" & orderNum
+            Mailer.Subject = "<<TEST SITE>> SDiExchange - Customer Information Required For Order - " & orderNum
         Else
             Mailer.To = EmpEmail
             Mailer.Bcc = "WebDev@sdi.com;avacorp@sdi.com"
