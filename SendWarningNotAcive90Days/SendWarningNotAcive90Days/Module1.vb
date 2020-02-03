@@ -81,10 +81,16 @@ Module Module1
         Dim strSqlString As String = ""
         Dim strAccount As String = ""
         Dim strUserName As String = ""
-        strSqlString = "SELECT ISA_EMPLOYEE_ID,ACTIVE_STATUS,LAST_ACTIVITY,ISA_EMPLOYEE_EMAIL, ISA_USER_NAME FROM PS_ISA_USERS_TBL " & vbCrLf & _
-            "WHERE (LAST_ACTIVITY IS NULL AND ACTIVE_STATUS = 'A') OR " & vbCrLf & _
-            "(LAST_ACTIVITY IS NOT NULL AND ACTIVE_STATUS = 'A' AND LAST_ACTIVITY < (SYSDATE - 90)) ORDER BY ISA_USER_NAME" & vbCrLf & _
-            ""
+        strSqlString = "SELECT A.ISA_EMPLOYEE_ID, A.BUSINESS_UNIT, B.NEXT_WEBREQ_ID, A.ACTIVE_STATUS, A.LAST_ACTIVITY, A.ISA_EMPLOYEE_EMAIL, A.ISA_USER_NAME  " & vbCrLf & _
+            " FROM PS_ISA_USERS_TBL A, PS_ISA_ENTERPRISE B  " & vbCrLf & _
+            " WHERE ((A.LAST_ACTIVITY IS NULL AND A.ACTIVE_STATUS = 'A') OR " & vbCrLf & _
+            " (A.LAST_ACTIVITY IS NOT NULL AND A.ACTIVE_STATUS = 'A' " & vbCrLf & _
+            " AND A.LAST_ACTIVITY < (SYSDATE - ((SELECT C.NEXT_WEBREQ_ID FROM PS_ISA_ENTERPRISE C WHERE A.BUSINESS_UNIT = C.ISA_BUSINESS_UNIT) + 1))) ) " & vbCrLf & _
+            " AND A.BUSINESS_UNIT NOT IN ('ISA00', 'SDM00') AND A.ISA_EMPLOYEE_ID NOT LIKE '%$%' AND B.BU_STATUS = '1' " & vbCrLf & _
+            " AND A.BUSINESS_UNIT = B.ISA_BUSINESS_UNIT " & vbCrLf & _
+            " ORDER BY A.ISA_USER_NAME " & vbCrLf & _
+            " "
+
         Dim ds As New DataSet
         Dim bError As Boolean = False
         Dim strError As String = ""
