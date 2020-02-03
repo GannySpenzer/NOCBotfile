@@ -266,7 +266,7 @@ namespace ExpediterReload
                     bed.ACTION_ITEMS.Add( rowInit["ACTION_ITEMS"].ToString());
                     bed.BUSINESS_UNIT.Add(rowInit["BUSINESS_UNIT"].ToString());
                     bed.BUYER_ID.Add( rowInit["BUYER_ID"].ToString());
-                    bed.BUYER_TEAM.Add("Test");
+                    bed.BUYER_TEAM.Add(rowInit["BUYER_TEAM"].ToString());
                     bed.CLIENT.Add(rowInit["CLIENT"].ToString());
                     bed.DESCRIPTION.Add(rowInit["DESCRIPTION"].ToString());
                     bed.EXPEDITING_COMMENTS.Add(rowInit["EXPEDITING_COMMENTS"].ToString());
