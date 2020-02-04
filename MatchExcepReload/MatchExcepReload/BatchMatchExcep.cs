@@ -222,7 +222,7 @@ namespace OSVCService
             gfs.Add(createGenericField("ME_Role", ItemsChoiceType.StringValue, Me_Role ));
             gfs.Add(createGenericField("Shipto_Desc", ItemsChoiceType.StringValue, Shipto_Desc ));
             gfs.Add(createGenericField("Shipto_ID", ItemsChoiceType.StringValue, Shipto_ID ));
-            gfs.Add(createGenericField("Assigned_To", ItemsChoiceType.StringValue, Assigned_To ));
+            //gfs.Add(createGenericField("Assigned_To", ItemsChoiceType.StringValue, Assigned_To ));
             gfs.Add(createGenericField("Task_Type", ItemsChoiceType.StringValue, Task_Type ));
             gfs.Add(createGenericField("ME_Lines", ItemsChoiceType.IntegerValue , Me_Lines));
             gfs.Add(createGenericField("Days_Overall", ItemsChoiceType.IntegerValue , Days_Overall ));
@@ -244,6 +244,21 @@ namespace OSVCService
             gfs.Add(createGenericField("Date_Assigned", ItemsChoiceType.DateValue , Date_Assigned));
             gfs.Add(createGenericField("Days_Assigned", ItemsChoiceType.IntegerValue , Days_Assigned));
             gfs.Add(createGenericField("Assigned_Aging", ItemsChoiceType.StringValue, Assigned_Aging));
+
+            if (Assigned_To.IndexOf(",") > 0)
+            {
+                string Assigned_To_First = Assigned_To.Substring(Assigned_To.IndexOf(",") + 1).Trim();
+                string Assigned_To_Last = Assigned_To.Substring(0, Assigned_To.IndexOf(","));
+                Assigned_To = Assigned_To_First + " " + Assigned_To_Last;
+            }
+            try
+            {
+                if (Assigned_To.Trim() != "")
+                    gfs.Add(createAccountMenuFieldByName("Assigned_To", Assigned_To ));
+            }
+            catch (Exception ex)
+            {
+            }
 
             //gfs.Add(createGenericField("Buyer_ID", ItemsChoiceType.StringValue, Buyer_ID));
             //gfs.Add(createGenericField("Buyer_Team", ItemsChoiceType.StringValue, Buyer_Team));
