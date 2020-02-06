@@ -112,18 +112,18 @@ namespace MatchExcepReload
             try 
             {
                 //check if table already exists
-                strSQLstring="select table_name from user_tables where table_name='SDIX_MATCHEXCEPTEST'";
-                dtResponse = oleDBExecuteReader(strSQLstring);
-                if (dtResponse.Rows.Count > 0)
-                {
+                //strSQLstring="select table_name from user_tables where table_name='SDIX_MATCHEXCEPTEST'";
+                //strSQLstring = "select count(1) from SDIX_MATCHEXCEPTEST";
+                //dtResponse = oleDBExecuteReader(strSQLstring);
+                //if (dtResponse.Rows.Count > 0)
+                //{
                     //if it does, drop the table
-                    strSQLstring = "DROP TABLE SDIX_MATCHEXCEPTEST";
+                    strSQLstring = "TRUNCATE TABLE SDIX_MATCHEXCEPTEST";
                     dtResponse = oleDBExecuteReader(strSQLstring);
-                }
+                //}
 
 
-
-                strSQLstring = "CREATE TABLE SDIX_MATCHEXCEPTEST as\n";
+                strSQLstring = "INSERT INTO SDIX_MATCHEXCEPTEST \n";
                 strSQLstring += "(SELECT DISTINCT\n";
                 strSQLstring += "DECODE(T.ACCOUNTING_OWNER, ' ', 'Inactive Site', NVL(T.ACCOUNTING_OWNER, ' ')) as CLIENT,\n";
                 strSQLstring += "NVL(T.descr, ' ') as SITE,\n";
@@ -162,7 +162,7 @@ namespace MatchExcepReload
                 strSQLstring += "TO_CHAR(CAST((A.DWR_ASSIGNED_DT)AS TIMESTAMP), 'YYYY-MM-DD HH24:MI:SS') as DATE_ASSIGNED,\n";
                 strSQLstring += "A.DWR_DAYS_ASSIGNED as DAYS_ASSIGNED,\n";
                 strSQLstring += "A.DWR_AGING3 as ASSIGNED_AGING,\n";
-                strSQLstring += "NVL(R.ROLEUSER, ' ') as BUYER_TEAM,\n";
+                strSQLstring += "NVL(P.BUYER_MANAGER, ' ') as BUYER_TEAM,\n";
                 strSQLstring += "UU.url || '/EMPLOYEE/ERP/c/MANAGE_PURCHASE_ORDERS.PURCHASE_ORDER.GBL?Page=PO_LINE&Action=U&BUSINESS_UNIT=' || B.BUSINESS_UNIT || '&PO_ID=' || b.po_ID || '&TargetFrameName=None' as PS_URL,\n";
                 strSQLstring += "' ' as PROCESS_FLAG\n";
 
@@ -174,7 +174,7 @@ namespace MatchExcepReload
                 strSQLstring += "sysadm8.DW_APX_USERS U,\n";
                 strSQLstring += "sysadm8.PS_VENDOR V,\n";
                 strSQLstring += "sysadm8.ps_dept_Tbl T,\n";
-                strSQLstring += "sysadm8.ps_rte_cntl_ruser R,\n";
+                strSQLstring += "sysadm8.PS_PO_MANAGER_TBL P,\n";
                 strSQLstring += "SYSADM8.ps_PTSF_URLDEFN_VW UU\n";
 
                 strSQLstring += "WHERE\n";
@@ -195,11 +195,7 @@ namespace MatchExcepReload
                 strSQLstring += "                  AND C_ED.EFFDT <= SYSDATE)\n";
                 strSQLstring += "         OR C.EFFDT IS NULL)\n";
                 strSQLstring += "     and d.deptid = t.deptid(+)\n";
-                strSQLstring += "and d.deptid = r.rte_cntl_profile(+)\n";
-                strSQLstring += "and case \n";
-                strSQLstring += "when d.business_unit = 'ISA00' then 'SDI_PROCURE_SUPERVISOR'\n";
-                strSQLstring += "when d.business_unit = 'SDM00' then 'SDI_SITE_MANAGER_SDM'\n";
-                strSQLstring += "else 'OTHER' end = r.rolename(+)\n";
+                strSQLstring += "and substr(A.ASSIGNED_TO, instr(A.ASSIGNED_TO, ', ') + 2) || '.' || substr(A.ASSIGNED_TO, 1, instr(A.ASSIGNED_TO, ', ') - 1) = P.BUYER_ID(+)\n";
                 strSQLstring += "AND UU.url_id = 'EMP_SERVLET')";
                 m_oLogger.LogMessage("CreateTable", "PeopleSoft connection string : " + OracleConString);
                 m_oLogger.LogMessage("CreateTable", "Query To create the MatchExcep temp data table: " + strSQLstring);
