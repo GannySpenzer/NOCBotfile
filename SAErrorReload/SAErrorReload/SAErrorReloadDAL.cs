@@ -70,16 +70,16 @@ namespace SAErrorReload1
             try
             {
                 //check if table already exists
-                strSQLstring = "select table_name from user_tables where table_name='SDIX_SAERRORTEMP'";
-                dtResponse = oleDBExecuteReader(strSQLstring);
-                if (dtResponse.Rows.Count > 0)
-                {
+                //strSQLstring = "select table_name from user_tables where table_name='SDIX_SAERRORTEMP'";
+                //dtResponse = oleDBExecuteReader(strSQLstring);
+                //if (dtResponse.Rows.Count > 0)
+                //{
                     //if it does, drop the table
-                    strSQLstring = "DROP TABLE SDIX_SAERRORTEMP";
+                    strSQLstring = "TRUNCATE TABLE SDIX_SAERRORTEMP";
                     dtResponse = oleDBExecuteReader(strSQLstring);
-                }
+                //}
 
-                strSQLstring = "CREATE TABLE SDIX_SAERRORTEMP as\n";
+                strSQLstring = "INSERT INTO SDIX_SAERRORTEMP \n";
                 strSQLstring += "(Select DISTINCT ' ' as Action_Item,\n";
                 strSQLstring += "DECODE(E.ACCOUNTING_OWNER, ' ', 'Inactive Site', E.ACCOUNTING_OWNER) as Client, \n";
                 strSQLstring += "e.descr as Site_Name,\n";
@@ -104,12 +104,12 @@ namespace SAErrorReload1
                 strSQLstring += "' ' as EXCEPTION_NUM_DAYS,\n";
                 strSQLstring += "d.SHIPTO_ID as Shipto_ID, \n";
                 strSQLstring += "q.isa_priority_flag as Priority_Flag,\n";
-                strSQLstring += "NVL(r.roleuser, ' ') as Buyer_Team,\n";
+                strSQLstring += "NVL(P.BUYER_MANAGER, ' ') as Buyer_Team,\n";
                 strSQLstring += "U.url || '/EMPLOYEE/ERP/c/MANAGE_PURCHASE_ORDERS.PO_SRC_ANALYSIS.GBL?Page=PO_SRC_ANALYSIS&Action=U&BUSINESS_UNIT=' || B.BUSINESS_UNIT || '&REQ_ID=' || B.REQ_ID || '&TargetFrameName=None' as PS_URL,\n";
                 strSQLstring += "' ' as PROCESS_FLAG\n";
 
                 strSQLstring += "FROM sysadm8.PS_REQ_HDR B, sysadm8.PS_PO_ITM_STG D, sysadm8.PS_DEPT_TBL E, sysadm8.ps_req_ln_distrib A, sysadm8.XLATTABLE_VW c, sysadm8.ps_msg_Cat_VW G,\n";
-                strSQLstring += " sysadm8.ps_rte_cntl_ruser R, sysadm8.ps_vendor V, sysadm8.ps_isa_req_bi_info q, sysadm8.ps_ptsf_urldefn_vw u \n";
+                strSQLstring += " sysadm8.PS_PO_MANAGER_TBL P, sysadm8.ps_vendor V, sysadm8.ps_isa_req_bi_info q, sysadm8.ps_ptsf_urldefn_vw u \n";
 
                 strSQLstring += "  WHERE d.BUSINESS_UNIT IN('ISA00','CST00','SDM00')\n";
                 strSQLstring += "     AND D.STAGE_STATUS IN('E','V' )\n";
@@ -126,11 +126,7 @@ namespace SAErrorReload1
                 strSQLstring += "          AND E.DEPTID = E_ED.DEPTID)\n";
                 strSQLstring += "AND d.message_set_nbr = g.message_set_nbr(+)\n";
                 strSQLstring += "AND d.message_nbr = g.message_nbr(+)\n";
-                strSQLstring += "and a.deptid = r.rte_cntl_profile(+)\n";
-                strSQLstring += "and case \n";
-                strSQLstring += "when a.business_unit = 'ISA00' then 'SDI_PROCURE_SUPERVISOR'\n";
-                strSQLstring += "when a.business_unit = 'SDM00' then 'SDI_SITE_MANAGER_SDM'\n";
-                strSQLstring += "else 'OTHER' end = r.rolename(+)\n";
+                strSQLstring += "AND d.BUYER_ID = P.BUYER_ID(+)\n";
                 strSQLstring += "and d.vendor_id = v.vendor_id(+)\n";
                 strSQLstring += "and a.business_unit = q.business_unit\n";
                 strSQLstring += "and a.req_id = q.req_id\n";
@@ -141,7 +137,7 @@ namespace SAErrorReload1
                 strSQLstring += "  GROUP BY  'Error',  DECODE(E.ACCOUNTING_OWNER, ' ', 'Inactive Site', E.ACCOUNTING_OWNER),  E.DESCR,  d.BUYER_ID,  \n";
                 strSQLstring += "  d.INV_ITEM_ID,  DECODE(d.INV_ITEM_ID, ' ', 'NSTK', 'STK'),  c.xlatlongname, g.message_text, d.REQ_ID, d.line_nbr ,  d.SCHED_NBR,d.vendor_id, v.name1, d.price_req,  \n";
                 strSQLstring += "  TO_CHAR(B.REQ_DT, 'YYYY-MM-DD'),  TO_CHAR(D.SOURCE_DATE, 'YYYY-MM-DD'),  SYSDATE,  SUBSTR(TO_CHAR(D.DATETIME_MODIFIED, 'YYYY-MM-DD'), 1, 10),  \n";
-                strSQLstring += "  ROUND(SYSDATE - TO_DATE(TO_CHAR(D.SOURCE_DATE, 'YYYY-MM-DD'), 'YYYY-MM-DD')),d.SHIPTO_ID, q.isa_priority_flag, r.roleuser, \n";
+                strSQLstring += "  ROUND(SYSDATE - TO_DATE(TO_CHAR(D.SOURCE_DATE, 'YYYY-MM-DD'), 'YYYY-MM-DD')),d.SHIPTO_ID, q.isa_priority_flag, P.BUYER_MANAGER, \n";
                 strSQLstring +="   U.url || '/EMPLOYEE/ERP/c/MANAGE_PURCHASE_ORDERS.PO_SRC_ANALYSIS.GBL?Page=PO_SRC_ANALYSIS&Action=U&BUSINESS_UNIT=' || B.BUSINESS_UNIT || '&REQ_ID=' || B.REQ_ID || '&TargetFrameName=None' \n";
                 strSQLstring += ")"; // order by 17";
 
