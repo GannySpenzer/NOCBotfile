@@ -77,16 +77,16 @@ namespace POOverrideReload1
             try
             {
                 //check if table already exists
-                strSQLstring = "select table_name from user_tables where table_name='SDIX_POOVERRIDETEMP'";
-                dtResponse = oleDBExecuteReader(strSQLstring);
-                if (dtResponse.Rows.Count > 0)
-                {
-                    //if it does, drop the table
-                    strSQLstring = "DROP TABLE SDIX_POOVERRIDETEMP";
+                //strSQLstring = "select table_name from user_tables where table_name='SDIX_POOVERRIDETEMP'";
+                //dtResponse = oleDBExecuteReader(strSQLstring);
+                //if (dtResponse.Rows.Count > 0)
+                //{
+                //    //if it does, drop the table
+                    strSQLstring = "TRUNCATE TABLE SDIX_POOVERRIDETEMP";
                     dtResponse = oleDBExecuteReader(strSQLstring);
-                }
+                //}
 
-                strSQLstring = "CREATE TABLE SDIX_POOVERRIDETEMP as\n";
+                strSQLstring = "INSERT INTO SDIX_POOVERRIDETEMP \n";
                 strSQLstring += "(SELECT ' ' as ACTION_ITEM,\n";
                 strSQLstring += "DECODE( T.ACCOUNTING_OWNER, ' ' , 'Inactive Site',  T.ACCOUNTING_OWNER) as Client,\n";
                 strSQLstring += "T.DESCR as Site, \n";
@@ -119,14 +119,14 @@ namespace POOverrideReload1
                 strSQLstring += "A.ISA_QTY_UPD_OV as QTY_OVERRIDE_STATUS, \n";
                 strSQLstring += "A.ISA_STAT_RVW_FLG as REVIEW_FLAG,\n";
                 strSQLstring += "U.url || '/EMPLOYEE/ERP/c/MANAGE_PURCHASE_ORDERS.PURCHASE_ORDER.GBL?Page=PO_LINE&Action=U&BUSINESS_UNIT=' || A.BUSINESS_UNIT || '&PO_ID=' || a.po_ID || '&TargetFrameName=None' as PS_URL,\n";
-                strSQLstring += "NVL(R.ROLEUSER, ' ') as BUYER_TEAM,\n";
+                strSQLstring += "NVL(P.BUYER_MANAGER, ' ') as BUYER_TEAM,\n";
                 strSQLstring += "' ' AS PROCESS_FLAG\n";
 
                 strSQLstring += "FROM sysadm8.PS_ISA_ACK_OVRD A,\n";
                 strSQLstring += "sysadm8.PS_SHIPTO_TBL B,\n";
                 strSQLstring += "sysadm8.PS_PO_LINE_DISTRIB D,\n";
                 strSQLstring += "SYSADM8.PS_DEPT_TBL T,\n";
-                strSQLstring += "SYSADM8.PS_RTE_CNTL_RUSER R,\n";
+                strSQLstring += "SYSADM8.PS_PO_MANAGER_TBL P,\n";
                 strSQLstring += "SYSADM8.PS_VENDOR V,\n";
                 strSQLstring += "SYSADM8.ps_PTSF_URLDEFN_VW U\n";
 
@@ -145,11 +145,7 @@ namespace POOverrideReload1
                 strSQLstring += "AND A.BUSINESS_UNIT = D.BUSINESS_UNIT\n";
                 strSQLstring += "AND A.PO_ID = D.PO_ID\n";
                 strSQLstring += "AND A.LINE_NBR = D.LINE_NBR\n";
-                strSQLstring += "AND d.deptid = r.rte_cntl_profile(+)\n";
-                strSQLstring += "and   case \n";
-                strSQLstring += "when D.business_unit = 'ISA00' then 'SDI_PROCURE_SUPERVISOR'\n";
-                strSQLstring += "when D.business_unit = 'SDM00' then 'SDI_SITE_MANAGER_SDM'\n";
-                strSQLstring += "else 'OTHER' end = r.rolename(+)\n";
+                strSQLstring += "AND A.BUYER_ID = P.BUYER_ID(+)\n";
                 strSQLstring += "AND D.DEPTID = T.DEPTID\n";
                 strSQLstring += "AND A.VENDOR_ID = V.VENDOR_ID\n";
                 strSQLstring += "AND U.URL_ID = 'EMP_SERVLET')";
