@@ -95,16 +95,16 @@ namespace PODispatchReload1
             try
             {
                 //check if table already exists
-                strSQLstring = "select table_name from user_tables where table_name='SDIX_PODISPATCHTEMP'";
-                dtResponse = oleDBExecuteReader(strSQLstring);
-                if (dtResponse.Rows.Count > 0)
-                {
+                //strSQLstring = "select table_name from user_tables where table_name='SDIX_PODISPATCHTEMP'";
+                //dtResponse = oleDBExecuteReader(strSQLstring);
+                //if (dtResponse.Rows.Count > 0)
+                //{
                     //if it does, drop the table
-                    strSQLstring = "DROP TABLE SDIX_PODISPATCHTEMP";
+                    strSQLstring = "TRUNCATE TABLE SDIX_PODISPATCHTEMP";
                     dtResponse = oleDBExecuteReader(strSQLstring);
-                }
+                //}
 
-                strSQLstring = "CREATE TABLE SDIX_PODISPATCHTEMP as\n";
+                strSQLstring = "INSERT INTO SDIX_PODISPATCHTEMP\n";
                 strSQLstring += "(SELECT ' ' as ACTION_ITEM,\n";
                 strSQLstring += "DECODE( T.ACCOUNTING_OWNER, ' ' , 'Inactive Site',  T.ACCOUNTING_OWNER) as CLIENT, \n";
                 strSQLstring += "T.descr as SITE_NAME,\n";
@@ -129,29 +129,25 @@ namespace PODispatchReload1
                 strSQLstring += "NVL(O.COMMENTS_2000, ' ') as HDR_COMMENTS, \n";
                 strSQLstring += "' 'as REQ_SHIP_METHOD,\n";
                 strSQLstring += "B.hold_status as PO_HOLD_FLAG,\n";
-                strSQLstring += "NVL(N.roleuser, ' ') as BUYER_TEAM,\n";
+                strSQLstring += "NVL(P.BUYER_MANAGER, ' ') as BUYER_TEAM,\n";
                 strSQLstring += "U.url || '/EMPLOYEE/ERP/c/MANAGE_PURCHASE_ORDERS.PURCHASE_ORDER.GBL?Page=PO_LINE&Action=U&BUSINESS_UNIT=' || a.BUSINESS_UNIT || '&PO_ID=' || a.po_ID || '&TargetFrameName=None' as PS_URL,\n";
                 strSQLstring += "NVL(O20X.XLATLONGNAME, ' ') as COMMENT_TYPE,\n";
                 strSQLstring += "' ' as PROCESS_FLAG\n";
 
                 strSQLstring += "FROM sysadm8.PS_PO_DISPATCHED A, \n";
-                strSQLstring += "(sysadm8.PS_PO_HDR B \n";
+                strSQLstring += "((sysadm8.PS_PO_HDR B \n";
                 strSQLstring += "          LEFT OUTER JOIN  sysadm8.PS_PO_COMMENTS_FS O \n";
                 strSQLstring += "          ON  B.BUSINESS_UNIT = O.BUSINESS_UNIT \n";
                 strSQLstring += "          AND B.PO_ID = O.PO_ID \n";
                 strSQLstring += "          AND O.COMMENT_TYPE = 'HDR' ) \n";
+                strSQLstring += "   LEFT OUTER JOIN  SYSADM8.PS_PO_MANAGER_TBL P\n";
+                strSQLstring += "          ON  P.BUYER_ID = B.BUYER_ID)\n";
                 strSQLstring += "    LEFT OUTER JOIN sysadm8.PSXLATITEM O20X \n";
                 strSQLstring += "          ON O20X.FIELDNAME='COMMENT_TYPE' \n";
                 strSQLstring += "          AND O20X.FIELDVALUE= O.COMMENT_TYPE \n";
                 strSQLstring += "          AND O20X.EFF_STATUS = 'A', \n";
                 strSQLstring += "sysadm8.PS_PO_LINE C, \n";
-                strSQLstring += "(sysadm8.PS_PO_LINE_DISTRIB D \n";
-                strSQLstring += "     LEFT OUTER JOIN  sysadm8.PS_RTE_CNTL_RUSER N \n";
-                strSQLstring += "          ON  N.RTE_CNTL_PROFILE = D.DEPTID \n";
-                strSQLstring += "          AND N.ROLENAME = case\n";
-                strSQLstring += "              when  D.BUSINESS_UNIT = 'ISA00' then 'SDI_PROCURE_SUPERVISOR'\n";
-                strSQLstring += "              when  D.BUSINESS_UNIT = 'SDM00' then 'SDI_SITE_MANAGER_SDM'\n";
-                strSQLstring += "              else 'OTHER' end ),\n";
+                strSQLstring += "sysadm8.PS_PO_LINE_DISTRIB D, \n";
                 strSQLstring += "(sysadm8.PS_ISA_EXPED_XREF E \n";
                 strSQLstring += "LEFT OUTER JOIN  sysadm8.PS_ISA_XPD_COMMENT F \n";
                 strSQLstring += "          ON  E.BUSINESS_UNIT = F.BUSINESS_UNIT \n";
