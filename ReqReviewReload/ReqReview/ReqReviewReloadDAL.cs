@@ -74,16 +74,16 @@ namespace ReqReviewReload1
             try
             {
                 //check if table already exists
-                strSQLstring = "select table_name from user_tables where table_name='SDIX_REQREVIEWTEMP'";
-                dtResponse = oleDBExecuteReader(strSQLstring);
-                if (dtResponse.Rows.Count > 0)
-                {
+                //strSQLstring = "select table_name from user_tables where table_name='SDIX_REQREVIEWTEMP'";
+                //dtResponse = oleDBExecuteReader(strSQLstring);
+                //if (dtResponse.Rows.Count > 0)
+                //{
                     //if it does, drop the table
-                    strSQLstring = "DROP TABLE SDIX_REQREVIEWTEMP";
+                    strSQLstring = "TRUNCATE TABLE SDIX_REQREVIEWTEMP";
                     dtResponse = oleDBExecuteReader(strSQLstring);
-                }
+                //}
 
-                strSQLstring = "CREATE TABLE SDIX_REQREVIEWTEMP as\n";
+                strSQLstring = "INSERT INTO SDIX_REQREVIEWTEMP \n";
                 strSQLstring += "(SELECT distinct ' ' as Action_Item, \n";
                 strSQLstring += "G.ACCOUNTING_OWNER as Client, \n";
                 strSQLstring += "G.DESCR as Site_Name, \n";
@@ -115,7 +115,7 @@ namespace ReqReviewReload1
                 //strSQLstring += "TRUNC(SYSDATE) - D.ADD_DTTM AS Status_Age,\n";
                 strSQLstring += "TRUNC(SYSDATE) - TRUNC(D.ADD_DTTM) AS Status_Age,\n";
                 strSQLstring += "U.url || '/EMPLOYEE/ERP/c/REQUISITION_ITEMS.REQUISITIONS.GBL?Page=REQ_FORM&Action=U&BUSINESS_UNIT=' || B.BUSINESS_UNIT || '&REQ_ID=' || B.REQ_ID || '&TargetFrameName=None' as PS_URL,\n";
-                strSQLstring += "NVL(R.ROLEUSER, ' ') AS Buyer_Team,\n";
+                strSQLstring += "NVL(P.BUYER_MANAGER, ' ') AS Buyer_Team,\n";
                 strSQLstring += "' ' as PROCESS_FLAG\n";
 
                 strSQLstring += "FROM SYSADM8.PS_REQ_HDR A,\n";
@@ -131,7 +131,7 @@ namespace ReqReviewReload1
                 strSQLstring += "     SYSADM8.PS_EOAW_USERINST J,\n";
                 strSQLstring += "     SYSADM8.PS_DEPT_TBL T,\n";
                 strSQLstring += "     SYSADM8.PS_ISA_REQ_BI_INFO Q,\n";
-                strSQLstring += "     SYSADM8.PS_RTE_CNTL_RUSER R,\n";
+                strSQLstring += "     SYSADM8.PS_PO_MANAGER_TBL P,\n";
                 strSQLstring += "     SYSADM8.PS_VENDOR V,\n";
                 strSQLstring += "     SYSADM8.ps_PTSF_URLDEFN_VW U \n";
 
@@ -191,11 +191,7 @@ namespace ReqReviewReload1
                 strSQLstring += "AND E.BUSINESS_UNIT = Q.BUSINESS_UNIT\n";
                 strSQLstring += "AND E.REQ_ID = Q.REQ_ID\n";
                 strSQLstring += "AND E.LINE_NBR = Q.LINE_NBR\n";
-                strSQLstring += "and e.deptid = r.rte_cntl_profile(+)\n";
-                strSQLstring += "and   case \n";
-                strSQLstring += "      when e.business_unit = 'ISA00' then 'SDI_PROCURE_SUPERVISOR'\n";
-                strSQLstring += "      when e.business_unit = 'SDM00' then 'SDI_SITE_MANAGER_SDM'\n";
-                strSQLstring += "      else 'OTHER' end = r.rolename(+)\n";
+                strSQLstring += "AND B.BUYER_ID = P.BUYER_ID(+)\n";
                 strSQLstring += "AND e.DEPTID = T.DEPTID\n";
                 strSQLstring += "AND U.url_id = 'EMP_SERVLET')";
                 //strSQLstring += "AND e.DEPTID = T.DEPTID AND ROWNUM < 2)";
