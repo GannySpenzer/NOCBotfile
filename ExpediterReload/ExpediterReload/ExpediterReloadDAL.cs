@@ -65,16 +65,16 @@ namespace ExpediterReload
             try
             {
                 //check if table already exists
-                strSQLstring = "select table_name from user_tables where table_name='SDIX_BUYEXPTEMP'";
-                dtResponse = oleDBExecuteReader(strSQLstring);
-                if (dtResponse.Rows.Count > 0)
-                {
+                //strSQLstring = "select table_name from user_tables where table_name='SDIX_BUYEXPTEMP'";
+                //dtResponse = oleDBExecuteReader(strSQLstring);
+                //if (dtResponse.Rows.Count > 0)
+                //{
                     //if it does, drop the table
-                    strSQLstring = "DROP TABLE SDIX_BUYEXPTEMP";
+                    strSQLstring = "TRUNCATE TABLE SDIX_BUYEXPTEMP";
                     dtResponse = oleDBExecuteReader(strSQLstring);
-                }
+                //}
 
-                strSQLstring = "CREATE TABLE SDIX_BUYEXPTEMP as\n";
+                strSQLstring = "INSERT INTO SDIX_BUYEXPTEMP \n";
                 strSQLstring += "(SELECT ' ' as ACTION_ITEMS,";
                 strSQLstring += "DECODE(T.ACCOUNTING_OWNER, ' ', 'Inactive Site', T.ACCOUNTING_OWNER) as CLIENT, \n";
                 //strSQLstring += "T.descr as DESCRIPTION,\n";
@@ -94,7 +94,7 @@ namespace ExpediterReload
                 strSQLstring += "S.BUSINESS_UNIT_IN as BUSINESS_UNIT_IN,\n";
                 strSQLstring += "q.ISA_PRIORITY_FLAG as PRIORITY_FLAG,\n";
                 strSQLstring += "trunc(sysdate) - trunc(b.DTTM_STAMP) as STATUS_AGE,\n";
-                strSQLstring += "NVL(R.ROLEUSER, ' ') as BUYER_TEAM,\n";
+                strSQLstring += "NVL(P.BUYER_MANAGER, ' ') as BUYER_TEAM,\n";
                 strSQLstring += "U.url || '/EMPLOYEE/ERP/c/MANAGE_PURCHASE_ORDERS.PURCHASE_ORDER.GBL?Page=PO_LINE&Action=U&BUSINESS_UNIT=' || A.BUSINESS_UNIT || '&PO_ID=' || A.PO_ID || '&TargetFrameName=None' as PS_URL,\n";
                 strSQLstring += "' ' as PROCESS_FLAG\n";
 
@@ -106,7 +106,7 @@ namespace ExpediterReload
                 strSQLstring += "sysadm8.PS_VENDOR V,\n";
                 strSQLstring += "SDIEXCHANGE.sdix_problm_code Z,\n";
                 strSQLstring += "sysadm8.ps_isa_req_bi_info Q,\n";
-                strSQLstring += "sysadm8.ps_rte_cntl_ruser R,\n";
+                strSQLstring += "sysadm8.PS_PO_MANAGER_TBL P,\n";
                 strSQLstring += "SYSADM8.PS_DEPT_TBL T,\n";
                 strSQLstring += "SYSADM8.ps_PTSF_URLDEFN_VW U\n";
 
@@ -136,11 +136,7 @@ namespace ExpediterReload
                 strSQLstring += "AND S.BUSINESS_UNIT = Q.BUSINESS_UNIT\n";
                 strSQLstring += "AND S.REQ_ID = Q.REQ_ID\n";
                 strSQLstring += "AND S.REQ_LINE_NBR = Q.LINE_NBR\n";
-                strSQLstring += "and s.deptid = r.rte_cntl_profile(+)\n";
-                strSQLstring += "and case \n";
-                strSQLstring += "when S.business_unit = 'ISA00' then 'SDI_PROCURE_SUPERVISOR'\n";
-                strSQLstring += "when S.business_unit = 'SDM00' then 'SDI_SITE_MANAGER_SDM'\n";
-                strSQLstring += "else 'OTHER' end = r.rolename(+)\n";
+                strSQLstring += "AND E.BUYER_ID = P.BUYER_ID(+)\n";
                 strSQLstring += "AND S.DEPTID = T.DEPTID\n";
                 strSQLstring += "AND U.URL_ID = 'EMP_SERVLET') "; // AND ROWNUM < 1501";
                 // AND ROWNUM < 1501";
