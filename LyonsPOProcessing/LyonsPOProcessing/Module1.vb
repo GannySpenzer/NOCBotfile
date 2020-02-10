@@ -727,9 +727,21 @@ Module Module1
 
                                                     'get Customer ID
                                                     Dim strCustID As String = ""
+                                                    Dim bIsvalidEmail As Boolean = False
                                                     If (Trim(strCustomerEmail) <> "") Or (Trim(strCustomerName) <> "") Then
 
-                                                        strCustID = GetCustomerId(strCustomerEmail, strCustomerName, strSdiBusUnit)
+                                                        If (Trim(strCustomerEmail) <> "") Then
+                                                            strCustomerEmail = Trim(strCustomerEmail)
+                                                            bIsvalidEmail = IsValidEmail(strCustomerEmail)
+                                                            If bIsvalidEmail Then
+                                                                strCustID = GetCustomerId(strCustomerEmail, strCustomerName, strSdiBusUnit)
+                                                            Else
+                                                                strCustID = "NO_NAME_SUPPLIED"
+                                                            End If
+                                                        Else
+                                                            strCustID = "NO_NAME_SUPPLIED"
+                                                        End If
+
                                                     Else
                                                         strCustID = "NO_NAME_SUPPLIED"
                                                     End If
@@ -866,7 +878,6 @@ Module Module1
         Dim strCustId As String = ""
         Dim strPasswEncrp As String = ""
         Dim strSqlStrng As String = ""
-        strSqlStrng = "SELECT ISA_EMPLOYEE_ID FROM SDIX_USERS_TBL WHERE ACTIVE_STATUS = 'A' AND UPPER(ISA_EMPLOYEE_EMAIL) LIKE '%" & strCustEmail & "' "
         Dim iC As Integer = 0
         Dim strFullName As String = ""
         strFullName = Trim(strCustName)
@@ -881,7 +892,7 @@ Module Module1
             iSpacePos = strFullName.IndexOf(" ")
             If iSpacePos > 0 Then
                 strFirst = Microsoft.VisualBasic.Left(strFullName, iSpacePos)
-                strLast = Mid(strFullName, iSpacePos + 1)
+                strLast = Mid(strFullName, iSpacePos + 2)
             Else
                 strFirst = strFullName
                 strLast = strFullName
@@ -896,7 +907,10 @@ Module Module1
         Else
             strFullName40 = strFullName
         End If
+
         Dim dsCheck As DataSet
+        strCustEmail = UCase(strCustEmail)
+        strSqlStrng = "SELECT ISA_EMPLOYEE_ID FROM SDIX_USERS_TBL WHERE ACTIVE_STATUS = 'A' AND UPPER(ISA_EMPLOYEE_EMAIL) LIKE '%" & strCustEmail & "' "
         dsCheck = ORDBData.GetAdapter(strSqlStrng, False)
 
         strCustId = " "
@@ -910,7 +924,7 @@ Module Module1
         End If
 
         If Trim(strCustId) = "" Then
-            'USER ID is not eisting - creating one
+            'USER ID is not existing - creating one
 
             strCustName = Replace(strCustName, " ", "")
             strCustName = Replace(strCustName, ".", "")
@@ -1011,6 +1025,39 @@ Module Module1
 
     End Function
 
+    Public Function IsValidEmail(ByVal SingleEmailAdd As String) As Boolean
+        Dim bValid As Boolean = False
+        Try
+
+            If SingleEmailAdd.Trim.Length > 0 Then
+                Dim cParts As String() = SingleEmailAdd.Split(CType("@", Char))
+
+                If cParts.Length = 2 Then
+                    If (cParts(0).Length > 0 And cParts(1).Length > 0) Then
+                        If cParts(1).Contains(".") Then
+                            bValid = True
+                        Else
+                            bValid = False
+                        End If
+                    Else
+                        bValid = False
+                    End If
+
+                Else
+                    bValid = False
+                End If
+            Else
+                bValid = False
+            End If
+
+        Catch ex As Exception
+            bValid = False
+        End Try
+
+        Return bValid
+
+    End Function
+
     Private Function checkCustEmpTbl(ByVal strBU As String, ByVal strUserId As String) As Boolean
         Dim dsCustUserid As DataSet = Nothing
         Dim strSQLstring As String = "Select ISA_EMPLOYEE_ID" & vbCrLf & _
@@ -1029,7 +1076,7 @@ Module Module1
         Catch ex As Exception
             checkCustEmpTbl = False
         End Try
-        
+
     End Function
 
     Private Function GetNextUserId(ByVal strUserId As String, ByVal strBU As String, ByVal strFromWhichScreen As String) As Long
