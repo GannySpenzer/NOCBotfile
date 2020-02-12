@@ -260,7 +260,7 @@ Public Class SiteUpload
                 strConfigSource = System.Configuration.ConfigurationSettings.AppSettings("ZeusProdConfigFiles")
         End Select
 
-        Dim strProdUpdateFiles As String() = New String(7) {}
+        Dim strProdUpdateFiles As String() = New String(10) {}
         strProdUpdateFiles(0) = "printJob.template.xml"
         strProdUpdateFiles(1) = "SDI.PickingReports.dll.config"
         strProdUpdateFiles(2) = "SDI.PrintJob.dll.config"
@@ -269,6 +269,11 @@ Public Class SiteUpload
         strProdUpdateFiles(5) = "SDI.PrintJob.nycTruckingDelivForm.dll.config"
         strProdUpdateFiles(6) = "SDI.PrintJob.nycTruckingDelivForm.template.xml"
         strProdUpdateFiles(7) = "UpdEmailOut.dll.config"
+        If cmbServer.Text = "SDIX2012ZEUS2" Then
+            strProdUpdateFiles(8) = "CreditCardCapture.aspx"
+            strProdUpdateFiles(9) = "ShoppingCartPayment.aspx"
+            strProdUpdateFiles(10) = "PunchInSAP.xml"
+        End If
 
         Try
 
@@ -398,6 +403,32 @@ Public Class SiteUpload
                             Exit Sub
                         End If
                     Next
+                    ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+                    If cmbServer.Text = "SDIX2012ZEUS2" Then
+                        For i = 8 To 10
+                            copyFrom = strConfigSource & "\" & strProdUpdateFiles(8)
+                            If i <> 10 Then
+                                copyTo = txtSource.Text & "\" & strProdUpdateFiles(8)
+                            Else
+                                copyTo = txtSource.Text & "\PunchinXML\" & strProdUpdateFiles(10)
+                            End If
+
+                            lblMessage.AppendText("Copying " & copyFrom & " to " & copyTo & "..." & vbCrLf)
+                            Me.Refresh()
+                            Application.DoEvents()
+                            Dim strtestFromDate As String = System.IO.File.GetLastWriteTime(copyFrom)
+                            My.Computer.FileSystem.CopyFile(copyFrom, copyTo, True)
+
+                            Dim strtestToDate = System.IO.File.GetLastWriteTime(copyTo)
+
+                            If Not My.Computer.FileSystem.FileExists(copyTo) Or strtestFromDate <> strtestToDate Then
+                                lblMessage.Text = copyTo + " was not copied.  Stopping process"
+                                lblMessage.ForeColor = Color.Red
+                                Exit Sub
+                            End If
+                        Next
+                    End If
+                    ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
                 Catch ex As Exception
                     lblMessage.Text = ex.ToString
@@ -557,8 +588,8 @@ Public Class SiteUpload
 
         If cmbServer.Text = "IMS" Then
             dirRoot = "\\ims\c$\builds\"
-        ElseIf cmbServer.Text = "SDIX2012CLONE" Then
-            dirRoot = "\\sdix2012clone\d$\A_Zeus_Copy\"
+        ElseIf cmbServer.Text = "SDIXAWS2016TEST" Then
+            dirRoot = "\\SDIXAWS2016TEST\d$\Zeus_Copy\"
         ElseIf cmbServer.Text = "SDIX2012ZEUS2" Then
             dirRoot = "\\sdix2012zeus2\d$\PROD_Publish\"
         ElseIf cmbServer.Text = "SDIX2012" Then
