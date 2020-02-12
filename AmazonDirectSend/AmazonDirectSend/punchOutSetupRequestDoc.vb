@@ -885,9 +885,9 @@ Public Class punchOutSetupRequestDoc
                                 'End If
                                 If Trim(strSupplierPartAuxiliaryID) <> "" Then
                                     strSupplierPartAuxiliaryID = Trim(strSupplierPartAuxiliaryID)
-                                    If Len(strSupplierPartAuxiliaryID) > 60 Then
+                                    If Len(strSupplierPartAuxiliaryID) > 59 Then
                                         'line came from Amazon Search
-                                        '           Extrinsic 
+                                        '  Extrinsic
                                         node = nodeItemID.AppendChild(docXML.CreateElement(name:="Extrinsic"))
                                         '                 (1) name - under Extrinsic
                                         attrib = node.Attributes.Append(docXML.CreateAttribute(name:="name"))
