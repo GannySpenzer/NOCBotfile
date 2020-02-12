@@ -93,8 +93,8 @@ Public Class easyHttp
         End Set
     End Property
 
-    Public Function SendAsString() As String
-        Return Send()
+    Public Function SendAsString(Optional ByRef strErrors As String = "") As String
+        Return Send(False, strErrors)
     End Function
 
     Public Function SendAsBytes() As String
@@ -102,39 +102,63 @@ Public Class easyHttp
     End Function
 
     '// default - sends data as string type
-    Private Function Send(Optional ByVal SendAsArrayOfBytes As Boolean = False) As String
+    Private Function Send(Optional ByVal SendAsArrayOfBytes As Boolean = False, Optional ByRef strErrors As String = "") As String
 
         Dim rtn As String = "easyHttp.Send::"
         Dim responseData As String = ""
+        strErrors = "Start;"
 
         If m_targetURL.Trim.Length > 0 Then
-            Dim request As HttpWebRequest = DirectCast(WebRequest.Create(m_targetURL), HttpWebRequest)
+            strErrors = strErrors & " after m_targetURL.Trim.Length > 0;"
+            Dim request As HttpWebRequest = Nothing '  Dim req As WebRequest = WebRequest.Create(urlAddress)
+            Try
+                strErrors = strErrors & " after 2;"
+                request = DirectCast(WebRequest.Create(m_targetURL), HttpWebRequest)
+                strErrors = strErrors & " after 3;"
+            Catch exCreate As Exception
+                responseData = "Place - Create " & exCreate.ToString()
+                strErrors = strErrors & " after 4 - err;"
+                Return responseData
+                Exit Function
+            End Try
             Dim response As HttpWebResponse = Nothing
             Dim sw As StreamWriter = Nothing
             Dim sr As StreamReader = Nothing
+            strErrors = strErrors & " after 5;"
 
             ' applied http header credentials is supplied
             If Not (Me.Crendentials Is Nothing) Then
                 request.Credentials = Me.Crendentials
+                strErrors = strErrors & " after 6;"
             End If
 
             ' prepare request Object
-            request.Method = Method.ToString().Substring(5)
+            Dim strMethod As String = Method.ToString()
+            If Len(strMethod) > 6 Then
+                request.Method = Method.ToString().Substring(5)
+            Else
+                request.Method = "POST"
+            End If
+            strErrors = strErrors & " after 7;"
 
             ' check/set form/post content-type if necessary
             If (m_httpMethod = HTTPMethod.HTTP_POST And _
                 m_dataToPost.Trim.Length > 0 And _
                 m_contentType.Trim.Length = 0) Then
                 m_contentType = "application/x-www-form-urlencoded"
+                strErrors = strErrors & " after 8;"
             End If
 
             ' set the content type of the request
             If (m_contentType.Trim.Length > 0) Then
+                strErrors = strErrors & " after 9;"
                 request.ContentType = m_contentType
                 If SendAsArrayOfBytes Then
                     request.ContentLength = Me.DataToPostAsBytes.Length
+                    strErrors = strErrors & " after 10;"
                 Else
                     request.ContentLength = Me.DataToPost.Length
+                    strErrors = strErrors & " after 11;"
                 End If
             End If
 
@@ -143,22 +167,27 @@ Public Class easyHttp
             If m_ignoreServerCert Then
                 System.Net.ServicePointManager.CertificatePolicy = New AlwaysIgnoreCertPolicy
             End If
+            strErrors = strErrors & " after 12;"
 
             'System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3
-            System.Net.ServicePointManager.SecurityProtocol = 3072 ' SecurityProtocolType.Tls
+            System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12  ' 3072 ' SecurityProtocolType.Tls
+            strErrors = strErrors & " after 13;"
 
             ' action type
             'request.Headers.Add(name:="SOAPAction", value:="https://schemas.microsoft.com/crm/2006/WebServices/Retrieve")
             If Not (m_requestHeaders Is Nothing) Then
+                strErrors = strErrors & " after 14;"
                 For n As Integer = 0 To (m_requestHeaders.Count - 1)
                     request.Headers.Add(name:=m_requestHeaders.Keys(n), value:=m_requestHeaders.Item(n))
                 Next
+                strErrors = strErrors & " after 15;"
             End If
 
             request.Timeout = 6000
 
             ' Send request, If request
             If (m_httpMethod = HTTPMethod.HTTP_POST) Then
+                strErrors = strErrors & " after 16;"
                 Try
                     sw = New StreamWriter(request.GetRequestStream())
                     If SendAsArrayOfBytes Then
@@ -169,32 +198,62 @@ Public Class easyHttp
                         sw.Write(Me.DataToPost)
                     End If
                     sw.Flush()
+                    strErrors = strErrors & " after 17;"
                 Catch Ex As Exception
-                    Throw New ApplicationException(message:=rtn & Ex.Message, innerException:=Ex)
+                    'Throw New ApplicationException(message:=rtn & Ex.Message, innerException:=Ex)
+                    responseData = "Place - sw.Write( " & Ex.ToString()
+                    strErrors = strErrors & " after 18 - err;"
+                    Return responseData
                 Finally
                     ' need to close this writer before even trying
                     '   to read the response!
-                    sw.Close()
+                    If Not sw Is Nothing Then
+                        Try
+                            sw.Close()
+                        Catch ex354 As Exception
+
+                        End Try
+                    End If
                 End Try
             End If
 
             ' receive response
             Try
+                strErrors = strErrors & " after 19;"
                 response = DirectCast(request.GetResponse(), HttpWebResponse)
                 sr = New StreamReader(response.GetResponseStream())
                 responseData = sr.ReadToEnd()
+                strErrors = strErrors & " after 20;"
             Catch webEx As System.Net.WebException
-                sr = New StreamReader(webEx.Response.GetResponseStream())
-                responseData = sr.ReadToEnd()
+                Try
+                    sr = New StreamReader(webEx.Response.GetResponseStream())
+                    responseData = sr.ReadToEnd()
+
+                Catch ex As Exception
+
+                End Try
                 'Throw New ApplicationException(message:=rtn & responseData, innerException:=webEx)
-                Throw New ApplicationException(message:=responseData, innerException:=webEx)
+                'Throw New ApplicationException(message:=responseData, innerException:=webEx)
+                responseData = responseData & "Place - Catch webEx " & webEx.ToString()
+                strErrors = strErrors & " after 21 - err;"
+                Return responseData
             Catch ex As Exception
-                Throw New ApplicationException(message:=rtn & ex.Message, innerException:=ex)
+                strErrors = strErrors & " after 22 - err;"
+                'Throw New ApplicationException(message:=rtn & Ex.Message, innerException:=Ex)
+                responseData = "Place - second catch " & ex.ToString()
+                Return responseData
             Finally
-                sr.Close()
+                If Not sr Is Nothing Then
+                    Try
+                        sr.Close()
+                    Catch ex As Exception
+
+                    End Try
+                End If
             End Try
         End If
 
+        strErrors = ""
         Return responseData
 
     End Function

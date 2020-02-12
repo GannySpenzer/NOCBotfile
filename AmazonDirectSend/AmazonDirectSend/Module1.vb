@@ -86,6 +86,7 @@ Module Module1
         ' get info from The view (which is currently in PROD) - SYSADM8.PS_ISA_PO_DISP_XML.      
 
         strMsgVendConfig = " 'm_vendorConfig.ConfigFile' is not defined"
+        objStreamWriter.WriteLine(strUrlToSend)
         Try
             objStreamWriter.WriteLine("Started building XML out " & Now())
             'process view
@@ -229,8 +230,10 @@ Module Module1
                                             objStreamWriter.WriteLine("Saving XML file to send for this OrderNo: " & strOrderNo & " ; Date/Time: " & Now())
                                             objStreamWriterXMLN1.WriteLine(strInput)
 
-                                            Call Send1(strInput, strOutput)
+                                            Dim strCreds As String = ""
+                                            Call Send1(strInput, strOutput, strCreds)
 
+                                            objStreamWriter.WriteLine("Creds + : " & strCreds)
                                             objStreamWriter.WriteLine("Saving Response XML file for this OrderNo: " & strOrderNo & " ; Date/Time: " & Now())
                                             objStrmWrtrXMLRspnsN1.WriteLine(strOutput)
 
@@ -487,7 +490,7 @@ Module Module1
 
     End Function
 
-    Private Sub Send1(ByRef strBox1 As String, ByRef strBox2 As String)
+    Private Sub Send1(ByRef strBox1 As String, ByRef strBox2 As String, Optional ByRef strCreds As String = "")
 
         strBox2 = ""
 
@@ -526,6 +529,7 @@ Module Module1
         Catch ex As Exception
             strPass12wd = "SDIZeus2019"
         End Try
+        strCreds = strUserNm1 & " " & strPass12wd
 
         Dim basicAuthBase641 As String = System.Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(String.Format("{0}:{1}", strUserNm1, strPass12wd)))
 
@@ -537,10 +541,11 @@ Module Module1
         httpSession.HeaderAttributes.Add(name:="SOAPAction", value:="https://schemas.microsoft.com/crm/2006/WebServices/Retrieve")
 
         sHttpResponse = ""
+        Dim strErrs As String = ""
 
         Try
             'sHttpResponse = httpSession.SendAsBytes
-            sHttpResponse = httpSession.SendAsString
+            sHttpResponse = httpSession.SendAsString(strErrs)
         Catch ex As Exception
             sHttpResponse &= ex.Message
         End Try
@@ -548,6 +553,10 @@ Module Module1
         httpSession = Nothing
 
         strBox2 = sHttpResponse
+
+        If Trim(strErrs) <> "" Then
+            strBox2 = strBox2 & " Messages from httpSession.SendAsString: " & strErrs
+        End If
 
     End Sub
 

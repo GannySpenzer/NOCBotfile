@@ -592,7 +592,7 @@ Public Class punchOutSetupRequestDoc
                                         End Try
                                     End If
                                     If Trim(strEmail) = "" Then
-                                        strEmail = "michael.randall@sdi.com"
+                                        strEmail = "michael.randall@isacs.com"
                                     End If
                                     nodeEmail.InnerText = strEmail
 
