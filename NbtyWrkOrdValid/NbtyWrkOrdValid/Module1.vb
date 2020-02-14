@@ -77,6 +77,7 @@ Module Module1
         End Try
         If (sLogPath.Length > 0) Then
             logpath = sLogPath & "\NbtyWrkOrdXmlIn" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+            sErrLogPath = sLogPath & "\NbtyWrkOrdXmlIn" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & "421" & ".txt"
         End If
 
         myLoggr1 = New SDI.ApplicationLogger.appLogger(sErrLogPath, TraceLevel.Verbose)
@@ -236,9 +237,9 @@ Module Module1
                     If aSrcFiles(I).Name.Length > Len("cmrpt_sdi_wo") - 1 Then
                         If aSrcFiles(I).Name.StartsWith("cmrpt_sdi_wo") Then
                             bFound = True
-                            File.Copy(aSrcFiles(I).FullName, "C:\NbtyWorkOrder\XMLIN\" & sPlantCode & "\" & aSrcFiles(I).Name, True)
+                            File.Copy(aSrcFiles(I).FullName, rootDir & "\XMLIN\" & sPlantCode & "\" & aSrcFiles(I).Name, True)
                             'File.Delete(aSrcFiles(I).FullName)
-                            m_logger.WriteInformationLog(rtn & " :: " & aSrcFiles(I).FullName & " copied to " & "C:\NbtyWorkOrder\XMLIN\" & sPlantCode & "\" & aSrcFiles(I).Name)
+                            m_logger.WriteInformationLog(rtn & " :: " & aSrcFiles(I).FullName & " copied to " & rootDir & "\XMLIN\" & sPlantCode & "\" & aSrcFiles(I).Name)
 
                         End If
                     End If
@@ -250,7 +251,7 @@ Module Module1
                 m_logger.WriteInformationLog(rtn & " :: No files to copy from " & dirInfo.FullName)
             End If
         Catch ex As Exception
-            myLoggr1.WriteErrorLog(rtn & " :: Error moving file(s) from " & dirInfo.FullName & " to C:\NbtyWorkOrder\XMLIN\" & sPlantCode & "\" & " ...")
+            myLoggr1.WriteErrorLog(rtn & " :: Error moving file(s) from " & dirInfo.FullName & " to " & rootDir & "\XMLIN\" & sPlantCode & "\" & " ...")
             myLoggr1.WriteErrorLog(rtn & " :: " & ex.ToString)
             bError = True
             Dim strXMLError As String = ex.Message
@@ -316,7 +317,7 @@ Module Module1
 
         m_logger.WriteInformationLog(rtn & " :: Start Insert of NBTY Work Ord. in SYSADM8.PS_ISA_NB_WOVAL for: " & sPlantCode)
 
-        Dim dirInfo As DirectoryInfo = New DirectoryInfo("C:\NbtyWorkOrder\XMLIN\" & sPlantCode & "\")
+        Dim dirInfo As DirectoryInfo = New DirectoryInfo(rootDir & "\XMLIN\" & sPlantCode & "\")
         Dim strFiles As String = ""
         Dim sr As System.IO.StreamReader
         Dim XMLContent As String = ""
@@ -365,7 +366,7 @@ Module Module1
                         bolError = True
                         bLineError = True
                         Try
-                            File.Move(aFiles(I).FullName, "C:\NbtyWorkOrder\BadXML\" & sPlantCode & "\" & aFiles(I).Name)
+                            File.Move(aFiles(I).FullName, rootDir & "\BadXML\" & sPlantCode & "\" & aFiles(I).Name)
                             File.Delete(aFiles(I).FullName)
                         Catch ex24 As Exception
                             myLoggr1.WriteErrorLog(rtn & " :: ** ")
@@ -772,15 +773,15 @@ Module Module1
                             End If
                         End If
                         'move file to BadXML folder
-                        File.Copy(aFiles(I).FullName, "C:\NbtyWorkOrder\BadXML\" & sPlantCode & "\" & aFiles(I).Name, True)
+                        File.Copy(aFiles(I).FullName, rootDir & "\BadXML\" & sPlantCode & "\" & aFiles(I).Name, True)
                         File.Delete(aFiles(I).FullName)
-                        m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & "C:\NbtyWorkOrder\BadXML\" & sPlantCode & "\" & aFiles(I).Name)
+                        m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & rootDir & "\BadXML\" & sPlantCode & "\" & aFiles(I).Name)
                     Else
 
                         'move file to XMLInProcessed folder
-                        File.Copy(aFiles(I).FullName, "C:\NbtyWorkOrder\XMLINProcessed\" & sPlantCode & "\" & aFiles(I).Name, True)
+                        File.Copy(aFiles(I).FullName, rootDir & "\XMLINProcessed\" & sPlantCode & "\" & aFiles(I).Name, True)
                         File.Delete(aFiles(I).FullName)
-                        m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & "C:\NbtyWorkOrder\XMLINProcessed\" & sPlantCode & "\" & aFiles(I).Name)
+                        m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & rootDir & "\XMLINProcessed\" & sPlantCode & "\" & aFiles(I).Name)
 
                     End If
                 Next  '  For I = 0 To aFiles.Length - 1
@@ -810,9 +811,9 @@ Module Module1
                 End If
             End If
             'move file to BadXML folder
-            File.Copy(aFiles(I).FullName, "C:\NbtyWorkOrder\BadXML\" & sPlantCode & "\" & aFiles(I).Name, True)
+            File.Copy(aFiles(I).FullName, rootDir & "\BadXML\" & sPlantCode & "\" & aFiles(I).Name, True)
             File.Delete(aFiles(I).FullName)
-            m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & "C:\NbtyWorkOrder\BadXML\" & sPlantCode & "\" & aFiles(I).Name)
+            m_logger.WriteInformationLog(rtn & " :: " & aFiles(I).FullName & " moved to " & rootDir & "\BadXML\" & sPlantCode & "\" & aFiles(I).Name)
 
             Return True
         End Try
