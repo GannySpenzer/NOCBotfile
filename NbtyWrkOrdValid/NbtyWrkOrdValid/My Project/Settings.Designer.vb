@@ -56,15 +56,6 @@ Namespace My
         
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("C:\NbtyWorkOrder\LOGS")>  _
-        Public ReadOnly Property logPath() As String
-            Get
-                Return CType(Me("logPath"),String)
-            End Get
-        End Property
-        
-        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
-         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.DefaultSettingValueAttribute("TechSupport@sdi.com")>  _
         Public ReadOnly Property onErrorEmail_From() As String
             Get
@@ -143,6 +134,15 @@ Namespace My
         Public ReadOnly Property rootDir() As String
             Get
                 Return CType(Me("rootDir"),String)
+            End Get
+        End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("C:\NbtyWorkOrder_RPTG\LOGS")>  _
+        Public ReadOnly Property logPath() As String
+            Get
+                Return CType(Me("logPath"),String)
             End Get
         End Property
     End Class

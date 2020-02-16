@@ -2,9 +2,6 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="My" GeneratedClassName="MySettings" UseMySettingsClassName="true">
   <Profiles />
   <Settings>
-    <Setting Name="logPath" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">C:\NbtyWorkOrder\LOGS</Value>
-    </Setting>
     <Setting Name="onErrorEmail_From" Type="System.String" Scope="Application">
       <Value Profile="(Default)">TechSupport@sdi.com</Value>
     </Setting>
@@ -31,6 +28,9 @@
     </Setting>
     <Setting Name="rootDir" Type="System.String" Scope="Application">
       <Value Profile="(Default)">C:\NbtyWorkOrder_RPTG</Value>
+    </Setting>
+    <Setting Name="logPath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">C:\NbtyWorkOrder_RPTG\LOGS</Value>
     </Setting>
   </Settings>
 </SettingsFile>
