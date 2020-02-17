@@ -26,7 +26,7 @@ namespace BanquestUtility
             FileStream fileStream = null;
             DirectoryInfo logDirInfo = null;
             FileInfo logFileInfo;
-            try 
+            try
             {
                 string logpath = string.Empty;
                 string appPath = AppDomain.CurrentDomain.BaseDirectory;
@@ -52,17 +52,26 @@ namespace BanquestUtility
                 string response2 = "";
                 string baseurl = ConfigurationManager.AppSettings["APIUrl"];
                 List<BatchBO> batchbos = new List<BatchBO>();
-                List<TransactionBO> transactionbos = new List<TransactionBO>();                
-                using (var client = new HttpClient()) 
-                {                    
-                    WebClient wbclient = new WebClient();                                      
+                List<TransactionBO> transactionbos = new List<TransactionBO>();
+                using (var client = new HttpClient())
+                {
+                    WebClient wbclient = new WebClient();
                     wbclient.Headers["Content-type"] = "application/json";
                     wbclient.Encoding = Encoding.UTF8;
-                    DateTime dttm_current = DateTime.Now;                    
-                    string date_from = dttm_current.AddDays(-1).ToString("yyyy-MM-dd");
-                    string date_to = dttm_current.ToString("yyyy-MM-dd");
+                    DateTime dttm_current = DateTime.Now;
+                    string date_from = "";
+                    string date_to = "";
                     string mainurl = "";
-                    
+
+                    date_from = ConfigurationManager.AppSettings["FromDate"];
+                    date_to = ConfigurationManager.AppSettings["ToDate"];
+
+                    if (date_from.Trim() == "" && date_to.Trim() == "")
+                    {
+                        date_from = dttm_current.AddDays(-1).ToString("yyyy-MM-dd");
+                        date_to = dttm_current.ToString("yyyy-MM-dd");
+                    }
+
                     mainurl = baseurl + "api/CreditCard/Getbatch?date_from=" + date_from + "&date_to=" + date_to + "";
                     response = wbclient.DownloadString(mainurl);
                     response = response.TrimStart('\"');
@@ -94,7 +103,7 @@ namespace BanquestUtility
                                 log.WriteLine("*Transaction ID : " + Convert.ToString(transactionbo.id));
                                 string Batch_ID = "";
                                 DateTime Added_DTTM;
-                                
+
                                 DateTime Transaction_date;
                                 string processing_status = "";
                                 string confirmation_id = "";
@@ -107,48 +116,69 @@ namespace BanquestUtility
                                 string description = "";
                                 description = Convert.ToString(transactionbo.transaction_details.description);
                                 string[] descs;
-                                descs = description.Split('^');
-                                if (descs != null && descs.Count() != 0)
-                                {                                    
-                                    foreach (var desc in descs)
+                                if (description.Trim() != "")
+                                {
+                                    descs = description.Split('^');
+                                    if (descs != null && descs.Count() != 0)
                                     {
-                                        string Invoice = "";
-                                        string Payment_Amt = "";
-                                        string[] splitvalues = desc.Split('-');
-                                        if (splitvalues.Count() > 0)
+                                        foreach (var desc in descs)
                                         {
-                                            Invoice = splitvalues[0].ToString();
-                                            Payment_Amt = splitvalues[1].ToString();
-                                            Boolean results = false;
-                                            log.WriteLine("Inovice number : " + Invoice);
-                                            string sqlquery = "";
-                                            sqlquery = "INSERT INTO SYSADM8.PS_ISA_AR_CR_CARD (BATCH_ID, DTTIME_ADDED, INVOICE, PAYMENT_AMT, " + System.Environment.NewLine +
-                                                        "TRANSACTION_DATE, PROCESSING_STATUS, CONFIRMATION_ID) " + System.Environment.NewLine +
-                                                        "Values('" + Batch_ID + "', TO_DATE('" + Added_DTTM.ToString("yyyy-MM-dd hh:mm:ss") + "', 'yyyy-MM-dd hh:mi:ss'), '" + Invoice + "', " + Payment_Amt + ", TO_DATE('" + Transaction_date.ToString("yyyy-MM-dd") + "', 'yyyy-MM-dd'), 'N', '" + confirmation_id + "')";
-                                            results = InsertTbl(sqlquery);
-                                            if (results)
+                                            string Invoice = "";
+                                            string Payment_Amt = "";
+                                            string[] splitvalues = desc.Split('-');
+                                            if (splitvalues.Count() > 0)
                                             {
-                                                log.WriteLine("Transaction details inserted succesfully.");
-                                                log.WriteLine(" ");
+                                                Invoice = splitvalues[0].ToString();
+                                                Payment_Amt = splitvalues[1].ToString();
+                                                Boolean results = false;
+                                                log.WriteLine("Inovice number : " + Invoice);
+                                                string sqlquery = "";
+                                                string strBatchID = "";
+
+                                                sqlquery = "select Batch_ID from SYSADM8.PS_ISA_AR_CR_CARD where batch_id='" + Batch_ID + "' and invoice='" + Invoice + "' and payment_amt = " + Payment_Amt + " and confirmation_id='" + confirmation_id + "'";
+
+                                                strBatchID = GetScalar(sqlquery);
+
+                                                if (strBatchID == "")
+                                                {
+                                                    sqlquery = "INSERT INTO SYSADM8.PS_ISA_AR_CR_CARD (BATCH_ID, DTTIME_ADDED, INVOICE, PAYMENT_AMT, " + System.Environment.NewLine +
+                                                                "TRANSACTION_DATE, PROCESSING_STATUS, CONFIRMATION_ID) " + System.Environment.NewLine +
+                                                                "Values('" + Batch_ID + "', TO_DATE('" + Added_DTTM.ToString("yyyy-MM-dd hh:mm:ss") + "', 'yyyy-MM-dd hh:mi:ss'), '" + Invoice + "', " + Payment_Amt + ", TO_DATE('" + Transaction_date.ToString("yyyy-MM-dd") + "', 'yyyy-MM-dd'), 'N', '" + confirmation_id + "')";
+                                                    results = InsertTbl(sqlquery);
+                                                    if (results)
+                                                    {
+                                                        log.WriteLine("Transaction details inserted succesfully.");
+                                                        log.WriteLine(" ");
+                                                    }
+                                                    else
+                                                    {
+                                                        log.WriteLine("Error in inserting the transaction details. Query :" + sqlquery);
+                                                        log.WriteLine(" ");
+                                                    }
+                                                }
+                                                else {
+                                                    log.WriteLine("Transaction details already exist in SYSADM8.PS_ISA_AR_CR_CARD table.");
+                                                    log.WriteLine(" ");
+                                                }
                                             }
                                             else
                                             {
-                                                log.WriteLine("Error in inserting the transaction details. Query :" + sqlquery);
+                                                log.WriteLine("Error: Inovoice or amount details is missing.");
                                                 log.WriteLine(" ");
                                             }
                                         }
-                                        else
-                                        {
-                                            log.WriteLine("Error: Inovoice or amount details is missing.");
-                                            log.WriteLine(" ");
-                                        }
+                                    }
+                                    else
+                                    {
+                                        log.WriteLine("Description contains null value.");
+                                        log.WriteLine(" ");
                                     }
                                 }
-                                else 
+                                else
                                 {
                                     log.WriteLine("Description contains null value.");
                                     log.WriteLine(" ");
-                                }                                
+                                }
                             }
                         }
                         else
@@ -158,16 +188,17 @@ namespace BanquestUtility
                         }
                     }
                 }
-                else 
+                else
                 {
                     log.WriteLine("There is no batches are availible.");
                     log.WriteLine(" ");
                 }
                 log.Close();
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 SendErrorEmail(ex, ex.Message, ex.InnerException.ToString(), "");
-            }            
+            }
         }
 
         private static Boolean InsertTbl(string insertquery)
@@ -197,10 +228,70 @@ namespace BanquestUtility
                 }
                 return reslt;
 
-            }catch (Exception ex) 
+            }
+            catch (Exception ex)
             {
                 return false;
             }
+        }
+
+        public static string GetScalar(string p_strQuery, bool bGoToErrPage = true)
+        {
+            // Gives us a reference to the current asp.net 
+            // application executing the method.
+            //HttpApplication currentApp = HttpContext.Current.ApplicationInstance;
+            string strReturn = "";
+            OleDbConnection connection = new OleDbConnection(ConfigurationManager.ConnectionStrings["ConString"].ConnectionString);
+            try
+            {
+                OleDbCommand Command = new OleDbCommand(p_strQuery, connection);
+                Command.CommandTimeout = 120;
+                connection.Open();
+                try
+                {
+                    strReturn = System.Convert.ToString(Command.ExecuteScalar());
+                }
+                catch (Exception ex32)
+                {
+                    strReturn = "";
+                }
+                if (strReturn == null)
+                    strReturn = "";
+                try
+                {
+                    Command.Dispose();
+                }
+                catch (Exception ex1)
+                {
+                }
+                try
+                {
+                    connection.Close();
+                    connection.Dispose();
+                }
+                catch (Exception ex2)
+                {
+                }
+            }
+            // connection.close()
+            catch (Exception objException)
+            {
+                strReturn = "";
+
+                try
+                {
+                    connection.Close();
+                    connection.Dispose();
+                }
+                catch (Exception ex)
+                {
+
+                    // connection.close()
+
+                }
+            }
+
+            return strReturn;
         }
 
         public static Boolean SendErrorEmail(Exception exception, string strMessage, string InnerExcp, string MethodName)
@@ -296,5 +387,5 @@ namespace BanquestUtility
             }
             return isEmailSent;
         }
-    }   
+    }
 }
