@@ -158,16 +158,21 @@ namespace MatchExcepReload
 
                         if (dal.dtResponseRowsCount > 0)
                         {
-                             while (dal.gotAllData == "N")
+                            while (dal.gotAllData == "N")
                             {
-                               MEData med = dal.getData(m_oLogger);
+                                MEData med = dal.getData(m_oLogger);
 
-                               //new batch SoapUI code
-                               Batcher batcher = new Batcher(authorization, password);
-                               batcher.CreateBuyExpBatch(med, m_oLogger, out strResponse);
+                                //new batch SoapUI code
+                                Batcher batcher = new Batcher(authorization, password);
+                                batcher.CreateBuyExpBatch(med, m_oLogger, out strResponse);
 
-                               dal.UpdateTable(m_oLogger );
+                                dal.UpdateTable(m_oLogger);
                             }
+                        }
+                        else
+                        {
+                            m_oLogger.LogMessage("MatchExcepReload", "No records returned from query.");
+                            strResponse = "SUCCESS";
                         }
                     }
                     catch (Exception ex)
