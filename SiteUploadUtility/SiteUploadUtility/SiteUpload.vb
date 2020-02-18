@@ -272,7 +272,7 @@ Public Class SiteUpload
         If cmbServer.Text = "SDIX2012ZEUS2" Then
             strProdUpdateFiles(8) = "CreditCardCapture.aspx"
             strProdUpdateFiles(9) = "ShoppingCartPayment.aspx"
-            strProdUpdateFiles(10) = "PunchInSAP.xml"
+            strProdUpdateFiles(10) = "PunchINSAP.xml"
         End If
 
         Try
@@ -285,6 +285,15 @@ Public Class SiteUpload
             For i = 0 To 7
                 strMessage += strProdUpdateFiles(i) + " to " & vbCrLf & txtSource.Text & "\bin" & vbCrLf
             Next i
+            If cmbServer.Text = "SDIX2012ZEUS2" Then
+                For i = 8 To 10
+                    If i <> 10 Then
+                        strMessage += strProdUpdateFiles(i) + " to " & vbCrLf & txtSource.Text & "\" & vbCrLf
+                    Else
+                        strMessage += strProdUpdateFiles(i) + " to " & vbCrLf & txtSource.Text & "\PunchinXML\" & vbCrLf
+                    End If
+                Next i
+            End If
             strMessage += vbCrLf
 
             strMessage += "4. STOP IIS Services with a 3 second pause" & vbCrLf & vbCrLf
@@ -346,7 +355,7 @@ Public Class SiteUpload
                     Dim strtestToDate As String = System.IO.File.GetLastWriteTime(copyTo)
 
 
-                    If Not My.Computer.FileSystem.FileExists(copyTo) Or strtestFromDate <> strtestToDate Then
+                    If Not (My.Computer.FileSystem.FileExists(copyTo) And strtestFromDate = strtestToDate) Then
                         lblMessage.Text = copyTo + " was not copied.  Stopping process"
                         lblMessage.ForeColor = Color.Red
                         Exit Sub
@@ -373,7 +382,7 @@ Public Class SiteUpload
 
                     Dim strtestToDate As String = System.IO.File.GetLastWriteTime(copyTo)
 
-                    If Not My.Computer.FileSystem.FileExists(copyTo) Or strtestFromDate <> strtestToDate Then
+                    If Not (My.Computer.FileSystem.FileExists(copyTo) And strtestFromDate = strtestToDate) Then
                         lblMessage.Text = copyTo + " was not copied.  Stopping process"
                         lblMessage.ForeColor = Color.Red
                         Exit Sub
@@ -397,7 +406,7 @@ Public Class SiteUpload
 
                         Dim strtestToDate As String = System.IO.File.GetLastWriteTime(copyTo)
 
-                        If Not My.Computer.FileSystem.FileExists(copyTo) Or strtestFromDate <> strtestToDate Then
+                        If Not (My.Computer.FileSystem.FileExists(copyTo) And strtestFromDate = strtestToDate) Then
                             lblMessage.Text = copyTo + " was not copied.  Stopping process"
                             lblMessage.ForeColor = Color.Red
                             Exit Sub
@@ -406,9 +415,9 @@ Public Class SiteUpload
                     ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
                     If cmbServer.Text = "SDIX2012ZEUS2" Then
                         For i = 8 To 10
-                            copyFrom = strConfigSource & "\" & strProdUpdateFiles(8)
+                            copyFrom = strConfigSource & "\" & strProdUpdateFiles(i)
                             If i <> 10 Then
-                                copyTo = txtSource.Text & "\" & strProdUpdateFiles(8)
+                                copyTo = txtSource.Text & "\" & strProdUpdateFiles(i)
                             Else
                                 copyTo = txtSource.Text & "\PunchinXML\" & strProdUpdateFiles(10)
                             End If
@@ -419,9 +428,9 @@ Public Class SiteUpload
                             Dim strtestFromDate As String = System.IO.File.GetLastWriteTime(copyFrom)
                             My.Computer.FileSystem.CopyFile(copyFrom, copyTo, True)
 
-                            Dim strtestToDate = System.IO.File.GetLastWriteTime(copyTo)
+                            Dim strtestToDate As String = System.IO.File.GetLastWriteTime(copyTo)
 
-                            If Not My.Computer.FileSystem.FileExists(copyTo) Or strtestFromDate <> strtestToDate Then
+                            If Not (My.Computer.FileSystem.FileExists(copyTo) And strtestFromDate = strtestToDate) Then
                                 lblMessage.Text = copyTo + " was not copied.  Stopping process"
                                 lblMessage.ForeColor = Color.Red
                                 Exit Sub
