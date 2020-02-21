@@ -134,7 +134,7 @@ namespace MatchExcepReload
                 strSQLstring += "NVL(B.SHIPTO_ID, ' ') as SHIPTO_ID,\n";
                 strSQLstring += "NVL(A.ASSIGNED_TO, ' ') as ASSIGNED_TO,\n";
                 strSQLstring += "A.TYPE_DESCR as TASK_TYPE,\n";
-                strSQLstring += "A.LINE_COUNT as ME_LINES,\n";
+                strSQLstring += "NVL(A.LINE_COUNT, 0) as ME_LINES,\n";
                 strSQLstring += "A.DWR_DAYS_OVERALL as DAYS_OVERALL,\n";
                 strSQLstring += "case when A.DWR_AGING = '0 to 7 days' then '00 - 07'\n";
                 strSQLstring += "when A.DWR_AGING = '8 to 14 days' then '08 - 14'\n";
@@ -154,14 +154,14 @@ namespace MatchExcepReload
                 strSQLstring += "NVL(A.DISP_METHOD, ' ') as DISPATCH_METHOD,\n";
                 strSQLstring += "A.INVOICE_ID as INVOICE_ID,\n";
                 strSQLstring += "TO_CHAR(A.INVOICE_DT, 'YYYY-MM-DD') as INVOICE_DATE,\n";
-                strSQLstring += "A.TOTAL_INVOICED_AMT as TOTAL_INVOICED_AMT,\n";
+                strSQLstring += "NVL(A.TOTAL_INVOICED_AMT, 0) as TOTAL_INVOICED_AMT,\n";
                 strSQLstring += "NVL(TO_CHAR(CAST((A.DWR_SCAN_DATE)AS TIMESTAMP), 'YYYY-MM-DD HH24:MI:SS'), sysdate) as SCAN_DATE,\n";
                 strSQLstring += "NVL(TO_CHAR(CAST((A.DWR_TASK_DATE)AS TIMESTAMP), 'YYYY-MM-DD HH24:MI:SS'), sysdate) as TASK_DATE,\n";
                 strSQLstring += "NVL(A.DWR_TASK_DAYS, 0) as TASK_DAYS,\n";
                 strSQLstring += "A.DWR_AGING2 as TASK_AGING,\n";
-                strSQLstring += "TO_CHAR(CAST((A.DWR_ASSIGNED_DT)AS TIMESTAMP), 'YYYY-MM-DD HH24:MI:SS') as DATE_ASSIGNED,\n";
-                strSQLstring += "A.DWR_DAYS_ASSIGNED as DAYS_ASSIGNED,\n";
-                strSQLstring += "A.DWR_AGING3 as ASSIGNED_AGING,\n";
+                strSQLstring += "NVL(TO_CHAR(CAST((A.DWR_ASSIGNED_DT)AS TIMESTAMP), 'YYYY-MM-DD HH24:MI:SS'), '2000-01-01 00:00:00') as DATE_ASSIGNED,\n";
+                strSQLstring += "NVL(A.DWR_DAYS_ASSIGNED, 0) as DAYS_ASSIGNED,\n";
+                strSQLstring += "NVL(A.DWR_AGING3, ' ') as ASSIGNED_AGING,\n";
                 strSQLstring += "NVL(P.BUYER_MANAGER, ' ') as BUYER_TEAM,\n";
                 strSQLstring += "UU.url || '/EMPLOYEE/ERP/c/MANAGE_PURCHASE_ORDERS.PURCHASE_ORDER.GBL?Page=PO_LINE&Action=U&BUSINESS_UNIT=' || B.BUSINESS_UNIT || '&PO_ID=' || b.po_ID || '&TargetFrameName=None' as PS_URL,\n";
                 strSQLstring += "' ' as PROCESS_FLAG\n";
