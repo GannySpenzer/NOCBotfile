@@ -1134,12 +1134,12 @@ Module Module1
         dteEndDate.AddSeconds(1)
 
         ''to stop the previous old emails
-        Dim date2 As DateTime = #1/7/2019#
+        Dim date2 As DateTime = #12/7/2019#
         'Dim rslt As Integer = DateTime.Compare(date2, dteStartDate)
 
-        If date2 > dteStartDate Then
+        If date2 >= dteStartDate Then
             dteStartDate = Now.AddDays(-1).ToString("MM/dd/yyyy")
-        End If        
+        End If
 
         ' stock items will get item id from the ps_isa_ord_intfc_l table  but description from the PS_MASTER_ITEM_TB
         ' non-stock items  has no item-id num and gets description from the ps_isa_ord_intfc_l
@@ -1154,7 +1154,7 @@ Module Module1
         '    ' add Ascend e-mail field
         '    strSQLstring += " AB.EMAIL_ADDRESS AS ASCEND_EMAIL_ADDRESS," & vbCrLf
         'End If
-        strSQLstring += "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','01','QTW','02','QTC','03','QTS','04','CST','05','VND','06','APR','07','QTA','08','QTR','09','RFA','10','RFR','11','RFC','12','RCF','13','RCP','14','CNC','15','DLF','16','00') AS OLD_ORDER_STATUS," & vbCrLf & _
+        strSQLstring += "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','01','QTW','02','QTC','03','QTS','04','CST','05','VND','06','APR','07','QTA','08','QTR','09','RFA','10','RFR','11','RFC','12','RCF','13','RCP','14','CNC','15','DLF','16','CRE','1','NEW','2','DSP','3','ORD','3','RSV','3','PKA','4','PKP','4','DLP','5','RCP','5','RCF','6','PKQ','5','DLO','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','1','00') AS OLD_ORDER_STATUS," & vbCrLf & _
                  " (SELECT E.XLATLONGNAME" & vbCrLf & _
                                 " FROM XLATTABLE E" & vbCrLf & _
                                 " WHERE E.EFFDT =" & vbCrLf & _
@@ -1197,7 +1197,7 @@ Module Module1
                  " AND UPPER(B.ISA_EMPLOYEE_ID) = UPPER(D.ISA_EMPLOYEE_ID)) TBL, PS_ISA_USERS_PRIVS H " & vbCrLf & _
                  " WHERE H.BUSINESS_UNIT = TBL.BUSINESS_UNIT " & vbCrLf & _
                  " AND TBL.EMPLID = H.ISA_EMPLOYEE_ID " & vbCrLf & _
-                 " AND SUBSTR(H.ISA_IOL_OP_NAME, 9) = TBL.OLD_ORDER_STATUS " & vbCrLf & _
+                 " AND ((SUBSTR(H.ISA_IOL_OP_NAME, 9) = TBL.OLD_ORDER_STATUS) OR (SUBSTR(H.ISA_IOL_OP_NAME, 10) = TBL.OLD_ORDER_STATUS))" & vbCrLf & _
                  " AND H.ISA_IOL_OP_VALUE = 'Y') WHERE ORDER_TYPE = ISA_ORDER_STATUS " & vbCrLf & _
                   " ORDER BY ORDER_NO, LINE_NBR, DTTM_STAMP"
         ' this is set up in the user priveleges when giving out the status code priveleges in ISOL under Add/Change User
@@ -1266,7 +1266,10 @@ Module Module1
             Try
                 strStatus_code = ds.Tables(0).Rows(I).Item("STATUS_CODE")
                 strStatus_code = strStatus_code.Substring(8)
-
+                If Char.IsLetter(strStatus_code.Chars(I)) Then
+                    strStatus_code = ds.Tables(0).Rows(I).Item("STATUS_CODE")
+                    strStatus_code = strStatus_code.Substring(9)
+                End If
             Catch ex As Exception
                 strStatus_code = " "
             End Try
