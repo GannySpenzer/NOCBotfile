@@ -53,8 +53,9 @@ Module Module1
         dsBU = GetBU()
 
         If Not dsBU Is Nothing Then
-            ' check stock
+            '' '' check stock
             For I = 0 To dsBU.Tables(0).Rows.Count - 1
+                objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
                 objStreamWriter.WriteLine("  StatChg Email send stock emails for " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
                 buildstatchgout = checkStock(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
                 If buildstatchgout = True Then
@@ -62,8 +63,9 @@ Module Module1
                 End If
             Next
 
-            ' check non-stock
+            '''' check non-stock
             For I = 0 To dsBU.Tables(0).Rows.Count - 1
+                objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
                 objStreamWriter.WriteLine("  StatChg Email send nonstock emails for " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
                 buildstatchgout = checkNonStock(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
                 If buildstatchgout = True Then
@@ -72,6 +74,7 @@ Module Module1
             Next
 
             For I = 0 To dsBU.Tables(0).Rows.Count - 1
+                objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
                 objStreamWriter.WriteLine("  StatChg Email send allstatus emails for " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
                 buildstatchgout = checkAllStatus_7(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
                 If buildstatchgout = True Then
@@ -101,7 +104,7 @@ Module Module1
     Private Function GetBU() As DataSet
         Dim ds As System.Data.DataSet = New System.Data.DataSet
         Try
-            ''Dim getBuQuery As String = "SELECT  A.ISA_BUSINESS_UNIT as BUSINESS_UNIT,A.ISA_BUSINESS_UNIT || ' - ' || B.descr  as  DESCRIPTION FROM  SYSADM8.PS_ISA_ENTERPRISE A, SYSADM8.PS_LOCATION_TBL B WHERE  B.location =  'L'|| substr(A.ISA_BUSINESS_UNIT,2) || '-01' AND A.BU_STATUS = '1' AND B.EFFDT = (SELECT MAX(A_ED.EFFDT) FROM PS_LOCATION_TBL A_ED WHERE B.SETID = A_ED.SETID AND B.LOCATION = A_ED.LOCATION AND A_ED.EFFDT <= SYSDATE) ORDER BY A.ISA_BUSINESS_UNIT"
+            ''Dim getBuQuery As String = "SELECT * FROM (SELECT  A.ISA_BUSINESS_UNIT as BUSINESS_UNIT,A.ISA_BUSINESS_UNIT || ' - ' || B.descr  as  DESCRIPTION FROM  SYSADM8.PS_ISA_ENTERPRISE A, SYSADM8.PS_LOCATION_TBL B WHERE  B.location =  'L'|| substr(A.ISA_BUSINESS_UNIT,2) || '-01' AND A.BU_STATUS = '1' AND B.EFFDT = (SELECT MAX(A_ED.EFFDT) FROM PS_LOCATION_TBL A_ED WHERE B.SETID = A_ED.SETID AND B.LOCATION = A_ED.LOCATION AND A_ED.EFFDT <= SYSDATE)) WHERE BUSINESS_UNIT = 'I0469'"
             Dim getBuQuery As String = "SELECT  A.ISA_BUSINESS_UNIT as BUSINESS_UNIT,A.ISA_BUSINESS_UNIT || ' - ' || B.descr  as  DESCRIPTION FROM  SYSADM8.PS_ISA_ENTERPRISE A, SYSADM8.PS_LOCATION_TBL B WHERE  B.location =  'L'|| substr(A.ISA_BUSINESS_UNIT,2) || '-01' AND A.BU_STATUS = '1' AND B.EFFDT = (SELECT MAX(A_ED.EFFDT) FROM PS_LOCATION_TBL A_ED WHERE B.SETID = A_ED.SETID AND B.LOCATION = A_ED.LOCATION AND A_ED.EFFDT <= SYSDATE)"
             Dim Command As OleDbCommand = New OleDbCommand(getBuQuery, connectOR)
             If connectOR.State = ConnectionState.Open Then
@@ -916,9 +919,13 @@ Module Module1
         strbodydetl = strbodydetl & "&nbsp;<BR>"
         strbodydetl = strbodydetl & "Order contents:<br>"
         strbodydetl = strbodydetl & "&nbsp;<BR>"
-        If Not (String.IsNullOrEmpty(Ord_notes)) Then
-            strbodydetl = strbodydetl & "Customer Notes: " & Ord_notes & " <br> "
+
+        If Not Ord_notes Is Nothing Then
+            If Not (String.IsNullOrEmpty(Ord_notes.Trim())) Then
+                strbodydetl = strbodydetl & "Customer Notes: " & Ord_notes & " <br> "
+            End If
         End If
+        
         strbodydetl = strbodydetl & "&nbsp;</p>"
         strbodydetl = strbodydetl & "<TABLE cellSpacing='1' cellPadding='1' width='100%' border='0'>" & vbCrLf
         strbodydetl = strbodydetl + "<TR><TD Class='DetailRow' width='100%'>" & dataGridHTML & "</TD></TR>"
@@ -946,20 +953,38 @@ Module Module1
         Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
         If strbu = "I0260" Or strbu = "I0206" Then
             If Not strOrigin = "MIS" Then
-                Mailer.Subject = "SDiExchange - Order Status " & strOrderNo & " has been Delivered"
+                If connectOR.DataSource.ToUpper = "RPTG" Or _
+                connectOR.DataSource.ToUpper = "DEVL" Or _
+                connectOR.DataSource.ToUpper = "STAR" Or _
+                connectOR.DataSource.ToUpper = "PLGR" Then
+                    Mailer.Subject = "<<TEST SITE>>SDiExchange - Order Status " & strOrderNo & " has been Delivered"
+                Else
+                    Mailer.Subject = "SDiExchange - Order Status " & strOrderNo & " has been Delivered"
+                End If
             Else
-                Mailer.Subject = "SDiExchange - Order Status " & strOrderNo & " Picked & Ready for Pickup @ SDI Storeroom"
+                If connectOR.DataSource.ToUpper = "RPTG" Or _
+                connectOR.DataSource.ToUpper = "DEVL" Or _
+                connectOR.DataSource.ToUpper = "STAR" Or _
+                connectOR.DataSource.ToUpper = "PLGR" Then
+                    Mailer.Subject = "<<TEST SITE>>SDiExchange - Order Status " & strOrderNo & " Picked & Ready for Pickup @ SDI Storeroom"
+                Else
+                    Mailer.Subject = "SDiExchange - Order Status " & strOrderNo & " Picked & Ready for Pickup @ SDI Storeroom"
+                End If
+
             End If
             SDIEmailService.EmailUtilityServices("MailandStore", Mailer.From, Mailer.To, Mailer.Subject, String.Empty, "webdev@sdi.com", Mailer.Body, "StatusChangeEmail0", MailAttachmentName, MailAttachmentbytes.ToArray())
         Else
-            Mailer.Subject = "SDiExchange - Order Status " & strOrderNo & " is Ready for Pickup"
+            If connectOR.DataSource.ToUpper = "RPTG" Or _
+            connectOR.DataSource.ToUpper = "DEVL" Or _
+            connectOR.DataSource.ToUpper = "STAR" Or _
+            connectOR.DataSource.ToUpper = "PLGR" Then
+                Mailer.Subject = "<<TEST SITE>>SDiExchange - Order Status " & strOrderNo & " is Ready for Pickup"
+            Else
+                Mailer.Subject = "SDiExchange - Order Status " & strOrderNo & " is Ready for Pickup"
+            End If
+
             SDIEmailService.EmailUtilityServices("MailandStore", Mailer.From, Mailer.To, Mailer.Subject, String.Empty, "webdev@sdi.com", Mailer.Body, "StatusChangeEmail0", MailAttachmentName, MailAttachmentbytes.ToArray())
         End If
-
-        ''Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
-
-        'UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer.Subject, Mailer.From, "sriram.s@avasoft.biz", "", "", "N", Mailer.Body, connectOR) WebDev@sdi.com;sriram.s@avasoft.biz;madhuvanthy.u@avasoft.biz;Karguvelrajan.P@avasoft.biz
-        ''SDIEmailService.EmailUtilityServices("MailandStore", Mailer.From, "WebDev@sdi.com;sriram.s@avasoft.biz;madhuvanthy.u@avasoft.biz;Karguvelrajan.P@avasoft.biz", Mailer.Subject, String.Empty, String.Empty, Mailer.Body, "StatusChangeEmail0", MailAttachmentName, MailAttachmentbytes.ToArray())
     End Sub
 
     Private Sub SendEmail()
@@ -1056,6 +1081,7 @@ Module Module1
 
     Private Function checkAllStatus_7(ByVal strBU As String) As Boolean
         Dim strSQLstring As String
+        Dim strSQLstring1 As String
         Dim dteEndDate As DateTime = Now
 
         Dim format As New System.Globalization.CultureInfo("en-US", True)
@@ -1111,11 +1137,6 @@ Module Module1
         Dim dteSTKREQEmail As String = objEnterprise.STKREQEmail
         Dim dteNONSKREQEmail As String = objEnterprise.NONSKREQEmail
 
-        'If strBU = "I0256" Then
-        '    dteStartDate = dteStartDate.AddMinutes(-31)
-        '    'dteStartDate = dteStartDate.AddHours(-15)
-        'End If
-
         Try
             connectOR.Close()
         Catch ex As Exception
@@ -1123,6 +1144,7 @@ Module Module1
         End Try
 
         Dim ds As New DataSet
+        Dim ds2 As New DataSet
         Dim bolerror1 As Boolean
 
         ' check is processed order is ASCEND order
@@ -1131,11 +1153,10 @@ Module Module1
             bIsAscend = IsBuAscend(strBU)
         End If
 
-        dteEndDate.AddSeconds(1)
+        dteEndDate = dteEndDate.AddMinutes(1)
 
         ''to stop the previous old emails
         Dim date2 As DateTime = #12/7/2019#
-        'Dim rslt As Integer = DateTime.Compare(date2, dteStartDate)
 
         If date2 >= dteStartDate Then
             dteStartDate = Now.AddDays(-1).ToString("MM/dd/yyyy")
@@ -1147,14 +1168,15 @@ Module Module1
         ' DO NOT SELECT G.ISA_ORDER_STATUS = '6'  WE ARE GETTING IT UP TOP.
         '         '  
 
-        strSQLstring = "SELECT * FROM (SELECT H.ISA_IOL_OP_NAME as STATUS_CODE, TBL.* FROM (SELECT distinct G.BUSINESS_UNIT_OM, G.BUSINESS_UNIT_OM AS G_BUS_UNIT, D.BUSINESS_UNIT, D.ISA_EMPLOYEE_ID, A.ORDER_NO,B.ISA_WORK_ORDER_NO As WORK_ORDER_NO, B.ISA_INTFC_LN AS line_nbr," & vbCrLf & _
+        strSQLstring = "SELECT * FROM (SELECT * FROM (SELECT H.ISA_IOL_OP_NAME as STATUS_CODE, TBL.* FROM (SELECT distinct G.BUSINESS_UNIT_OM, G.BUSINESS_UNIT_OM AS G_BUS_UNIT, D.BUSINESS_UNIT, D.ISA_EMPLOYEE_ID, A.ORDER_NO,B.ISA_WORK_ORDER_NO As WORK_ORDER_NO, B.ISA_INTFC_LN AS line_nbr," & vbCrLf & _
                  " B.ISA_EMPLOYEE_ID AS EMPLID, B.ISA_LINE_STATUS as ORDER_TYPE," & vbCrLf & _
                  " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, " & vbCrLf   '  & _
-        'If bIsAscend Then
-        '    ' add Ascend e-mail field
-        '    strSQLstring += " AB.EMAIL_ADDRESS AS ASCEND_EMAIL_ADDRESS," & vbCrLf
-        'End If
-        strSQLstring += "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','01','QTW','02','QTC','03','QTS','04','CST','05','VND','06','APR','07','QTA','08','QTR','09','RFA','10','RFR','11','RFC','12','RCF','13','RCP','14','CNC','15','DLF','16','CRE','1','NEW','2','DSP','3','ORD','3','RSV','3','PKA','4','PKP','4','DLP','5','RCP','5','RCF','6','PKQ','5','DLO','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','1','00') AS OLD_ORDER_STATUS," & vbCrLf & _
+        
+        strSQLstring = "SELECT * FROM (SELECT * FROM (SELECT H.ISA_IOL_OP_NAME as STATUS_CODE, TBL.* FROM (SELECT distinct G.BUSINESS_UNIT_OM, G.BUSINESS_UNIT_OM AS G_BUS_UNIT, D.BUSINESS_UNIT, D.ISA_EMPLOYEE_ID, A.ORDER_NO,B.ISA_WORK_ORDER_NO As WORK_ORDER_NO, B.ISA_INTFC_LN AS line_nbr," & vbCrLf & _
+                 " B.ISA_EMPLOYEE_ID AS EMPLID, B.ISA_LINE_STATUS as ORDER_TYPE," & vbCrLf & _
+                 " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, " & vbCrLf   '  & _
+        
+        strSQLstring += "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','1','NEW','2','DSP','3','ORD','3','RSV','3','PKA','4','PKP','4','DLP','5','RCP','5','RCF','6','PKQ','5','DLO','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','1') AS OLD_ORDER_STATUS," & vbCrLf & _
                  " (SELECT E.XLATLONGNAME" & vbCrLf & _
                                 " FROM XLATTABLE E" & vbCrLf & _
                                 " WHERE E.EFFDT =" & vbCrLf & _
@@ -1169,10 +1191,7 @@ Module Module1
                  " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH" & vbCrLf & _
                  " ,A.origin" & vbCrLf & _
                  " FROM ps_isa_ord_intf_HD A," & vbCrLf  '   & _
-        'If bIsAscend Then
-        '    ' add Ascend source table
-        '    strSQLstring += " sysadm.PS_ISA_INTFC_H_SUP AB," & vbCrLf
-        'End If
+        
         strSQLstring += " ps_isa_ord_intf_LN B," & vbCrLf & _
                  " PS_MASTER_ITEM_TBL C," & vbCrLf & _
                  " PS_ISA_USERS_TBL D," & vbCrLf & _
@@ -1180,11 +1199,7 @@ Module Module1
                  " where G.BUSINESS_UNIT_OM = '" & strBU & "' " & vbCrLf & _
                  " AND G.BUSINESS_UNIT_OM = A.BUSINESS_UNIT_OM " & vbCrLf & _
                  " AND G.BUSINESS_UNIT_OM = D.BUSINESS_UNIT " & vbCrLf     '   & _
-        'If bIsAscend Then
-        '    ' add Ascend clauses
-        '    strSQLstring += " AND A.BUSINESS_UNIT_OM = AB.BUSINESS_UNIT_OM" & vbCrLf & _
-        '        " AND A.ORDER_NO = AB.ORDER_NO" & vbCrLf
-        'End If
+        
         strSQLstring += "  and A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf & _
                  " and A.ORDER_NO = B.ORDER_NO" & vbCrLf & _
                  " and C.SETID (+) = 'MAIN1'" & vbCrLf & _
@@ -1197,9 +1212,54 @@ Module Module1
                  " AND UPPER(B.ISA_EMPLOYEE_ID) = UPPER(D.ISA_EMPLOYEE_ID)) TBL, PS_ISA_USERS_PRIVS H " & vbCrLf & _
                  " WHERE H.BUSINESS_UNIT = TBL.BUSINESS_UNIT " & vbCrLf & _
                  " AND TBL.EMPLID = H.ISA_EMPLOYEE_ID " & vbCrLf & _
-                 " AND ((SUBSTR(H.ISA_IOL_OP_NAME, 9) = TBL.OLD_ORDER_STATUS) OR (SUBSTR(H.ISA_IOL_OP_NAME, 10) = TBL.OLD_ORDER_STATUS))" & vbCrLf & _
-                 " AND H.ISA_IOL_OP_VALUE = 'Y') WHERE ORDER_TYPE = ISA_ORDER_STATUS " & vbCrLf & _
-                  " ORDER BY ORDER_NO, LINE_NBR, DTTM_STAMP"
+                 " AND SUBSTR(H.ISA_IOL_OP_NAME,10) = TBL.OLD_ORDER_STATUS " & vbCrLf & _
+                 " AND H.ISA_IOL_OP_VALUE = 'Y') WHERE ORDER_TYPE = ISA_ORDER_STATUS" & vbCrLf
+
+        strSQLstring += "UNION ALL " & vbCrLf
+
+        strSQLstring += "SELECT * FROM (SELECT * FROM (SELECT H.ISA_IOL_OP_NAME as STATUS_CODE, TBL.* FROM (SELECT distinct G.BUSINESS_UNIT_OM, G.BUSINESS_UNIT_OM AS G_BUS_UNIT, D.BUSINESS_UNIT, D.ISA_EMPLOYEE_ID, A.ORDER_NO,B.ISA_WORK_ORDER_NO As WORK_ORDER_NO, B.ISA_INTFC_LN AS line_nbr," & vbCrLf & _
+                 " B.ISA_EMPLOYEE_ID AS EMPLID, B.ISA_LINE_STATUS as ORDER_TYPE," & vbCrLf & _
+                 " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, " & vbCrLf   '  & _
+
+        strSQLstring += "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','01','QTW','02','QTC','03','QTS','04','CST','05','VND','06','APR','07','QTA','08','QTR','09','RFA','10','RFR','11','RFC','12','RCF','13','RCP','14','CNC','15','DLF','16') AS OLD_ORDER_STATUS," & vbCrLf & _
+                 " (SELECT E.XLATLONGNAME" & vbCrLf & _
+                                " FROM XLATTABLE E" & vbCrLf & _
+                                " WHERE E.EFFDT =" & vbCrLf & _
+                                " (SELECT MAX(E_ED.EFFDT) FROM XLATTABLE E_ED" & vbCrLf & _
+                                " WHERE(E.FIELDNAME = E_ED.FIELDNAME)" & vbCrLf & _
+                                " AND E.FIELDVALUE = E_ED.FIELDVALUE" & vbCrLf & _
+                                " AND E_ED.EFFDT <= SYSDATE)" & vbCrLf & _
+                                " AND E.FIELDNAME = 'ISA_LINE_STATUS'" & vbCrLf & _
+                                " AND E.FIELDVALUE = G.ISA_LINE_STATUS) as ORDER_STATUS_DESC, " & vbCrLf & _
+                 " B.DESCR254 As NONSTOCK_DESCRIPTION, C.DESCR60 as STOCK_DESCRIPTION, D.ISA_EMPLOYEE_EMAIL," & vbCrLf & _
+                 " B.INV_ITEM_ID as INV_ITEM_ID," & vbCrLf & _
+                 " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH" & vbCrLf & _
+                 " ,A.origin" & vbCrLf & _
+                 " FROM ps_isa_ord_intf_HD A," & vbCrLf  '   & _
+        
+        strSQLstring += " ps_isa_ord_intf_LN B," & vbCrLf & _
+                 " PS_MASTER_ITEM_TBL C," & vbCrLf & _
+                 " PS_ISA_USERS_TBL D," & vbCrLf & _
+                 " PS_ISAORDSTATUSLOG G " & vbCrLf & _
+                 " where G.BUSINESS_UNIT_OM = '" & strBU & "' " & vbCrLf & _
+                 " AND G.BUSINESS_UNIT_OM = A.BUSINESS_UNIT_OM " & vbCrLf & _
+                 " AND G.BUSINESS_UNIT_OM = D.BUSINESS_UNIT " & vbCrLf     '   & _
+        
+        strSQLstring += "  and A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf & _
+                 " and A.ORDER_NO = B.ORDER_NO" & vbCrLf & _
+                 " and C.SETID (+) = 'MAIN1'" & vbCrLf & _
+                 " and C.INV_ITEM_ID(+) = B.INV_ITEM_ID " & vbCrLf & _
+                 " AND G.ORDER_NO = A.ORDER_NO " & vbCrLf & _
+                 " AND B.ISA_INTFC_LN = G.ISA_INTFC_LN" & vbCrLf & _
+                 " AND A.BUSINESS_UNIT_OM = D.BUSINESS_UNIT" & vbCrLf & _
+                 " AND G.DTTM_STAMP > TO_DATE('" & dteStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
+                 " AND G.DTTM_STAMP <= TO_DATE('" & dteEndDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
+                 " AND UPPER(B.ISA_EMPLOYEE_ID) = UPPER(D.ISA_EMPLOYEE_ID)) TBL, PS_ISA_USERS_PRIVS H " & vbCrLf & _
+                 " WHERE H.BUSINESS_UNIT = TBL.BUSINESS_UNIT " & vbCrLf & _
+                 " AND TBL.EMPLID = H.ISA_EMPLOYEE_ID " & vbCrLf & _
+                 " AND SUBSTR(H.ISA_IOL_OP_NAME, 9) = TBL.OLD_ORDER_STATUS " & vbCrLf & _
+                 " AND H.ISA_IOL_OP_VALUE = 'Y') WHERE ORDER_TYPE = ISA_ORDER_STATUS)) " & vbCrLf & _
+                 " ORDER BY ORDER_NO, LINE_NBR, DTTM_STAMP"
         ' this is set up in the user priveleges when giving out the status code priveleges in ISOL under Add/Change User
         ' matches the orserstatus emails set up for with the order status in PS_ISAORDSTATUSLOG
         ' the tenth byte of isa_iol_op_name has the one character g.isa_order_status code
@@ -1207,7 +1267,7 @@ Module Module1
         ' We are going to check for priveleges in the upd_email_out program that sends the emails out.
 
         Try
-            objStreamWriter.WriteLine("  CheckAllStatus_7 (2): " & strSQLstring)
+            objStreamWriter.WriteLine("  CheckAllStatus_7 (2) Q1: " & strSQLstring)
 
             ds = ORDBAccess.GetAdapter(strSQLstring, connectOR)
 
@@ -1219,7 +1279,6 @@ Module Module1
             objStreamWriter.WriteLine("     Error - error reading transaction FROM PS_ISAORDSTATUSLOG A")
             Return True
         End Try
-
 
         If IsDBNull(ds.Tables(0).Rows.Count) Or (ds.Tables(0).Rows.Count) = 0 Then
             objStreamWriter.WriteLine("     Warning - no status changes to process at this time for All Statuses")
@@ -1264,12 +1323,7 @@ Module Module1
         For I = 0 To ds.Tables(0).Rows.Count - 1
             Dim strStatus_code As String = " "
             Try
-                strStatus_code = ds.Tables(0).Rows(I).Item("STATUS_CODE")
-                strStatus_code = strStatus_code.Substring(8)
-                If Char.IsLetter(strStatus_code.Chars(I)) Then
-                    strStatus_code = ds.Tables(0).Rows(I).Item("STATUS_CODE")
-                    strStatus_code = strStatus_code.Substring(9)
-                End If
+                strStatus_code = ds.Tables(0).Rows(I).Item("OLD_ORDER_STATUS")                
             Catch ex As Exception
                 strStatus_code = " "
             End Try
@@ -1314,7 +1368,7 @@ Module Module1
                 connectOR.Close()
             End If
             Dim strpo_id As String = getpo_id(stroderno, strlineno, strBU, strSiteBU)
-            dr1.Item(7) = ds.Tables(0).Rows(I).Item("STATUS_CODE")
+            ''dr1.Item(7) = ds.Tables(0).Rows(I).Item("STATUS_CODE")
             'just get the last character
             dr1.Item(7) = strStatus_code
             dr1.Item(8) = ds.Tables(0).Rows(I).Item("WORK_ORDER_NO")
@@ -1323,8 +1377,6 @@ Module Module1
 
             ' "R" nonstock
             ' "7" stock
-
-
 
             If ds.Tables(0).Rows(I).Item("Origin") = "MIS" And strBU = "I0206" Then
                 strdescription = "PICKED"
@@ -1546,6 +1598,8 @@ Module Module1
         Dim dtgEmail1 As WebControls.DataGrid
         dtgEmail1 = New WebControls.DataGrid
 
+        dsEmail = DuplicateRemoval(dsEmail)
+
         dtgEmail1.DataSource = dsEmail
         dtgEmail1.DataBind()
         dtgEmail1.BorderColor = Gray
@@ -1576,10 +1630,12 @@ Module Module1
         'strbodydet1 = strbodydet1 & "&nbsp;<BR>" 
         strbodydet1 = strbodydet1 & "<p style='font-weight:bold;'>Order Number: " & strOrderNo & " </p> "
 
-        If Not (String.IsNullOrEmpty(Ord_notes)) Then
-            strbodydet1 = strbodydet1 & "<p style='font-weight:bold;'>Customer Notes: " & Ord_notes & " </p> "
+        If Not Ord_notes Is Nothing Then
+            If Not (String.IsNullOrEmpty(Ord_notes.Trim())) Then
+                strbodydet1 = strbodydet1 & "<p style='font-weight:bold;'>Customer Notes: " & Ord_notes & " </p> "
+            End If
         End If
-
+        
         strbodydet1 = strbodydet1 & "<p style='font-weight:bold;'>Order contents: </p>"
         'strbodydet1 = strbodydet1 & "&nbsp;<BR>"
         ' strbodydet1 = strbodydet1 & "Order Status:  " & strOrderStatDesc & " <br>"
@@ -1619,6 +1675,54 @@ Module Module1
         SDIEmailService.EmailUtilityServices("MailandStore", Mailer1.From, Mailer1.To, Mailer1.Subject, String.Empty, "webdev@sdi.com", Mailer1.Body, "StatusChangeEmail1", MailAttachmentName, MailAttachmentbytes.ToArray())
 
     End Sub
+
+    Private Function DuplicateRemoval(ByVal dt As DataTable)
+        Dim dtbl As DataTable = New DataTable()
+        dtbl = dt.Clone()
+        dtbl.Rows.Clear()
+        Dim list As New List(Of String) From {"01", "02", "03", "04",
+                                              "05", "06", "07", "08",
+                                              "09", "10", "11", "12",
+                                              "13", "14", "15", "16"}
+        Try
+            Dim dr As DataRow
+            For Each dr In dt.Rows                
+                Dim dts As DataTable = dt.AsEnumerable().Where(Function(x) x.Item("Line Number") = dr.Item("Line Number")).CopyToDataTable()
+                
+                If dts.Rows.Count() > 1 Then
+                    Dim boolvalue As Boolean = False
+                    Dim Nw_dts As DataTable = New DataTable()
+                    Try
+                        Nw_dts = dtbl.AsEnumerable().Where(Function(x) x.Item("Line Number") = dr.Item("Line Number")).CopyToDataTable()
+                    Catch ex As Exception
+
+                    End Try
+
+                    If Nw_dts.Rows.Count() = 1 Then
+
+                    Else
+                        For Each drs As DataRow In dts.Rows
+                            If list.Contains(drs.Item("Status Code")) Then
+                                dtbl.ImportRow(drs)
+                                boolvalue = True
+                                Exit For
+                            Else
+                                boolvalue = False
+                            End If
+                        Next
+                        If Not boolvalue Then
+                            dtbl.ImportRow(dts.Rows(0))
+                        End If
+                    End If
+                Else
+                    dtbl.ImportRow(dr)
+                End If
+            Next
+        Catch ex As Exception
+
+        End Try
+        Return dtbl
+    End Function
 
     Private Function updateEnterprise(ByVal strBU As String, ByVal dteEndDate As DateTime) As Boolean
         connectOR.Close()
