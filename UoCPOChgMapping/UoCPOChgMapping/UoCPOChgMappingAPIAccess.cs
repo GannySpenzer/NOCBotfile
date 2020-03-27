@@ -123,7 +123,16 @@ namespace UoCPOChgMapping
                         //string PLANT = REFGRP;
                         //string LINENUM = rowInit["LINE_NBR"].ToString();
                         string LINENUM = rowInit["ISA_CUST_PO_LINE"].ToString();
-                        string VENDELIVERYDATE = rowInit["DUE_DT"].ToString();
+                        string VENDELIVERYDATE = "";
+                        try
+                        {
+                            VENDELIVERYDATE = rowInit["DUE_DT"].ToString();
+                        }
+                        catch
+                        {
+                            VENDELIVERYDATE = "";
+                        }
+                            
                         //string MAXLEVEL = rowInit["QTY_MAXIMUM"].ToString();
                         //string MINLEVEL = rowInit["REORDER_POINT"].ToString();
                         //string ORDERQTY = rowInit["REORDER_QTY"].ToString();
@@ -268,11 +277,14 @@ namespace UoCPOChgMapping
                         mxlong.Value = Convert.ToInt64(LINENUM);
                         parRowLine.POLINENUM = mxlong;
 
-                        mxdate = new UCSDIPO.MXDateTimeType();
-                        mxdate.changed = true;
-                        mxdate.changedSpecified = true;
-                        mxdate.Value = Convert.ToDateTime(VENDELIVERYDATE);
-                        parRowLine.VENDELIVERYDATE = mxdate;
+                        if (VENDELIVERYDATE != "")
+                        {
+                            mxdate = new UCSDIPO.MXDateTimeType();
+                            mxdate.changed = true;
+                            mxdate.changedSpecified = true;
+                            mxdate.Value = Convert.ToDateTime(VENDELIVERYDATE);
+                            parRowLine.VENDELIVERYDATE = mxdate;
+                        }
 
                         Array.Resize(ref parLine, iLineIndex + 1);
                         parLine[iLineIndex] = parRowLine;
