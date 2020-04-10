@@ -15,8 +15,10 @@ Imports System.Drawing.Color
 Module Module1
 
     Dim objStreamWriter As StreamWriter
+    Dim objGenerallLogStreamWriter As StreamWriter
     Dim rootDir As String = "C:\StatChg"
     Dim logpath As String = "C:\StatChg\LOGS\StatChgEmailOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+    Dim Generallogpath As String = "C:\StatChg\LOGS\GeneralStatChgEmailOutLog" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
     Dim connectOR As New OleDbConnection(Convert.ToString(ConfigurationManager.AppSettings("OLEDBconString")))
 
     Sub Main()
@@ -27,6 +29,9 @@ Module Module1
         objStreamWriter = File.CreateText(logpath)
         objStreamWriter.WriteLine("  Send emails out " & Now())
 
+        objGenerallLogStreamWriter = File.CreateText(Generallogpath)
+        objGenerallLogStreamWriter.WriteLine("Started Writing the Logs " & Now())
+
         Dim bolError As Boolean = buildstatchgout()
 
         If bolError = True Then
@@ -35,9 +40,12 @@ Module Module1
 
 
         objStreamWriter.WriteLine("  End of StatChg Email send " & Now())
+        objGenerallLogStreamWriter.WriteLine("Ends " & Now())
 
         objStreamWriter.Flush()
         objStreamWriter.Close()
+        objGenerallLogStreamWriter.Flush()
+        objGenerallLogStreamWriter.Close()
 
     End Sub
 
@@ -50,11 +58,14 @@ Module Module1
         connectOR = New OleDbConnection(connectionString)
 
         Dim dsBU As DataSet
-        dsBU = GetBU()
+        dsBU = GetBU()        
 
         If Not dsBU Is Nothing Then
-            '' '' check stock
+            objGenerallLogStreamWriter.WriteLine("Total BU going to Process " + Convert.ToString(dsBU.Tables(0).Rows.Count()))
+            ' '' check stock
             For I = 0 To dsBU.Tables(0).Rows.Count - 1
+                Console.WriteLine(Convert.ToString(I + 1) + ".Verifying/Updating StatChg Email for Stock - BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
+                objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Verifying/Updating StatChg Email for Stock - BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
                 objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
                 objStreamWriter.WriteLine("  StatChg Email send stock emails for " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
                 buildstatchgout = checkStock(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
@@ -64,7 +75,11 @@ Module Module1
             Next
 
             '''' check non-stock
+            Console.WriteLine("-----------------------------------------------------------------------------------------------")
+            objGenerallLogStreamWriter.WriteLine("-------------------------------------------------------------------------------")
             For I = 0 To dsBU.Tables(0).Rows.Count - 1
+                Console.WriteLine(Convert.ToString(I + 1) + ".Verifying/Updating StatChg Email for Non-Stock - BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
+                objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Verifying/Updating StatChg Email for Non-Stock - BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
                 objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
                 objStreamWriter.WriteLine("  StatChg Email send nonstock emails for " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
                 buildstatchgout = checkNonStock(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
@@ -72,8 +87,11 @@ Module Module1
                     bolErrorSomeWhere = True
                 End If
             Next
-
+            Console.WriteLine("-----------------------------------------------------------------------------------------------")
+            objGenerallLogStreamWriter.WriteLine("-------------------------------------------------------------------------------")
             For I = 0 To dsBU.Tables(0).Rows.Count - 1
+                Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
+                objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
                 objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
                 objStreamWriter.WriteLine("  StatChg Email send allstatus emails for " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
                 buildstatchgout = checkAllStatus_7(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
@@ -87,8 +105,9 @@ Module Module1
 
         '7 is stock
         'R is non-stock
-
+        objGenerallLogStreamWriter.WriteLine("-------------------------------------------------------------------------------")
         bolErrorSomeWhere = buildNotifyReceiver("7")
+        objGenerallLogStreamWriter.WriteLine("-------------------------------------------------------------------------------")
         bolErrorSomeWhere = buildNotifyReceiver("R")
 
         Try
@@ -104,7 +123,7 @@ Module Module1
     Private Function GetBU() As DataSet
         Dim ds As System.Data.DataSet = New System.Data.DataSet
         Try
-            ''Dim getBuQuery As String = "SELECT * FROM (SELECT  A.ISA_BUSINESS_UNIT as BUSINESS_UNIT,A.ISA_BUSINESS_UNIT || ' - ' || B.descr  as  DESCRIPTION FROM  SYSADM8.PS_ISA_ENTERPRISE A, SYSADM8.PS_LOCATION_TBL B WHERE  B.location =  'L'|| substr(A.ISA_BUSINESS_UNIT,2) || '-01' AND A.BU_STATUS = '1' AND B.EFFDT = (SELECT MAX(A_ED.EFFDT) FROM PS_LOCATION_TBL A_ED WHERE B.SETID = A_ED.SETID AND B.LOCATION = A_ED.LOCATION AND A_ED.EFFDT <= SYSDATE)) WHERE BUSINESS_UNIT = 'I0469'"
+            ''Dim getBuQuery As String = "SELECT * FROM (SELECT  A.ISA_BUSINESS_UNIT as BUSINESS_UNIT,A.ISA_BUSINESS_UNIT || ' - ' || B.descr  as  DESCRIPTION FROM  SYSADM8.PS_ISA_ENTERPRISE A, SYSADM8.PS_LOCATION_TBL B WHERE  B.location =  'L'|| substr(A.ISA_BUSINESS_UNIT,2) || '-01' AND A.BU_STATUS = '1' AND B.EFFDT = (SELECT MAX(A_ED.EFFDT) FROM PS_LOCATION_TBL A_ED WHERE B.SETID = A_ED.SETID AND B.LOCATION = A_ED.LOCATION AND A_ED.EFFDT <= SYSDATE)) WHERE BUSINESS_UNIT = 'I0961'"
             Dim getBuQuery As String = "SELECT  A.ISA_BUSINESS_UNIT as BUSINESS_UNIT,A.ISA_BUSINESS_UNIT || ' - ' || B.descr  as  DESCRIPTION FROM  SYSADM8.PS_ISA_ENTERPRISE A, SYSADM8.PS_LOCATION_TBL B WHERE  B.location =  'L'|| substr(A.ISA_BUSINESS_UNIT,2) || '-01' AND A.BU_STATUS = '1' AND B.EFFDT = (SELECT MAX(A_ED.EFFDT) FROM PS_LOCATION_TBL A_ED WHERE B.SETID = A_ED.SETID AND B.LOCATION = A_ED.LOCATION AND A_ED.EFFDT <= SYSDATE)"
             Dim Command As OleDbCommand = New OleDbCommand(getBuQuery, connectOR)
             If connectOR.State = ConnectionState.Open Then
@@ -140,7 +159,7 @@ Module Module1
         Dim dteStrDate As DateTime
         Dim dteEndDate As DateTime
 
-        dteStrDate = Now.AddMonths(-3).ToString
+        dteStrDate = Now.AddDays(-1).ToString("MM/dd/yyyy")
         'dteStrDate = Today.AddHours(-12)
         'dteEndDate = Now
         'we could run this twice a day noon and midnight.
@@ -204,6 +223,8 @@ Module Module1
         End Try
         ' don't process UNCC status change emails - done in another program UNCCSTATUSCHANGEEMAIL
         If ds.Tables(0).Rows.Count = 0 Or strBU = "I0256" Then
+            Console.WriteLine("Fetched Datas:0")
+            objGenerallLogStreamWriter.WriteLine("Fetched Datas:0")
             objStreamWriter.WriteLine("  StatChg Email NSTK send select orders = 0 for" & strBU)
             Try
                 connectOR.Close()
@@ -211,6 +232,9 @@ Module Module1
 
             End Try
             Return False
+        Else
+            Console.WriteLine("Fetched Datas:" + Convert.ToString(ds.Tables(0).Rows.Count()))
+            objGenerallLogStreamWriter.WriteLine("Fetched Datas:" + Convert.ToString(ds.Tables(0).Rows.Count()))
         End If
 
         'insert into the PS_ISA_ORDSTAT_EML table
@@ -289,7 +313,7 @@ Module Module1
         ' bot " AND E.CONFIRMED_FLAG = 'Y'" & vbCrLf & _
         ' 
         Dim dteStrDate As DateTime
-        dteStrDate = Now.AddMonths(-3).ToString
+        dteStrDate = Now.AddDays(-1).ToString("MM/dd/yyyy")
         Dim strSQLstring As String
         strSQLstring = "SELECT /*+ index(D,PSWIN_DEMAND) */ B.ORDER_NO, B.ISA_INTFC_LN AS INTFC_LINE_NUM, B.ISA_INTFC_LN AS ORDER_INT_LINE_NO, D.DEMAND_LINE_NO," & vbCrLf & _
                 " B.BUSINESS_UNIT_OM, B.ISA_EMPLOYEE_ID AS EMPLID, E.DESCR60, E.INV_ITEM_ID, A.Origin" & vbCrLf & _
@@ -341,6 +365,8 @@ Module Module1
         End Try
 
         If ds.Tables(0).Rows.Count = 0 Then
+            Console.WriteLine("Fetched Datas:0")
+            objGenerallLogStreamWriter.WriteLine("Fetched Datas:0")
             objStreamWriter.WriteLine("  StatChg Email send select orders = 0 for" & strbu)
             Try
                 connectOR.Close()
@@ -349,6 +375,9 @@ Module Module1
             End Try
 
             Return False
+        Else
+            Console.WriteLine("Fetched Datas:" + Convert.ToString(ds.Tables(0).Rows.Count()))
+            objGenerallLogStreamWriter.WriteLine("Fetched Datas:" + Convert.ToString(ds.Tables(0).Rows.Count()))
         End If
 
         'insert into the PS_ISA_ORDSTAT_EML table
@@ -408,7 +437,7 @@ Module Module1
             End If            
         Next
 
-        objStreamWriter.WriteLine("  StatChg Email STK send select orders = " & ds.Tables(0).Rows.Count & " for" & strbu)
+        objStreamWriter.WriteLine("  StatChg Email STK send select orders = " & ds.Tables(0).Rows.Count & " for" & strbu)        
         Try
             connectOR.Close()
         Catch ex As Exception
@@ -451,8 +480,10 @@ Module Module1
 
         Select Case strOrderStatus
             Case "7"
+                objGenerallLogStreamWriter.WriteLine("Stock Notification StatEmail")
                 buildNotifyReceiver = buildNotifySTKReady()
             Case "R"
+                objGenerallLogStreamWriter.WriteLine("Non-Stock Notification StatEmail")
                 buildNotifyReceiver = buildNotifyNSTKReady()
         End Select
     End Function
@@ -508,6 +539,8 @@ Module Module1
         End Try
 
         If bolErrorR = False And ds.Tables(0).Rows.Count > 0 Then
+            Console.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()))
+            objGenerallLogStreamWriter.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()))
             connectOR.Open()
             Dim strPreOrderno As String
             Dim I As Integer
@@ -611,6 +644,9 @@ Module Module1
             Catch ex As Exception
 
             End Try
+        Else
+            Console.WriteLine("Fetched Datas 0")
+            objGenerallLogStreamWriter.WriteLine("Fetched Datas 0")
         End If
         Try
             connectOR.Close()
@@ -679,6 +715,8 @@ Module Module1
         End Try
 
         If bolError7 = False And ds.Tables(0).Rows.Count > 0 Then
+            objGenerallLogStreamWriter.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()))
+            Console.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()))
             connectOR.Open()
             Dim strPreOrderno As String
             Dim I As Integer
@@ -783,6 +821,9 @@ Module Module1
             If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
                 connectOR.Close()
             End If
+        Else
+            Console.WriteLine("Fetched Datas 0")
+            objGenerallLogStreamWriter.WriteLine("Fetched Datas 0")
         End If
         Try
             connectOR.Close()
@@ -912,20 +953,18 @@ Module Module1
             Else
                 strbodydetl = strbodydetl & "Your SDiExchange Order Number " & strOrderNo & " has been Picked and is Ready for Pickup at the SDI Storeroom.<br>"
             End If
-
         Else
             strbodydetl = strbodydetl & "Your SDiExchange Order Number " & strOrderNo & " has been Processed and Ready for Pickup.<br>"
         End If
         strbodydetl = strbodydetl & "&nbsp;<BR>"
-        strbodydetl = strbodydetl & "Order contents:<br>"
-        strbodydetl = strbodydetl & "&nbsp;<BR>"
-
         If Not Ord_notes Is Nothing Then
             If Not (String.IsNullOrEmpty(Ord_notes.Trim())) Then
                 strbodydetl = strbodydetl & "Customer Notes: " & Ord_notes & " <br> "
             End If
         End If
-        
+        strbodydetl = strbodydetl & "Order contents:<br>"
+        strbodydetl = strbodydetl & "&nbsp;<BR>"
+
         strbodydetl = strbodydetl & "&nbsp;</p>"
         strbodydetl = strbodydetl & "<TABLE cellSpacing='1' cellPadding='1' width='100%' border='0'>" & vbCrLf
         strbodydetl = strbodydetl + "<TR><TD Class='DetailRow' width='100%'>" & dataGridHTML & "</TD></TR>"
@@ -942,10 +981,7 @@ Module Module1
         strbodydetl = strbodydetl & "<HR width='100%' SIZE='1'>" & vbCrLf
         strbodydetl = strbodydetl & "<img src='http://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & vbCrLf
         Mailer.Body = strbodyhead & strbodydetl
-        If connectOR.DataSource.ToUpper = "RPTG" Or _
-            connectOR.DataSource.ToUpper = "DEVL" Or _
-            connectOR.DataSource.ToUpper = "STAR" Or _
-            connectOR.DataSource.ToUpper = "PLGR" Then
+        If Not getDBName() Then
             Mailer.To = "webdev@sdi.com"
         Else
             Mailer.To = strPurchaserEmail
@@ -953,19 +989,13 @@ Module Module1
         Mailer.BodyFormat = System.Web.Mail.MailFormat.Html
         If strbu = "I0260" Or strbu = "I0206" Then
             If Not strOrigin = "MIS" Then
-                If connectOR.DataSource.ToUpper = "RPTG" Or _
-                connectOR.DataSource.ToUpper = "DEVL" Or _
-                connectOR.DataSource.ToUpper = "STAR" Or _
-                connectOR.DataSource.ToUpper = "PLGR" Then
+                If Not getDBName() Then
                     Mailer.Subject = "<<TEST SITE>>SDiExchange - Order Status " & strOrderNo & " has been Delivered"
                 Else
                     Mailer.Subject = "SDiExchange - Order Status " & strOrderNo & " has been Delivered"
                 End If
             Else
-                If connectOR.DataSource.ToUpper = "RPTG" Or _
-                connectOR.DataSource.ToUpper = "DEVL" Or _
-                connectOR.DataSource.ToUpper = "STAR" Or _
-                connectOR.DataSource.ToUpper = "PLGR" Then
+                If Not getDBName() Then
                     Mailer.Subject = "<<TEST SITE>>SDiExchange - Order Status " & strOrderNo & " Picked & Ready for Pickup @ SDI Storeroom"
                 Else
                     Mailer.Subject = "SDiExchange - Order Status " & strOrderNo & " Picked & Ready for Pickup @ SDI Storeroom"
@@ -974,10 +1004,7 @@ Module Module1
             End If
             SDIEmailService.EmailUtilityServices("MailandStore", Mailer.From, Mailer.To, Mailer.Subject, String.Empty, "webdev@sdi.com", Mailer.Body, "StatusChangeEmail0", MailAttachmentName, MailAttachmentbytes.ToArray())
         Else
-            If connectOR.DataSource.ToUpper = "RPTG" Or _
-            connectOR.DataSource.ToUpper = "DEVL" Or _
-            connectOR.DataSource.ToUpper = "STAR" Or _
-            connectOR.DataSource.ToUpper = "PLGR" Then
+            If Not getDBName() Then
                 Mailer.Subject = "<<TEST SITE>>SDiExchange - Order Status " & strOrderNo & " is Ready for Pickup"
             Else
                 Mailer.Subject = "SDiExchange - Order Status " & strOrderNo & " is Ready for Pickup"
@@ -1155,12 +1182,8 @@ Module Module1
 
         dteEndDate = dteEndDate.AddMinutes(1)
 
-        ''to stop the previous old emails
-        Dim date2 As DateTime = #12/7/2019#
-
-        If date2 >= dteStartDate Then
-            dteStartDate = Now.AddDays(-1).ToString("MM/dd/yyyy")
-        End If
+        dteStartDate = Now.AddDays(-1).ToString("MM/dd/yyyy")
+        dteEndDate = Now.ToString()
 
         ' stock items will get item id from the ps_isa_ord_intfc_l table  but description from the PS_MASTER_ITEM_TB
         ' non-stock items  has no item-id num and gets description from the ps_isa_ord_intfc_l
@@ -1171,11 +1194,11 @@ Module Module1
         strSQLstring = "SELECT * FROM (SELECT * FROM (SELECT H.ISA_IOL_OP_NAME as STATUS_CODE, TBL.* FROM (SELECT distinct G.BUSINESS_UNIT_OM, G.BUSINESS_UNIT_OM AS G_BUS_UNIT, D.BUSINESS_UNIT, D.ISA_EMPLOYEE_ID, A.ORDER_NO,B.ISA_WORK_ORDER_NO As WORK_ORDER_NO, B.ISA_INTFC_LN AS line_nbr," & vbCrLf & _
                  " B.ISA_EMPLOYEE_ID AS EMPLID, B.ISA_LINE_STATUS as ORDER_TYPE," & vbCrLf & _
                  " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, " & vbCrLf   '  & _
-        
+
         strSQLstring = "SELECT * FROM (SELECT * FROM (SELECT H.ISA_IOL_OP_NAME as STATUS_CODE, TBL.* FROM (SELECT distinct G.BUSINESS_UNIT_OM, G.BUSINESS_UNIT_OM AS G_BUS_UNIT, D.BUSINESS_UNIT, D.ISA_EMPLOYEE_ID, A.ORDER_NO,B.ISA_WORK_ORDER_NO As WORK_ORDER_NO, B.ISA_INTFC_LN AS line_nbr," & vbCrLf & _
                  " B.ISA_EMPLOYEE_ID AS EMPLID, B.ISA_LINE_STATUS as ORDER_TYPE," & vbCrLf & _
                  " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, " & vbCrLf   '  & _
-        
+
         strSQLstring += "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','1','NEW','2','DSP','3','ORD','3','RSV','3','PKA','4','PKP','4','DLP','5','RCP','5','RCF','6','PKQ','5','DLO','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','1') AS OLD_ORDER_STATUS," & vbCrLf & _
                  " (SELECT E.XLATLONGNAME" & vbCrLf & _
                                 " FROM XLATTABLE E" & vbCrLf & _
@@ -1191,7 +1214,7 @@ Module Module1
                  " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH" & vbCrLf & _
                  " ,A.origin" & vbCrLf & _
                  " FROM ps_isa_ord_intf_HD A," & vbCrLf  '   & _
-        
+
         strSQLstring += " ps_isa_ord_intf_LN B," & vbCrLf & _
                  " PS_MASTER_ITEM_TBL C," & vbCrLf & _
                  " PS_ISA_USERS_TBL D," & vbCrLf & _
@@ -1199,7 +1222,7 @@ Module Module1
                  " where G.BUSINESS_UNIT_OM = '" & strBU & "' " & vbCrLf & _
                  " AND G.BUSINESS_UNIT_OM = A.BUSINESS_UNIT_OM " & vbCrLf & _
                  " AND G.BUSINESS_UNIT_OM = D.BUSINESS_UNIT " & vbCrLf     '   & _
-        
+
         strSQLstring += "  and A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf & _
                  " and A.ORDER_NO = B.ORDER_NO" & vbCrLf & _
                  " and C.SETID (+) = 'MAIN1'" & vbCrLf & _
@@ -1236,7 +1259,7 @@ Module Module1
                  " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH" & vbCrLf & _
                  " ,A.origin" & vbCrLf & _
                  " FROM ps_isa_ord_intf_HD A," & vbCrLf  '   & _
-        
+
         strSQLstring += " ps_isa_ord_intf_LN B," & vbCrLf & _
                  " PS_MASTER_ITEM_TBL C," & vbCrLf & _
                  " PS_ISA_USERS_TBL D," & vbCrLf & _
@@ -1244,7 +1267,7 @@ Module Module1
                  " where G.BUSINESS_UNIT_OM = '" & strBU & "' " & vbCrLf & _
                  " AND G.BUSINESS_UNIT_OM = A.BUSINESS_UNIT_OM " & vbCrLf & _
                  " AND G.BUSINESS_UNIT_OM = D.BUSINESS_UNIT " & vbCrLf     '   & _
-        
+
         strSQLstring += "  and A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf & _
                  " and A.ORDER_NO = B.ORDER_NO" & vbCrLf & _
                  " and C.SETID (+) = 'MAIN1'" & vbCrLf & _
@@ -1281,6 +1304,8 @@ Module Module1
         End Try
 
         If IsDBNull(ds.Tables(0).Rows.Count) Or (ds.Tables(0).Rows.Count) = 0 Then
+            Console.WriteLine("Fetched Datas 0")
+            objGenerallLogStreamWriter.WriteLine("Fetched Datas 0")
             objStreamWriter.WriteLine("     Warning - no status changes to process at this time for All Statuses")
             Try
                 connectOR.Close()
@@ -1288,6 +1313,9 @@ Module Module1
 
             End Try
             Return False
+        Else
+            Console.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()))
+            objGenerallLogStreamWriter.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()))
         End If
 
         Dim rowsaffected As Integer
@@ -1323,7 +1351,7 @@ Module Module1
         For I = 0 To ds.Tables(0).Rows.Count - 1
             Dim strStatus_code As String = " "
             Try
-                strStatus_code = ds.Tables(0).Rows(I).Item("OLD_ORDER_STATUS")                
+                strStatus_code = ds.Tables(0).Rows(I).Item("OLD_ORDER_STATUS")
             Catch ex As Exception
                 strStatus_code = " "
             End Try
@@ -1658,10 +1686,7 @@ Module Module1
         strbodydet1 = strbodydet1 & "<img src='http://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & vbCrLf
 
         Mailer1.Body = strbodyhead1 & strbodydet1
-        If connectOR.DataSource.ToUpper = "RPTG" Or _
-            connectOR.DataSource.ToUpper = "DEVL" Or _
-            connectOR.DataSource.ToUpper = "STAR" Or _
-            connectOR.DataSource.ToUpper = "PLGR" Then
+        If Not getDBName() Then
             Mailer1.To = "webdev@sdi.com"
             Mailer1.Subject = "<<TEST SITE>>SDiExchange - Order Status records for Order Number: " & strOrderNo
         Else
@@ -1783,6 +1808,19 @@ Module Module1
         Else
             Return False
         End If
+    End Function
+
+    Public Function getDBName() As Boolean
+        Dim isPRODDB As Boolean = False
+        Dim PRODDbList As String = ConfigurationManager.AppSettings("OraPRODDbList").ToString()
+        Dim DbUrl As String = ConfigurationManager.AppSettings("OLEDBconString").ToString()
+        Try
+            DbUrl = DbUrl.Substring(DbUrl.Length - 4).ToUpper()
+            isPRODDB = (PRODDbList.IndexOf(DbUrl.Trim.ToUpper) > -1)
+        Catch ex As Exception
+            isPRODDB = False
+        End Try
+        Return isPRODDB
     End Function
 
     Private Function getpo_id(ByVal strorderno As String, ByVal strlineno As String, ByVal strBU As String, ByVal strSiteBU As String) As String
