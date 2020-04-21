@@ -611,8 +611,9 @@ Module Module1
                                                             End If
 
                                                         Else
+                                                            'not okay, process failed
                                                             objStreamWriter.WriteLine("Response XML file is NOT checked OK for this Invoice ID: " & strOrderNo & " ; Date/Time: " & Now())
-                                                            Dim msg As String = ""
+                                                            Dim msg As String = "***ERROR***" & vbCrLf
                                                             Try
                                                                 If Not root.SelectNodes("Response/Status").Item(0).Attributes(0) Is Nothing Then
                                                                     If Not root.SelectNodes("Response/Status").Item(0).Attributes(0).Value Is Nothing Then
@@ -650,6 +651,29 @@ Module Module1
                                                             End Try
 
                                                             msg += "" & vbCrLf
+
+                                                            'YA 20200421 Ticket SDI-10655
+                                                            msg += root.SelectNodes("Response/Status").Item(0).InnerText & vbCrLf
+
+                                                            If Not connectOR.State = ConnectionState.Open Then
+                                                                connectOR.Open()
+                                                            End If
+                                                            Dim strUpdateQuery As String = "UPDATE SYSADM8.PS_ISA_XEEV_INV_HB SET ISA_GST_TAX_AMT = 3 WHERE INVOICE_ID = '" & strOrderNo & "' and ISA_GST_TAX_AMT = 1"
+                                                            Dim UpdCommand As OleDbCommand = New OleDbCommand(strUpdateQuery, connectOR)
+                                                            UpdCommand.CommandTimeout = 120
+                                                            Dim rowsAffected As Integer = 0
+                                                            rowsAffected = UpdCommand.ExecuteNonQuery()
+                                                            Try
+                                                                UpdCommand.Dispose()
+                                                            Catch ex As Exception
+                                                            End Try
+                                                            If rowsAffected = 0 Then
+                                                                msg += "Order status change returned: 'rowsAffected = 0' for Invoice ID: " & strOrderNo
+                                                            Else
+                                                                msg += "Ran query " + strUpdateQuery + " successfully." & vbCrLf
+                                                            End If
+                                                            msg += "**********" & vbCrLf
+
                                                             objStreamWriter.WriteLine(msg & "  Timestamp: " & Now())
 
                                                         End If
@@ -817,9 +841,9 @@ Module Module1
         Dim strEmailCc As String = ""
         Dim strEmailBcc As String = ""
         Dim strEmailTo As String = ""
-        strEmailTo = "vitaly.rovensky@sdi.com"
+        strEmailTo = "yury.arkadin@sdi.com"
         strEmailCc = " "
-        strEmailBcc = "webdev@sdi.com"
+        strEmailBcc = "webdev@sdi.com; avacorp@sdi.com"
         Dim strConnString As String = ""
         Dim strDbName As String = ""
         Try
