@@ -841,7 +841,7 @@ Module Module1
         Dim strEmailCc As String = ""
         Dim strEmailBcc As String = ""
         Dim strEmailTo As String = ""
-        strEmailTo = "yury.arkadin@sdi.com"
+        strEmailTo = "Natasha.Volchonok@sdi.com;yury.arkadin@sdi.com"
         strEmailCc = " "
         strEmailBcc = "webdev@sdi.com; avacorp@sdi.com"
         Dim strConnString As String = ""
