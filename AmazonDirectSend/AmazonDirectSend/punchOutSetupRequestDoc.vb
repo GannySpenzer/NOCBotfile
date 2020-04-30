@@ -352,7 +352,6 @@ Public Class punchOutSetupRequestDoc
         Try
             Dim docXML As New XmlDocument
             Dim stringer As theStringer = Nothing
-
             ' load template for cXML and replace header variables
             stringer = New theStringer(Common.LoadPathFile(m_templatePathFile))
 
@@ -592,7 +591,7 @@ Public Class punchOutSetupRequestDoc
                                         End Try
                                     End If
                                     If Trim(strEmail) = "" Then
-                                        strEmail = "michael.randall@isacs.com"
+                                        strEmail = "WebDev@sdi.com"
                                     End If
                                     nodeEmail.InnerText = strEmail
 
