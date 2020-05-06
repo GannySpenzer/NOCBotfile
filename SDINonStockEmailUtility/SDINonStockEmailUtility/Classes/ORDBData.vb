@@ -622,4 +622,17 @@ Public Class ORDBData
         End If
         Return sReturn
     End Function
+
+    Public Shared Function getDBName() As Boolean
+        Dim isPRODDB As Boolean = False
+        Dim PRODDbList As String = ConfigurationManager.AppSettings("OraPRODDbList").ToString()
+        Dim DbUrl As String = ConfigurationManager.AppSettings("OLEDBconString").ToString()
+        Try
+            DbUrl = DbUrl.Substring(DbUrl.Length - 4).ToUpper()
+            isPRODDB = (PRODDbList.IndexOf(DbUrl.Trim.ToUpper) > -1)
+        Catch ex As Exception
+            isPRODDB = False
+        End Try
+        Return isPRODDB
+    End Function
 End Class

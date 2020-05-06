@@ -521,7 +521,7 @@ Public Class QuoteNonStockProcessor
 
         Try
             If Not trackOrderNo Is Nothing And trackOrderNo.ToLower().Equals("true") Then
-                SendLogger("Logging execution of Quote Non Stock Email Utility", "Execution started at " & DateTime.Now.ToShortTimeString(), "LOGGER", "Mail", "WebDev@sdi.com;SDIportalsupport@avasoft.biz", String.Empty, String.Empty)
+                SendLogger("Logging execution of Quote Non Stock Email Utility", "Execution started at " & DateTime.Now.ToShortTimeString(), "LOGGER", "Mail", "WebDev@sdi.com;avacorp@sdi.com", String.Empty, String.Empty)
             End If
 
             SetConfigXML()
@@ -594,9 +594,9 @@ Public Class QuoteNonStockProcessor
 
             If Not trackOrderNo Is Nothing And trackOrderNo.ToLower().Equals("true") Then
                 If m_colMsgs.Count > 0 Then
-                    SendLogger("Logging execution of Quote Non Stock Utility", "The following Orders were processed: " & SBord.ToString().TrimEnd(",") & " by Quote Non Stock Email Utility. <br/>Execution is ended at " & DateTime.Now.ToShortTimeString(), "LOGGER", "Mail", "WebDev@sdi.com;SDIportalsupport@avasoft.biz", String.Empty, String.Empty)
+                    SendLogger("Logging execution of Quote Non Stock Utility", "The following Orders were processed: " & SBord.ToString().TrimEnd(",") & " by Quote Non Stock Email Utility. <br/>Execution is ended at " & DateTime.Now.ToShortTimeString(), "LOGGER", "Mail", "WebDev@sdi.com;avacorp@sdi.com", String.Empty, String.Empty)
                 Else
-                    SendLogger("Logging execution of Quote Non Stock Utility", "No Orders were found. Nothing was processed by Quote Non Stock Email Utility. ", "LOGGER", "Mail", "WebDev@sdi.com;SDIportalsupport@avasoft.biz", String.Empty, String.Empty)
+                    SendLogger("Logging execution of Quote Non Stock Utility", "No Orders were found. Nothing was processed by Quote Non Stock Email Utility. ", "LOGGER", "Mail", "WebDev@sdi.com;avacorp@sdi.com", String.Empty, String.Empty)
                 End If
             End If
             If m_colMsgs.Count > 0 Then
@@ -766,11 +766,8 @@ Public Class QuoteNonStockProcessor
             Dim MailAttachmentName As String()
             Dim MailAttachmentbytes As New List(Of Byte())()
 
-            If DbUrl.Substring(DbUrl.Length - 4).ToUpper = "STAR" Or _
-                DbUrl.Substring(DbUrl.Length - 4).ToUpper = "RPTG" Or _
-                DbUrl.Substring(DbUrl.Length - 4).ToUpper = "PLGR" Or _
-                DbUrl.Substring(DbUrl.Length - 4).ToUpper = "DEVL" Then
-                EmailTo = "webdev@sdi.com;SDIportalsupport@avasoft.biz"
+            If Not getDBName() Then
+                EmailTo = "webdev@sdi.com;avacorp@sdi.com"
             End If
 
             SDIEmailService.EmailUtilityServices(MailType, "SDIExchADMIN@sdi.com", EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
@@ -1313,10 +1310,12 @@ Public Class QuoteNonStockProcessor
         Select Case strDBase
             Case "PROD"
                 sRet = "https://www.sdizeus.com/"
-            Case "STAR", "PLGR"
-                sRet = "https://zeustest.sdi.com/"
+            Case "FSUAT", "SNBX"
+                sRet = "http://zeustest.sdi.com:8083/ZEUSUAT/"
+            Case "FSTST", "RPTG"
+                sRet = "http://zeustest.sdi.com:8083/ZEUSRPTG/"
             Case Else
-                sRet = "http://" & sWebAppName
+                sRet = "http://zeustest.sdi.com:8083/ZEUSUAT/"
         End Select
 
         Return sRet
@@ -1639,10 +1638,10 @@ Public Class QuoteNonStockProcessor
                     Else
                         'InsiteOnline
                         If IsAscend(itmQuoted.BusinessUnitOM) Then
-                            PI = LETTER_CONTENT_PI.Replace("Requestor Approval", "Approve Quotes (Ascend)")                            
+                            PI = LETTER_CONTENT_PI.Replace("Requestor Approval", "Approve Quotes (Ascend)")
                         Else
                             PI = LETTER_CONTENT_PI
-                        End If                        
+                        End If
                         'WorkOrder should show for all the BU's
                         bShowWorkOrderNo = True
                         eml.Body = "<HTML>" & _
@@ -1687,12 +1686,12 @@ Public Class QuoteNonStockProcessor
                     Else
                         'InsiteOnline
                         If IsAscend(itmQuoted.BusinessUnitOM) Then
-                            Content = LETTER_CONTENT.Replace("Requestor Approval", "Approve Quotes (Ascend)")                            
+                            Content = LETTER_CONTENT.Replace("Requestor Approval", "Approve Quotes (Ascend)")
                         Else
                             Content = LETTER_CONTENT
                         End If
                         'WorkOrder should show for all the BU's
-                        bShowWorkOrderNo = True                        
+                        bShowWorkOrderNo = True
 
                         eml.Body = "<HTML>" & _
                                         "<HEAD></HEAD>" & _
@@ -1755,15 +1754,22 @@ Public Class QuoteNonStockProcessor
                 If Len(sCNString) > 4 Then
                     strDBase = UCase(Right(sCNString, 4))
                 End If
+                If Not getDBName() Then
+                    eml.Subject = " TEST ZEUS - " & eml.Subject
+                    eml.To = "webdev@sdi.com;avacorp@sdi.com"
+                    'eml.Cc = "webdev@sdi.com;avacorp@sdi.com"
+                Else
 
-                Select Case strDBase
-                    Case "STAR", "PLGR", "RPTG", "DEVL"
-                        eml.Subject = " TEST ZEUS - " & eml.Subject
-                        eml.To = "webdev@sdi.com;SDIportalsupport@avasoft.biz"
-                        eml.Cc = "webdev@sdi.com;SDIportalsupport@avasoft.biz"
-                    Case Else
+                End If
 
-                End Select
+                'Select Case strDBase
+                '    Case "STAR", "PLGR", "RPTG", "DEVL"
+                '        eml.Subject = " TEST ZEUS - " & eml.Subject
+                '        eml.To = "webdev@sdi.com;avacorp@sdi.com"
+                '        eml.Cc = "webdev@sdi.com;avacorp@sdi.com"
+                '    Case Else
+
+                'End Select
 
                 If Trim(itmQuoted.Priority) <> "" Then
                     If Trim(itmQuoted.Priority) = "R" Then
@@ -2645,7 +2651,7 @@ Public Class QuoteNonStockProcessor
 
         MailTo = AppMail
 
-        SendLogger(MailSub, MailBody, "NotifyApprover", "MailandStore", MailTo, String.Empty, "WebDev@sdi.com;SDIportalsupport@avasoft.biz")
+        SendLogger(MailSub, MailBody, "NotifyApprover", "MailandStore", MailTo, String.Empty, "WebDev@sdi.com;avacorp@sdi.com")
 
     End Sub
 
@@ -3454,11 +3460,9 @@ Public Class OrderApprovals
 
         ' Mailer.Body = strbodyhead & strbodydetl
         MailBody = strbodyhead & strbodydetl
-        If DbUrl.Substring(DbUrl.Length - 4).ToUpper = "PLGR" Or _
-            DbUrl.Substring(DbUrl.Length - 4).ToUpper = "STAR" Or _
-            DbUrl.Substring(DbUrl.Length - 4).ToUpper = "RPTG" Then
+         If Not getDBName() Then
             ' Mailer.To = "DoNotSendPLGR@sdi.com"
-            MailTo = "WebDev@sdi.com;sdiportalsupport@avasoft.biz"
+            MailTo = "WebDev@sdi.com;avacorp@sdi.com"
             MailSub = "<<TEST SITE>> SDI ZEUS - Order Number " & strreqID & " has been " & strAction
         Else
             'Mailer.To = strBuyerEmail
@@ -3792,11 +3796,8 @@ Public Class OrderApprovals
         strbodydetl = strbodydetl & "<img src='https://www.sdizeus.com/Images/SDIFooter_Email.png' />" & vbCrLf
 
         Mailer.Body = strbodyhead & strbodydetl
-        If DbUrl.Substring(DbUrl.Length - 4).ToUpper = "STAR" Or _
-            DbUrl.Substring(DbUrl.Length - 4).ToUpper = "RPTG" Or _
-            DbUrl.Substring(DbUrl.Length - 4).ToUpper = "DEVL" Then
-
-            Mailer.To = "webdev@sdi.com;SDIportalsupport@avasoft.com"
+        If Not getDBName() Then
+            Mailer.To = "webdev@sdi.com;avacorp@sdi.com"
         Else
             Mailer.To = strappEmail
         End If
@@ -5406,7 +5407,7 @@ Public Class OrderApprovals
         Dim mail As New System.Net.Mail.MailMessage()
 
         mail.To.Add("webdev@sdi.com")
-        mail.To.Add("sdiportalsupport@avasoft.biz")
+        mail.To.Add("avacorp@sdi.com")
 
         mail.From = New System.Net.Mail.MailAddress("SDIExchADMIN@sdi.com", "SDiExchange Admin")
 
@@ -7489,7 +7490,7 @@ Public Class WebPSharedFunc
         Dim mail As New System.Net.Mail.MailMessage()
 
         mail.To.Add("webdev@sdi.com")
-        mail.To.Add("sdiportalsupport@avasoft.biz")
+        mail.To.Add("avacorp@sdi.com")
 
         mail.From = New System.Net.Mail.MailAddress("SDIExchADMIN@sdi.com", "SDiExchange Admin")
 

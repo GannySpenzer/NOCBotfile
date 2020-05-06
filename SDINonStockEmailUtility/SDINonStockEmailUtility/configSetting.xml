@@ -9,10 +9,10 @@
 		type="oracle8" />
 	//-->
   <appSettings>
-    <add key="OLEDBconString" value="Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User Id=sdiexchange;Data Source=RPTG" />
+    <add key="OLEDBconString" value="Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User Id=sdiexchange;Data Source=SNBX" />
     <add key="SQLDBconString" value="server=DAZZLE;uid=sa;pwd=sdiadmin;initial catalog='pubs'" />
   </appSettings>
-	<sourceDB cnString="Provider=OraOLEDB.Oracle.1;User ID=sdiexchange;Password=sd1exchange;Data Source=RPTG" type="oracle8" />
+	<sourceDB cnString="Provider=OraOLEDB.Oracle.1;User ID=sdiexchange;Password=sd1exchange;Data Source=SNBX" type="oracle8" />
 	<!-- TIMER
 		 timer object properties for checking newly added quoted non-stock items on the database.  this
 		 parameter (as for the moment) doesn't recognize other units other than "secs" so don't change
