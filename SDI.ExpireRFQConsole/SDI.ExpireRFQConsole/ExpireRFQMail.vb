@@ -15,6 +15,11 @@ Module ExpireRFQMail
     Dim rootDir As String = ConfigurationManager.AppSettings("LogPath")
     Dim logpath As String = rootDir & "RFQExpireNotification" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
     Dim connectOR As New OleDbConnection(Convert.ToString(ConfigurationManager.AppSettings("OLEDBconString")))
+    Dim configPath As New String(Convert.ToString(ConfigurationManager.AppSettings("configPath")))
+    Dim todayDate As String = String.Format("{0:dd/MM/yyyy}", DateTime.Now)
+    Dim getDate As New String(Convert.ToString(ConfigurationManager.AppSettings("Date")))
+    Dim Ordlist_10 As New List(Of String)
+    Dim Oldlist_1 As New List(Of String)
 
     Sub Main()
 
@@ -24,10 +29,8 @@ Module ExpireRFQMail
         Dim fileStream As FileStream = Nothing
         Dim logDirInfo As DirectoryInfo = Nothing
         Dim logFileInfo As FileInfo = Nothing
-
         logFileInfo = New FileInfo(logpath)
         logDirInfo = New DirectoryInfo(logFileInfo.DirectoryName)
-
         If Not logDirInfo.Exists Then logDirInfo.Create()
 
         If Not logFileInfo.Exists Then
@@ -37,275 +40,430 @@ Module ExpireRFQMail
         End If
 
         log = New StreamWriter(fileStream)
-
         log.WriteLine("*********************Logs(" + String.Format(DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss")) + ")***********************************")
-
         log = buildstatchgout(log)
-
         log.WriteLine("********************End of Expire RFQ Email Notification Utility********************")
-       
         log.Close()
 
     End Sub
 
     Public Function buildstatchgout(log As StreamWriter) As StreamWriter
 
-        Dim bolErrorSomeWhere As Boolean
         Dim connectionString As String = ConfigurationManager.AppSettings("OLEDBconString")
         connectOR = New OleDbConnection(connectionString)
 
         ' method to call the 
         Dim strSQLString As String = ""
+        Dim strOneString As String = "0"
+        Dim strTenString As String = "9"
+        Dim strTwentyString As String = "19"
+        Dim strThirtyString As String = "29"
         Dim varResultCount As String = "0"
         Dim varResultMode As String = "0"
-        Dim Ordlist_25 As New List(Of String)
-        Dim Ordlist_30 As New List(Of String)
         Dim Ordlist_31 As New List(Of String)
 
 
+        If (getDate = "01/01/2001") Then
+            Dim config As Configuration = ConfigurationManager.OpenExeConfiguration(configPath & "\SDI.ExpireRFQConsole.exe")
+            ConfigurationManager.RefreshSection("appSettings")
+            config.AppSettings.Settings("Date").Value = todayDate
+            config.Save(ConfigurationSaveMode.Modified)
+            ConfigurationManager.RefreshSection("appSettings")
+            log.WriteLine("Start to fetch the old orders that is not approved")
+            commonMethod(strOneString, strSQLString, varResultCount, log, "Old", "", "", "Day", 31)
+            log.WriteLine("---------------------****End of 1 days process****-----------------------")
 
-        'query to fetch the day 25
-        'strSQLString = "select * from PS_ISA_ORD_INTF_LN A, PS_ISA_ORD_INTF_HD B" & vbCrLf & _
-        '        " where B.ORIGIN = 'RFQ' AND A.Order_NO = B.Order_No AND TO_CHAR(A.Approval_Dttm + 24, 'DD-MON-YYYY') = TO_CHAR(CURRENT_DATE, 'DD-MON-YYYY')"
-        strSQLString = "SELECT TO_CHAR(S.DTTM_STAMP, 'MM-DD-YYYY') AS DTTM_STAMP , TO_CHAR(H.order_date, 'MM-DD-YYYY') AS order_date, A.* FROM ps_isa_ord_intf_ln A, PS_ISAORDSTATUSLOG S, ps_isa_ord_intf_hd H WHERE a.isa_line_status='QTS' AND  A.ORDER_NO=S.ORDER_NO and A.isa_intfc_ln = S.isa_intfc_ln AND a.isa_line_status = S.isa_line_status  and H.ORDER_NO = A.ORDER_NO  AND TO_CHAR(S.DTTM_STAMP, 'DD-MON-YYYY') = TO_CHAR(SYSDATE - 24, 'DD-MON-YYYY')"
-
-
-        Dim dtrAppReader As OleDbDataReader = GetReader(strSQLString)
-
-        'To get Employye Email ID
-        log.WriteLine("------------------------------------------------------------------------------------------")
-        log.WriteLine("Start to fetch the orders that is not approved for more than 25 days")
-
-        If dtrAppReader.HasRows() = True Then
-
-            While dtrAppReader.Read()
-                varResultCount = (dtrAppReader.Item(0)).ToString()
-
-                'If varResultCount = "0" Then
-                '    varResultMode = "0"
-                'Else
-                log.WriteLine("OrderNo {0} is not approved by employee {1},notificaton sent to user emailID for confirmation", Convert.ToString(dtrAppReader.Item("ORDER_NO")), Convert.ToString(dtrAppReader.Item("ISA_EMPLOYEE_ID")))
-
-                strSQLString = "SELECT ISA_EMPLOYEE_EMAIL FROM SDIX_USERS_TBL WHERE ISA_EMPLOYEE_ID = '" & dtrAppReader.Item("ISA_EMPLOYEE_ID").ToString() & "' "
-                Dim empEmail As String = GetScalar(strSQLString)
-
-
-                varResultMode = "25"
-
-                Dim BU As String = Convert.ToString(dtrAppReader.Item("Business_Unit_Om"))
-                Dim Ord_No As String = Convert.ToString(dtrAppReader.Item("ORDER_NO"))
-                Dim OPRID_Appr_By As String = Convert.ToString(dtrAppReader.Item("OPRID_APPROVED_BY"))
-                Dim Appr_Dttm As String = Convert.ToString(dtrAppReader.Item("APPROVAL_DTTM"))
-                Dim ITM_SETID As String = Convert.ToString(dtrAppReader.Item("ITM_SETID"))
-                Dim SELL_Price As String = Convert.ToString(dtrAppReader.Item("ISA_SELL_PRICE"))
-                Dim Required_By_Dttm As String = CDate(dtrAppReader.Item("ISA_REQUIRED_BY_DT")).ToString("MM-dd-yyyy")
-                Dim Decriptions As String = Convert.ToString(dtrAppReader.Item("DESCR254"))
-                Dim Order_date As String = Convert.ToString(dtrAppReader.Item("order_date"))
-                'buildNotifyApprover(dtrAppReader.Item("Business_Unit_Om"), dtrAppReader.Item("ORDER_NO"), dtrAppReader.Item("OPRID_APPROVED_BY"),
-                '                dtrAppReader.Item("APPROVAL_DTTM"), dtrAppReader.Item("ITM_SETID"), dtrAppReader.Item("ISA_SELL_PRICE"),
-                '                dtrAppReader.Item("ISA_REQUIRED_BY_DT"), dtrAppReader.Item("DESCR254"), varResultMode, empEmail, "24")                
-
-                If Not Ordlist_25.Contains(dtrAppReader.Item("ORDER_NO")) Then
-                    Ordlist_25.Add(dtrAppReader.Item("ORDER_NO"))
-                    buildNotifyApprover(BU, Ord_No, OPRID_Appr_By, Appr_Dttm, ITM_SETID, SELL_Price, Required_By_Dttm,
-                                    Decriptions, varResultMode, empEmail, "24", Order_date)
-                Else
-                    ''Ordlist.Add(dtrAppReader.Item("ORDER_NO"))
-                End If
-
-                'End If
-            End While
-            dtrAppReader.Close()
         Else
-            log.WriteLine("No records found to notify the user")
-            dtrAppReader.Close()
-        End If
+            Dim newDate As Date = Date.ParseExact(todayDate, "dd/MM/yyyy", System.Globalization.DateTimeFormatInfo.InvariantInfo)
+            Dim oldDate As Date = Date.ParseExact(getDate, "dd/MM/yyyy", System.Globalization.DateTimeFormatInfo.InvariantInfo)
 
-        log.WriteLine("---------------------****End of 25 days process****-----------------------")
+            Dim Diff1 As System.TimeSpan = newDate.Subtract(oldDate)
+            Dim days As Int64 = Diff1.TotalDays
+            Console.WriteLine("Total Days:" + Convert.ToString(days))
+            If days = 10 Then
+                log.WriteLine("Start to fetch the old orders that is not approved for more than 10 days")
+                commonMethod(strTenString, strSQLString, varResultCount, log, "Old", "", "", "Day", 30)
+                log.WriteLine("---------------------****End of 10 days process****-----------------------")
 
-        'query to fetch the day 30
-        'strSQLString = "select * from PS_ISA_ORD_INTF_LN A, PS_ISA_ORD_INTF_HD B" & vbCrLf & _
-        '        " where B.ORIGIN = 'RFQ' AND A.Order_NO = B.Order_No AND TO_CHAR(A.Approval_Dttm + 29, 'DD-MON-YYYY') = TO_CHAR(CURRENT_DATE, 'DD-MON-YYYY')"
+            ElseIf days = 20 Then
+                log.WriteLine("Start to fetch the old orders that is not approved for more than 20 days")
+                commonMethod(strTwentyString, strSQLString, varResultCount, log, "Old", "", "", "Day", 30)
+                log.WriteLine("---------------------****End of 20 days process****-----------------------")
 
-        log.WriteLine("------------------------------------------------------------------------------------------")
-        log.WriteLine("Start to fetch the orders that is not approved for more than 30 days")
+            ElseIf days = 30 Then
+                log.WriteLine("Start to fetch the old orders that is not approved for more than 30 days")
+                commonMethod(strThirtyString, strSQLString, varResultCount, log, "Old", "", "", "lastDay", 30)
+                log.WriteLine("---------------------****End of 30 days process****-----------------------")
+            ElseIf days = 31 Then
 
-        strSQLString = "SELECT TO_CHAR(S.DTTM_STAMP, 'MM-DD-YYYY') AS DTTM_STAMP , TO_CHAR(H.order_date, 'MM-DD-YYYY') AS order_date, A.* FROM ps_isa_ord_intf_ln A, PS_ISAORDSTATUSLOG S, ps_isa_ord_intf_hd H WHERE a.isa_line_status='QTS' AND  A.ORDER_NO=S.ORDER_NO and H.ORDER_NO = A.ORDER_NO  and A.isa_intfc_ln = S.isa_intfc_ln AND a.isa_line_status = S.isa_line_status AND TO_CHAR(S.DTTM_STAMP, 'DD-MON-YYYY') = TO_CHAR(SYSDATE - 29, 'DD-MON-YYYY') order by S.DTTM_STAMP desc"
-
-        dtrAppReader = GetReader(strSQLString)
-        If dtrAppReader.HasRows() = True Then
-
-            While dtrAppReader.Read()
-                'If varResultCount = "0" Then
-                '    varResultMode = "0"
-                'Else
-
-
-                strSQLString = "SELECT ISA_EMPLOYEE_EMAIL FROM SDIX_USERS_TBL WHERE ISA_EMPLOYEE_ID = '" & dtrAppReader.Item("ISA_EMPLOYEE_ID").ToString() & "' "
-                Dim empEmail1 As String = GetScalar(strSQLString)
-
-                varResultMode = "30"
-
-                log.WriteLine("OrderNo {0} is not approved by employee {1},notificaton sent to user emailID for confirmation", Convert.ToString(dtrAppReader.Item("ORDER_NO")), Convert.ToString(dtrAppReader.Item("ISA_EMPLOYEE_ID")))
-
-                Dim BU As String = Convert.ToString(dtrAppReader.Item("Business_Unit_Om"))
-                Dim Ord_No As String = Convert.ToString(dtrAppReader.Item("ORDER_NO"))
-                Dim OPRID_Appr_By As String = Convert.ToString(dtrAppReader.Item("OPRID_APPROVED_BY"))
-                Dim Appr_Dttm As String = Convert.ToString(dtrAppReader.Item("APPROVAL_DTTM"))
-                Dim ITM_SETID As String = Convert.ToString(dtrAppReader.Item("ITM_SETID"))
-                Dim SELL_Price As String = Convert.ToString(dtrAppReader.Item("ISA_SELL_PRICE"))
-                Dim Required_By_Dttm As String = CDate(dtrAppReader.Item("ISA_REQUIRED_BY_DT")).ToString("MM-dd-yyyy")
-                Dim Decriptions As String = Convert.ToString(dtrAppReader.Item("DESCR254"))
-                Dim Order_date As String = Convert.ToString(dtrAppReader.Item("order_date"))
-                'buildNotifyApprover(dtrAppReader.Item("Business_Unit_Om"), dtrAppReader.Item("ORDER_NO"), dtrAppReader.Item("OPRID_APPROVED_BY"),
-                '                dtrAppReader.Item("APPROVAL_DTTM"), dtrAppReader.Item("ITM_SETID"), dtrAppReader.Item("ISA_SELL_PRICE"),
-                '                dtrAppReader.Item("ISA_REQUIRED_BY_DT"), dtrAppReader.Item("DESCR254"), varResultMode, empEmail1, "29")
-                'End If
-                If Not Ordlist_30.Contains(dtrAppReader.Item("ORDER_NO")) Then
-                    Ordlist_30.Add(dtrAppReader.Item("ORDER_NO"))
-                    buildNotifyApprover(BU, Ord_No, OPRID_Appr_By, Appr_Dttm, ITM_SETID, SELL_Price, Required_By_Dttm,
-                                    Decriptions, varResultMode, empEmail1, "29", Order_date)
-                Else
-                    ''Ordlist.Add(dtrAppReader.Item("ORDER_NO"))
-                End If
-
-            End While
-            dtrAppReader.Close()
-        Else
-            log.WriteLine("No records found to notify the user")
-            dtrAppReader.Close()
-        End If
-        log.WriteLine("---------------------****End of 30 days process****-----------------------")
+                strSQLString = "SELECT TO_CHAR(LG.DTTM_STAMP, 'MM-DD-YYYY') AS DTTM_STAMP ,TO_CHAR(HD.order_date, 'MM-DD-YYYY') AS order_date, LN.*  " & vbCrLf &
+            " FROM PS_ISA_ORD_INTF_LN LN,PS_ISA_ORD_INTF_HD HD,PS_ISAORDSTATUSLOG LG WHERE LN.ORDER_NO = HD.ORDER_NO AND " & vbCrLf &
+            " LN.ISA_LINE_STATUS = 'QTS' AND LG.ORDER_NO = LN.ORDER_NO AND LG.ISA_INTFC_LN = LN.ISA_INTFC_LN AND LG.ISA_LINE_STATUS = LN.ISA_LINE_STATUS " & vbCrLf &
+            " AND LG.DTTM_STAMP  <= TO_DATE(TO_DATE('" & oldDate & "', 'DD/MM/YYYY') - 30) AND NOT EXISTS (SELECT * FROM PS_ISAORDSTATUSLOG A WHERE LG.ORDER_NO =  A.ORDER_NO AND " & vbCrLf &
+            " LG.ISA_INTFC_LN = A.ISA_INTFC_LN AND A.ISA_LINE_STATUS='QTS' AND  A.DTTM_STAMP >= TO_DATE(TO_DATE('" & oldDate & "', 'DD/MM/YYYY') - 30)) ORDER BY LG.DTTM_STAMP desc" & vbCrLf
 
 
-        log.WriteLine("------------------------------------------------------------------------------------------")
-        log.WriteLine("Start to expire orders that is not approved for more than 31 days")
+                Dim dtrAppReaders As OleDbDataReader = GetReader(strSQLString)
 
-        'query to fetch the day 31
-        ''strSQLString = "select * from PS_ISA_ORD_INTF_LN A, PS_ISA_ORD_INTF_HD B" & vbCrLf & _
-        ''        " where B.ORIGIN = 'RFQ' AND A.Order_NO = B.Order_No AND TO_CHAR(A.Approval_Dttm + 30, 'DD-MON-YYYY') = TO_CHAR(CURRENT_DATE, 'DD-MON-YYYY')"
+                If dtrAppReaders.HasRows() = True Then
+                    While dtrAppReaders.Read()
 
-        '' strSQLString = "SELECT TO_CHAR(S.DTTM_STAMP, 'MM-DD-YYYY') AS DTTM_STAMP , TO_CHAR(H.order_date, 'MM-DD-YYYY') AS order_date, A.* FROM ps_isa_ord_intf_ln A, PS_ISAORDSTATUSLOG S, ps_isa_ord_intf_hd H WHERE a.isa_line_status='QTS' AND  A.ORDER_NO=S.ORDER_NO and A.isa_intfc_ln = S.isa_intfc_ln AND a.isa_line_status = S.isa_line_status and H.ORDER_NO = A.ORDER_NO AND S.DTTM_STAMP <= TO_DATE(SYSDATE - 30) AND A.ORDER_NO = 'R039058320' order by S.DTTM_STAMP desc"
+                        varResultMode = "31"
+                        Dim strSQLstringUpt As String
+                        Dim ff As String = dtrAppReaders.Item("ORDER_NO")
 
-        strSQLString = "SELECT TO_CHAR(LG.DTTM_STAMP, 'MM-DD-YYYY') AS DTTM_STAMP ,TO_CHAR(HD.order_date, 'MM-DD-YYYY') AS order_date, LN.*  " & vbCrLf & _
-            " FROM PS_ISA_ORD_INTF_LN LN,PS_ISA_ORD_INTF_HD HD,PS_ISAORDSTATUSLOG LG WHERE LN.ORDER_NO = HD.ORDER_NO AND " & vbCrLf & _
-            " LN.ISA_LINE_STATUS = 'QTS' AND LG.ORDER_NO = LN.ORDER_NO AND LG.ISA_INTFC_LN = LN.ISA_INTFC_LN AND LG.ISA_LINE_STATUS = LN.ISA_LINE_STATUS " & vbCrLf & _
-            " AND LG.DTTM_STAMP  <= TO_DATE(SYSDATE - 30) AND NOT EXISTS (SELECT * FROM PS_ISAORDSTATUSLOG A WHERE LG.ORDER_NO =  A.ORDER_NO AND " & vbCrLf & _
-            " LG.ISA_INTFC_LN = A.ISA_INTFC_LN AND A.ISA_LINE_STATUS='QTS' AND  A.DTTM_STAMP >= TO_DATE(SYSDATE - 30)) ORDER BY LG.DTTM_STAMP desc" & vbCrLf
+                        Dim trnsactSession As OleDbTransaction = Nothing
+                        Dim connection As OleDbConnection = New OleDbConnection(ConfigurationManager.AppSettings("OLEDBconString"))
+                        Dim rowsAffected As Integer = 0
 
-
-        dtrAppReader = GetReader(strSQLString)
-        If dtrAppReader.HasRows() = True Then
-            While dtrAppReader.Read()
-                    'If varResultCount = "0" Then
-                    '    varResultMode = "0"
-                    'Else
-                varResultMode = "31"
-                    'buildNotifyApprover(dtrAppReader.Item("Business_Unit_Om"), dtrAppReader.Item("ORDER_NO"), dtrAppReader.Item("OPRID_APPROVED_BY"),
-                    '                dtrAppReader.Item("APPROVAL_DTTM"), dtrAppReader.Item("ITM_SETID"), dtrAppReader.Item("ISA_SELL_PRICE"),
-                    '                dtrAppReader.Item("ISA_REQUIRED_BY_DT"), dtrAppReader.Item("DESCR254"), varResultMode)
-                Dim strSQLstringUpt As String
-                Dim rowsaffectedUpt As Integer
-                Dim ff As String = dtrAppReader.Item("ORDER_NO")
-
-                Dim trnsactSession As OleDbTransaction = Nothing
-                Dim connection As OleDbConnection = New OleDbConnection(ConfigurationManager.AppSettings("OLEDBconString"))
-                Dim rowsAffected As Integer = 0
-
-                    'strSQLstringUpt = "UPDATE PS_ISA_ORD_INTF_LN" & vbCrLf & _
-                    '               " SET ISA_LINE_STATUS = 'EXP'" & vbCrLf & _
-                    '               " WHERE ORDER_NO = '" & dtrAppReader.Item("ORDER_NO") & "'"
-
-                Dim StatusChk = Convert.ToString(ConfigurationManager.AppSettings("SetStatus"))
-
-                If StatusChk.ToUpper() = "EXP" Or StatusChk.ToUpper() = "YES" Then
-                    strSQLstringUpt = "UPDATE PS_ISA_ORD_INTF_LN SET ISA_LINE_STATUS = 'EXP' WHERE ISA_LINE_STATUS = 'QTS' AND ORDER_NO= '" & Convert.ToString(dtrAppReader.Item("ORDER_NO")) & "' AND ISA_INTFC_LN = " & Convert.ToString(dtrAppReader.Item("ISA_INTFC_LN")) & ""
-                    Try
-                        connection.Open()
-                        trnsactSession = connection.BeginTransaction
-                        Dim Command As OleDbCommand = New OleDbCommand(strSQLstringUpt, connection)
-                        Command.Transaction = trnsactSession
-                        Command.CommandTimeout = 120
-                        rowsAffected = Command.ExecuteNonQuery()
-                        If Not rowsAffected = 0 Then
-                            log.WriteLine("Updated the order status to ""EXP"" for OrderNo {0} that is not approved by employee {1}", Convert.ToString(dtrAppReader.Item("ORDER_NO")), Convert.ToString(dtrAppReader.Item("ISA_EMPLOYEE_ID")))
-                        Else
-                            log.WriteLine("Error in updating order status to ""EXP"" for OrderNo {0} that is not approved by employee {1} ", Convert.ToString(dtrAppReader.Item("ORDER_NO")), Convert.ToString(dtrAppReader.Item("ISA_EMPLOYEE_ID")))
-                            End If
+                        strSQLstringUpt = "UPDATE PS_ISA_ORD_INTF_LN SET ISA_LINE_STATUS = 'EXP' WHERE ISA_LINE_STATUS = 'QTS' AND ORDER_NO= '" & Convert.ToString(dtrAppReaders.Item("ORDER_NO")) & "' AND ISA_INTFC_LN = " & Convert.ToString(dtrAppReaders.Item("ISA_INTFC_LN")) & ""
                         Try
-                            Command.Dispose()
-                        Catch ex As Exception
+                            connection.Open()
+                            trnsactSession = connection.BeginTransaction
+                            Dim Command As OleDbCommand = New OleDbCommand(strSQLstringUpt, connection)
+                            Command.Transaction = trnsactSession
+                            Command.CommandTimeout = 120
+                            rowsAffected = Command.ExecuteNonQuery()
+                            If Not rowsAffected = 0 Then
+                                log.WriteLine("Updated the order status to ""EXP"" for OrderNo {0} that is not approved by employee {1}", Convert.ToString(dtrAppReaders.Item("ORDER_NO")), Convert.ToString(dtrAppReaders.Item("ISA_EMPLOYEE_ID")))
+                            Else
+                                log.WriteLine("Error in updating order status to ""EXP"" for OrderNo {0} that is not approved by employee {1} ", Convert.ToString(dtrAppReaders.Item("ORDER_NO")), Convert.ToString(dtrAppReaders.Item("ISA_EMPLOYEE_ID")))
+                            End If
+                            Try
+                                Command.Dispose()
+                            Catch ex As Exception
 
                             End Try
 
-                        trnsactSession.Commit()
-                        connection.Close()
-                        trnsactSession = Nothing
-                        connection = Nothing
-                    Catch objException As Exception
-                        rowsAffected = 0
-                        Try
-                            trnsactSession.Rollback()
+                            trnsactSession.Commit()
                             connection.Close()
                             trnsactSession = Nothing
                             connection = Nothing
-                        Catch ex As Exception
+                        Catch objException As Exception
+                            rowsAffected = 0
+                            Try
+                                trnsactSession.Rollback()
+                                connection.Close()
+                                trnsactSession = Nothing
+                                connection = Nothing
+                            Catch ex As Exception
 
                             End Try
                         End Try
-                Else
 
-                    strSQLString = "SELECT ISA_EMPLOYEE_EMAIL FROM SDIX_USERS_TBL WHERE ISA_EMPLOYEE_ID = '" & dtrAppReader.Item("ISA_EMPLOYEE_ID").ToString() & "' "
-                    Dim empEmail1 As String = GetScalar(strSQLString)
+
+                    End While
+                    dtrAppReaders.Close()
+                Else
+                    log.WriteLine("No records found to expire order")
+                    dtrAppReaders.Close()
+                End If
+
+            End If
+        End If
+
+        strSQLString = "select business_unit, date_value_1, date_value_2, date_value_3 from SDIX_RFQ_EXPIRE_BU"
+        Dim dtrAppReader As OleDbDataReader = GetReader(strSQLString)
+        Dim UNIT As String = ""
+        Dim List_BU As String = ""
+        If dtrAppReader.HasRows() = True Then
+            While dtrAppReader.Read()
+                Try
+                    Dim business_unit As String = dtrAppReader.Item("business_unit")
+                    Dim date_value_1 As Int16 = dtrAppReader.Item("date_value_1")
+                    Dim date_value_2 As Int16 = dtrAppReader.Item("date_value_2")
+                    Dim date_value_3 As Int16 = dtrAppReader.Item("date_value_3")
+                    UNIT = UNIT + "," + "'" + business_unit + "'"
+
+                    log.WriteLine("Business Unit: " + Convert.ToString(business_unit))
+                    log.WriteLine("Start to fetch the orders that is not approved for more than " + Convert.ToString(date_value_1) + " days")
+                    commonMethod(date_value_1 - 1, strSQLString, varResultCount, log, "New", business_unit, "", "Day", date_value_3)
+                    log.WriteLine("---------------------****End of " + Convert.ToString(date_value_1) + " days process****-----------------------")
+
+                    log.WriteLine("Start to fetch the orders that is not approved for more than " + Convert.ToString(date_value_2) + " days")
+                    commonMethod(date_value_2 - 1, strSQLString, varResultCount, log, "New", business_unit, "", "Day", date_value_3)
+                    log.WriteLine("---------------------****End of " + Convert.ToString(date_value_2) + " days process****-----------------------")
+
+                    log.WriteLine("Start to fetch the orders that is not approved for more than " + Convert.ToString(date_value_3) + " days")
+                    commonMethod(date_value_3 - 1, strSQLString, varResultCount, log, "New", business_unit, "", "lastDay", 30)
+                    log.WriteLine("---------------------****End of " + Convert.ToString(date_value_3) + " days process****-----------------------")
+
+                    log.WriteLine("Start to expire orders that is not approved for more than " + Convert.ToString(date_value_3) + " days")
+
+                    strSQLString = "SELECT TO_CHAR(LG.DTTM_STAMP, 'MM-DD-YYYY') AS DTTM_STAMP ,TO_CHAR(HD.order_date, 'MM-DD-YYYY') AS order_date, LN.*  " & vbCrLf &
+                " FROM PS_ISA_ORD_INTF_LN LN,PS_ISA_ORD_INTF_HD HD,PS_ISAORDSTATUSLOG LG WHERE LN.ORDER_NO = HD.ORDER_NO AND " & vbCrLf &
+                " LN.ISA_LINE_STATUS = 'QTS' AND LG.ORDER_NO = LN.ORDER_NO AND LG.ISA_INTFC_LN = LN.ISA_INTFC_LN AND LG.ISA_LINE_STATUS = LN.ISA_LINE_STATUS " & vbCrLf &
+                " AND LG.DTTM_STAMP  <= TO_DATE(SYSDATE - '" & Convert.ToString(date_value_3) & "') AND NOT EXISTS (SELECT * FROM PS_ISAORDSTATUSLOG A WHERE LG.ORDER_NO =  A.ORDER_NO AND " & vbCrLf &
+                " LG.ISA_INTFC_LN = A.ISA_INTFC_LN AND A.ISA_LINE_STATUS='QTS' AND  A.DTTM_STAMP >= TO_DATE(SYSDATE - '" & Convert.ToString(date_value_3) & "')) And LN.BUSINESS_UNIT_OM='" & business_unit & "' ORDER BY LG.DTTM_STAMP desc" & vbCrLf
+
+                    Dim dtrAppReaders As OleDbDataReader = GetReader(strSQLString)
+
+                    If dtrAppReaders.HasRows() = True Then
+                        While dtrAppReaders.Read()
+
+                            Dim strSQLstringUpt As String
+                            Dim ff As String = dtrAppReaders.Item("ORDER_NO")
+
+                            Dim fff As String = ""
+                            Dim trnsactSession As OleDbTransaction = Nothing
+                            Dim connection As OleDbConnection = New OleDbConnection(ConfigurationManager.AppSettings("OLEDBconString"))
+                            Dim rowsAffected As Integer = 0
+                            strSQLstringUpt = "UPDATE PS_ISA_ORD_INTF_LN SET ISA_LINE_STATUS = 'EXP' WHERE ISA_LINE_STATUS = 'QTS' AND ORDER_NO= '" & Convert.ToString(dtrAppReaders.Item("ORDER_NO")) & "' AND ISA_INTFC_LN = " & Convert.ToString(dtrAppReaders.Item("ISA_INTFC_LN")) & ""
+                            Try
+                                connection.Open()
+                                trnsactSession = connection.BeginTransaction
+                                Dim Command As OleDbCommand = New OleDbCommand(strSQLstringUpt, connection)
+                                Command.Transaction = trnsactSession
+                                Command.CommandTimeout = 120
+                                rowsAffected = Command.ExecuteNonQuery()
+                                If Not rowsAffected = 0 Then
+                                    log.WriteLine("Updated the order status to ""EXP"" for OrderNo {0} that is not approved by employee {1}", Convert.ToString(dtrAppReaders.Item("ORDER_NO")), Convert.ToString(dtrAppReaders.Item("ISA_EMPLOYEE_ID")))
+                                Else
+                                    log.WriteLine("Error in updating order status to ""EXP"" for OrderNo {0} that is not approved by employee {1} ", Convert.ToString(dtrAppReaders.Item("ORDER_NO")), Convert.ToString(dtrAppReaders.Item("ISA_EMPLOYEE_ID")))
+                                End If
+                                Try
+                                    Command.Dispose()
+                                Catch ex As Exception
+
+                                End Try
+
+                                trnsactSession.Commit()
+                                connection.Close()
+                                trnsactSession = Nothing
+                                connection = Nothing
+                            Catch objException As Exception
+                                rowsAffected = 0
+                                Try
+                                    trnsactSession.Rollback()
+                                    connection.Close()
+                                    trnsactSession = Nothing
+                                    connection = Nothing
+                                Catch ex As Exception
+
+                                End Try
+                            End Try
+
+                        End While
+                        dtrAppReaders.Close()
+                    Else
+                        log.WriteLine("No records found to expire order")
+                        dtrAppReaders.Close()
+                    End If
+                    log.WriteLine("---------------------****End of '" & Convert.ToString(date_value_3) & "' day expire process****-----------------------")
+                Catch ex As Exception
+
+                End Try
+            End While
+            dtrAppReader.Close()
+            List_BU = UNIT.Remove(0, 1)
+        End If
+
+
+        log.WriteLine("------------------------------------------------------------------------------------------")
+
+        log.WriteLine("Start to fetch the orders that is not approved for more than 10 days")
+        commonMethod(strTenString, strSQLString, varResultCount, log, "New", "", List_BU, "Day", 30)
+        log.WriteLine("---------------------****End of 10 days process****-----------------------")
+
+        log.WriteLine("Start to fetch the orders that is not approved for more than 20 days")
+        commonMethod(strTwentyString, strSQLString, varResultCount, log, "New", "", List_BU, "Day", 30)
+        log.WriteLine("---------------------****End of 20 days process****-----------------------")
+
+        log.WriteLine("Start to fetch the orders that is not approved for more than 30 days")
+        commonMethod(strThirtyString, strSQLString, varResultCount, log, "New", "", List_BU, "lastDay", 30)
+        log.WriteLine("---------------------****End of 30 days process****-----------------------")
+
+        If getDate <> "01/01/2001" Then
+            log.WriteLine("------------------------------------------------------------------------------------------")
+            log.WriteLine("Start to expire orders that is not approved for more than 31 days")
+
+            strSQLString = "SELECT TO_CHAR(LG.DTTM_STAMP, 'MM-DD-YYYY') AS DTTM_STAMP ,TO_CHAR(HD.order_date, 'MM-DD-YYYY') AS order_date, LN.*  " & vbCrLf &
+                " FROM PS_ISA_ORD_INTF_LN LN,PS_ISA_ORD_INTF_HD HD,PS_ISAORDSTATUSLOG LG WHERE LN.ORDER_NO = HD.ORDER_NO AND " & vbCrLf &
+                " LN.ISA_LINE_STATUS = 'QTS' AND LG.ORDER_NO = LN.ORDER_NO AND LG.ISA_INTFC_LN = LN.ISA_INTFC_LN AND LG.ISA_LINE_STATUS = LN.ISA_LINE_STATUS " & vbCrLf &
+                " AND LG.DTTM_STAMP  <= TO_DATE(SYSDATE - 30) AND NOT EXISTS (SELECT * FROM PS_ISAORDSTATUSLOG A WHERE LG.ORDER_NO =  A.ORDER_NO AND " & vbCrLf &
+                " LG.ISA_INTFC_LN = A.ISA_INTFC_LN AND A.ISA_LINE_STATUS='QTS' AND  A.DTTM_STAMP >= TO_DATE(SYSDATE - 30)) ORDER BY LG.DTTM_STAMP desc" & vbCrLf
+
+
+            dtrAppReader = GetReader(strSQLString)
+            If dtrAppReader.HasRows() = True Then
+                While dtrAppReader.Read()
 
                     varResultMode = "31"
+                    Dim strSQLstringUpt As String
+                    Dim ff As String = dtrAppReader.Item("ORDER_NO")
 
-                    Dim BU As String = Convert.ToString(dtrAppReader.Item("Business_Unit_Om"))
-                    Dim Ord_No As String = Convert.ToString(dtrAppReader.Item("ORDER_NO"))
-                    Dim OPRID_Appr_By As String = Convert.ToString(dtrAppReader.Item("OPRID_APPROVED_BY"))
-                    Dim Appr_Dttm As String = Convert.ToString(dtrAppReader.Item("APPROVAL_DTTM"))
-                    Dim ITM_SETID As String = Convert.ToString(dtrAppReader.Item("ITM_SETID"))
-                    Dim SELL_Price As String = Convert.ToString(dtrAppReader.Item("ISA_SELL_PRICE"))
-                    Dim Required_By_Dttm As String = CDate(dtrAppReader.Item("ISA_REQUIRED_BY_DT")).ToString("MM-dd-yyyy")
-                    Dim Decriptions As String = Convert.ToString(dtrAppReader.Item("DESCR254"))
-                    Dim Order_date As String = Convert.ToString(dtrAppReader.Item("order_date"))
-                        'buildNotifyApprover(dtrAppReader.Item("Business_Unit_Om"), dtrAppReader.Item("ORDER_NO"), dtrAppReader.Item("OPRID_APPROVED_BY"),
-                        '                dtrAppReader.Item("APPROVAL_DTTM"), dtrAppReader.Item("ITM_SETID"), dtrAppReader.Item("ISA_SELL_PRICE"),
-                        '                dtrAppReader.Item("ISA_REQUIRED_BY_DT"), dtrAppReader.Item("DESCR254"), varResultMode, empEmail1, "29")
-                        'End If
-                    If Not Ordlist_31.Contains(dtrAppReader.Item("ORDER_NO")) Then
-                        Ordlist_31.Add(dtrAppReader.Item("ORDER_NO"))
-                        buildNotifyApprover(BU, Ord_No, OPRID_Appr_By, Appr_Dttm, ITM_SETID, SELL_Price, Required_By_Dttm,
-                                        Decriptions, varResultMode, empEmail1, "30", Order_date)
-                    Else
-                            ''Ordlist.Add(dtrAppReader.Item("ORDER_NO"))
+                    Dim DTTM_STAMP As Date = dtrAppReader.Item("DTTM_STAMP")
+                    Dim oldDate As Date = Date.ParseExact(getDate, "dd/MM/yyyy", System.Globalization.DateTimeFormatInfo.InvariantInfo)
+                    Dim staticDate As Date = oldDate.AddDays(-30)
+                    If staticDate < DTTM_STAMP Then
+
+                        Dim fff As String = ""
+                        Dim trnsactSession As OleDbTransaction = Nothing
+                        Dim connection As OleDbConnection = New OleDbConnection(ConfigurationManager.AppSettings("OLEDBconString"))
+                        Dim rowsAffected As Integer = 0
+                        Dim StatusChk = Convert.ToString(ConfigurationManager.AppSettings("SetStatus"))
+
+                        If StatusChk.ToUpper() = "EXP" Or StatusChk.ToUpper() = "YES" Then
+                            strSQLstringUpt = "UPDATE PS_ISA_ORD_INTF_LN SET ISA_LINE_STATUS = 'EXP' WHERE ISA_LINE_STATUS = 'QTS' AND ORDER_NO= '" & Convert.ToString(dtrAppReader.Item("ORDER_NO")) & "' AND ISA_INTFC_LN = " & Convert.ToString(dtrAppReader.Item("ISA_INTFC_LN")) & ""
+                            Try
+                                connection.Open()
+                                trnsactSession = connection.BeginTransaction
+                                Dim Command As OleDbCommand = New OleDbCommand(strSQLstringUpt, connection)
+                                Command.Transaction = trnsactSession
+                                Command.CommandTimeout = 120
+                                rowsAffected = Command.ExecuteNonQuery()
+                                If Not rowsAffected = 0 Then
+                                    log.WriteLine("Updated the order status to ""EXP"" for OrderNo {0} that is not approved by employee {1}", Convert.ToString(dtrAppReader.Item("ORDER_NO")), Convert.ToString(dtrAppReader.Item("ISA_EMPLOYEE_ID")))
+                                Else
+                                    log.WriteLine("Error in updating order status to ""EXP"" for OrderNo {0} that is not approved by employee {1} ", Convert.ToString(dtrAppReader.Item("ORDER_NO")), Convert.ToString(dtrAppReader.Item("ISA_EMPLOYEE_ID")))
+                                End If
+                                Try
+                                    Command.Dispose()
+                                Catch ex As Exception
+
+                                End Try
+
+                                trnsactSession.Commit()
+                                connection.Close()
+                                trnsactSession = Nothing
+                                connection = Nothing
+                            Catch objException As Exception
+                                rowsAffected = 0
+                                Try
+                                    trnsactSession.Rollback()
+                                    connection.Close()
+                                    trnsactSession = Nothing
+                                    connection = Nothing
+                                Catch ex As Exception
+
+                                End Try
+                            End Try
+                        Else
+
+                            strSQLString = "SELECT ISA_EMPLOYEE_EMAIL FROM SDIX_USERS_TBL WHERE ISA_EMPLOYEE_ID = '" & dtrAppReader.Item("ISA_EMPLOYEE_ID").ToString() & "' "
+                            Dim empEmail1 As String = GetScalar(strSQLString)
+
+                            varResultMode = "31"
+
+                            Dim BU As String = Convert.ToString(dtrAppReader.Item("Business_Unit_Om"))
+                            Dim Ord_No As String = Convert.ToString(dtrAppReader.Item("ORDER_NO"))
+                            Dim OPRID_Appr_By As String = Convert.ToString(dtrAppReader.Item("OPRID_APPROVED_BY"))
+                            Dim Appr_Dttm As String = Convert.ToString(dtrAppReader.Item("APPROVAL_DTTM"))
+                            Dim ITM_SETID As String = Convert.ToString(dtrAppReader.Item("ITM_SETID"))
+                            Dim SELL_Price As String = Convert.ToString(dtrAppReader.Item("ISA_SELL_PRICE"))
+                            Dim Required_By_Dttm As String = CDate(dtrAppReader.Item("ISA_REQUIRED_BY_DT")).ToString("MM-dd-yyyy")
+                            Dim Decriptions As String = Convert.ToString(dtrAppReader.Item("DESCR254"))
+                            Dim Order_date As String = Convert.ToString(dtrAppReader.Item("order_date"))
+
+                            If Not Ordlist_31.Contains(dtrAppReader.Item("ORDER_NO")) Then
+                                Ordlist_31.Add(dtrAppReader.Item("ORDER_NO"))
+                                buildNotifyApprover(BU, Ord_No, OPRID_Appr_By, Appr_Dttm, ITM_SETID, SELL_Price, Required_By_Dttm,
+                                                Decriptions, varResultMode, empEmail1, "30", Order_date, "New", "lastDay", 30)
+                            Else
+                                ''Ordlist.Add(dtrAppReader.Item("ORDER_NO"))
+                            End If
+
                         End If
 
                     End If
 
-                    'End If
                 End While
-            dtrAppReader.Close()
-        Else
-            log.WriteLine("No records found to expire order")
-            dtrAppReader.Close()
+                dtrAppReader.Close()
+            Else
+                log.WriteLine("No records found to expire order")
+                dtrAppReader.Close()
             End If
 
-        log.WriteLine("---------------------****End of 31 day expire process****-----------------------")
+            log.WriteLine("---------------------****End of 31 day expire process****-----------------------")
+        End If
 
         Try
             connectOR.Close()
         Catch ex As Exception
 
-            End Try
+        End Try
 
         Return log
 
     End Function
 
+    Public Sub commonMethod(ByVal Value As String, ByVal strSQLString As String, ByVal varResultCount As String, log As StreamWriter,
+                            ByVal type As String, ByVal businessUnit As String, ByVal List_BU As String, ByVal Email As String, ByVal endCount As Int16)
+
+        If businessUnit = "" Then
+            If type = "Old" Then
+                Dim conformDate As String = If(getDate = "01/01/2001", todayDate, getDate)
+                strSQLString = "SELECT TO_CHAR(LG.DTTM_STAMP, 'MM-DD-YYYY') AS DTTM_STAMP ,TO_CHAR(HD.order_date, 'MM-DD-YYYY') AS order_date, LN.*  " & vbCrLf &
+            " FROM PS_ISA_ORD_INTF_LN LN,PS_ISA_ORD_INTF_HD HD,PS_ISAORDSTATUSLOG LG WHERE LN.ORDER_NO = HD.ORDER_NO AND " & vbCrLf &
+            " LN.ISA_LINE_STATUS = 'QTS' AND LG.ORDER_NO = LN.ORDER_NO AND LG.ISA_INTFC_LN = LN.ISA_INTFC_LN AND LG.ISA_LINE_STATUS = LN.ISA_LINE_STATUS " & vbCrLf &
+            " AND LG.DTTM_STAMP  <= TO_DATE(TO_DATE('" & conformDate & "', 'DD/MM/YYYY') - 30) AND NOT EXISTS (SELECT * FROM PS_ISAORDSTATUSLOG A WHERE LG.ORDER_NO =  A.ORDER_NO AND " & vbCrLf &
+            " LG.ISA_INTFC_LN = A.ISA_INTFC_LN AND A.ISA_LINE_STATUS='QTS' AND  A.DTTM_STAMP >= TO_DATE(TO_DATE('" & conformDate & "', 'DD/MM/YYYY') - 30)) ORDER BY LG.DTTM_STAMP desc" & vbCrLf
+
+            Else
+                If List_BU = "" Then
+                    strSQLString = "SELECT TO_CHAR(S.DTTM_STAMP, 'MM-DD-YYYY') AS DTTM_STAMP , TO_CHAR(H.order_date, 'MM-DD-YYYY') AS order_date, A.* FROM ps_isa_ord_intf_ln A, PS_ISAORDSTATUSLOG S, ps_isa_ord_intf_hd H WHERE a.isa_line_status='QTS' AND  A.ORDER_NO=S.ORDER_NO and A.isa_intfc_ln = S.isa_intfc_ln AND a.isa_line_status = S.isa_line_status  and H.ORDER_NO = A.ORDER_NO  AND TO_CHAR(S.DTTM_STAMP, 'DD-MON-YYYY') = TO_CHAR(SYSDATE - '" & Value & "', 'DD-MON-YYYY') order by S.DTTM_STAMP desc"
+                Else
+                    strSQLString = "SELECT TO_CHAR(S.DTTM_STAMP, 'MM-DD-YYYY') AS DTTM_STAMP , TO_CHAR(H.order_date, 'MM-DD-YYYY') AS order_date, A.* FROM ps_isa_ord_intf_ln A, PS_ISAORDSTATUSLOG S, ps_isa_ord_intf_hd H WHERE a.isa_line_status='QTS' AND  A.ORDER_NO=S.ORDER_NO and A.isa_intfc_ln = S.isa_intfc_ln AND a.isa_line_status = S.isa_line_status  and H.ORDER_NO = A.ORDER_NO  AND TO_CHAR(S.DTTM_STAMP, 'DD-MON-YYYY') = TO_CHAR(SYSDATE - '" & Value & "', 'DD-MON-YYYY') And A.BUSINESS_UNIT_OM NOT IN (" & List_BU & ") order by S.DTTM_STAMP desc"
+                End If
+            End If
+        Else
+            strSQLString = "SELECT TO_CHAR(S.DTTM_STAMP, 'MM-DD-YYYY') AS DTTM_STAMP , TO_CHAR(H.order_date, 'MM-DD-YYYY') AS order_date, A.* FROM ps_isa_ord_intf_ln A, PS_ISAORDSTATUSLOG S, ps_isa_ord_intf_hd H WHERE a.isa_line_status='QTS' AND  A.ORDER_NO=S.ORDER_NO and A.isa_intfc_ln = S.isa_intfc_ln AND a.isa_line_status = S.isa_line_status  and H.ORDER_NO = A.ORDER_NO  AND TO_CHAR(S.DTTM_STAMP, 'DD-MON-YYYY') = TO_CHAR(SYSDATE - '" & Value & "', 'DD-MON-YYYY')And A.BUSINESS_UNIT_OM='" & businessUnit & "' order by S.DTTM_STAMP desc"
+        End If
+        Dim dtrAppReader As OleDbDataReader = GetReader(strSQLString)
+
+        'To get Employye Email ID
+        If dtrAppReader.HasRows() = True Then
+
+            While dtrAppReader.Read()
+
+                varResultCount = (dtrAppReader.Item(0)).ToString()
+                log.WriteLine("OrderNo {0} is not approved by employee {1},notificaton sent to user emailID for confirmation", Convert.ToString(dtrAppReader.Item("ORDER_NO")), Convert.ToString(dtrAppReader.Item("ISA_EMPLOYEE_ID")))
+
+                strSQLString = "SELECT ISA_EMPLOYEE_EMAIL FROM SDIX_USERS_TBL WHERE ISA_EMPLOYEE_ID = '" & dtrAppReader.Item("ISA_EMPLOYEE_ID").ToString() & "' "
+                Dim empEmail As String = GetScalar(strSQLString)
+
+                Dim BU As String = Convert.ToString(dtrAppReader.Item("Business_Unit_Om"))
+                Dim Ord_No As String = Convert.ToString(dtrAppReader.Item("ORDER_NO"))
+                Dim OPRID_Appr_By As String = Convert.ToString(dtrAppReader.Item("OPRID_APPROVED_BY"))
+                Dim Appr_Dttm As String = Convert.ToString(dtrAppReader.Item("APPROVAL_DTTM"))
+                Dim ITM_SETID As String = Convert.ToString(dtrAppReader.Item("ITM_SETID"))
+                Dim SELL_Price As String = Convert.ToString(dtrAppReader.Item("ISA_SELL_PRICE"))
+                Dim Required_By_Dttm As String = CDate(dtrAppReader.Item("ISA_REQUIRED_BY_DT")).ToString("MM-dd-yyyy")
+                Dim Decriptions As String = Convert.ToString(dtrAppReader.Item("DESCR254"))
+                Dim Order_date As String = Convert.ToString(dtrAppReader.Item("order_date"))
+                If type = "New" Then
+
+                    If Not Ordlist_10.Contains(dtrAppReader.Item("ORDER_NO")) Then
+
+                        Ordlist_10.Add(dtrAppReader.Item("ORDER_NO"))
+                        buildNotifyApprover(BU, Ord_No, OPRID_Appr_By, Appr_Dttm, ITM_SETID, SELL_Price, Required_By_Dttm,
+                                        Decriptions, Value + 1, empEmail, Value, Order_date, type, Email, endCount)
+                    End If
+                Else
+                    If Not Oldlist_1.Contains(dtrAppReader.Item("ORDER_NO")) Then
+
+                        Oldlist_1.Add(dtrAppReader.Item("ORDER_NO"))
+                        buildNotifyApprover(BU, Ord_No, OPRID_Appr_By, Appr_Dttm, ITM_SETID, SELL_Price, Required_By_Dttm,
+                                    Decriptions, Value + 1, empEmail, Value, Order_date, type, Email, endCount)
+
+                    End If
+                End If
+
+
+            End While
+            dtrAppReader.Close()
+        Else
+            log.WriteLine("No records found to notify the user")
+            dtrAppReader.Close()
+        End If
+
+    End Sub
+
     Public Sub buildNotifyApprover(ByVal businessUnit As String, ByVal orderNum As String, ByVal apprvBy As String,
                                     ByVal apprvDate As String, ByVal itmSet As String, ByVal sellPrice As String,
-                                    ByVal itmReqDate As String, ByVal itmDescr As String, ByVal mode As String, ByVal empEmail1 As String, ByVal DateInterval As String, ByVal orderDate As String)
+                                    ByVal itmReqDate As String, ByVal itmDescr As String, ByVal mode As String,
+                                   ByVal empEmail1 As String, ByVal DateInterval As String, ByVal orderDate As String,
+                                   ByVal type As String, ByVal Email As String, ByVal endCount As Int16)
 
         Dim strbodyhead As String
         Dim strbodydetl As String
@@ -319,7 +477,7 @@ Module ExpireRFQMail
         Dim dataGridHTML As String = String.Empty
         Dim dstcartSTK As New DataTable
         Dim StrWO1 As String = " "
-        dstcartSTK = buildCartforemail(orderNum, StrWO1, DateInterval)
+        dstcartSTK = buildCartforemail(orderNum, StrWO1, DateInterval, type)
         If Trim(StrWO1) = "" Then
             StrWO1 = " "
         End If
@@ -339,13 +497,10 @@ Module ExpireRFQMail
             dataGridHTML = SBstk.ToString()
         End If
 
-
         Dim Mailer As MailMessage = New MailMessage
         Dim FromAddress As String = "SDIExchange@SDI.com"
         Dim Mailcc As String = ""
         Dim MailBcc As String = "webdev@sdi.com;Tony.Smith@sdi.com"
-
-
 
         strbodyhead = "<table bgcolor='black' Width='100%'><tbody><tr><td style='width:1%;'><img src='http://www.sdiexchange.com/images/SDNewLogo_Email.png' alt='SDI' style='padding: 10px 0;' vspace='0' hspace='0' /></td>" & vbCrLf
         strbodyhead = strbodyhead & "<td style='width:50% ;'><center><span style='font-weight:bold;color:white;font-size:24px;'>SDI Marketplace</span></center>" & vbCrLf
@@ -356,36 +511,22 @@ Module ExpireRFQMail
 
         strbodydetl = "&nbsp;" & vbCrLf
         strbodydetl = strbodydetl & "<div>"
-        'strbodydetl = strbodydetl & "<p ><span style='font-weight:bold;'>BUSINESS UNIT: </span><span>      </span>" & businessUnit & "<br>"
-        'strbodydetl = strbodydetl & "&nbsp;<br>"
+
         strbodydetl = strbodydetl & "<p ><span style='font-weight:bold;'>Order No: </span><span>    </span>" & orderNum & "<br>"
         strbodydetl = strbodydetl & "&nbsp;<br>"
         strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Orderd by Date: </span><span>  </span>" & orderDate & "<br>"
         strbodydetl = strbodydetl & "&nbsp;<br>"
-        'strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Approved Date: </span><span>  </span>" & apprvDate & "<br>"
-        'strbodydetl = strbodydetl & "&nbsp;<br>"
-        'strbodydetl = strbodydetl & "<span style='font-weight:bold;'>ITEM SET: </span><span>  </span>" & itmSet & "<br>"
-        'strbodydetl = strbodydetl & "&nbsp;<br>"
-        'strbodydetl = strbodydetl & "<span style='font-weight:bold;'>ITEM SELL PRICE: </span><span>  </span>" & sellPrice & "<br>"
-        'strbodydetl = strbodydetl & "&nbsp;<br>"
-        'strbodydetl = strbodydetl & "<span style='font-weight:bold;'>ITEM REQUESTED DATE: </span><span>  </span>" & itmReqDate & "<br>"
-        'strbodydetl = strbodydetl & "&nbsp;<br>"
         strbodydetl = strbodydetl & "<span style='font-weight:bold;'>Request by Date: </span><span>  </span>" & itmReqDate & "<br>"
         strbodydetl = strbodydetl & "&nbsp;<br></p>"
-        If mode = "25" Then
-            strbodydetl = strbodydetl & "<p>The above referenced order is waiting for your approval and will expire in 5 days. </p>"
-        ElseIf mode = "30" Then
+
+        Dim value = endCount - Convert.ToInt16(mode)
+        If Email = "lastDay" Then
             strbodydetl = strbodydetl & "<p>The above referenced order is waiting for your approval and will expire at the end of the day. </p>"
-            'ElseIf mode = "31" Then
-            '    strbodydetl = strbodydetl & "Expired"
         Else
-            strbodydetl = strbodydetl & "<p>The above referenced order is waiting for your approval. </p>"
+            strbodydetl = strbodydetl & "<p>The above referenced order is waiting for your approval and will expire in " & value & " days. </p>"
         End If
 
-
-
         Mailer.Body = strbodyhead & strbodydetl
-
         Mailer.Body = Mailer.Body & "<TABLE cellSpacing='1' cellPadding='1' width='100%' border='0'>" & vbCrLf
         Mailer.Body = Mailer.Body + "<TR><TD Class='DetailRow' width='100%'>" & dataGridHTML & "</TD></TR>"
         Mailer.Body = Mailer.Body + "<TR><TD Class='DetailRow'>&nbsp;</TD></TR>"
@@ -394,9 +535,12 @@ Module ExpireRFQMail
         Mailer.Body = Mailer.Body & "<HR width='100%' SIZE='1'>" & vbCrLf
         Mailer.Body = Mailer.Body & "<img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & vbCrLf
 
-        If DbUrl.Substring(DbUrl.Length - 4).ToUpper = "PLGR" Or _
-                   DbUrl.Substring(DbUrl.Length - 4).ToUpper = "STAR" Or _
-                   DbUrl.Substring(DbUrl.Length - 4).ToUpper = "DEVL" Or _
+        If DbUrl.Substring(DbUrl.Length - 4).ToUpper = "PLGR" Or
+                   DbUrl.Substring(DbUrl.Length - 4).ToUpper = "STAR" Or
+                   DbUrl.Substring(DbUrl.Length - 4).ToUpper = "DEVL" Or
+                    DbUrl.Substring(DbUrl.Length - 4).ToUpper = "SNBX" Or
+                    DbUrl.Substring(DbUrl.Length - 5).ToUpper = "FSTST" Or
+                     DbUrl.Substring(DbUrl.Length - 5).ToUpper = "FSUAT" Or
                DbUrl.Substring(DbUrl.Length - 4).ToUpper = "RPTG" Then
             Mailer.To = "WebDev@sdi.com"
             Mailer.Subject = "<<TEST SITE>> SDiExchange - Customer Approval Required For Order " & orderNum
@@ -519,7 +663,7 @@ Module ExpireRFQMail
             Dim Command As OleDbCommand = New OleDbCommand(p_strQuery, connection)
             Command.CommandTimeout = 120
             connection.Open()
-            Dim dataAdapter As OleDbDataAdapter = _
+            Dim dataAdapter As OleDbDataAdapter =
                     New OleDbDataAdapter(Command)
 
             Dim UserdataSet As System.Data.DataSet = New System.Data.DataSet()
@@ -557,8 +701,8 @@ Module ExpireRFQMail
     End Function
 
 
-    Private Function buildCartforemail(ByVal ordNumber As String, _
-                     ByRef strWrkOrder As String, ByRef DateInterval As String) As DataTable
+    Private Function buildCartforemail(ByVal ordNumber As String,
+                     ByRef strWrkOrder As String, ByRef DateInterval As String, ByVal type As String) As DataTable
 
         Dim dr As DataRow
         Dim I As Integer
@@ -575,18 +719,7 @@ Module ExpireRFQMail
         dstcart.Columns.Add("UOM")
         dstcart.Columns.Add("Price")
         dstcart.Columns.Add("Ext. Price")
-        ''dstcart.Columns.Add("Approval Date")
-        ' dstcart.Columns.Add("Item ID")
-        'dstcart.Columns.Add("Bin Location")
-        'dstcart.Columns.Add("Item Chg Code")
-        'dstcart.Columns.Add("Requestor Name")
-        'dstcart.Columns.Add("RFQ")
-        'dstcart.Columns.Add("Machine Num")
-        'dstcart.Columns.Add("Tax Exempt")
-        'dstcart.Columns.Add("LPP")
-        'dstcart.Columns.Add("PO")
         dstcart.Columns.Add("LN")
-        'dstcart.Columns.Add("SerialID")
 
         Dim strOraSelectQuery As String = String.Empty
         Dim ordIdentifier As String = String.Empty
@@ -598,21 +731,14 @@ Module ExpireRFQMail
         Dim strProdVwId As String = String.Empty
         Dim SqlRdr1 As SqlDataReader = Nothing
         Try
-            'strOraSelectQuery = "select * from SYSADM8.PS_ISA_ORD_INTF_HD where ORDER_NO = '" & ordNumber & "'"
-            ''strOraSelectQuery = "select * from PS_ISA_ORD_INTFC_H where ORDER_NO = 'M220016429'" 
-            ''strOraSelectQuery = "select * from PS_ISA_ORD_INTFC_H where ORDER_NO = 'M220016427'"
-            'OrcRdr = GetReader(strOraSelectQuery)
-            'If OrcRdr.HasRows Then
-            '    OrcRdr.Read()
-            '    ordIdentifier = CType(OrcRdr("ISA_IDENTIFIER"), String).Trim()
-            '    ordBU = CType(OrcRdr("BUSINESS_UNIT_OM"), String).Trim()
-            'End If
-
-            ''strOraSelectQuery = "select * from SYSADM8.PS_ISA_ORD_INTF_LN where ORDER_NO = '" & ordNumber & "' AND TO_CHAR(Approval_Dttm + 30, 'DD-MON-YYYY') = TO_CHAR(CURRENT_DATE, 'DD-MON-YYYY')"
-            If DateInterval = "30" Then
-                strOraSelectQuery = "SELECT S.DTTM_STAMP, A.* FROM ps_isa_ord_intf_ln A, PS_ISAORDSTATUSLOG S WHERE a.isa_line_status='QTS' AND A.ORDER_NO= '" & ordNumber & "' AND A.ORDER_NO=S.ORDER_NO and A.isa_intfc_ln = S.isa_intfc_ln AND a.isa_line_status = S.isa_line_status AND TO_CHAR(S.DTTM_STAMP, 'DD-MON-YYYY') <= TO_CHAR(SYSDATE - '" & DateInterval & "', 'DD-MON-YYYY')"
+            If type = "New" Then
+                If DateInterval = "30" Then
+                    strOraSelectQuery = "SELECT S.DTTM_STAMP, A.* FROM ps_isa_ord_intf_ln A, PS_ISAORDSTATUSLOG S WHERE a.isa_line_status='QTS' AND A.ORDER_NO= '" & ordNumber & "' AND A.ORDER_NO=S.ORDER_NO and A.isa_intfc_ln = S.isa_intfc_ln AND a.isa_line_status = S.isa_line_status AND TO_CHAR(S.DTTM_STAMP, 'DD-MON-YYYY') <= TO_CHAR(SYSDATE - '" & DateInterval & "', 'DD-MON-YYYY')"
+                Else
+                    strOraSelectQuery = "SELECT S.DTTM_STAMP, A.* FROM ps_isa_ord_intf_ln A, PS_ISAORDSTATUSLOG S WHERE a.isa_line_status='QTS' AND A.ORDER_NO= '" & ordNumber & "' AND A.ORDER_NO=S.ORDER_NO and A.isa_intfc_ln = S.isa_intfc_ln AND a.isa_line_status = S.isa_line_status AND TO_CHAR(S.DTTM_STAMP, 'DD-MON-YYYY') = TO_CHAR(SYSDATE - '" & DateInterval & "', 'DD-MON-YYYY')"
+                End If
             Else
-                strOraSelectQuery = "SELECT S.DTTM_STAMP, A.* FROM ps_isa_ord_intf_ln A, PS_ISAORDSTATUSLOG S WHERE a.isa_line_status='QTS' AND A.ORDER_NO= '" & ordNumber & "' AND A.ORDER_NO=S.ORDER_NO and A.isa_intfc_ln = S.isa_intfc_ln AND a.isa_line_status = S.isa_line_status AND TO_CHAR(S.DTTM_STAMP, 'DD-MON-YYYY') = TO_CHAR(SYSDATE - '" & DateInterval & "', 'DD-MON-YYYY')"
+                strOraSelectQuery = "SELECT S.DTTM_STAMP, A.* FROM ps_isa_ord_intf_ln A, PS_ISAORDSTATUSLOG S WHERE a.isa_line_status='QTS' AND A.ORDER_NO= '" & ordNumber & "' AND A.ORDER_NO=S.ORDER_NO and A.isa_intfc_ln = S.isa_intfc_ln AND a.isa_line_status = S.isa_line_status"
             End If
 
             dsOrdLnItems = GetAdapter(strOraSelectQuery)
