@@ -51,42 +51,66 @@ Module Module1
 
     Private Function buildstatchgout() As Boolean
 
+        ' get XML file of sites that require email
+        Dim strXMLDir As String = rootDir & "\EmailSites.xml"
+        Dim xmldata As New XmlDocument
+        Dim sr As System.IO.StreamReader
+        Dim XMLContent As String
+        Dim jobNode As XmlNode
+        sr = New System.IO.StreamReader(strXMLDir)
+        XMLContent = sr.ReadToEnd()
+        sr.Close()
+        xmldata.LoadXml(XMLContent)
+        Dim jj As XmlNode = xmldata.ChildNodes(2)
+        jobNode = xmldata.ChildNodes(1)
+        Dim dsRows As New DataSet
+        dsRows.ReadXml(New XmlNodeReader(jobNode))
+
         Dim I As Integer
         Dim bolErrorSomeWhere As Boolean
 
         Dim connectionString As String = ConfigurationManager.AppSettings("OLEDBconString")
         connectOR = New OleDbConnection(connectionString)
 
+
+        ' check stock
+        For I = 0 To dsRows.Tables(0).Rows.Count - 1
+            If dsRows.Tables(0).Rows(I).Item("SITESTK") = "Y" Then
+                Console.WriteLine(Convert.ToString(I + 1) + ".Verifying/Updating StatChg Email for Stock - BU: " + Convert.ToString(dsRows.Tables(0).Rows(I).Item("SITEBU")) + "")
+                objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Verifying/Updating StatChg Email for Stock - BU: " + Convert.ToString(dsRows.Tables(0).Rows(I).Item("SITEBU")) + "")
+                objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
+                objStreamWriter.WriteLine("  StatChg Email send stock emails for " & dsRows.Tables(0).Rows(I).Item("SITEBU"))
+                buildstatchgout = checkStock(dsRows.Tables(0).Rows(I).Item("SITEBU"), dsRows.Tables(0).Rows(I).Item("SITESTART"))
+                'buildstatchgout = False
+                If buildstatchgout = True Then
+                    bolErrorSomeWhere = True
+                End If
+            End If
+        Next
+
+        ' check non-stock
+        For I = 0 To dsRows.Tables(0).Rows.Count - 1
+            If dsRows.Tables(0).Rows(I).Item("SITENSTK") = "Y" Then
+                Console.WriteLine(Convert.ToString(I + 1) + ".Verifying/Updating StatChg Email for Non-Stock - BU: " + Convert.ToString(dsRows.Tables(0).Rows(I).Item("SITEBU")) + "")
+                objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Verifying/Updating StatChg Email for Non-Stock - BU: " + Convert.ToString(dsRows.Tables(0).Rows(I).Item("SITEBU")) + "")
+                objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
+                objStreamWriter.WriteLine("  StatChg Email send nonstock emails for " & dsRows.Tables(0).Rows(I).Item("SITEBU"))
+                buildstatchgout = checkNonStock(dsRows.Tables(0).Rows(I).Item("SITEBU"), dsRows.Tables(0).Rows(I).Item("SITESTART"))
+                If buildstatchgout = True Then
+                    bolErrorSomeWhere = True
+                End If
+            End If
+        Next
+
+
+        '' Blocked the email sending for the checkStock,checkNonStock to all sites.It's only for the XML Sites
+
         Dim dsBU As DataSet
-        dsBU = GetBU()        
+        dsBU = GetBU()
 
         If Not dsBU Is Nothing Then
             objGenerallLogStreamWriter.WriteLine("Total BU going to Process " + Convert.ToString(dsBU.Tables(0).Rows.Count()))
-            ' '' check stock
-            For I = 0 To dsBU.Tables(0).Rows.Count - 1
-                Console.WriteLine(Convert.ToString(I + 1) + ".Verifying/Updating StatChg Email for Stock - BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Verifying/Updating StatChg Email for Stock - BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
-                objStreamWriter.WriteLine("  StatChg Email send stock emails for " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
-                buildstatchgout = checkStock(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
-                If buildstatchgout = True Then
-                    bolErrorSomeWhere = True
-                End If
-            Next
-
-            '''' check non-stock
-            Console.WriteLine("-----------------------------------------------------------------------------------------------")
-            objGenerallLogStreamWriter.WriteLine("-------------------------------------------------------------------------------")
-            For I = 0 To dsBU.Tables(0).Rows.Count - 1
-                Console.WriteLine(Convert.ToString(I + 1) + ".Verifying/Updating StatChg Email for Non-Stock - BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Verifying/Updating StatChg Email for Non-Stock - BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
-                objStreamWriter.WriteLine("  StatChg Email send nonstock emails for " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
-                buildstatchgout = checkNonStock(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
-                If buildstatchgout = True Then
-                    bolErrorSomeWhere = True
-                End If
-            Next
+           
             Console.WriteLine("-----------------------------------------------------------------------------------------------")
             objGenerallLogStreamWriter.WriteLine("-------------------------------------------------------------------------------")
             For I = 0 To dsBU.Tables(0).Rows.Count - 1
@@ -154,7 +178,7 @@ Module Module1
         End Try
     End Function
 
-    Private Function checkNonStock(ByVal strBU As String) As Boolean
+    Private Function checkNonStock(ByVal strBU As String, ByVal dtrStartDate As String) As Boolean
 
         Dim dteStrDate As DateTime
         Dim dteEndDate As DateTime
@@ -175,6 +199,7 @@ Module Module1
                 " PS_RECV_LN_SHIP E" & vbCrLf & _
                 " WHERE A.BUSINESS_UNIT_OM = '" & strBU & "'" & vbCrLf & _
                 " AND A.ADD_DTTM > TO_DATE('" & dteStrDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
+                " AND A.ADD_DTTM > TO_DATE('" & dtrStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
                 " AND A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf & _
                 " AND A.ORDER_NO = B.ORDER_NO" & vbCrLf & _
                 " AND A.BUSINESS_UNIT_OM = C.BUSINESS_UNIT" & vbCrLf & _
@@ -295,7 +320,7 @@ Module Module1
                         ds.Tables(0).Rows(I).Item("RECEIVER_ID") & " " & _
                         ds.Tables(0).Rows(I).Item("RECV_LN_NBR"))
                 checkNonStock = True
-            End If            
+            End If
         Next
         objStreamWriter.WriteLine("  StatChg Email NSTK send select orders = " & ds.Tables(0).Rows.Count & " for" & strBU)
 
@@ -308,7 +333,7 @@ Module Module1
 
     End Function
 
-    Private Function checkStock(ByVal strbu As String) As Boolean
+    Private Function checkStock(ByVal strbu As String, ByVal dtrStartDate As String) As Boolean
         ' the union all in the sql below - diferences between top and bot
         ' bot " AND E.CONFIRMED_FLAG = 'Y'" & vbCrLf & _
         ' 
@@ -322,6 +347,7 @@ Module Module1
                 " PS_MASTER_ITEM_TBL E" & vbCrLf & _
                 " WHERE A.BUSINESS_UNIT_OM = '" & strbu & "'" & vbCrLf & _
                 " AND A.ADD_DTTM > TO_DATE('" & dteStrDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
+                " AND A.ADD_DTTM > TO_DATE('" & dtrStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf & _
                 " AND A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf & _
                 " AND A.ORDER_NO = B.ORDER_NO" & vbCrLf & _
                 " AND B.INV_ITEM_ID <> ' '" & vbCrLf & _
@@ -434,10 +460,10 @@ Module Module1
                         ds.Tables(0).Rows(I).Item("ORDER_INT_LINE_NO") & " " & _
                         ds.Tables(0).Rows(I).Item("DEMAND_LINE_NO"))
                 checkStock = True
-            End If            
+            End If
         Next
 
-        objStreamWriter.WriteLine("  StatChg Email STK send select orders = " & ds.Tables(0).Rows.Count & " for" & strbu)        
+        objStreamWriter.WriteLine("  StatChg Email STK send select orders = " & ds.Tables(0).Rows.Count & " for" & strbu)
         Try
             connectOR.Close()
         Catch ex As Exception
@@ -1525,7 +1551,7 @@ Module Module1
 
             End If
         Catch ex As Exception
-            
+
         End Try
         Return Order_notes
     End Function
@@ -1663,7 +1689,7 @@ Module Module1
                 strbodydet1 = strbodydet1 & "<p style='font-weight:bold;'>Customer Notes: " & Ord_notes & " </p> "
             End If
         End If
-        
+
         strbodydet1 = strbodydet1 & "<p style='font-weight:bold;'>Order contents: </p>"
         'strbodydet1 = strbodydet1 & "&nbsp;<BR>"
         ' strbodydet1 = strbodydet1 & "Order Status:  " & strOrderStatDesc & " <br>"
@@ -1711,9 +1737,9 @@ Module Module1
                                               "13", "14", "15", "16"}
         Try
             Dim dr As DataRow
-            For Each dr In dt.Rows                
+            For Each dr In dt.Rows
                 Dim dts As DataTable = dt.AsEnumerable().Where(Function(x) x.Item("Line Number") = dr.Item("Line Number")).CopyToDataTable()
-                
+
                 If dts.Rows.Count() > 1 Then
                     Dim boolvalue As Boolean = False
                     Dim Nw_dts As DataTable = New DataTable()
