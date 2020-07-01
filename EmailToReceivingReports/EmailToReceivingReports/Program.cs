@@ -22,9 +22,9 @@ namespace EmailToReceivingReports
     {
         static void Main(string[] args)
         {
-            BackOrderReportProcess();
+           BackOrderReportProcess();
            StoreRoomOrderReportProcess();
-
+    
         }
 
         private static void StoreRoomOrderReportProcess()
@@ -35,8 +35,8 @@ namespace EmailToReceivingReports
             string ProcessedFolderName = ConfigurationManager.AppSettings["ProcessedFolderName"];
             string DestinationPath = ConfigurationManager.AppSettings["DestinationPath"];
             string EmailIDAccount = ConfigurationManager.AppSettings["MailboxEmailID"];
-            string strBackOrderSubject1 = ConfigurationManager.AppSettings["FilterStoreRoomReport"];
-            string strBackOrderSubject2 = ConfigurationManager.AppSettings["FilterStoreRoomReport2"];
+            //string strBackOrderSubject1 = ConfigurationManager.AppSettings["FilterStoreRoomReport"];
+            //string strBackOrderSubject2 = ConfigurationManager.AppSettings["FilterStoreRoomReport2"];
 
             string appPath = AppDomain.CurrentDomain.BaseDirectory;
             appPath = appPath.Substring(0, appPath.LastIndexOf("bin"));
@@ -81,7 +81,7 @@ namespace EmailToReceivingReports
                 log.WriteLine("*************************************Logs(" + String.Format(DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss")) + ")***********************************");
 
                 //Get the filtered Email With Subject in Inbox
-                FindItemsResults<Item> findResults = service.FindItems(fidProcessedParent, SetFilter(strBackOrderSubject1, strBackOrderSubject2), view);
+                FindItemsResults<Item> findResults = service.FindItems(fidProcessedParent, SetFilter("SR"), view);
                 log.WriteLine("Total Emails with filtered subject name is " + findResults.Items.Count() + ".");
 
                 moveToFolder = service.FindFolders(fidProcessedParent, fv);
@@ -105,6 +105,7 @@ namespace EmailToReceivingReports
                     string subject = message.Subject.ToString();
                     int attchcount = item.Attachments.Count();
                     int attachmentMoved = 0;
+                    Boolean strrslt = false;
                     foreach (Microsoft.Exchange.WebServices.Data.Attachment attch in message.Attachments)
                     {
                         PreventDuplicationoffiles = PreventDuplicationoffiles + 1;
@@ -181,7 +182,7 @@ namespace EmailToReceivingReports
                                         //}
 
                                         //Inserting into DB
-                                        Boolean strrslt = false;
+                                        
                                         strrslt = InsertStoreRoomOrderReport(dt);
                                         if (strrslt)
                                         {
@@ -259,9 +260,17 @@ namespace EmailToReceivingReports
                     //Email moved to Processed folder
                     if (attachmentMoved > 0)
                     {
-                        item.Move(processedFolderID);
-                        log.WriteLine("Moved the email to " + ProcessedFolderName + " folder.");
-                        log.WriteLine("-------------------------------------------------------------");
+                        if (strrslt)
+                        {
+                            item.Move(processedFolderID);
+                            log.WriteLine("Moved the email to " + ProcessedFolderName + " folder.");
+                            log.WriteLine("-------------------------------------------------------------");
+                        }
+                        else {
+                            log.WriteLine("Error in email process.");
+                            log.WriteLine("-------------------------------------------------------------");
+                        }
+                       
                     }
                     else
                     {
@@ -286,8 +295,8 @@ namespace EmailToReceivingReports
             string ProcessedFolderName = ConfigurationManager.AppSettings["ProcessedFolderName"];
             string DestinationPath = ConfigurationManager.AppSettings["DestinationPath"];
             string EmailIDAccount = ConfigurationManager.AppSettings["MailboxEmailID"];
-            string strBackOrderSubject = ConfigurationManager.AppSettings["FilterBackOrderReport"];
-            string strBackOrderSubject2 = ConfigurationManager.AppSettings["FilterBackOrderReport2"];
+            //string strBackOrderSubject = ConfigurationManager.AppSettings["FilterBackOrderReport"];
+            //string strBackOrderSubject2 = ConfigurationManager.AppSettings["FilterBackOrderReport2"];
 
             string appPath = AppDomain.CurrentDomain.BaseDirectory;
             appPath = appPath.Substring(0, appPath.LastIndexOf("bin"));
@@ -332,7 +341,7 @@ namespace EmailToReceivingReports
                 log.WriteLine("*************************************Logs(" + String.Format(DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss")) + ")***********************************");
 
                 //Get the filtered Email With Subject in Inbox
-                FindItemsResults<Item> findResults = service.FindItems(fidProcessedParent, SetFilter(strBackOrderSubject, strBackOrderSubject2), view);
+                FindItemsResults<Item> findResults = service.FindItems(fidProcessedParent, SetFilter("BO"), view);
                 log.WriteLine("Total Emails with filtered subject name is " + findResults.Items.Count() + ".");
 
                 moveToFolder = service.FindFolders(fidProcessedParent, fv);
@@ -530,12 +539,39 @@ namespace EmailToReceivingReports
             }
         }
 
-        private static SearchFilter SetFilter(string strSubject1,string strSubject2)
+        private static SearchFilter SetFilter(string strSujType)
         {
-            string FilterEmailWithSubject = strSubject1;
             List<SearchFilter> searchFilterCollection = new List<SearchFilter>();
-            searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, strSubject1));
-            searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, strSubject2));
+            //SR - Store Room Subject Type
+            if (strSujType == "SR")
+            {
+                searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, "Report: STOREROOM ORDER RECOMMENDATIONS TO BE PROCESSED"));
+                searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, "Report: STOREROOM RECOMMENDATIONS TO BE PROCESSED"));
+                searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, "FW: Report: STOREROOM ORDER RECOMMENDATIONS TO BE PROCESSED"));
+                searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, "FW: Report: STOREROOM RECOMMENDATIONS TO BE PROCESSED"));
+            } else if (strSujType == "BO") {
+                //BO - Back Order Subject Type
+                searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, "Report: Items Backordered by Storeroom - SDI"));
+                searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, "Report: Items Backordered by Storeroom-SDI"));
+                searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, "FW: Report: Items Backordered by Storeroom - SDI"));
+                searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, "FW: Report: Items Backordered by Storeroom-SDI"));
+                searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, "Items Backordered by AbbVie Storeroom"));
+                searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, "FW: Items Backordered by AbbVie Storeroom"));
+                searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, "Report: Items Backordered by Storeroom"));
+                searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, "FW: Report: Items Backordered by Storeroom"));
+                //searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.ConversationTopic , "FW: Report: Items Backordered by Storeroom"));
+            }
+            ////string FilterEmailWithSubject = strSubject1;[WARNING: UNSCANNABLE EXTRACTION FAILED]Report: Items Backordered by Storeroom - SDI
+
+
+
+            //searchFilterCollection.Add(new SearchFilter.SearchFilterCollection(LogicalOperator.Or, new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, strSubject1)));
+            //searchFilterCollection.Add(new SearchFilter.SearchFilterCollection(LogicalOperator.Or, new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, strSubject2)));
+            //searchFilterCollection.Add(new SearchFilter.Exists(strSubject2));
+            //searchFilterCollection.Add(new SearchFilter.SearchFilterCollection(LogicalOperator.And, new SearchFilter.IsEqualTo(EmailMessageSchema.HasAttachments, true)));
+
+            //searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.HasAttachments, true));
+            //searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.IsRead , false));
             //searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, FilterEmailWithSubject.ToLower()));         
             SearchFilter searchfiltr = new SearchFilter.SearchFilterCollection(LogicalOperator.Or, searchFilterCollection.ToArray());
             return searchfiltr;
@@ -636,7 +672,9 @@ namespace EmailToReceivingReports
                 dt.Rows[0].Delete();
                 dt.Rows[1].Delete();
                 dt.Rows[2].Delete();
-               // dt.Rows[3].Delete();
+                //dt.Columns[0].Delete();
+                dt.Columns.RemoveAt(0); 
+               // dt.Rows[3].Delet();
                 dt.AcceptChanges();
 
                 string ParentOrder = "";
@@ -647,66 +685,70 @@ namespace EmailToReceivingReports
                 {
                     string currentOrder = "";
                     string ReqBy = "";
+                    string DlieryPoint = "";
+                    string DlieryPointEnd = "";
                     if (!isExit)
                     {
 
-                        if (rw["STOREROOM ORDER LINE ITEM QUEUE"] != System.DBNull.Value)
+                        if (rw["F2"] != System.DBNull.Value)
                         {
-                            currentOrder = rw["STOREROOM ORDER LINE ITEM QUEUE"].ToString().Trim();
-                            ReqBy = rw["F2"].ToString().Trim();
-                            if (ReqBy == "Summary")
-                            {
-                                isExit = true;
-                                currentOrder = "";
-                                PO = "";
-                            }
-                            else if (currentOrder == "")
-                            {
-                                currentOrder = ParentOrder;
-                                PO = currentOrder;
-                            }
-                            else if (currentOrder == ParentOrder)
-                            {
-                                PO = "";
-                            }
-                            else
-                            {
-                                ParentOrder = currentOrder;
-                                PO = currentOrder;
-                            }
+                            //DlieryPoint = rw["STOREROOM ORDER LINE ITEM QUEUE"].ToString().Trim();
+                            //currentOrder = rw["F2"].ToString().Trim();
+                            ReqBy = rw["F3"].ToString().Trim();
+                            PO =  rw["F2"].ToString().Trim();
+                            //if (ReqBy == "Summary")
+                            //{
+                            //    isExit = true;
+                            //    currentOrder = "";
+                            //    PO = "";
+                            //}
+                            //else if (currentOrder == "")
+                            //{
+                            //    currentOrder = ParentOrder;
+                            //    PO = currentOrder;
+                            //}
+                            //else if (currentOrder == ParentOrder)
+                            //{
+                            //    PO = "";
+                            //}
+                            //else
+                            //{
+                            //    ParentOrder = currentOrder;
+                            //    PO = currentOrder;
+                            //}
                         }
                         else
                         {
-                            PO = ParentOrder;
+                            //PO = ParentOrder;
                         }
 
 
-                        if (PO != "")
+                        if (PO != "" && PO.Length == 8)
                         {
                             // StoreRoom = rw["Stockroom Backorder Report"].ToString();
-                            POLine = rw["F3"].ToString();
-                            Item = rw["F4"].ToString();
-                            Description = rw["F8"].ToString();
+                            POLine = rw["F4"].ToString();
+                            Item = rw["F5"].ToString();
+                            Description = rw["F12"].ToString();
 
                             if (Description.Contains("'"))
                             {
                                 Description = Description.Replace("'", "''");
                             }
-                            RequestedBy = rw["F2"].ToString();                        
-                            Manufacturer = rw["F5"].ToString();
-                            Model = rw["F6"].ToString();
-                            UnitCost = rw["F7"].ToString();
-                            PODescription = rw["F9"].ToString();
+                            RequestedBy = rw["F3"].ToString();                        
+                            Manufacturer = rw["F9"].ToString();
+                            Model = rw["F10"].ToString();
+                            UnitCost = rw["F11"].ToString();
+                            PODescription = rw["F13"].ToString();
 
                             if (PODescription.Contains("'"))
                             {
                                 PODescription = PODescription.Replace("'", "''");
                             }
 
-                            POType = rw["F10"].ToString();
-                            Status = rw["F11"].ToString(); // Convert.ToDateTime(rw["Ordered Date"]).ToString("MM/dd/yyyy");
-                            StatusDate = Convert.ToDateTime(rw["F12"]).ToString("MM/dd/yyyy"); ;
-                            company = rw["F13"].ToString();
+                            POType = rw["F14"].ToString();
+                            Status = rw["F15"].ToString(); // Convert.ToDateTime(rw["Ordered Date"]).ToString("MM/dd/yyyy");
+                            StatusDate = Convert.ToDateTime(rw["F16"]).ToString("MM/dd/yyyy"); ;
+                            company = rw["F17"].ToString();
 
 
                             string strSQLstring = "INSERT INTO SDIX_STORROOM_ORD_REPORT_LOG (PO_ID,PO_LINE, REQUESTED_BY , ITEM_ID,ITEM_DESC ,MFG_ID ,ITEM_MODEL ,UNIT_COST,PO_DESC ,PO_TYPE,STATUS,STATUS_DATE , COMPANY_ID,LASTUPDDTTM ) " + System.Environment.NewLine +
@@ -808,18 +850,18 @@ namespace EmailToReceivingReports
                            // StoreRoom = rw["Stockroom Backorder Report"].ToString();
                             StockCatagory = rw["F2"].ToString();
                             Item = rw["F3"].ToString();
-                            ItemDescription = rw["F4"].ToString();
+                            ItemDescription = rw["F5"].ToString();
 
                             if (ItemDescription.Contains("'")) {
                                 ItemDescription = ItemDescription.Replace("'", "''");
                             }
-                            IssueUnit = rw["F5"].ToString();
-                            CurrentBalance = rw["F6"].ToString();
-                            HardReservedQuantity = rw["F7"].ToString();
-                            Model = rw["F8"].ToString();
-                            PackSize = rw["F9"].ToString();
-                            PrimaryVendor = rw["F10"].ToString();
-                            Buyer = rw["F11"].ToString();
+                            IssueUnit = rw["F6"].ToString();
+                            CurrentBalance = rw["F7"].ToString();
+                            HardReservedQuantity = rw["F8"].ToString();
+                            Model = rw["F9"].ToString();
+                            PackSize = rw["F10"].ToString();
+                            PrimaryVendor = rw["F11"].ToString();
+                            Buyer = rw["F12"].ToString();
 
                             string strSQLstring = "INSERT INTO SDIX_BACKORDER_REPORT_LOG (STORE_ROOM,STOCK_TYPE,ITEM_ID,ITEM_DESC,ISSUE_UNIT,QUTY_BAL,QUTY_RESERV,ITEM_MODEL,PACK_SIZE,PRIMARY_VENDR,BUYER,LASTUPDDTTM ) " + System.Environment.NewLine +
                                               "VALUES('" + StoreRoom + "', '" + StockCatagory + "', " + Item + ", '" + ItemDescription + "', '" + IssueUnit + "','" + CurrentBalance + "', " + HardReservedQuantity + ", '" + Model + "', '" + PackSize + "', '" + PrimaryVendor + "','" + Buyer + "',SYSDATE)";
