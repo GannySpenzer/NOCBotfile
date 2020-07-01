@@ -257,14 +257,27 @@ namespace EmailToReceivingReports
                             }
                         }
                     }
+
+                    String DbUrl = ConfigurationManager.ConnectionStrings["ConString"].ConnectionString;
+                    DbUrl = DbUrl.Substring(DbUrl.Length - 4).ToUpper();
                     //Email moved to Processed folder
                     if (attachmentMoved > 0)
                     {
                         if (strrslt)
                         {
-                            item.Move(processedFolderID);
-                            log.WriteLine("Moved the email to " + ProcessedFolderName + " folder.");
-                            log.WriteLine("-------------------------------------------------------------");
+
+                            if (DbUrl == "PROD" | DbUrl == "SPRD" )
+                            {
+                                item.Move(processedFolderID);
+                                log.WriteLine("Moved the email to " + ProcessedFolderName + " folder.");
+                                log.WriteLine("-------------------------------------------------------------");
+                            }
+                            else
+                            {
+                                log.WriteLine("Test DB Email not moved Processd folder.");
+                                log.WriteLine("-------------------------------------------------------------");
+                            }
+                                
                         }
                         else {
                             log.WriteLine("Error in email process.");
@@ -365,6 +378,7 @@ namespace EmailToReceivingReports
                     string subject = message.Subject.ToString();
                     int attchcount = item.Attachments.Count();
                     int attachmentMoved = 0;
+                    Boolean strrslt = false;
                     foreach (Microsoft.Exchange.WebServices.Data.Attachment attch in message.Attachments)
                     {
                         PreventDuplicationoffiles = PreventDuplicationoffiles + 1;
@@ -441,7 +455,7 @@ namespace EmailToReceivingReports
                                         //}
 
                                         //Inserting into DB
-                                        Boolean strrslt = false;
+                                       
                                         strrslt = InsertBackOrderReport(dt);
                                         if (strrslt)
                                         {
@@ -516,12 +530,33 @@ namespace EmailToReceivingReports
                             }
                         }
                     }
+
+                    String DbUrl = ConfigurationManager.ConnectionStrings["ConString"].ConnectionString;
+                    DbUrl = DbUrl.Substring(DbUrl.Length - 4).ToUpper();
                     //Email moved to Processed folder
                     if (attachmentMoved > 0)
                     {
-                        item.Move(processedFolderID);
-                        log.WriteLine("Moved the email to " + ProcessedFolderName + " folder.");
-                        log.WriteLine("-------------------------------------------------------------");
+                        if (strrslt)
+                        {
+
+                            if (DbUrl == "PROD" | DbUrl == "SPRD")
+                            {
+                                item.Move(processedFolderID);
+                                log.WriteLine("Moved the email to " + ProcessedFolderName + " folder.");
+                                log.WriteLine("-------------------------------------------------------------");
+                            }
+                            else
+                            {
+                                log.WriteLine("Test DB Email not moved Processd folder.");
+                                log.WriteLine("-------------------------------------------------------------");
+                            }
+
+                        }
+                        else
+                        {
+                            log.WriteLine("Error in email process.");
+                            log.WriteLine("-------------------------------------------------------------");
+                        }
                     }
                     else
                     {
