@@ -32,7 +32,7 @@ namespace UpsIntegration
     { 
         private static OleDbConnection dbConn = new OleDbConnection();
         private static OleDbConnection rptgConn = new OleDbConnection();
-        private static String rptgStr = "Provider=OraOLEDB.Oracle;User Id=sdiexchange;Password=sd1exchange;Data Source=RPTG.WORLD;Connection Timeout=1200;";
+        private static String rptgStr = "Provider=OraOLEDB.Oracle;User Id=sdiexchange;Password=sd1exchange;Data Source=RPTG;Connection Timeout=1200;";
         private static String connStr = rptgStr;
 
         private static ftpData testFtp = new ftpData("speedtest.tele2.net", "anonymous", "anonymous" );
@@ -77,9 +77,10 @@ namespace UpsIntegration
                 String awsErr = QuantumUtility.cleanDirectory(toFtp.server + toFtp.directory);
                 String ftpErr = QuantumUtility.winSCP(fromFtp, toFtp);
 
-                if (!String.IsNullOrEmpty(ConfigurationManager.AppSettings["defaultConn"])) 
-                    connStr =ConfigurationManager.AppSettings["defaultConn"] ;
-          
+                if (!String.IsNullOrEmpty(ConfigurationManager.AppSettings["defaultConn"]))
+                    connStr =ConfigurationManager.AppSettings["defaultConn"];
+
+
                 QuantumDbUtility.openDb(connStr, dbConn);
                  dbErr = QuantumDbUtility.checkDb(dbConn, new String[2] {"SDIX_UPS_QUANTUMVIEW_LOG", "SDIX_UPS_QUANTUMVIEW_ERROR" }, @"SupportFiles/"); //added 1\16
               
@@ -172,7 +173,7 @@ namespace UpsIntegration
                         if (dbReader["LAST_NAME"].ToString() != lname)
                         {
                             if (!String.IsNullOrEmpty(message))
-                                sdiemail.EmailUtilityServices("Mail", "SDIExchADMIN@sdi.com", toemail,
+                                sdiemail.EmailUtilityServices("Mail", "SDIExchADMIN@sdi.com", email,
                                       "SDI Purchase Order Update " + DateTime.Now.ToShortDateString(), "", "",
                                       hdr + "<ul>" + message + "</ul>",
                                       "SDIERRMAIL", new string[0], new Byte[0][]);
@@ -183,7 +184,8 @@ namespace UpsIntegration
                             hdr = "To: " + lname + " (" + email + ")" + newline + newline;
                             hdr += "Below find the latest shipping information received from UPS on your products." +
                             "The below email lists the available shipping history for the available UPS tracking numbers grouped by Purchase Order Number. "  +
-                            "You can continue to track your packages at " + url + newline + newline; 
+                            "You can continue to track your packages at " + url + newline + newline;
+                            message = "";
                         }
                         if (poid != dbReader["PO_ID"].ToString())
                         {
