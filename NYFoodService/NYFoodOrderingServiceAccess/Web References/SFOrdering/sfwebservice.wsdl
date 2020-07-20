@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://www.opt-osfns.org/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" targetNamespace="http://www.opt-osfns.org/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://www.opt-osfns.org/">
+      <s:element name="GetOrdersXMLToday">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="vendorId" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="pwd" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetOrdersXMLTodayResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetOrdersXMLTodayResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetOrdersXMLAllBoros">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="vendorId" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="pwd" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="deliveryDate" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetOrdersXMLAllBorosResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetOrdersXMLAllBorosResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetOrdersXMLTodayFinal">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="vendorId" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="pwd" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetOrdersXMLTodayFinalResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetOrdersXMLTodayFinalResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetOrdersXMLAllBorosFinal">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="vendorId" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="pwd" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="deliveryDate" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetOrdersXMLAllBorosFinalResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetOrdersXMLAllBorosFinalResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetOrdersXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="vendorId" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="pwd" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="deliveryDate" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="boro" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="finalDownload" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetOrdersXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetOrdersXMLResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetOrdersDateRangeXML">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="vendorId" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="pwd" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="startDate" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="endDate" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="boro" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetOrdersDateRangeXMLResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetOrdersDateRangeXMLResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetBaseOrder">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="vendorId" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="pwd" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetBaseOrderResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetBaseOrderResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="GetOrdersXMLTodaySoapIn">
+    <wsdl:part name="parameters" element="tns:GetOrdersXMLToday" />
+  </wsdl:message>
+  <wsdl:message name="GetOrdersXMLTodaySoapOut">
+    <wsdl:part name="parameters" element="tns:GetOrdersXMLTodayResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetOrdersXMLAllBorosSoapIn">
+    <wsdl:part name="parameters" element="tns:GetOrdersXMLAllBoros" />
+  </wsdl:message>
+  <wsdl:message name="GetOrdersXMLAllBorosSoapOut">
+    <wsdl:part name="parameters" element="tns:GetOrdersXMLAllBorosResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetOrdersXMLTodayFinalSoapIn">
+    <wsdl:part name="parameters" element="tns:GetOrdersXMLTodayFinal" />
+  </wsdl:message>
+  <wsdl:message name="GetOrdersXMLTodayFinalSoapOut">
+    <wsdl:part name="parameters" element="tns:GetOrdersXMLTodayFinalResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetOrdersXMLAllBorosFinalSoapIn">
+    <wsdl:part name="parameters" element="tns:GetOrdersXMLAllBorosFinal" />
+  </wsdl:message>
+  <wsdl:message name="GetOrdersXMLAllBorosFinalSoapOut">
+    <wsdl:part name="parameters" element="tns:GetOrdersXMLAllBorosFinalResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetOrdersXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:GetOrdersXML" />
+  </wsdl:message>
+  <wsdl:message name="GetOrdersXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:GetOrdersXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetOrdersDateRangeXMLSoapIn">
+    <wsdl:part name="parameters" element="tns:GetOrdersDateRangeXML" />
+  </wsdl:message>
+  <wsdl:message name="GetOrdersDateRangeXMLSoapOut">
+    <wsdl:part name="parameters" element="tns:GetOrdersDateRangeXMLResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetBaseOrderSoapIn">
+    <wsdl:part name="parameters" element="tns:GetBaseOrder" />
+  </wsdl:message>
+  <wsdl:message name="GetBaseOrderSoapOut">
+    <wsdl:part name="parameters" element="tns:GetBaseOrderResponse" />
+  </wsdl:message>
+  <wsdl:portType name="SFWebServiceSoap">
+    <wsdl:operation name="GetOrdersXMLToday">
+      <wsdl:input message="tns:GetOrdersXMLTodaySoapIn" />
+      <wsdl:output message="tns:GetOrdersXMLTodaySoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetOrdersXMLAllBoros">
+      <wsdl:input message="tns:GetOrdersXMLAllBorosSoapIn" />
+      <wsdl:output message="tns:GetOrdersXMLAllBorosSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetOrdersXMLTodayFinal">
+      <wsdl:input message="tns:GetOrdersXMLTodayFinalSoapIn" />
+      <wsdl:output message="tns:GetOrdersXMLTodayFinalSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetOrdersXMLAllBorosFinal">
+      <wsdl:input message="tns:GetOrdersXMLAllBorosFinalSoapIn" />
+      <wsdl:output message="tns:GetOrdersXMLAllBorosFinalSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetOrdersXML">
+      <wsdl:input message="tns:GetOrdersXMLSoapIn" />
+      <wsdl:output message="tns:GetOrdersXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetOrdersDateRangeXML">
+      <wsdl:input message="tns:GetOrdersDateRangeXMLSoapIn" />
+      <wsdl:output message="tns:GetOrdersDateRangeXMLSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetBaseOrder">
+      <wsdl:input message="tns:GetBaseOrderSoapIn" />
+      <wsdl:output message="tns:GetBaseOrderSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="SFWebServiceSoap" type="tns:SFWebServiceSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="GetOrdersXMLToday">
+      <soap:operation soapAction="http://www.opt-osfns.org/GetOrdersXMLToday" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetOrdersXMLAllBoros">
+      <soap:operation soapAction="http://www.opt-osfns.org/GetOrdersXMLAllBoros" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetOrdersXMLTodayFinal">
+      <soap:operation soapAction="http://www.opt-osfns.org/GetOrdersXMLTodayFinal" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetOrdersXMLAllBorosFinal">
+      <soap:operation soapAction="http://www.opt-osfns.org/GetOrdersXMLAllBorosFinal" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetOrdersXML">
+      <soap:operation soapAction="http://www.opt-osfns.org/GetOrdersXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetOrdersDateRangeXML">
+      <soap:operation soapAction="http://www.opt-osfns.org/GetOrdersDateRangeXML" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetBaseOrder">
+      <soap:operation soapAction="http://www.opt-osfns.org/GetBaseOrder" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="SFWebServiceSoap12" type="tns:SFWebServiceSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="GetOrdersXMLToday">
+      <soap12:operation soapAction="http://www.opt-osfns.org/GetOrdersXMLToday" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetOrdersXMLAllBoros">
+      <soap12:operation soapAction="http://www.opt-osfns.org/GetOrdersXMLAllBoros" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetOrdersXMLTodayFinal">
+      <soap12:operation soapAction="http://www.opt-osfns.org/GetOrdersXMLTodayFinal" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetOrdersXMLAllBorosFinal">
+      <soap12:operation soapAction="http://www.opt-osfns.org/GetOrdersXMLAllBorosFinal" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetOrdersXML">
+      <soap12:operation soapAction="http://www.opt-osfns.org/GetOrdersXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetOrdersDateRangeXML">
+      <soap12:operation soapAction="http://www.opt-osfns.org/GetOrdersDateRangeXML" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetBaseOrder">
+      <soap12:operation soapAction="http://www.opt-osfns.org/GetBaseOrder" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="SFWebService">
+    <wsdl:port name="SFWebServiceSoap" binding="tns:SFWebServiceSoap">
+      <soap:address location="https://www.opt-osfns.org/osfns/resources/SFOrdering/sfwebservice.asmx" />
+    </wsdl:port>
+    <wsdl:port name="SFWebServiceSoap12" binding="tns:SFWebServiceSoap12">
+      <soap12:address location="https://www.opt-osfns.org/osfns/resources/SFOrdering/sfwebservice.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

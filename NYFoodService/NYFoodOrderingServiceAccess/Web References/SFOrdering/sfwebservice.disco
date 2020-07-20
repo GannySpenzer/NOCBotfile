@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<discovery xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.xmlsoap.org/disco/">
+  <contractRef ref="https://www.opt-osfns.org/osfns/resources/SFOrdering/sfwebservice.asmx?wsdl" docRef="https://www.opt-osfns.org/osfns/resources/SFOrdering/sfwebservice.asmx" xmlns="http://schemas.xmlsoap.org/disco/scl/" />
+  <soap address="https://www.opt-osfns.org/osfns/resources/SFOrdering/sfwebservice.asmx" xmlns:q1="http://www.opt-osfns.org/" binding="q1:SFWebServiceSoap" xmlns="http://schemas.xmlsoap.org/disco/soap/" />
+  <soap address="https://www.opt-osfns.org/osfns/resources/SFOrdering/sfwebservice.asmx" xmlns:q2="http://www.opt-osfns.org/" binding="q2:SFWebServiceSoap12" xmlns="http://schemas.xmlsoap.org/disco/soap/" />
+</discovery>
