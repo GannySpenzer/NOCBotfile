@@ -1757,7 +1757,8 @@ Public Class QuoteNonStockProcessor
                 If Not getDBName() Then
                     eml.Subject = " TEST ZEUS - " & eml.Subject
                     eml.To = "webdev@sdi.com;avacorp@sdi.com"
-                    'eml.Cc = "webdev@sdi.com;avacorp@sdi.com"
+                    eml.Cc = ""
+                    eml.Bcc = ""
                 Else
 
                 End If
