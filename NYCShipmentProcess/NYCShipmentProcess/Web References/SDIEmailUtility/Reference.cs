@@ -29,8 +29,6 @@ namespace NYCShipmentProcess.SDIEmailUtility {
     [System.Web.Services.WebServiceBindingAttribute(Name="EmailServicesSoap", Namespace="http://www.sdiexchange.com/")]
     public partial class EmailServices : System.Web.Services.Protocols.SoapHttpClientProtocol {
         
-        private System.Threading.SendOrPostCallback SendSeveralEmailsOperationCompleted;
-        
         private System.Threading.SendOrPostCallback EmailUtilityServicesOperationCompleted;
         
         private System.Threading.SendOrPostCallback EmailUtilityServicesSPCTOperationCompleted;
@@ -74,58 +72,10 @@ namespace NYCShipmentProcess.SDIEmailUtility {
         }
         
         /// <remarks/>
-        public event SendSeveralEmailsCompletedEventHandler SendSeveralEmailsCompleted;
-        
-        /// <remarks/>
         public event EmailUtilityServicesCompletedEventHandler EmailUtilityServicesCompleted;
         
         /// <remarks/>
         public event EmailUtilityServicesSPCTCompletedEventHandler EmailUtilityServicesSPCTCompleted;
-        
-        /// <remarks/>
-        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://www.sdiexchange.com/SendSeveralEmails", RequestNamespace="http://www.sdiexchange.com/", ResponseNamespace="http://www.sdiexchange.com/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public string SendSeveralEmails(string[] ProcessType1, string[] FromAddress1, string[] ToAddress1, string[] MailSubject1, string[] MailCC1, string[] MAILBCC1, string[] MailBody1, string[] MailCategory1, int NumOfEmails) {
-            object[] results = this.Invoke("SendSeveralEmails", new object[] {
-                        ProcessType1,
-                        FromAddress1,
-                        ToAddress1,
-                        MailSubject1,
-                        MailCC1,
-                        MAILBCC1,
-                        MailBody1,
-                        MailCategory1,
-                        NumOfEmails});
-            return ((string)(results[0]));
-        }
-        
-        /// <remarks/>
-        public void SendSeveralEmailsAsync(string[] ProcessType1, string[] FromAddress1, string[] ToAddress1, string[] MailSubject1, string[] MailCC1, string[] MAILBCC1, string[] MailBody1, string[] MailCategory1, int NumOfEmails) {
-            this.SendSeveralEmailsAsync(ProcessType1, FromAddress1, ToAddress1, MailSubject1, MailCC1, MAILBCC1, MailBody1, MailCategory1, NumOfEmails, null);
-        }
-        
-        /// <remarks/>
-        public void SendSeveralEmailsAsync(string[] ProcessType1, string[] FromAddress1, string[] ToAddress1, string[] MailSubject1, string[] MailCC1, string[] MAILBCC1, string[] MailBody1, string[] MailCategory1, int NumOfEmails, object userState) {
-            if ((this.SendSeveralEmailsOperationCompleted == null)) {
-                this.SendSeveralEmailsOperationCompleted = new System.Threading.SendOrPostCallback(this.OnSendSeveralEmailsOperationCompleted);
-            }
-            this.InvokeAsync("SendSeveralEmails", new object[] {
-                        ProcessType1,
-                        FromAddress1,
-                        ToAddress1,
-                        MailSubject1,
-                        MailCC1,
-                        MAILBCC1,
-                        MailBody1,
-                        MailCategory1,
-                        NumOfEmails}, this.SendSeveralEmailsOperationCompleted, userState);
-        }
-        
-        private void OnSendSeveralEmailsOperationCompleted(object arg) {
-            if ((this.SendSeveralEmailsCompleted != null)) {
-                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
-                this.SendSeveralEmailsCompleted(this, new SendSeveralEmailsCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
-            }
-        }
         
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://www.sdiexchange.com/EmailUtilityServices", RequestNamespace="http://www.sdiexchange.com/", ResponseNamespace="http://www.sdiexchange.com/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
@@ -237,32 +187,6 @@ namespace NYCShipmentProcess.SDIEmailUtility {
                 return true;
             }
             return false;
-        }
-    }
-    
-    /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2558.0")]
-    public delegate void SendSeveralEmailsCompletedEventHandler(object sender, SendSeveralEmailsCompletedEventArgs e);
-    
-    /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Web.Services", "4.7.2558.0")]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    public partial class SendSeveralEmailsCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
-        
-        private object[] results;
-        
-        internal SendSeveralEmailsCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
-                base(exception, cancelled, userState) {
-            this.results = results;
-        }
-        
-        /// <remarks/>
-        public string Result {
-            get {
-                this.RaiseExceptionIfNecessary();
-                return ((string)(this.results[0]));
-            }
         }
     }
     

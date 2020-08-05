@@ -14,6 +14,7 @@ namespace NYCShipmentProcess
 {
     public class Program
     {
+
         static void Main(string[] args)
         {
             try
@@ -186,6 +187,7 @@ namespace NYCShipmentProcess
                 }
                 catch (Exception ex)
                 {
+                    Console.WriteLine(ex.Message);
                     throw ex;
                 }
                 Console.WriteLine("Utility Completed");
@@ -510,6 +512,7 @@ namespace NYCShipmentProcess
             DataSet dsRecvTotals = new DataSet();
             try
             {
+                Int16 DateValidation = Convert.ToInt16(ConfigurationManager.AppSettings["DateValidation"]);
                 string strSQLString;
                 DataSet dsOrdLnItems = new DataSet();
 
@@ -517,7 +520,7 @@ namespace NYCShipmentProcess
                 strSQLString += "FROM sysadm8.PS_RECV_HDR RH, sysadm8.PS_RECV_LN_SHIP RCVSHIP  ";
                 strSQLString += "WHERE '" + poBU + "' = RCVSHIP.BUSINESS_UNIT_PO AND '" + poID + "' = RCVSHIP.PO_ID AND RCVSHIP.LINE_NBR = '" + poLine + "'  ";
                 strSQLString += "AND RCVSHIP.RECV_SHIP_STATUS <> 'X' AND RCVSHIP.BUSINESS_UNIT = RH.BUSINESS_UNIT  ";
-                strSQLString += "AND RCVSHIP.RECEIVER_ID = RH.RECEIVER_ID  AND RH.RECEIPT_DT <= sysdate - 30 GROUP BY TO_CHAR(RH.RECEIPT_DT,'MM/DD/YYYY') ";
+                strSQLString += "AND RCVSHIP.RECEIVER_ID = RH.RECEIVER_ID  AND RH.RECEIPT_DT <= sysdate - " + DateValidation + " GROUP BY TO_CHAR(RH.RECEIPT_DT,'MM/DD/YYYY') ";
                 dsRecvTotals = GetAdapter(strSQLString);
 
             }
@@ -1019,14 +1022,15 @@ namespace NYCShipmentProcess
                                             List<byte[]> MailAttachmentbytes = new List<byte[]>();
 
                                             try
-                                            {
-                                                SDIEmailService.EmailUtilityServices("MailandStore", MailFrom, MailTo, MailSub, MailCc, MailBcc, MailBody, "Shipment Validation", MailAttachmentName, MailAttachmentbytes.ToArray());
-                                                csvData.Rows.Clear();
+                                           {
+                                               SDIEmailService.EmailUtilityServices("MailandStore", MailFrom, MailTo, MailSub, MailCc, MailBcc, MailBody, "Shipment Validation", MailAttachmentName, MailAttachmentbytes.ToArray());
+                                               csvData.Rows.Clear();
                                             }
                                             catch (Exception ex)
                                             {
-                                                string strErr = ex.Message;
                                                 csvData.Rows.Clear();
+                                                log.WriteLine("Email unProSchds: " + ex.Message);
+                                                Console.WriteLine("Email unProSchds: " + ex.Message);
                                             }
                                         }
                                     }
@@ -1157,8 +1161,9 @@ namespace NYCShipmentProcess
                             }
                             catch (Exception ex)
                             {
-                                string strErr = ex.Message;
                                 ZeroItemDt.Rows.Clear();
+                                log.WriteLine("Email Zero Item: " + ex.Message);
+                                Console.WriteLine("Email Zero Item: " + ex.Message);
                             }
                         }
                     }
@@ -1289,8 +1294,9 @@ namespace NYCShipmentProcess
                             }
                             catch (Exception ex)
                             {
-                                string strErr = ex.Message;
                                 ZeroItemDt.Rows.Clear();
+                                log.WriteLine("Email Summary Item: " + ex.Message);
+                                Console.WriteLine("Email Summary Item: " + ex.Message);
                             }
                         }
                     }

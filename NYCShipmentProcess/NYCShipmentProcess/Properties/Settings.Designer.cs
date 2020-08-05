@@ -36,7 +36,7 @@ namespace NYCShipmentProcess.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.WebServiceUrl)]
-        [global::System.Configuration.DefaultSettingValueAttribute("http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx")]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://sdixaws2016test:8083/SDIEmailSvc/EmailServices.asmx")]
         public string NYCShipmentProcess_SDIEmailUtility_EmailServices {
             get {
                 return ((string)(this["NYCShipmentProcess_SDIEmailUtility_EmailServices"]));
