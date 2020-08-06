@@ -6,7 +6,7 @@
       <Value Profile="(Default)">http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx</Value>
     </Setting>
     <Setting Name="NYCShipmentProcess_SDIEmailUtility_EmailServices" Type="(Web Service URL)" Scope="Application">
-      <Value Profile="(Default)">http://sdixaws2016test:8083/SDIEmailSvc/EmailServices.asmx</Value>
+      <Value Profile="(Default)">http://sdixbatch:8011/EmailSvcProd/EmailServices.asmx</Value>
     </Setting>
   </Settings>
 </SettingsFile>

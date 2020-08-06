@@ -126,10 +126,10 @@
   </wsdl:binding>
   <wsdl:service name="EmailServices">
     <wsdl:port name="EmailServicesSoap" binding="tns:EmailServicesSoap">
-      <soap:address location="http://sdixaws2016test:8083/SDIEmailSvc/EmailServices.asmx" />
+      <soap:address location="http://sdixbatch:8011/EmailSvcProd/EmailServices.asmx" />
     </wsdl:port>
     <wsdl:port name="EmailServicesSoap12" binding="tns:EmailServicesSoap12">
-      <soap12:address location="http://sdixaws2016test:8083/SDIEmailSvc/EmailServices.asmx" />
+      <soap12:address location="http://sdixbatch:8011/EmailSvcProd/EmailServices.asmx" />
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>
