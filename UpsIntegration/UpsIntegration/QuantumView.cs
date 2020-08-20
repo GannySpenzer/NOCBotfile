@@ -174,7 +174,7 @@ namespace UpsIntegration
                         {
                             if (!String.IsNullOrEmpty(message))
                                 sdiemail.EmailUtilityServices("Mail", "SDIExchADMIN@sdi.com", email,
-                                      "SDI Purchase Order Update " + DateTime.Now.ToShortDateString(), "", "",
+                                      "SDI Purchase Order Update " + DateTime.Now.ToShortDateString(), "webdev@sdi.com", "",
                                       hdr + "<ul>" + message + "</ul>",
                                       "SDIERRMAIL", new string[0], new Byte[0][]);
                             sdiemail.Dispose();
@@ -207,7 +207,7 @@ namespace UpsIntegration
                     }
                     //Send one last time - in case all under the same name
                     sdiemail.EmailUtilityServices("Mail", "SDIExchADMIN@sdi.com", toemail,
-                         "SDI Purchase Order Update " + DateTime.Now.ToShortDateString(), "", "",
+                         "SDI Purchase Order Update " + DateTime.Now.ToShortDateString(), "webdev@sdi.com", "",
                          hdr + "<ul>" + message + "</ul>",
                          "SDIERRMAIL", new string[0], new Byte[0][]);
                     sdiemail.Dispose();
