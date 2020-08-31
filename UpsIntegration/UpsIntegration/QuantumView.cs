@@ -121,7 +121,7 @@ namespace UpsIntegration
                 //using ps_isa_ord_intf_lN and/or PS_ISA_USERS_TBL  or PS_ISA_PODUEDTMON  based on ConsoleUtilities\PODueDtchangeEmail.vb 
                 StringBuilder sql = new StringBuilder(@"
                          select distinct  
-                         USR.LAST_NAME_SRCH as LAST_NAME,    USR.ISA_EMPLOYEE_EMAIL as ISA_EMPLOYEE_EMAIL,
+                         USR.LAST_NAME_SRCH as LAST_NAME,  USR.isa_employee_id as isa_employee_id,  USR.ISA_EMPLOYEE_EMAIL as ISA_EMPLOYEE_EMAIL,
                          DISTR.PO_ID as DISTR_PO_ID,
                          qv_LOG.PO_ID as PO_ID,
                          qv_LOG.isa_asn_track_no as isa_asn_track_no ,
@@ -155,6 +155,7 @@ namespace UpsIntegration
                 String email = "";
                 String message = "";
                 String lname = "";
+                String employeeid = "";
                 String newline = "<br>\n";
                 String hdr = "";
                 String poid = "";
@@ -170,7 +171,7 @@ namespace UpsIntegration
                     while (dbReader.Read())
                     {
                         toemail = dbReader["ISA_EMPLOYEE_EMAIL"].ToString();
-                        if (dbReader["LAST_NAME"].ToString() != lname)
+                        if (dbReader["isa_employee_id"].ToString() != employeeid)
                         {
                             if (!String.IsNullOrEmpty(message))
                                 sdiemail.EmailUtilityServices("Mail", "SDIExchADMIN@sdi.com", email,
@@ -179,6 +180,7 @@ namespace UpsIntegration
                                       "SDIERRMAIL", new string[0], new Byte[0][]);
                             sdiemail.Dispose();
                             lname = dbReader["LAST_NAME"].ToString();
+                            employeeid = dbReader["isa_employee_id"].ToString();
                             email = dbReader["ISA_EMPLOYEE_EMAIL"].ToString();
 
                             hdr = "To: " + lname + " (" + email + ")" + newline + newline;
