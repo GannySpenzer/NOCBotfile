@@ -134,7 +134,7 @@ namespace PO_OpenUtility
 
                 cn.Close();
                 cn.Dispose();
-                if (rowsaffected == 1)
+                if (rowsaffected != 0)
                 {
                     reslt = true;
                 }
