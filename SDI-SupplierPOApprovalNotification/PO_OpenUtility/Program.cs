@@ -23,8 +23,6 @@ namespace PO_OpenUtility
             DirectoryInfo logDirInfo = null;
             int ItemCount = 0;
             string baseWebURL = ConfigurationSettings.AppSettings["WebAppName"];
-
-
             string logFilePath = ConfigurationSettings.AppSettings["LogFilePath"];
 
             logFilePath = logFilePath + "OpenPOUtility_" + string.Format("{0:yyyy-MM-dd_hh-mm-ss-tt}", DateTime.Now) + "." + "txt";
@@ -42,7 +40,7 @@ namespace PO_OpenUtility
             log = new StreamWriter(fileStream);
             log.WriteLine("Open PO Utility Logs: ");
 
-            string Sqlstring = "SELECT *  FROM SYSADM8.PS_ISA_PO_DISP_PTL";
+            string Sqlstring = "SELECT *  FROM SYSADM8.PS_ISA_PO_DISP_PTL WHERE DTTM_OPENED IS NULL";
             DataSet ds_OpentPOs = GetAdapter(Sqlstring);
 
             if (ds_OpentPOs.Tables[0].Rows.Count != 0)
@@ -73,7 +71,19 @@ namespace PO_OpenUtility
 
                         Boolean EmailSent = SendEmail(VendorID, Vendr_UN, Vendr_Email, POID, PO_BU, EmailBasueURL, strBuyerEmail);
 
-                        log.WriteLine("{0}. PO ID - {1}, Generated email link {2} notification sent to - {3} \n", ItemCount, POID, EmailBasueURL, Vendr_UN.ToUpper());
+                        
+                        if (EmailSent)
+                        {
+                            log.WriteLine("{0}. PO ID - {1}, Generated email link {2} notification sent to - {3} \n", ItemCount, POID, EmailBasueURL, Vendr_UN.ToUpper());
+                            string strUpdQuery = "UPDATE SYSADM8.PS_ISA_PO_DISP_PTL  SET DTTM_OPENED = SYSDATE WHERE PO_ID = '" + POID + "' AND VENDOR_ID = '" + VendorID + "' ";
+                            Boolean results = false;
+                            results = ExecuteNonQuery(strUpdQuery);
+                        }
+                        else
+                        {
+                            log.WriteLine("{0}. PO ID - {1}, Error in {2} notification sent to - {3} \n", ItemCount, POID, EmailBasueURL, Vendr_UN.ToUpper());
+                        }
+
                     }
                 }
             }
@@ -106,6 +116,41 @@ namespace PO_OpenUtility
                 throw;
             }
         }
+
+        private static Boolean ExecuteNonQuery(string insertquery)
+        {
+            Boolean reslt = false;
+            try
+            {
+                int rowsaffected;
+                string connectionString = ConfigurationSettings.AppSettings["OLEDBconString"];
+                OleDbConnection cn = new OleDbConnection(connectionString);
+                OleDbCommand com = new OleDbCommand();
+                cn.Open();
+                string strInsertHDRQuery = insertquery;
+
+                com = new OleDbCommand(strInsertHDRQuery, cn);
+                rowsaffected = com.ExecuteNonQuery();
+
+                cn.Close();
+                cn.Dispose();
+                if (rowsaffected == 1)
+                {
+                    reslt = true;
+                }
+                else
+                {
+                    reslt = false;
+                }
+                return reslt;
+
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
 
         public static DataSet GetAdapter(string p_strQuery, bool bGoToErrPage = true, bool bThrowBackError = false)
         {
@@ -268,12 +313,11 @@ namespace PO_OpenUtility
 
                 Mailer.Body = strbodyhead + strbodydetl;
 
-                if (DbUrl == "PLGR" | DbUrl == "STAR" | DbUrl == "DEVL" | DbUrl == "RPTG")
+                if (DbUrl == "SNBX" | DbUrl == "STAR" | DbUrl == "DEVL" | DbUrl == "RPTG" | DbUrl == "STST" | DbUrl == "SUAT")
                 {
                     Mailer.To.Add(new MailAddress("WebDev@sdi.com"));
                     Mailer.To.Add(new MailAddress("avacorp@sdi.com"));
                     Mailer.Subject = "<<TEST SITE>> SDiExchange - Purchase Order " + POID + "";
-
                 }
                 else
                 {
