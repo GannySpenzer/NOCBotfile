@@ -22,4 +22,13 @@ Global
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {99AEAF9A-FAAE-4E8D-AB5D-3A317BD131B7}
 	EndGlobalSection
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 2
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = http://vsfoundations:8080/tfs/insiteonline
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = NYFoodOrderingServiceAccess\\NYFoodOrderingServiceAccess.csproj
+		SccProjectName1 = NYFoodOrderingServiceAccess
+		SccLocalPath1 = NYFoodOrderingServiceAccess
+	EndGlobalSection
 EndGlobal
