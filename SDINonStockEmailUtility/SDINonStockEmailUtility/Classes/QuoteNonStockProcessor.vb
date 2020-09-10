@@ -292,8 +292,8 @@ Public Class QuoteNonStockProcessor
         End Try
     End Function
 
-    Private Shared Function buildCartforemail(ByVal m_colMsgs As QuotedNStkItemCollection, ByVal ordNumber As String, _
-                        ByRef strWrkOrder As String) As DataTable
+    Private Shared Function buildCartforemail(ByVal m_colMsgs As QuotedNStkItemCollection, ByVal ordNumber As String,
+                        ByRef strWrkOrder As String, ByVal BU As String) As DataTable
 
         Dim dr As DataRow
         Dim I As Integer
@@ -309,7 +309,10 @@ Public Class QuoteNonStockProcessor
         dstcart.Columns.Add("QTY")
         dstcart.Columns.Add("UOM")
         dstcart.Columns.Add("Price")
-        dstcart.Columns.Add("Ext. Price")
+        If Not BU = "I0W01" Then
+            dstcart.Columns.Add("Ext. Price")
+        End If
+
         ' dstcart.Columns.Add("Item ID")
         'dstcart.Columns.Add("Bin Location")
         'dstcart.Columns.Add("Item Chg Code")
@@ -424,11 +427,14 @@ Public Class QuoteNonStockProcessor
                     End If
                     Dim ExtPrice As Decimal = CType(Convert.ToDecimal(strQty) * Convert.ToDecimal(strPrice), String)
 
-                    If (ExtPrice.ToString("f") = "0.00") Then
-                        dr("Ext. Price") = "0.00"
-                    Else
-                        dr("Ext. Price") = ExtPrice.ToString("f")
+                    If Not BU = "I0W01" Then
+                        If (ExtPrice.ToString("f") = "0.00") Then
+                            dr("Ext. Price") = "0.00"
+                        Else
+                            dr("Ext. Price") = ExtPrice.ToString("f")
+                        End If
                     End If
+
 
                     dr("LN") = CType(dataRowMain("ISA_INTFC_LN"), String).Trim()
 
@@ -547,8 +553,8 @@ Public Class QuoteNonStockProcessor
                                 Else
                                     ' set line status to QTC or QTA (itmQuoted.LineStatus) and add Audit record
                                     Dim strUpdateLineStatusFinal As String = ""
-                                    strUpdateLineStatusFinal = "UPDATE SYSADM8.PS_ISA_ORD_INTF_LN SET ISA_LINE_STATUS = '" & itmQuoted.LineStatus & "', OPRID_APPROVED_BY = 'SDIX', APPROVAL_DTTM = SYSDATE " & vbCrLf & _
-                                        "WHERE BUSINESS_UNIT_OM = '" & itmQuoted.BusinessUnitOM & "' AND ORDER_NO = '" & itmQuoted.OrderID & "' " & vbCrLf & _
+                                    strUpdateLineStatusFinal = "UPDATE SYSADM8.PS_ISA_ORD_INTF_LN SET ISA_LINE_STATUS = '" & itmQuoted.LineStatus & "', OPRID_APPROVED_BY = 'SDIX', APPROVAL_DTTM = SYSDATE " & vbCrLf &
+                                        "WHERE BUSINESS_UNIT_OM = '" & itmQuoted.BusinessUnitOM & "' AND ORDER_NO = '" & itmQuoted.OrderID & "' " & vbCrLf &
                                         "AND ISA_LINE_STATUS = 'QTS'"
 
                                     Dim iRowsAffctd As Integer = 0
@@ -588,7 +594,8 @@ Public Class QuoteNonStockProcessor
                             UpdateReqEmailLog(itmQuoted)
                             buildNotifyApprover(itmQuoted)
                         End If
-                    Next
+
+                        Next
                 End If
             End If
 
@@ -1574,7 +1581,8 @@ Public Class QuoteNonStockProcessor
                 Dim dataGridHTML As String = String.Empty
                 Dim dstcartSTK As New DataTable
                 Dim StrWO1 As String = " "
-                dstcartSTK = buildCartforemail(m_colMsgs, itmQuoted.OrderID, StrWO1)
+                Dim BU As String = itmQuoted.BusinessUnitOM
+                dstcartSTK = buildCartforemail(m_colMsgs, itmQuoted.OrderID, StrWO1, BU)
                 If Trim(StrWO1) = "" Then
                     StrWO1 = " "
                 End If
@@ -1609,7 +1617,20 @@ Public Class QuoteNonStockProcessor
                     sWorkOrder = ""
                 End Try
 
-                Dim bIsPunchInBU As Boolean = (Me.PunchInBusinessUnitList.IndexOf(itmQuoted.BusinessUnitOM) > -1)
+                'Dim bIsPunchInBU As Boolean = (Me.PunchInBusinessUnitList.IndexOf(itmQuoted.BusinessUnitOM) > -1)
+                Dim bIsPunchInBU As Boolean = False
+                Dim dsPunchin As DataSet
+                Try
+
+                    Dim strSqlString As String = "SELECT * FROM SDIX_PUNCHIN_USERS where ISA_ASCEND_PROCESS= 'Y' AND ISA_BUSINESS_UNIT= '" & BU & "'"
+                    dsPunchin = ORDBData.GetAdapter(strSqlString)
+                    If dsPunchin.Tables(0).Rows.Count = 1 Then
+                        bIsPunchInBU = True
+                    End If
+                Catch ex As Exception
+
+                End Try
+
                 Dim PI_SDI As String = String.Empty
                 Dim PI As String = String.Empty
                 Dim ContentSDI As String = String.Empty
@@ -1961,10 +1982,10 @@ Public Class QuoteNonStockProcessor
                 Dim m_cURL1 As String = GetURL() & "Approvequote.aspx"
                 Dim boEncrypt As New Encryption64
 
-                Dim cParam As String = "?fer=" & boEncrypt.Encrypt(cOrderID, m_cEncryptionKey) & _
-                                       "&op=" & boEncrypt.Encrypt(cEmployeeID, m_cEncryptionKey) & _
-                                       "&xyz=" & boEncrypt.Encrypt(cBusinessUnitOM, m_cEncryptionKey) & _
-                                       "&HOME=N" & _
+                Dim cParam As String = "?fer=" & boEncrypt.Encrypt(cOrderID, m_cEncryptionKey) &
+                                       "&op=" & boEncrypt.Encrypt(cEmployeeID, m_cEncryptionKey) &
+                                       "&xyz=" & boEncrypt.Encrypt(cBusinessUnitOM, m_cEncryptionKey) &
+                                       "&HOME=N" &
                                        "&ExchHome23=N"
 
                 cLink &= "<p>" & _
@@ -2533,7 +2554,7 @@ Public Class QuoteNonStockProcessor
         Dim dataGridHTML As String = String.Empty
         Dim dstcartSTK As New DataTable
         Dim StrWO1 As String = " "
-        dstcartSTK = buildCartforemail(m_colMsgs, itmQuoted.OrderID, StrWO1)
+        dstcartSTK = buildCartforemail(m_colMsgs, itmQuoted.OrderID, StrWO1, itmQuoted.BusinessUnitOM)
         If Trim(StrWO1) = "" Then
             StrWO1 = " "
         End If
