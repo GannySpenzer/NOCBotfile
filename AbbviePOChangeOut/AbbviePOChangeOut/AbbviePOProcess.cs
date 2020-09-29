@@ -182,17 +182,17 @@ namespace AbbviePOChangeOut
                         {
                             StringBuilder strSOAPBind = new StringBuilder();
                             StringBuilder strOrderBind = new StringBuilder();
-                            StringBuilder strLineBind = new StringBuilder();
+                            
                             objOrderBO.PO_ID = Convert.ToString(rows["PO_ID"]).Trim();
                             objOrderBO.PO_Line_no = Convert.ToString(rows["LINE_NBR"]).Trim();
                             objOrderBO.OrderDate_0 = Convert.ToString(rows["TRANSACTION_DATE"]).Trim();
                             objOrderBO.OrderID_1 = Convert.ToString(rows["ISA_CUST_PO_NBR"]).Trim();
-                            log.WriteLine("------------------------------------------------------------------------------------------");
-                            log.WriteLine("PO - " + Convert.ToString(objOrderBO.PO_ID));
-
+                           
                             strOrderBind.AppendFormat(strOrderHeaderXML, objOrderBO.OrderDate_0, objOrderBO.OrderID_1);
                             if (!orderDetails.Contains(Convert.ToString(objOrderBO.PO_ID)))
                             {
+                                log.WriteLine("------------------------------------------------------------------------------------------");
+                                log.WriteLine("PO - " + Convert.ToString(objOrderBO.PO_ID));
                                 orderDetails.Add(Convert.ToString(objOrderBO.PO_ID));
 
                                 //To get the PO items from datatable
@@ -201,6 +201,7 @@ namespace AbbviePOChangeOut
                                 string itemItemPOList = string.Empty;
                                 foreach (DataRow datarow in dt.Rows)
                                 {
+                                    StringBuilder strLineBind = new StringBuilder();
                                     objItemBO.OrderItemID_0 = Convert.ToString(datarow["ISA_SAP_PO_LN"]).Trim();
                                     objItemBO.DeliveryDate_1 = Convert.ToDateTime(datarow["DUE_DT"]).ToShortDateString().Trim();
                                     objItemBO.QuantityValue_2 = Convert.ToDecimal(datarow["QTY_PO"]).ToString("0.000").Trim();
@@ -237,13 +238,13 @@ namespace AbbviePOChangeOut
                                         log.WriteLine("PO - " + Convert.ToString(objOrderBO.PO_ID) + "Success in Response");
                                         strSQLQuery = "Update SYSADM8.PS_ISA_AB_POCHGOUT set PROCESS_FLAG = 'Y', DATE_PROCESSED =SYSDATE WHERE PO_ID = '" + Convert.ToString(objOrderBO.PO_ID) + "'";
                                         int rowaffected = ORDBData.ExecNonQuery(strSQLQuery);
-                                        if (rowaffected == 1)
+                                        if (rowaffected == 0)
                                         {
-                                            log.WriteLine("PO - " + Convert.ToString(objOrderBO.PO_ID) + "Updated Successfully");
+                                            log.WriteLine("PO - " + Convert.ToString(objOrderBO.PO_ID) + "Updated Failed");
                                         }
                                         else
                                         {
-                                            log.WriteLine("PO - " + Convert.ToString(objOrderBO.PO_ID) + "Updated Failed");
+                                            log.WriteLine("PO - " + Convert.ToString(objOrderBO.PO_ID) + "Updated Successfully");
                                         }
                                     }
                                     else
