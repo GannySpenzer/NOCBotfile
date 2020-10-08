@@ -18,6 +18,7 @@ Public Class QuotedNStkItem
     Private m_sBusinessUnitOM As String = ""
     Private m_sCustomerID As String = ""
     Private m_sEmployeeID As String = ""
+    Private m_sStatus As String = ""
     Private m_sAddressee As String = ""
 
     Private m_workOrderNo As String = ""
@@ -160,6 +161,15 @@ Public Class QuotedNStkItem
         End Get
         Set(ByVal Value As String)
             m_sEmployeeID = Value
+        End Set
+    End Property
+
+    Public Property Status() As String
+        Get
+            Return m_sStatus
+        End Get
+        Set(ByVal Value As String)
+            m_sStatus = Value
         End Set
     End Property
 

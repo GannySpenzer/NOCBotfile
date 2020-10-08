@@ -22,10 +22,16 @@ Public Class QuoteNonStockProcessor
     Private m_oApprovalDetails As ApprovalDetails
 
     Private m_logger As appLogger = Nothing
-    Private Const LETTER_HEAD_SdiExch As String = "<table width='100%' bgcolor='black'><tbody><tr><td><img src='https://www.sdizeus.com/images/SDNewLogo_Email.png' alt='SDI' vspace='0' hspace='0' /></td>" & _
-                                                    "<td width='100%'><br/><br/><br/><div align='center'><SPAN style='FONT-SIZE: x-large; WIDTH: 256px; FONT-FAMILY: Arial; Color: White;'>SDI Marketplace</SPAN></div>" & _
-                                                    "<div align='center'><SPAN style='FONT-FAMILY: Arial; Color: White;'>SDI ZEUS - Request for Quote</SPAN></div></td></tr></tbody></table>" & _
+    Private Const LETTER_HEAD_SdiExch As String = "<table width='100%' bgcolor='black'><tbody><tr><td><img src='https://www.sdizeus.com/images/SDNewLogo_Email.png' alt='SDI' vspace='0' hspace='0' /></td>" &
+                                                    "<td width='100%'><br/><br/><br/><div align='center'><SPAN style='FONT-SIZE: x-large; WIDTH: 256px; FONT-FAMILY: Arial; Color: White;'>SDI Marketplace</SPAN></div>" &
+                                                    "<div align='center'><SPAN style='FONT-FAMILY: Arial; Color: White;'>SDI ZEUS - Request for Quote</SPAN></div></td></tr></tbody></table>" &
                                                     "<HR width='100%' SIZE='1'>"
+
+    Private Const LETTER_HEAD_SdiExch_QTW As String = "<table width='100%' bgcolor='black'><tbody><tr><td><img src='https://www.sdizeus.com/images/SDNewLogo_Email.png' alt='SDI' vspace='0' hspace='0' /></td>" &
+                                                    "<td width='100%'><br/><br/><br/><div align='center'><SPAN style='FONT-SIZE: x-large; WIDTH: 256px; FONT-FAMILY: Arial; Color: White;'>SDI Marketplace</SPAN></div>" &
+                                                    "<div align='center'><SPAN style='FONT-FAMILY: Arial; Color: White;'>SDI ZEUS - Request for Approval</SPAN></div></td></tr></tbody></table>" &
+                                                    "<HR width='100%' SIZE='1'>"
+
     Private Const LETTER_HEAD As String = "<div><img src='https://www.sdizeus.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></div>" & _
                                             "<div align=""center""><SPAN style=""FONT-SIZE: x-large; WIDTH: 256px; FONT-FAMILY: Arial"">SDI Marketplace</SPAN></div>" & _
                                             "<div align=""center""><SPAN>In-Site® Online - Request for Quote</SPAN></div><br><br>" & _
@@ -38,13 +44,21 @@ Public Class QuoteNonStockProcessor
                                              "<br></p>Sincerely,</p>" & _
                                              "<p>SDI Customer Care</p>"
 
-    Private Const LETTER_CONTENT_SDiExchange As String = "<p style=""TEXT-INDENT: 25pt"">" & _
-                                             "The above referenced order contains items that required a price " & _
-                                             "quote before processing.&nbsp;&nbsp;To view the quoted price either " & _
-                                             "click the link below or select the ""Requestor Approval"" menu option " & _
-                                             "in SDI ZEUS to approve or decline the order." & _
-                                             "<br></p>Sincerely,</p>" & _
+    Private Const LETTER_CONTENT_SDiExchange As String = "<p style=""TEXT-INDENT: 25pt"">" &
+                                             "The above referenced order contains items that required a price " &
+                                             "quote before processing.&nbsp;&nbsp;To view the quoted price either " &
+                                             "click the link below or select the ""Requestor Approval"" menu option " &
+                                             "in SDI ZEUS to approve or decline the order." &
+                                             "<br></p>Sincerely,</p>" &
                                              "<p>SDI Customer Care</p>"
+
+    Private Const LETTER_CONTENT_SDiExchange_QTW As String = "<p style=""TEXT-INDENT: 25pt"">" &
+                                             "The above referenced order has needs your approval " &
+                                             "Click the link below or select the ""Approve Orders"" menu option " &
+                                             "in SDI ZEUS to approve or decline the order." &
+                                             "<br></p>Sincerely,</p>" &
+                                             "<p>SDI Customer Care</p>"
+
 
     Private Const LETTER_CONTENT_PI As String = "<p style=""TEXT-INDENT: 25pt"">" & _
                                                 "The above referenced order contains items that required a price " & _
@@ -846,57 +860,58 @@ Public Class QuoteNonStockProcessor
 
         Try
 
-            Dim cSQL As String = "" & _
-                                 "SELECT " & vbCrLf & _
-                                 " A.BUSINESS_UNIT AS BUSINESS_UNIT" & vbCrLf & _
-                                 ",A.REQ_ID AS REQ_ID,A1.BUYER_ID,B.DESCR,B.EMAILID" & vbCrLf & _
-                                 ",A1.LINE_NBR AS LINE_NBR" & vbCrLf & _
-                                 ",A4.BILL_TO_CUST_ID AS SOLD_TO_CUST_ID" & vbCrLf & _
-                                 ",A2.ISA_EMPLOYEE_EMAIL AS ISA_EMPLOYEE_EMAIL" & vbCrLf & _
-                                 ",A2.ISA_EMPLOYEE_NAME AS ISA_EMPLOYEE_NAME" & vbCrLf & _
-                                 ",A2.ISA_PRICE_BLOCK AS ISA_PRICE_BLOCK" & vbCrLf & _
-                                 ",A3.ISA_NONSKREQ_EMAIL AS ISA_NONSKREQ_EMAIL" & vbCrLf & _
-                                 ",L.ISA_EMPLOYEE_ID AS ISA_EMPLOYEE_ID" & vbCrLf & _
-                                 ",A4.BUSINESS_UNIT_OM AS BUSINESS_UNIT_OM" & vbCrLf & _
-                                 ",L.ISA_PRIORITY_FLAG,A4.ORIGIN" & vbCrLf & _
-                                 ",L.OPRID_MODIFIED_BY AS OPRID_MODIFIED_BY, L.ISA_WORK_ORDER_NO AS WORK_ORDER_ID , A3.APPRVALTHRESHOLD AS APPROVAL_LIMIT " & vbCrLf & _
-                                 ",A3.ISA_CUSTINT_APPRVL " & vbCrLf & _
-                                 "FROM " & vbCrLf & _
-                                 " PS_REQ_HDR A" & vbCrLf & _
-                                 ",SYSADM8.PS_ROLEXLATOPR B" & vbCrLf & _
-                                 ",PS_REQ_LINE A1" & vbCrLf & _
-                                 ",PS_ISA_USERS_TBL A2" & vbCrLf & _
-                                 ",PS_ISA_ENTERPRISE A3" & vbCrLf & _
-                                 ",SYSADM8.PS_ISA_ORD_INTF_HD A4, SYSADM8.PS_ISA_ORD_INTF_LN L, sysadm8.ps_isa_req_bi_info I  " & vbCrLf & _
-                                 " WHERE A.BUSINESS_UNIT = A1.BUSINESS_UNIT" & vbCrLf & _
-                                 "  AND A1.BUYER_ID = B.ROLEUSER (+)" & vbCrLf & _
-                                 "  AND A.REQ_ID = A1.REQ_ID" & vbCrLf & _
-                                 "  AND A.REQ_ID = A4.ORDER_NO" & vbCrLf & _
-                                 "  AND A1.BUSINESS_UNIT = I.BUSINESS_UNIT" & vbCrLf & _
-                                 "  AND A1.REQ_ID = I.REQ_ID" & vbCrLf & _
-                                 "  AND A1.line_nbr = I.line_nbr" & vbCrLf & _
-                                 "  AND I.BUSINESS_UNIT_OM = L.BUSINESS_UNIT_OM" & vbCrLf & _
-                                 "  AND A.REQ_ID = L.ORDER_NO" & vbCrLf & _
-                                 "  AND A1.line_nbr = L.ISA_INTFC_LN" & vbCrLf & _
-                                 "  AND A4.ORIGIN IN ('IOL','MOB','RFQ','IAP','PCH','INT')" & vbCrLf & _
-                                 "  AND L.BUSINESS_UNIT_OM = A2.BUSINESS_UNIT (+)" & vbCrLf & _
-                                 "  AND L.ISA_EMPLOYEE_ID = A2.ISA_EMPLOYEE_ID (+) " & vbCrLf & _
-                                 "  AND 'MAIN1' = A3.SETID (+)" & vbCrLf & _
-                                 "  AND A4.BILL_TO_CUST_ID = A3.CUST_ID (+)" & vbCrLf & _
-                                 "  AND L.ISA_LINE_STATUS = 'QTS' " & vbCrLf & _
-                                 "  AND NOT EXISTS ( " & vbCrLf & _
-                                 "                  SELECT 'X' " & vbCrLf & _
-                                 "                  FROM SYSADM8.PS_NLINK_CUST_PLNT C " & vbCrLf & _
-                                 "                  WHERE C.ISA_SAP_PO_PREF = SUBSTR(A.REQ_ID,1,2) " & vbCrLf & _
-                                 "                    AND C.ISA_SAP_PO_PREF <> ' ' " & vbCrLf & _
-                                 "                 ) " & vbCrLf & _
-                                 "  AND NOT EXISTS (" & vbCrLf & _
-                                 "                  SELECT 'X'" & vbCrLf & _
-                                 "                  FROM PS_ISA_REQ_EML_LOG B1" & vbCrLf & _
-                                 "                  WHERE B1.BUSINESS_UNIT = A.BUSINESS_UNIT" & vbCrLf & _
-                                 "                    AND B1.REQ_ID = A.REQ_ID" & vbCrLf & _
-                                 "                 )" & vbCrLf & _
-                                 " ORDER BY A1.BUSINESS_UNIT, A1.REQ_ID, A1.LINE_NBR " & vbCrLf & _
+            Dim cSQL As String = "" &
+                                 "SELECT " & vbCrLf &
+                                 " L.ISA_LINE_STATUS As LINESTATUS, A.BUSINESS_UNIT AS BUSINESS_UNIT" & vbCrLf &
+                                 ",A.REQ_ID AS REQ_ID,A1.BUYER_ID,B.DESCR,B.EMAILID" & vbCrLf &
+                                 ",A1.LINE_NBR AS LINE_NBR" & vbCrLf &
+                                 ",A4.BILL_TO_CUST_ID AS SOLD_TO_CUST_ID" & vbCrLf &
+                                 ",A2.ISA_EMPLOYEE_EMAIL AS ISA_EMPLOYEE_EMAIL" & vbCrLf &
+                                 ",A2.ISA_EMPLOYEE_NAME AS ISA_EMPLOYEE_NAME" & vbCrLf &
+                                 ",A2.ISA_PRICE_BLOCK AS ISA_PRICE_BLOCK" & vbCrLf &
+                                 ",A3.ISA_NONSKREQ_EMAIL AS ISA_NONSKREQ_EMAIL" & vbCrLf &
+                                 ",L.ISA_EMPLOYEE_ID AS ISA_EMPLOYEE_ID" & vbCrLf &
+                                 ",A4.BUSINESS_UNIT_OM AS BUSINESS_UNIT_OM" & vbCrLf &
+                                 ",L.ISA_PRIORITY_FLAG,A4.ORIGIN" & vbCrLf &
+                                 ",L.OPRID_MODIFIED_BY AS OPRID_MODIFIED_BY, L.ISA_WORK_ORDER_NO AS WORK_ORDER_ID , A3.APPRVALTHRESHOLD AS APPROVAL_LIMIT " & vbCrLf &
+                                 ",A3.ISA_CUSTINT_APPRVL " & vbCrLf &
+                                 "FROM " & vbCrLf &
+                                 " PS_REQ_HDR A" & vbCrLf &
+                                 ",SYSADM8.PS_ROLEXLATOPR B" & vbCrLf &
+                                 ",PS_REQ_LINE A1" & vbCrLf &
+                                 ",PS_ISA_USERS_TBL A2" & vbCrLf &
+                                 ",PS_ISA_ENTERPRISE A3" & vbCrLf &
+                                 ",SYSADM8.PS_ISA_ORD_INTF_HD A4, SYSADM8.PS_ISA_ORD_INTF_LN L, sysadm8.ps_isa_req_bi_info I  " & vbCrLf &
+                                 " WHERE A.BUSINESS_UNIT = A1.BUSINESS_UNIT" & vbCrLf &
+                                 "  AND A1.BUYER_ID = B.ROLEUSER (+)" & vbCrLf &
+                                 "  AND A.REQ_ID = A1.REQ_ID" & vbCrLf &
+                                 "  AND A.REQ_ID = A4.ORDER_NO" & vbCrLf &
+                                 "  AND A1.BUSINESS_UNIT = I.BUSINESS_UNIT" & vbCrLf &
+                                 "  AND A1.REQ_ID = I.REQ_ID" & vbCrLf &
+                                 "  AND A1.line_nbr = I.line_nbr" & vbCrLf &
+                                 "  AND I.BUSINESS_UNIT_OM = L.BUSINESS_UNIT_OM" & vbCrLf &
+                                 "  AND A.REQ_ID = L.ORDER_NO" & vbCrLf &
+                                 "  AND A1.line_nbr = L.ISA_INTFC_LN" & vbCrLf &
+                                 "  AND A4.ORIGIN IN ('IOL','MOB','RFQ','IAP','PCH','INT')" & vbCrLf &
+                                 "  AND L.BUSINESS_UNIT_OM = A2.BUSINESS_UNIT (+)" & vbCrLf &
+                                 "  AND L.ISA_EMPLOYEE_ID = A2.ISA_EMPLOYEE_ID (+) " & vbCrLf &
+                                 "  AND 'MAIN1' = A3.SETID (+)" & vbCrLf &
+                                 "  AND A4.BILL_TO_CUST_ID = A3.CUST_ID (+)" & vbCrLf &
+                                 "  AND L.OPRID_APPROVED_BY in (' ',L.ISA_EMPLOYEE_ID)" & vbCrLf &
+                                 "  AND L.ISA_LINE_STATUS in ('QTS','QTW')" & vbCrLf &
+                                 "  AND NOT EXISTS ( " & vbCrLf &
+                                 "                  SELECT 'X' " & vbCrLf &
+                                 "                  FROM SYSADM8.PS_NLINK_CUST_PLNT C " & vbCrLf &
+                                 "                  WHERE C.ISA_SAP_PO_PREF = SUBSTR(A.REQ_ID,1,2) " & vbCrLf &
+                                 "                    AND C.ISA_SAP_PO_PREF <> ' ' " & vbCrLf &
+                                 "                 ) " & vbCrLf &
+                                 "  AND NOT EXISTS (" & vbCrLf &
+                                 "                  SELECT 'X'" & vbCrLf &
+                                 "                  FROM PS_ISA_REQ_EML_LOG B1" & vbCrLf &
+                                 "                  WHERE B1.BUSINESS_UNIT = A.BUSINESS_UNIT" & vbCrLf &
+                                 "                    AND B1.REQ_ID = A.REQ_ID" & vbCrLf &
+                                 "                 )" & vbCrLf &
+                                 " ORDER BY A1.BUSINESS_UNIT, A1.REQ_ID, A1.LINE_NBR " & vbCrLf &
                                  ""
 
             Dim rdr As OleDbDataReader
@@ -928,6 +943,7 @@ Public Class QuoteNonStockProcessor
                 Dim strBuyerEmail As String = ""
                 Dim appLimit As Double = 0
                 Dim strPriority As String = " "
+                Dim lineStatus As String = " "
 
                 While rdr.Read
                     cKey = ""
@@ -935,8 +951,10 @@ Public Class QuoteNonStockProcessor
                     boItem = Nothing
 
                     ' get the key for the current record
-                    cKey = CType(rdr("BUSINESS_UNIT"), String).Trim.PadLeft(5, CType(" ", Char)) & _
+                    cKey = CType(rdr("BUSINESS_UNIT"), String).Trim.PadLeft(5, CType(" ", Char)) &
                            CType(rdr("REQ_ID"), String).Trim.PadLeft(10, CType(" ", Char))
+
+                    lineStatus = CType(rdr("LINESTATUS"), String).Trim
 
                     ' check if current key exist or be in a new message instance
                     If m_colMsgs.Count > 0 Then
@@ -1028,10 +1046,10 @@ Public Class QuoteNonStockProcessor
                     End If
 
                     ' 2009.02.06; handle UNCC's change on Order Number being used by SDI vs original UNCC work order number
-                    If boItem.OrderID.Length > 0 And _
+                    If boItem.OrderID.Length > 0 And
                        boItem.BusinessUnitOM.Length > 0 Then
                         If boItem.BusinessUnitOM.ToUpper = orderNoMapper.UNCC_BUSINESS_UNIT_OM Then
-                            boItem.FormattedOrderID = orderNoMapper.FormatOrderNoToShow(sdiOrderNo:=boItem.OrderID, _
+                            boItem.FormattedOrderID = orderNoMapper.FormatOrderNoToShow(sdiOrderNo:=boItem.OrderID,
                                                                                         unccOrderNo:=orderNoMapper.changeToUNCCOrderNo(orderNo:=boItem.OrderID))
                         End If
                     End If
@@ -1127,36 +1145,59 @@ Public Class QuoteNonStockProcessor
 
                         End Try
                     End If
-
+                    boItem.Status = lineStatus
                     ' get the very first available VALID recipient of this message (if not yet)
                     If Not boItem.IsPrimaryRecipientExist Then
-                        ' get the employee ID
-                        If Not (rdr("ISA_EMPLOYEE_ID") Is System.DBNull.Value) Then
-                            boItem.EmployeeID = CType(rdr("ISA_EMPLOYEE_ID"), String).Trim
-                        End If
-
-                        ' get the addressee (name)
-                        If Not (rdr("ISA_EMPLOYEE_NAME") Is System.DBNull.Value) Then
-                            'boItem.Addressee = CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim
-                            Dim cAddressee As String = Utility.FormatAddessee(CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim)
-                            If Not (cAddressee.Trim.Length > 0) Then
-                                cAddressee = CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim
+                        If lineStatus = "QTS" Then
+                            ' get the employee ID
+                            If Not (rdr("ISA_EMPLOYEE_ID") Is System.DBNull.Value) Then
+                                boItem.EmployeeID = CType(rdr("ISA_EMPLOYEE_ID"), String).Trim
                             End If
-                            boItem.Addressee = cAddressee
-                        End If
 
-                        ' get the email address
-                        If Not (rdr("ISA_EMPLOYEE_EMAIL") Is System.DBNull.Value) Then
-                            'If SDI.WinServices.Utility.IsValidEmailAdd(CType(rdr("ISA_EMPLOYEE_EMAIL"), String)) Then
-                            '    boItem.TO = CType(rdr("ISA_EMPLOYEE_EMAIL"), String)
-                            'End If
-                            Dim arr As ArrayList = Utility.ExtractValidEmails(CType(rdr("ISA_EMPLOYEE_EMAIL"), String).Trim)
-                            If arr.Count > 0 Then
-                                For Each sAdd As String In arr
-                                    boItem.TO &= sAdd & ";"
-                                Next
+                            ' get the addressee (name)
+                            If Not (rdr("ISA_EMPLOYEE_NAME") Is System.DBNull.Value) Then
+                                'boItem.Addressee = CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim
+                                Dim cAddressee As String = Utility.FormatAddessee(CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim)
+                                If Not (cAddressee.Trim.Length > 0) Then
+                                    cAddressee = CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim
+                                End If
+                                boItem.Addressee = cAddressee
                             End If
-                            arr = Nothing
+
+                            ' get the email address
+                            If Not (rdr("ISA_EMPLOYEE_EMAIL") Is System.DBNull.Value) Then
+                                'If SDI.WinServices.Utility.IsValidEmailAdd(CType(rdr("ISA_EMPLOYEE_EMAIL"), String)) Then
+                                '    boItem.TO = CType(rdr("ISA_EMPLOYEE_EMAIL"), String)
+                                'End If
+                                Dim arr As ArrayList = Utility.ExtractValidEmails(CType(rdr("ISA_EMPLOYEE_EMAIL"), String).Trim)
+                                If arr.Count > 0 Then
+                                    For Each sAdd As String In arr
+                                        boItem.TO &= sAdd & ";"
+                                    Next
+                                End If
+                                arr = Nothing
+                            End If
+                        Else
+                            Dim strOrigApproverID As String = GetOriginalApprover(rdr("BUSINESS_UNIT_OM").trim, rdr("ISA_EMPLOYEE_ID").trim)
+                            If strOrigApproverID.Trim <> "" Then
+                                Dim strSQLString As String = "SELECT FIRST_NAME_SRCH," & vbCrLf &
+                   " LAST_NAME_SRCH," & vbCrLf &
+                   " ISA_EMPLOYEE_EMAIL" & vbCrLf &
+                   " FROM SDIX_USERS_TBL" & vbCrLf &
+                   " WHERE ISA_EMPLOYEE_ID = '" & strOrigApproverID & "'"
+
+                                Dim dtrAppReader As OleDbDataReader = ORDBData.GetReader(strSQLString)
+
+                                If dtrAppReader.HasRows() = True Then
+                                    dtrAppReader.Read()
+                                    boItem.EmployeeID = strOrigApproverID
+                                    boItem.Addressee = dtrAppReader.Item("FIRST_NAME_SRCH") & " " & dtrAppReader.Item("LAST_NAME_SRCH")
+                                    boItem.TO = dtrAppReader.Item("ISA_EMPLOYEE_EMAIL")
+                                    dtrAppReader.Close()
+                                Else
+                                    dtrAppReader.Close()
+                                End If
+                            End If
                         End If
 
                         ' 3/26/2014 to accomodate Ascend Reqs (meaning IF ORIGIN IS "RFQ")
@@ -1297,6 +1338,28 @@ Public Class QuoteNonStockProcessor
 
     End Function
 
+    Private Shared Function GetOriginalApprover(ByVal strBU As String, ByVal strLastApprover As String) As String
+        Dim strOrigApproverID As String = ""
+
+        Try
+            Dim ds As DataSet
+            Dim strSQLstring As String
+
+            strSQLstring = "SELECT isa_iol_apr_emp_id" & vbCrLf &
+                    " FROM SDIX_USERS_APPRV" & vbCrLf &
+                    " WHERE isa_employee_id = '" & strLastApprover & "'" & vbCrLf &
+                    " AND business_unit = '" & strBU & "'"
+            ds = ORDBData.GetAdapter(strSQLstring)
+            If ds.Tables(0).Rows.Count > 0 Then
+                strOrigApproverID = ds.Tables(0).Rows(0).Item("isa_iol_apr_emp_id").ToString
+            End If
+
+        Catch ex As Exception
+        End Try
+
+        Return strOrigApproverID
+    End Function
+
     Public Shared Function GetURL() As String
         Dim sRet As String = ""
         Dim sWebAppName As String = "ims.sdi.com:8080/sdiconnect/"
@@ -1319,7 +1382,7 @@ Public Class QuoteNonStockProcessor
                 sRet = "https://www.sdizeus.com/"
             Case "FSUAT", "SNBX"
                 sRet = "http://zeustest.sdi.com:8083/ZEUSUAT/"
-            Case "FSTST", "RPTG"
+            Case "STST", "RPTG"
                 sRet = "http://zeustest.sdi.com:8083/ZEUSRPTG/"
             Case Else
                 sRet = "http://zeustest.sdi.com:8083/ZEUSUAT/"
@@ -1476,6 +1539,7 @@ Public Class QuoteNonStockProcessor
                 Dim eml As MailMessage
                 Dim cmd As OleDbCommand
                 Dim cSQL As String = ""
+                Dim LineStatus As String = ""
                 Dim MailAttachmentName As String()
                 Dim MailAttachmentbytes As New List(Of Byte())()
                 Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
@@ -1491,6 +1555,7 @@ Public Class QuoteNonStockProcessor
                 eml.Subject = ""
                 eml.Body = ""
 
+                LineStatus = itmQuoted.Status
                 ' assign sender email address from item object 
                 ' or assign the default automated sender
                 If itmQuoted.FROM.Length > 0 Then
@@ -1547,6 +1612,10 @@ Public Class QuoteNonStockProcessor
                     eml.Subject &= " - " & itmQuoted.FormattedOrderID
                 ElseIf itmQuoted.OrderID.Length > 0 Then
                     eml.Subject &= " - " & itmQuoted.OrderID
+                End If
+                If LineStatus = "QTW" Then
+                    eml.Subject = "SDI ZEUS - Order Number"
+                    eml.Subject &= itmQuoted.OrderID & " needs approval"
                 End If
 
                 ' for now, showing the work order # is synonymous to origin "RFQ"
@@ -1627,6 +1696,7 @@ Public Class QuoteNonStockProcessor
                     If dsPunchin.Tables(0).Rows.Count = 1 Then
                         bIsPunchInBU = True
                     End If
+
                 Catch ex As Exception
 
                 End Try
@@ -1642,19 +1712,19 @@ Public Class QuoteNonStockProcessor
                         bShowWorkOrderNo = True
 
                         PI_SDI = LETTER_CONTENT_PI_SDiExchange
-                        eml.Body = "<HTML>" & _
-                                    "<HEAD></HEAD>" & _
-                                    "<BODY>" & _
-                                        AddNoRecepientExistNote(eml.To) & _
-                                        LETTER_HEAD_SdiExch & _
-                                        FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority) & _
-                                        PositionGrid(dataGridHTML) & _
-                                        PI_SDI & _
-                                        AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
-                                        AddVersionNumber() & _
-                                        "<HR width='100%' SIZE='1'>" & _
-                                        "<img src='https://www.sdizeus.com/Images/SDIFooter_Email.png' />" & _
-                                    "</BODY>" & _
+                        eml.Body = "<HTML>" &
+                                    "<HEAD></HEAD>" &
+                                    "<BODY>" &
+                                        AddNoRecepientExistNote(eml.To) &
+                                        LETTER_HEAD_SdiExch &
+                                        FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority) &
+                                        PositionGrid(dataGridHTML) &
+                                        PI_SDI &
+                                        AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail, LineStatus) &
+                                        AddVersionNumber() &
+                                        "<HR width='100%' SIZE='1'>" &
+                                        "<img src='https://www.sdizeus.com/Images/SDIFooter_Email.png' />" &
+                                    "</BODY>" &
                                "</HTML>"
                     Else
                         'InsiteOnline
@@ -1665,19 +1735,19 @@ Public Class QuoteNonStockProcessor
                         End If
                         'WorkOrder should show for all the BU's
                         bShowWorkOrderNo = True
-                        eml.Body = "<HTML>" & _
-                                        "<HEAD></HEAD>" & _
-                                        "<BODY>" & _
-                                            AddNoRecepientExistNote(eml.To) & _
-                                            LETTER_HEAD & _
-                                            FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority) & _
-                                            PositionGrid(dataGridHTML) & _
-                                            PI & _
-                                            AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
-                                            AddVersionNumber() & _
-                                            "<HR width='100%' SIZE='1'>" & _
-                                            "<img src='https://www.sdizeus.com/Images/SDIFooter_Email.png' />" & _
-                                        "</BODY>" & _
+                        eml.Body = "<HTML>" &
+                                        "<HEAD></HEAD>" &
+                                        "<BODY>" &
+                                            AddNoRecepientExistNote(eml.To) &
+                                            LETTER_HEAD &
+                                            FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority) &
+                                            PositionGrid(dataGridHTML) &
+                                            PI &
+                                            AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail, LineStatus) &
+                                            AddVersionNumber() &
+                                            "<HR width='100%' SIZE='1'>" &
+                                            "<img src='https://www.sdizeus.com/Images/SDIFooter_Email.png' />" &
+                                        "</BODY>" &
                                    "</HTML>"
                     End If
 
@@ -1687,22 +1757,29 @@ Public Class QuoteNonStockProcessor
                         'SdiExchange
                         'WorkOrder should show for all the BU's
                         bShowWorkOrderNo = True
+                        Dim LetterHead As String = ""
+                        If LineStatus = "QTW" Then
+                            ContentSDI = LETTER_CONTENT_SDiExchange_QTW
+                            LetterHead = LETTER_HEAD_SdiExch_QTW
+                        Else
+                            ContentSDI = LETTER_CONTENT_SDiExchange
+                            LetterHead = LETTER_HEAD_SdiExch
+                        End If
 
-                        ContentSDI = LETTER_CONTENT_SDiExchange
-                        eml.Body = "<HTML>" & _
-                                    "<HEAD></HEAD>" & _
-                                    "<BODY>" & _
-                                        AddNoRecepientExistNote(eml.To) & _
-                                        LETTER_HEAD_SdiExch & _
+                        eml.Body = "<HTML>" &
+                                    "<HEAD></HEAD>" &
+                                    "<BODY>" &
+                                        AddNoRecepientExistNote(eml.To) &
+                                        LetterHead &
                                         FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority) &
-                                        PositionGrid(dataGridHTML) & _
-                                        ContentSDI & _
-                                        FormHTMLLinkSDiExchange(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, bShowApproveViaEmailLink) & _
-                                        AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
-                                        AddVersionNumber() & _
-                                        "<HR width='100%' SIZE='1'>" & _
-                                            "<img src='https://www.sdizeus.com/Images/SDIFooter_Email.png' />" & _
-                                    "</BODY>" & _
+                                        PositionGrid(dataGridHTML) &
+                                        ContentSDI &
+                                        FormHTMLLinkSDiExchange(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, LineStatus, bShowApproveViaEmailLink) &
+                                        AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail, LineStatus) &
+                                        AddVersionNumber() &
+                                        "<HR width='100%' SIZE='1'>" &
+                                            "<img src='https://www.sdizeus.com/Images/SDIFooter_Email.png' />" &
+                                    "</BODY>" &
                                "</HTML>"
                     Else
                         'InsiteOnline
@@ -1714,20 +1791,20 @@ Public Class QuoteNonStockProcessor
                         'WorkOrder should show for all the BU's
                         bShowWorkOrderNo = True
 
-                        eml.Body = "<HTML>" & _
-                                        "<HEAD></HEAD>" & _
-                                        "<BODY>" & _
-                                            AddNoRecepientExistNote(eml.To) & _
-                                            LETTER_HEAD & _
-                                            FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority) & _
-                                            PositionGrid(dataGridHTML) & _
-                                            Content & _
-                                            FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, bShowApproveViaEmailLink) & _
-                                            AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail) & _
-                                            AddVersionNumber() & _
-                                            "<HR width='100%' SIZE='1'>" & _
-                                            "<img src='https://www.sdizeus.com/Images/SDIFooter_Email.png' />" & _
-                                        "</BODY>" & _
+                        eml.Body = "<HTML>" &
+                                        "<HEAD></HEAD>" &
+                                        "<BODY>" &
+                                            AddNoRecepientExistNote(eml.To) &
+                                            LETTER_HEAD &
+                                            FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority) &
+                                            PositionGrid(dataGridHTML) &
+                                            Content &
+                                            FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, bShowApproveViaEmailLink) &
+                                            AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail, LineStatus) &
+                                            AddVersionNumber() &
+                                            "<HR width='100%' SIZE='1'>" &
+                                            "<img src='https://www.sdizeus.com/Images/SDIFooter_Email.png' />" &
+                                        "</BODY>" &
                                    "</HTML>"
                     End If
 
@@ -1973,13 +2050,19 @@ Public Class QuoteNonStockProcessor
         Return (cLink)
     End Function
 
-    Private Function FormHTMLLinkSDiExchange(ByVal cOrderID As String, ByVal cEmployeeID As String, ByVal cBusinessUnitOM As String, Optional ByVal bShowLink As Boolean = True) As String
+    Private Function FormHTMLLinkSDiExchange(ByVal cOrderID As String, ByVal cEmployeeID As String, ByVal cBusinessUnitOM As String, ByVal LineStatus As String, Optional ByVal bShowLink As Boolean = True) As String
         Dim cLink As String = ""
         Dim cHdr As String = "QuoteNonStockProcessor.FormHTMLLink: "
+        Dim m_cURL1 As String = ""
         If bShowLink Then
             Try
                 'Dim m_cURL1 As String = "http://" & ConfigurationManager.AppSettings("WebAppName") & "Approvequote.aspx"
-                Dim m_cURL1 As String = GetURL() & "Approvequote.aspx"
+                If LineStatus = "QTW" Then
+                    m_cURL1 = GetURL() & "approveorder.aspx"
+                Else
+                    m_cURL1 = GetURL() & "Approvequote.aspx"
+                End If
+
                 Dim boEncrypt As New Encryption64
 
                 Dim cParam As String = "?fer=" & boEncrypt.Encrypt(cOrderID, m_cEncryptionKey) &
@@ -1988,10 +2071,10 @@ Public Class QuoteNonStockProcessor
                                        "&HOME=N" &
                                        "&ExchHome23=N"
 
-                cLink &= "<p>" & _
-                            "Click this " & _
-                            "<a href=""" & m_cURL1 & cParam & """ target=""_blank"">link</a> " & _
-                            " to APPROVE or DECLINE order." & _
+                cLink &= "<p>" &
+                            "Click this " &
+                            "<a href=""" & m_cURL1 & cParam & """ target=""_blank"">link</a> " &
+                            " to APPROVE or DECLINE order." &
                          "</p>"
 
                 boEncrypt = Nothing
@@ -2008,7 +2091,7 @@ Public Class QuoteNonStockProcessor
         Return (cLink)
     End Function
 
-    Private Function AddBuyerInfo(ByVal strBuyerDescr As String, ByVal strBuyerEmail As String) As String
+    Private Function AddBuyerInfo(ByVal strBuyerDescr As String, ByVal strBuyerEmail As String, ByVal LineStatus As String) As String
         Dim cHdr As String = "QuoteNonStockProcessor.AddBuyerInfo: "
         Try
             Dim cInfoHTML As String = ""
@@ -2020,18 +2103,20 @@ Public Class QuoteNonStockProcessor
             '                    "</TR>"
             'cInfoHTML &= "</TABLE>"
 
-            cInfoHTML &= "" & _
-                            "Buyer: " & _
-                            "<B>" & strBuyerDescr & "</B>" & _
+            cInfoHTML &= "" &
+                            "Buyer: " &
+                            "<B>" & strBuyerDescr & "</B>" &
                          ""
-            cInfoHTML &= "<br />" & _
-                            "Buyer E-mail: " & _
-                            "<a href=""mailto:" & strBuyerEmail & """>" & strBuyerEmail & "</a> " & _
+            cInfoHTML &= "<br />" &
+                            "Buyer E-mail: " &
+                            "<a href=""mailto:" & strBuyerEmail & """>" & strBuyerEmail & "</a> " &
                          "<br />"
-            cInfoHTML &= "" & _
-                            "Phone Number:  888-435-7734 " & _
+            cInfoHTML &= "" &
+                            "Phone Number:  888-435-7734 " &
                          ""
-
+            If LineStatus = "QTW" Then
+                cInfoHTML = ""
+            End If
             Return cInfoHTML
 
         Catch ex As Exception
