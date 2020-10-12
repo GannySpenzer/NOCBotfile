@@ -42,6 +42,7 @@ namespace PO_OpenUtility
 
             string Sqlstring = "SELECT *  FROM SYSADM8.PS_ISA_PO_DISP_PTL WHERE DTTM_OPENED IS NULL";
             DataSet ds_OpentPOs = GetAdapter(Sqlstring);
+            List<string> PODetails = new List<string>();
 
             if (ds_OpentPOs.Tables[0].Rows.Count != 0)
             {
@@ -49,41 +50,45 @@ namespace PO_OpenUtility
                 {
                     ItemCount++;
                     string POID = Convert.ToString(rw["PO_ID"]);
-                    string VendorID = Convert.ToString(rw["VENDOR_ID"]);
-                    string PO_BU = Convert.ToString(rw["BUSINESS_UNIT"]);
-
-                    string strEncrypt_POID = Encrypt(POID, "bautista");
-                    string strEncrypt_VendorID = Encrypt(VendorID, "bautista");
-                    string strEncrypt_PO_BU = Encrypt(PO_BU, "bautista");
-
-                    string strBuyerEmail = getBuyerEmail(POID, PO_BU);
-
-                    string UsrTblQuery = "SELECT * FROM SDIX_USERS_TBL WHERE ISA_EMPLOYEE_ID = '" + VendorID + "'";
-                    DataSet ds_UserDetail = GetAdapter(UsrTblQuery);
-                    if (ds_UserDetail.Tables[0].Rows.Count != 0)
+                    if (!PODetails.Contains(Convert.ToString(POID)))
                     {
-                        string Vendr_UN = Convert.ToString(ds_UserDetail.Tables[0].Rows[0]["ISA_USER_NAME"]);
-                        string Vendr_Email = Convert.ToString(ds_UserDetail.Tables[0].Rows[0]["ISA_EMPLOYEE_EMAIL"]);
-                        string Vendr_OprID = Convert.ToString(ds_UserDetail.Tables[0].Rows[0]["ISA_USER_ID"]);
-                        Vendr_OprID = Encrypt(Vendr_OprID, "bautista");
+                        PODetails.Add(Convert.ToString(POID));
+                        string VendorID = Convert.ToString(rw["VENDOR_ID"]);
+                        string PO_BU = Convert.ToString(rw["BUSINESS_UNIT"]);
 
-                        string EmailBasueURL = baseWebURL + "Supplier/PODetails.aspx?POID=" + strEncrypt_POID + "&vendorid=" + strEncrypt_VendorID + "&PO_BU=" + strEncrypt_PO_BU + "&OPR_ID=" + Vendr_OprID + "";
+                        string strEncrypt_POID = Encrypt(POID, "bautista");
+                        string strEncrypt_VendorID = Encrypt(VendorID, "bautista");
+                        string strEncrypt_PO_BU = Encrypt(PO_BU, "bautista");
 
-                        Boolean EmailSent = SendEmail(VendorID, Vendr_UN, Vendr_Email, POID, PO_BU, EmailBasueURL, strBuyerEmail);
+                        string strBuyerEmail = getBuyerEmail(POID, PO_BU);
 
-                        
-                        if (EmailSent)
+                        string UsrTblQuery = "SELECT * FROM SDIX_USERS_TBL WHERE ISA_EMPLOYEE_ID = '" + VendorID + "'";
+                        DataSet ds_UserDetail = GetAdapter(UsrTblQuery);
+                        if (ds_UserDetail.Tables[0].Rows.Count != 0)
                         {
-                            log.WriteLine("{0}. PO ID - {1}, Generated email link {2} notification sent to - {3} \n", ItemCount, POID, EmailBasueURL, Vendr_UN.ToUpper());
-                            string strUpdQuery = "UPDATE SYSADM8.PS_ISA_PO_DISP_PTL  SET DTTM_OPENED = SYSDATE WHERE PO_ID = '" + POID + "' AND VENDOR_ID = '" + VendorID + "' ";
-                            Boolean results = false;
-                            results = ExecuteNonQuery(strUpdQuery);
-                        }
-                        else
-                        {
-                            log.WriteLine("{0}. PO ID - {1}, Error in {2} notification sent to - {3} \n", ItemCount, POID, EmailBasueURL, Vendr_UN.ToUpper());
-                        }
+                            string Vendr_UN = Convert.ToString(ds_UserDetail.Tables[0].Rows[0]["ISA_USER_NAME"]);
+                            string Vendr_Email = Convert.ToString(ds_UserDetail.Tables[0].Rows[0]["ISA_EMPLOYEE_EMAIL"]);
+                            string Vendr_OprID = Convert.ToString(ds_UserDetail.Tables[0].Rows[0]["ISA_USER_ID"]);
+                            Vendr_OprID = Encrypt(Vendr_OprID, "bautista");
 
+                            string EmailBasueURL = baseWebURL + "Supplier/PODetails.aspx?POID=" + strEncrypt_POID + "&vendorid=" + strEncrypt_VendorID + "&PO_BU=" + strEncrypt_PO_BU + "&OPR_ID=" + Vendr_OprID + "";
+
+                            Boolean EmailSent = SendEmail(VendorID, Vendr_UN, Vendr_Email, POID, PO_BU, EmailBasueURL, strBuyerEmail);
+
+
+                            if (EmailSent)
+                            {
+                                log.WriteLine("{0}. PO ID - {1}, Generated email link {2} notification sent to - {3} \n", ItemCount, POID, EmailBasueURL, Vendr_UN.ToUpper());
+                                string strUpdQuery = "UPDATE SYSADM8.PS_ISA_PO_DISP_PTL  SET DTTM_OPENED = SYSDATE WHERE PO_ID = '" + POID + "' AND VENDOR_ID = '" + VendorID + "' ";
+                                Boolean results = false;
+                                results = ExecuteNonQuery(strUpdQuery);
+                            }
+                            else
+                            {
+                                log.WriteLine("{0}. PO ID - {1}, Error in {2} notification sent to - {3} \n", ItemCount, POID, EmailBasueURL, Vendr_UN.ToUpper());
+                            }
+
+                        }
                     }
                 }
             }
