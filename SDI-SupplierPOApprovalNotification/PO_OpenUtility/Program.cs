@@ -55,25 +55,33 @@ namespace PO_OpenUtility
                         PODetails.Add(Convert.ToString(POID));
                         string VendorID = Convert.ToString(rw["VENDOR_ID"]);
                         string PO_BU = Convert.ToString(rw["BUSINESS_UNIT"]);
-
+                        string Email = Convert.ToString(rw["ISA_VENDOR_EMAIL"]);
                         string strEncrypt_POID = Encrypt(POID, "bautista");
                         string strEncrypt_VendorID = Encrypt(VendorID, "bautista");
                         string strEncrypt_PO_BU = Encrypt(PO_BU, "bautista");
-
-                        string strBuyerEmail = getBuyerEmail(POID, PO_BU);
 
                         string UsrTblQuery = "SELECT * FROM SDIX_USERS_TBL WHERE ISA_EMPLOYEE_ID = '" + VendorID + "'";
                         DataSet ds_UserDetail = GetAdapter(UsrTblQuery);
                         if (ds_UserDetail.Tables[0].Rows.Count != 0)
                         {
-                            string Vendr_UN = Convert.ToString(ds_UserDetail.Tables[0].Rows[0]["ISA_USER_NAME"]);
+                            string strBuyerEmail = getBuyerEmail(POID, PO_BU);
+                            DataSet dsTech = getTechDetails(POID, PO_BU);
+                            string techPhno = string.Empty;
+                            string techEmail = string.Empty;
+                            if (dsTech.Tables[0].Rows.Count != 0)
+                            {
+                                techPhno = Convert.ToString(dsTech.Tables[0].Rows[0]["PHONE_NUM"]);
+                                techEmail = Convert.ToString(dsTech.Tables[0].Rows[0]["ISA_EMPLOYEE_EMAIL"]);
+                            }
+
+                                string Vendr_UN = Convert.ToString(ds_UserDetail.Tables[0].Rows[0]["ISA_USER_NAME"]);
                             string Vendr_Email = Convert.ToString(ds_UserDetail.Tables[0].Rows[0]["ISA_EMPLOYEE_EMAIL"]);
                             string Vendr_OprID = Convert.ToString(ds_UserDetail.Tables[0].Rows[0]["ISA_USER_ID"]);
                             Vendr_OprID = Encrypt(Vendr_OprID, "bautista");
 
                             string EmailBasueURL = baseWebURL + "Supplier/PODetails.aspx?POID=" + strEncrypt_POID + "&vendorid=" + strEncrypt_VendorID + "&PO_BU=" + strEncrypt_PO_BU + "&OPR_ID=" + Vendr_OprID + "";
 
-                            Boolean EmailSent = SendEmail(VendorID, Vendr_UN, Vendr_Email, POID, PO_BU, EmailBasueURL, strBuyerEmail);
+                            Boolean EmailSent = SendEmail(VendorID, Vendr_UN, Vendr_Email, POID, PO_BU, EmailBasueURL, strBuyerEmail, Email, techPhno, techEmail);
 
 
                             if (EmailSent)
@@ -122,6 +130,27 @@ namespace PO_OpenUtility
             }
         }
 
+        public static DataSet getTechDetails(string strPO, string strPOBU)
+        {
+            string strSQLString = "";
+            DataSet dsEmp = new DataSet();
+            try
+            {
+                strSQLString = @" select distinct b.ISA_EMPLOYEE_EMAIL, b.PHONE_NUM from ps_isa_po_line a,
+ps_isa_users_tbl b where a.business_unit_om = b.business_unit (+) 
+and a.ISA_EMPLOYEE_ID = b.isa_employee_id (+)
+and a.business_unit = '" + strPOBU + "' and a.po_id='" + strPO + "'";
+
+                dsEmp = GetAdapter(strSQLString);
+
+                return dsEmp;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
         private static Boolean ExecuteNonQuery(string insertquery)
         {
             Boolean reslt = false;
@@ -269,7 +298,7 @@ namespace PO_OpenUtility
             return strReturn;
         }
 
-        public static Boolean SendEmail(string VendorID, string VendorUN, string VendorEmail, string POID, string PO_BU, string strURL, string strBuyerEmail)
+        public static Boolean SendEmail(string VendorID, string VendorUN, string VendorEmail, string POID, string PO_BU, string strURL, string strBuyerEmail, string Email, string techPhno, string techEmail)
         {
             string strbodyhead;
             string strbodydetl = "";
@@ -304,6 +333,12 @@ namespace PO_OpenUtility
                 {
                     strbodydetl = strbodydetl + "<p style='font-weight: bold;'>If you have any questions, please e-mail: " + strBuyerEmail + "  </p>";
                 }
+                if (techPhno != "" && techEmail != "")
+                {
+                    string PhNo = String.Format("{0:(###)-###-####}", double.Parse(techPhno));
+                    strbodydetl = strbodydetl + "<p style='font-weight: bold;'>Tech e-mail: " + techEmail + " </p>";
+                    strbodydetl = strbodydetl + "<p style='font-weight: bold;'>Tech Phone No: " + PhNo + "  </p>";
+                }
 
                 strbodydetl = strbodydetl + "&nbsp;<br>";
                 strbodydetl = strbodydetl + "Sincerely,<br>";
@@ -327,6 +362,7 @@ namespace PO_OpenUtility
                 else
                 {
                     Mailer.To.Add(new MailAddress(VendorEmail));
+                    Mailer.To.Add(new MailAddress(Email));
                     Mailer.Subject = "SDiExchange - Purchase Order " + POID + "";
                 }
 
@@ -355,7 +391,7 @@ namespace PO_OpenUtility
                 }
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
 
                 isEmailSent = false;
