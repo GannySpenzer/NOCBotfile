@@ -322,8 +322,8 @@ Public Class QuoteNonStockProcessor
         dstcart.Columns.Add("Manuf. Partnum")
         dstcart.Columns.Add("QTY")
         dstcart.Columns.Add("UOM")
-        dstcart.Columns.Add("Price")
         If Not BU = "I0W01" Then
+            dstcart.Columns.Add("Price")
             dstcart.Columns.Add("Ext. Price")
         End If
 
@@ -422,26 +422,26 @@ Public Class QuoteNonStockProcessor
                     Catch ex As Exception
                         strQty = "0"
                     End Try
-                    strPrice = "0.00"
-                    Try
-                        strPrice = CDec(CType(dataRowMain("ISA_SELL_PRICE"), String).Trim()).ToString()
-                        strPrice = strPrice.Remove(strPrice.Length - 2)
-                        If strPrice Is Nothing Then
-                            strPrice = "0.00"
-                        End If
-                    Catch ex As Exception
-                        strPrice = "0.00"
-                    End Try
-                    If CDec(strPrice) = 0 Then
-                        ' dr("Price") = "Call for Price"
-                        dr("Price") = "0.00"
-                    Else
-                        strPrice = CDec(strPrice).ToString("f")
-                        dr("Price") = strPrice
-                    End If
-                    Dim ExtPrice As Decimal = CType(Convert.ToDecimal(strQty) * Convert.ToDecimal(strPrice), String)
 
                     If Not BU = "I0W01" Then
+                        strPrice = "0.00"
+                        Try
+                            strPrice = CDec(CType(dataRowMain("ISA_SELL_PRICE"), String).Trim()).ToString()
+                            strPrice = strPrice.Remove(strPrice.Length - 2)
+                            If strPrice Is Nothing Then
+                                strPrice = "0.00"
+                            End If
+                        Catch ex As Exception
+                            strPrice = "0.00"
+                        End Try
+                        If CDec(strPrice) = 0 Then
+                            ' dr("Price") = "Call for Price"
+                            dr("Price") = "0.00"
+                        Else
+                            strPrice = CDec(strPrice).ToString("f")
+                            dr("Price") = strPrice
+                        End If
+                        Dim ExtPrice As Decimal = CType(Convert.ToDecimal(strQty) * Convert.ToDecimal(strPrice), String)
                         If (ExtPrice.ToString("f") = "0.00") Then
                             dr("Ext. Price") = "0.00"
                         Else
