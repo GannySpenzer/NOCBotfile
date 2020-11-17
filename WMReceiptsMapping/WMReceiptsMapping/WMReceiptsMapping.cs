@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace WMReceiptsMapping
             // InitializeLogger start here
 
             Logger m_oLogger;
-            string sLogPath = Environment.CurrentDirectory;
+            string sLogPath = ConfigurationManager.AppSettings["LogFilePath"];
             if (!sLogPath.EndsWith(@"\"))
                 sLogPath += @"\";
             sLogPath += "Logs";
