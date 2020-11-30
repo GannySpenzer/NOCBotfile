@@ -91,6 +91,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Web References\sdixaws2016test\EmailServices.disco" />
+    <Content Include="SAMPLE_137876602.XML" />
     <Content Include="ZMM_PREQCR.xml" />
   </ItemGroup>
   <ItemGroup>

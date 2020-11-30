@@ -113,7 +113,7 @@ namespace WMOutboundSAPRequest
                         string xmlStringInit = string.Empty;
                         //using (StreamReader sr = new StreamReader(Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory())) + "/ZWIM_MBGMCR2-oneline-mapping3.xml"))
                         string dir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-                        using (StreamReader sr = new StreamReader(dir + "/ZMM_PREQCR.xml"))
+                        using (StreamReader sr = new StreamReader(dir + "/SAMPLE_137876602.xml"))
                         {
                             xmlStr = sr.ReadToEnd();
                             sbInit.AppendFormat(xmlStr, DOC_NUM, LOGDAT, LOGTIM, REFGRP, REFMES, SAPREQLN, MATERIAL, QTY_REQ, REQ_ID, DUE_DATE, NETWORK_ID, ENTRY_UOM, SNDPRN, RCVPOR, RCVPRN);
