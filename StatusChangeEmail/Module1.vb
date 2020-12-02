@@ -30,6 +30,7 @@ Module Module1
         Console.WriteLine("Start StatChg Email send")
         Console.WriteLine("")
 
+
         objStreamWriter = File.CreateText(logpath)
         objStreamWriter.WriteLine("  Send emails out " & Now())
 
@@ -62,6 +63,26 @@ Module Module1
 
     Private Function buildstatchgout() As Boolean
         ' get XML file of sites that require email
+
+
+        'Dim strSQLstrings As String = "select LN.*,LN.ISA_INTFC_LN, LD.PO_ID , US.THIRDPARTY_COMP_ID from PS_PO_LINE_DISTRIB LD, ps_isa_ord_intf_LN LN, SDIX_USERS_TBL US" & vbCrLf &
+        '            " where LD.Req_id = LN.order_no AND LD.REQ_LINE_NBR = LN.ISA_INTFC_LN And US.ISA_employee_ID= LN.OPRID_ENTERED_BY" & vbCrLf &
+        '            " And LN.BUSINESS_UNIT_OM = 'I0W01' and LD.PO_ID= 'W010454580'" & vbCrLf
+
+        'Dim dSet As New DataSet
+
+        'dSet = ORDBAccess.GetAdapter(strSQLstrings, connectOR)
+        'If Not dSet Is Nothing Then
+        '    If dSet.Tables.Count > 0 Then
+        '        If dSet.Tables(0).Rows.Count > 0 Then
+        '            Dim OrderNo As String = dSet.Tables(0).Rows(0).Item("order_no")
+        '            Dim Work_Order As String = dSet.Tables(0).Rows(0).Item("ISA_WORK_ORDER_NO")
+        '            Dim ThirdParty_ID As String = dSet.Tables(0).Rows(0).Item("THIRDPARTY_COMP_ID")
+
+        '            Dim apiResponse As String = GetWorkOrderParts("148915916")
+        '        End If
+        '    End If
+        'End If
 
         Dim strXMLDir As String = rootDir & "\EmailSites.xml"
         Dim xmldata As New XmlDocument
@@ -146,7 +167,6 @@ Module Module1
                     bolErrorSomeWhere = True
                 End If
                 'End If
-
             Next
         Else
 
@@ -1493,6 +1513,7 @@ Module Module1
             " FROM PS_ISAORDSTATUSLOG A" & vbCrLf &
              " WHERE A.BUSINESS_UNIT_OM = '" & strBU & "' "
 
+
         Dim dr As OleDbDataReader = Nothing
 
         Try
@@ -1540,9 +1561,9 @@ Module Module1
         Dim dteSTKREQEmail As String = objEnterprise.STKREQEmail
         Dim dteNONSKREQEmail As String = objEnterprise.NONSKREQEmail
 
-        'If strBU = "I0260" Then
-        '    dteStartDate = dteStartDate.AddMinutes(+1)
-        '    'dteStartDate = dteStartDate.AddHours(-15)
+        'If strBU = "I0W01" Then
+        'dteStartDate = dteStartDate.AddMinutes(+1)
+        'dteStartDate = dteStartDate.AddHours(-36)
         'End If
 
         Try
@@ -1561,6 +1582,10 @@ Module Module1
         End If
 
         dteEndDate.AddSeconds(1)
+
+        If strBU = "I0W01" Then
+            UpdateWalmartSourceCode(dteStartDate, dteEndDate, strBU)
+        End If
 
         ' stock items will get item id from the ps_isa_ord_intfc_l table  but description from the PS_MASTER_ITEM_TB
         ' non-stock items  has no item-id num and gets description from the ps_isa_ord_intfc_l
@@ -1585,14 +1610,14 @@ Module Module1
                                 " AND E.FIELDVALUE = G.ISA_LINE_STATUS) as ORDER_STATUS_DESC, " & vbCrLf &
                  " B.DESCR254 As NONSTOCK_DESCRIPTION, C.DESCR60 as STOCK_DESCRIPTION, D.ISA_EMPLOYEE_EMAIL," & vbCrLf &
                  " B.INV_ITEM_ID as INV_ITEM_ID," & vbCrLf &
-                 " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH" & vbCrLf &
-                 " ,A.origin" & vbCrLf &
+        " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH" & vbCrLf &
+                 " ,A.origin, LD.PO_ID, SH.ISA_ASN_TRACK_NO" & vbCrLf &
                  " FROM ps_isa_ord_intf_HD A," & vbCrLf  '   & _
 
         strSQLstring += " ps_isa_ord_intf_LN B," & vbCrLf &
                  " PS_MASTER_ITEM_TBL C," & vbCrLf &
                  " PS_ISA_USERS_TBL D," & vbCrLf &
-                 " PS_ISAORDSTATUSLOG G " & vbCrLf &
+                 " PS_ISAORDSTATUSLOG G, PS_ISA_ASN_SHIPPED SH, PS_PO_LINE_DISTRIB LD" & vbCrLf &
                  " where G.BUSINESS_UNIT_OM = '" & strBU & "' " & vbCrLf &
                  " AND G.BUSINESS_UNIT_OM = A.BUSINESS_UNIT_OM " & vbCrLf &
                  " AND G.BUSINESS_UNIT_OM = D.BUSINESS_UNIT " & vbCrLf     '   & _
@@ -1604,6 +1629,7 @@ Module Module1
                  " AND G.ORDER_NO = A.ORDER_NO " & vbCrLf &
                  " AND B.ISA_INTFC_LN = G.ISA_INTFC_LN" & vbCrLf &
                  " AND A.BUSINESS_UNIT_OM = D.BUSINESS_UNIT" & vbCrLf &
+                 " AND SH.PO_ID (+) = LD.PO_ID And SH.LINE_NBR (+) = LD.LINE_NBR And SH.SCHED_NBR (+) = LD.SCHED_NBR And LD.Req_id (+) = B.order_no AND LD.REQ_LINE_NBR (+) = B.ISA_INTFC_LN" & vbCrLf &
                  " AND G.DTTM_STAMP > TO_DATE('" & dteStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf &
                  " AND G.DTTM_STAMP <= TO_DATE('" & dteEndDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf &
                  " AND UPPER(B.ISA_EMPLOYEE_ID) = UPPER(D.ISA_EMPLOYEE_ID)) TBL, PS_ISA_USERS_PRIVS H " & vbCrLf &
@@ -1673,6 +1699,7 @@ Module Module1
         dsEmail.Columns.Add("Work Order Number")
         dsEmail.Columns.Add("PO #")
         dsEmail.Columns.Add("Line Notes")
+        dsEmail.Columns.Add("Tracking No")
 
         Dim strdescription As String = " "
         Dim strEmailTo As String = " "
@@ -1681,66 +1708,6 @@ Module Module1
         Dim OrderStatusToken As String = ConfigurationManager.AppSettings("OrderStatusToken")
         Dim lstOfString As List(Of String) = New List(Of String)
         For I = 0 To ds.Tables(0).Rows.Count - 1
-
-            If strBU = "I0W01" Then
-                Try
-                    Dim OrderNo As String = ds.Tables(0).Rows(I).Item("ORDER_NO")
-                    If Not lstOfString.Contains(OrderNo) Then
-                        objWalmartSC.WriteLine("Order No: " + Convert.ToString(OrderNo))
-                        lstOfString.Add(OrderNo)
-                        Dim WorkOrder As String = ds.Tables(0).Rows(I).Item("WORK_ORDER_NO")
-                        objWalmartSC.WriteLine("WorkOrder No: " + Convert.ToString(WorkOrder))
-                        Dim EnteredBy As String = ds.Tables(0).Rows(I).Item("OPRID_ENTERED_BY")
-                        If Not String.IsNullOrEmpty(WorkOrder) Then
-                            Dim strSQLQuery As String = "select THIRDPARTY_COMP_ID from SDIX_USERS_TBL where ISA_EMPLOYEE_ID='" & EnteredBy & "' "
-                            Dim dsUser As DataSet = ORDBAccess.GetAdapter(strSQLQuery, connectOR)
-                            Dim Order As String()
-                            If dsUser.Tables.Count > 0 Then
-                                Dim THIRDPARTY_COMP_ID As String = dsUser.Tables(0).Rows(I).Item("THIRDPARTY_COMP_ID")
-                                Dim OrderStatusDetail As New OrderStatusDetail
-                                Dim orderDetail As String = OrdrStatus(OrderNo)
-                                objWalmartSC.WriteLine("Current Order Status: " + Convert.ToString(orderDetail))
-                                If orderDetail.Trim() <> "" Then
-                                    Order = orderDetail.Split("^"c)
-                                    OrderStatusDetail.orderStatus = Order(0)
-                                    OrderStatusDetail.statusDesc = Order(1)
-                                    OrderStatusDetail.dueDate = Order(2)
-                                    OrderStatusDetail.message = "Success"
-                                    objWalmartSC.WriteLine("Order No: " + Convert.ToString(OrderNo) + "Status" + Convert.ToString(OrderStatusDetail.statusDesc))
-                                    If OrderStatusDetail.message = "Success" Then
-                                        If OrderStatusDetail.statusDesc = "Delivered" Or OrderStatusDetail.statusDesc = "Fully Received" Then
-                                            Dim CheckWOStatus As String = CheckWorkOrderStatus(WorkOrder, THIRDPARTY_COMP_ID)
-                                            If CheckWOStatus <> "Failed" Then
-                                                Dim WOStatus As String = If(OrderStatusDetail.statusDesc = "Delivered", "PARTS DELIVERED", "PARTS SHIPPED")
-                                                If CheckWOStatus <> WOStatus Then
-                                                    Dim PurchaseNo As String = PurchaseOrderNo(WorkOrder, THIRDPARTY_COMP_ID)
-                                                    If PurchaseNo <> "Failed" Then
-
-                                                        If Not String.IsNullOrEmpty(THIRDPARTY_COMP_ID) Then
-                                                            If THIRDPARTY_COMP_ID = ConfigurationManager.AppSettings("CBRECompanyID").ToString() Then
-                                                                UpdateWorkOrderStatus(WorkOrder, "CBRE", WOStatus)
-                                                                UpdateWorkOrderStatus(PurchaseNo, "Walmart", WOStatus)
-                                                            Else
-                                                                UpdateWorkOrderStatus(WorkOrder, "Walmart", WOStatus)
-                                                            End If
-                                                        Else
-                                                            UpdateWorkOrderStatus(WorkOrder, "Walmart", WOStatus)
-                                                        End If
-
-                                                    End If
-                                                End If
-                                            End If
-                                        End If
-                                    End If
-                                End If
-                            End If
-                        End If
-                    End If
-
-                Catch ex As Exception
-                    objWalmartSC.WriteLine("Method:checkAllStatusNew - " + ex.Message)
-                End Try
-            End If
             Dim strStatus_code As String = " "
             Try
                 strStatus_code = ds.Tables(0).Rows(I).Item("STATUS_CODE")
@@ -1789,12 +1756,34 @@ Module Module1
             If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
                 connectOR.Close()
             End If
-            Dim strpo_id As String = getpo_id(stroderno, strlineno, strBU, strSiteBU)
+            'Dim strpo_id As String = getpo_id(stroderno, strlineno, strBU, strSiteBU)
             'dr1.Item(7) = ds.Tables(0).Rows(I).Item("STATUS_CODE")
             'just get the last character
             dr1.Item(7) = strStatus_code
             dr1.Item(8) = ds.Tables(0).Rows(I).Item("WORK_ORDER_NO")
-            dr1.Item(9) = strpo_id
+            dr1.Item(9) = ds.Tables(0).Rows(I).Item("PO_ID")
+            Dim trackingNo As String = ""
+            Try
+                trackingNo = ds.Tables(0).Rows(I).Item("ISA_ASN_TRACK_NO")
+            Catch ex As Exception
+                trackingNo = ""
+            End Try
+
+
+            If Not String.IsNullOrEmpty(trackingNo) Then
+                If trackingNo.Contains("1Z") Then
+                    Dim URL As String = "http://wwwapps.ups.com/WebTracking/processInputRequest?HTMLVersion=5.0&sort_by=status&term_warn=yes&tracknums_displayed=5&TypeOfInquiryNumber=T&loc=en_US&InquiryNumber1=" & trackingNo & "&InquiryNumber2=&InquiryNumber3=&InquiryNumber4=&InquiryNumber5=&AgreeToTermsAndConditions=yes&track.x=25&track.y=9','','"
+                    Dim m_cURL1 As String = "<a href=""" & URL & """ target=""_blank"">" & trackingNo & "</a>"
+                    dr1.Item(11) = m_cURL1
+                Else
+                    Dim URL As String = "https://www.fedex.com/apps/fedextrack/?action=track&trackingnumber=" & trackingNo & "&cntry_code=us&locale=en_US"
+                    Dim m_cURL1 As String = "<a href=""" & URL & """ target=""_blank"">" & trackingNo & "</a>"
+                    dr1.Item(11) = m_cURL1
+                End If
+            Else
+                dr1.Item(11) = ""
+            End If
+
             dsEmail.Rows.Add(dr1)
 
             ' "R" nonstock
@@ -1866,6 +1855,145 @@ Module Module1
         'If strBU <> "I0256" Then
         bolerror1 = updateEnterprise(strBU, dteEndDate)
         'End If
+    End Function
+
+    Private Function UpdateWalmartSourceCode(ByVal dteStartDate As Date, ByVal dteEndDate As Date, ByVal strBU As String)
+        Try
+            Dim ds As New DataSet
+            Dim strSQLstring As String = String.Empty
+            strSQLstring = "SELECT distinct G.BUSINESS_UNIT_OM, G.BUSINESS_UNIT_OM AS G_BUS_UNIT, D.BUSINESS_UNIT, D.ISA_EMPLOYEE_ID, A.ORDER_NO,B.ISA_WORK_ORDER_NO As WORK_ORDER_NO, B.ISA_INTFC_LN AS line_nbr," & vbCrLf &
+                " B.ISA_EMPLOYEE_ID AS EMPLID, B.ISA_LINE_STATUS as ORDER_TYPE,B.OPRID_ENTERED_BY," & vbCrLf &
+                " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, " & vbCrLf   '  & _
+
+
+            strSQLstring += "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','01','QTW','02','QTC','03','QTS','04','CST','05','VND','06','APR','07','QTA','08','QTR','09','RFA','10','RFR','11','RFC','12','RCF','13','RCP','14','CNC','15','DLF','16') AS OLD_ORDER_STATUS," & vbCrLf &
+                     " (SELECT E.XLATLONGNAME" & vbCrLf &
+                                    " FROM XLATTABLE E" & vbCrLf &
+                                    " WHERE E.EFFDT =" & vbCrLf &
+                                    " (SELECT MAX(E_ED.EFFDT) FROM XLATTABLE E_ED" & vbCrLf &
+                                    " WHERE(E.FIELDNAME = E_ED.FIELDNAME)" & vbCrLf &
+                                    " AND E.FIELDVALUE = E_ED.FIELDVALUE" & vbCrLf &
+                                    " AND E_ED.EFFDT <= SYSDATE)" & vbCrLf &
+                                    " AND E.FIELDNAME = 'ISA_LINE_STATUS'" & vbCrLf &
+                                    " AND E.FIELDVALUE = G.ISA_LINE_STATUS) as ORDER_STATUS_DESC, " & vbCrLf &
+                     " B.DESCR254 As NONSTOCK_DESCRIPTION, C.DESCR60 as STOCK_DESCRIPTION, D.ISA_EMPLOYEE_EMAIL," & vbCrLf &
+                     " B.INV_ITEM_ID as INV_ITEM_ID," & vbCrLf &
+            " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH" & vbCrLf &
+                     " ,A.origin, LD.PO_ID, SH.ISA_ASN_TRACK_NO" & vbCrLf &
+                     " FROM ps_isa_ord_intf_HD A," & vbCrLf  '   & _
+
+            strSQLstring += " ps_isa_ord_intf_LN B," & vbCrLf &
+                     " PS_MASTER_ITEM_TBL C," & vbCrLf &
+                     " PS_ISA_USERS_TBL D," & vbCrLf &
+                     " PS_ISAORDSTATUSLOG G, PS_ISA_ASN_SHIPPED SH, PS_PO_LINE_DISTRIB LD" & vbCrLf &
+                     " where G.BUSINESS_UNIT_OM = '" & strBU & "' " & vbCrLf &
+                     " AND G.BUSINESS_UNIT_OM = A.BUSINESS_UNIT_OM " & vbCrLf &
+                     " AND G.BUSINESS_UNIT_OM = D.BUSINESS_UNIT " & vbCrLf     '   & _
+
+            strSQLstring += "  and A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf &
+                     " and A.ORDER_NO = B.ORDER_NO" & vbCrLf &
+                     " and C.SETID (+) = 'MAIN1'" & vbCrLf &
+                     " and C.INV_ITEM_ID(+) = B.INV_ITEM_ID " & vbCrLf &
+                     " AND G.ORDER_NO = A.ORDER_NO " & vbCrLf &
+                     " AND B.ISA_INTFC_LN = G.ISA_INTFC_LN" & vbCrLf &
+                     " AND A.BUSINESS_UNIT_OM = D.BUSINESS_UNIT" & vbCrLf &
+                     " AND SH.PO_ID (+) = LD.PO_ID And SH.LINE_NBR (+) = LD.LINE_NBR And SH.SCHED_NBR (+) = LD.SCHED_NBR And LD.Req_id (+) = B.order_no AND LD.REQ_LINE_NBR (+) = B.ISA_INTFC_LN" & vbCrLf &
+                     " AND G.DTTM_STAMP > TO_DATE('" & dteStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf &
+                     " AND G.DTTM_STAMP <= TO_DATE('" & dteEndDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf &
+                     " AND UPPER(B.ISA_EMPLOYEE_ID) = UPPER(D.ISA_EMPLOYEE_ID)" & vbCrLf &
+                      " ORDER BY ORDER_NO, LINE_NBR, DTTM_STAMP"
+
+            Try
+                objWalmartSC.WriteLine("  UpdateWalmartSourceCode Q1: " & strSQLstring)
+
+                ds = ORDBAccess.GetAdapter(strSQLstring, connectOR)
+                Dim I As Integer
+                Dim lstOfString As List(Of String) = New List(Of String)
+                For I = 0 To ds.Tables(0).Rows.Count - 1
+
+                    Try
+                        Dim OrderNo As String = ds.Tables(0).Rows(I).Item("ORDER_NO")
+                        If Not lstOfString.Contains(OrderNo) Then
+                            objWalmartSC.WriteLine("Order No: " + Convert.ToString(OrderNo))
+                            lstOfString.Add(OrderNo)
+                            Dim WorkOrder As String = ds.Tables(0).Rows(I).Item("WORK_ORDER_NO")
+                            objWalmartSC.WriteLine("WorkOrder No: " + Convert.ToString(WorkOrder))
+                            Dim EnteredBy As String = ds.Tables(0).Rows(I).Item("OPRID_ENTERED_BY")
+                            If Not String.IsNullOrEmpty(WorkOrder) Then
+                                Dim strSQLQuery As String = "select THIRDPARTY_COMP_ID from SDIX_USERS_TBL where ISA_EMPLOYEE_ID='" & EnteredBy & "' "
+                                Dim dsUser As DataSet = ORDBAccess.GetAdapter(strSQLQuery, connectOR)
+                                Dim Order As String()
+                                If dsUser.Tables.Count > 0 Then
+                                    Dim THIRDPARTY_COMP_ID As String = dsUser.Tables(0).Rows(I).Item("THIRDPARTY_COMP_ID")
+                                    Dim OrderStatusDetail As New OrderStatusDetail
+                                    Dim orderDetail As String = OrdrStatus(OrderNo)
+                                    objWalmartSC.WriteLine("Current Order Status: " + Convert.ToString(orderDetail))
+                                    If orderDetail.Trim() <> "" Then
+                                        Order = orderDetail.Split("^"c)
+                                        OrderStatusDetail.orderStatus = Order(0)
+                                        OrderStatusDetail.statusDesc = Order(1)
+                                        OrderStatusDetail.dueDate = Order(2)
+                                        OrderStatusDetail.message = "Success"
+                                        objWalmartSC.WriteLine("Order No: " + Convert.ToString(OrderNo) + "Status" + Convert.ToString(OrderStatusDetail.statusDesc))
+                                        If OrderStatusDetail.message = "Success" Then
+                                            If OrderStatusDetail.statusDesc = "Delivered" Or OrderStatusDetail.statusDesc = "En Route from Vendor" Then
+                                                Dim CheckWOStatus As String = CheckWorkOrderStatus(WorkOrder, THIRDPARTY_COMP_ID)
+                                                If CheckWOStatus <> "Failed" Then
+                                                    Dim WOStatus As String = If(OrderStatusDetail.statusDesc = "Delivered", "PARTS DELIVERED", "PARTS SHIPPED")
+                                                    If CheckWOStatus <> WOStatus Then
+                                                        Dim PurchaseNo As String = PurchaseOrderNo(WorkOrder, THIRDPARTY_COMP_ID)
+                                                        If PurchaseNo <> "Failed" Then
+                                                            If Not String.IsNullOrEmpty(THIRDPARTY_COMP_ID) Then
+                                                                If THIRDPARTY_COMP_ID = ConfigurationManager.AppSettings("CBRECompanyID").ToString() Then
+                                                                    UpdateWorkOrderStatus(WorkOrder, "CBRE", WOStatus)
+                                                                    UpdateWorkOrderStatus(PurchaseNo, "Walmart", WOStatus)
+                                                                Else
+                                                                    UpdateWorkOrderStatus(WorkOrder, "Walmart", WOStatus)
+                                                                End If
+                                                            Else
+                                                                UpdateWorkOrderStatus(WorkOrder, "Walmart", WOStatus)
+                                                            End If
+
+                                                        End If
+                                                    End If
+                                                End If
+                                            End If
+                                        End If
+                                    End If
+                                End If
+                            End If
+                        End If
+                    Catch ex As Exception
+                        objWalmartSC.WriteLine("Method:checkAllStatusNew - " + ex.Message)
+                    End Try
+                Next
+
+            Catch OleDBExp As OleDbException
+                Console.WriteLine("")
+                Console.WriteLine("***OLEDB error - " & OleDBExp.ToString)
+                Console.WriteLine("")
+                connectOR.Close()
+                objWalmartSC.WriteLine("     Error - error reading transaction FROM PS_ISAORDSTATUSLOG A")
+                Return True
+            End Try
+
+            If IsDBNull(ds.Tables(0).Rows.Count) Or (ds.Tables(0).Rows.Count) = 0 Then
+                Console.WriteLine("Fetched Datas 0")
+                objWalmartSC.WriteLine("Fetched Datas 0")
+                objWalmartSC.WriteLine("     Warning - no status changes to process at this time for All Statuses")
+                Try
+                    connectOR.Close()
+                Catch ex As Exception
+
+                End Try
+                Return False
+            Else
+                Console.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()))
+                objWalmartSC.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()))
+            End If
+        Catch ex As Exception
+
+        End Try
     End Function
 
     Function GetOrderNotes(ByVal OrderNo As String, ByVal BU As String) As String
@@ -2182,8 +2310,6 @@ Module Module1
                     " SET ISA_LAST_STAT_SEND = TO_DATE('" & dteEndDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf &
                     " WHERE ISA_BUSINESS_UNIT = '" & strBU & "' "
 
-
-
         Try
             Dim Command = New OleDbCommand(strSQLstring, connectOR)
             connectOR.Open()
@@ -2484,7 +2610,150 @@ Module Module1
         End Try
 
     End Function
+
+    Public Function GetWorkOrderParts(ByVal workOrder As String) As String
+        Try
+            If Not String.IsNullOrEmpty(workOrder) And Not String.IsNullOrWhiteSpace(workOrder) Then
+                Dim APIresponse = AuthenticateService("Walmart")
+                If (APIresponse <> "Server Error" And APIresponse <> "Internet Error" And APIresponse <> "Error") Then
+                    If (Not APIresponse.Contains("error_description")) Then
+                        Dim objValidateUserResponseBO As ValidateUserResponseBO = JsonConvert.DeserializeObject(Of ValidateUserResponseBO)(APIresponse)
+                        Dim apiURL = ConfigurationManager.AppSettings("ServiceChannelBaseAddress") + "/workorders/" + workOrder + "/parts"
+                        Dim httpClient As HttpClient = New HttpClient()
+                        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
+                        httpClient.DefaultRequestHeaders.Authorization = New AuthenticationHeaderValue("Bearer", objValidateUserResponseBO.access_token)
+                        Dim response = httpClient.GetAsync(apiURL).Result
+                        If response.IsSuccessStatusCode Then
+                            Dim workorderAPIResponse As String = response.Content.ReadAsStringAsync().Result
+                            If workorderAPIResponse <> "[]" And Not String.IsNullOrEmpty(workorderAPIResponse) And Not String.IsNullOrWhiteSpace(workorderAPIResponse) Then
+                                'Return workorderAPIResponse
+                                Dim objWorkOrder As List(Of WorkOrderParts) = JsonConvert.DeserializeObject(Of List(Of WorkOrderParts))(workorderAPIResponse)
+                                Dim deletearrayOfID As New List(Of Int32)
+                                Dim objWorkOrderParts As WorkOrderParts = objWorkOrder.FirstOrDefault()
+                                If Not objWorkOrderParts Is Nothing Then
+                                    deletearrayOfID.Add(objWorkOrderParts.id)
+                                    DeleteWorkOrder(workOrder, deletearrayOfID.ToArray())
+                                End If
+                            Else
+                                'Dim eobj As ExceptionHelper = New ExceptionHelper()
+                                'eobj.writeExceptionMessage(workorderAPIResponse, "GetWorkOrderParts")
+                                Return String.Empty
+                            End If
+                        Else
+                            Dim workorderAPIResponse As String = response.Content.ReadAsStringAsync().Result
+                            'Dim eobj As ExceptionHelper = New ExceptionHelper()
+                            'eobj.writeExceptionMessage(workorderAPIResponse, "GetWorkOrderParts")
+                            Return String.Empty
+                        End If
+                    End If
+                End If
+            End If
+        Catch ex As Exception
+            Throw ex
+        End Try
+        Return String.Empty
+    End Function
+
+    Public Function DeleteWorkOrder(ByVal workOrder As String, ByVal objPartParam As Integer()) As String
+        Try
+            If Not String.IsNullOrEmpty(workOrder) And Not String.IsNullOrWhiteSpace(workOrder) And objPartParam.Count() > 0 Then
+                Dim APIresponse = AuthenticateService("Walmart")
+                If (APIresponse <> "Server Error" And APIresponse <> "Internet Error" And APIresponse <> "Error") Then
+                    If (Not APIresponse.Contains("error_description")) Then
+                        Dim querySting As String = String.Empty
+                        For Each items As Integer In objPartParam
+                            querySting = String.Concat(querySting, "ids=" + items.ToString() + "&")
+                        Next
+                        querySting = querySting.Substring(0, querySting.LastIndexOf("&"))
+                        Dim objValidateUserResponseBO As ValidateUserResponseBO = JsonConvert.DeserializeObject(Of ValidateUserResponseBO)(APIresponse)
+                        Dim apiURL = ConfigurationManager.AppSettings("ServiceChannelBaseAddress") + "/workorders/" + workOrder + "/parts?" + querySting + ""
+                        Dim httpClient As HttpClient = New HttpClient()
+                        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
+                        httpClient.DefaultRequestHeaders.Authorization = New AuthenticationHeaderValue("Bearer", objValidateUserResponseBO.access_token)
+                        Dim response = httpClient.DeleteAsync(apiURL).Result
+                        If response.IsSuccessStatusCode Then
+                            Dim workorderAPIResponse As String = response.Content.ReadAsStringAsync().Result
+                        Else
+                            Dim workorderAPIResponse As String = response.Content.ReadAsStringAsync().Result
+                            'Dim eobj As ExceptionHelper = New ExceptionHelper()
+                            'eobj.writeExceptionMessage(workorderAPIResponse, "DeleteWorkOrder")
+                        End If
+                    End If
+                End If
+            End If
+        Catch ex As Exception
+            'Dim eobj As ExceptionHelper = New ExceptionHelper()
+            'eobj.writeException(ex)
+        End Try
+    End Function
+
+    Public Sub InsertWorkOrder(workOrder As String)
+        Try
+
+
+            If Not String.IsNullOrEmpty(workOrder) And Not String.IsNullOrWhiteSpace(workOrder) Then
+                Dim APIresponse = AuthenticateService("Walmart")
+                If (APIresponse <> "Server Error" And APIresponse <> "Internet Error" And APIresponse <> "Error") Then
+                    If (Not APIresponse.Contains("error_description")) Then
+                        Dim objValidateUserResponseBO As ValidateUserResponseBO = JsonConvert.DeserializeObject(Of ValidateUserResponseBO)(APIresponse)
+                        Dim apiURL = ConfigurationManager.AppSettings("ServiceChannelBaseAddress") + "/workorders/inventory/parts/bulkPartUsage"
+                        Dim httpClient As HttpClient = New HttpClient()
+                        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
+                        httpClient.DefaultRequestHeaders.Authorization = New AuthenticationHeaderValue("Bearer", objValidateUserResponseBO.access_token)
+                        Dim objInserWorOrdeParts As New InsertWorkOrderPartsBO
+                        objInserWorOrdeParts.AddItems = New List(Of AddItem)
+
+
+
+                        objInserWorOrdeParts.AddItems.Add(New AddItem() With {
+                                .RecId = workOrder,
+                             .Description = "SCTest",
+                             .Quantity = "1",
+                             .UnitCost = "1",
+                             .PartNumber = "WM00455570:1"
+                            })
+
+                        Dim serializedparameter = JsonConvert.SerializeObject(objInserWorOrdeParts)
+                        Dim response = httpClient.PostAsync(apiURL, New StringContent(serializedparameter, Encoding.UTF8, "application/json")).Result()
+                        If response.IsSuccessStatusCode Then
+                            Dim workorderAPIResponse As String = response.Content.ReadAsStringAsync().Result()
+                            'UpdateWorkOrderStatus(workOrder, Walmart)
+                        Else
+                            Dim workorderAPIResponse As String = response.Content.ReadAsStringAsync().Result()
+
+                        End If
+                    End If
+                End If
+            End If
+        Catch ex As Exception
+            Throw ex
+        End Try
+    End Sub
 End Module
+
+Public Class AddItem
+    Public Property RecId As String = String.Empty
+    Public Property Quantity As Double
+    Public Property UnitCost As Double
+    Public Property UseDate As String = DateTime.Now.ToString()
+    Public Property PartNumber As String = String.Empty
+    Public Property Description As String = String.Empty
+End Class
+
+Public Class InsertWorkOrderPartsBO
+    Public Property AddItems As List(Of AddItem)
+    Public Property UpdateItems As List(Of Object) = New List(Of Object)
+    Public Property DeleteItems As List(Of Object) = New List(Of Object)
+    Public Property IsLocalTime As Boolean = True
+End Class
+
+Public Class WorkOrderParts
+    Public Property id As Integer
+    Public Property Quantity As Double
+    Public Property Description As String = String.Empty
+    Public Property Price As Double
+    Public Property SupplierPartId As String = String.Empty
+End Class
 
 Public Class WebRequestFcmData
     Public Property registration_ids As String()
