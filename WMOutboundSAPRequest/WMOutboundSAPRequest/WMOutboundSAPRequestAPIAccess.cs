@@ -126,7 +126,7 @@ namespace WMOutboundSAPRequest
                                 Organization = "SolvaySDI",
                                 SharedSecret = "SolvaySDI",
                                 TimeStamp = System.DateTime.Now.ToString(),
-                                IDOC_TYPE = "MBGMCR03",
+                                IDOC_TYPE = "ZMM_PREQCR",
                                 xmlString = xmlStringInit
                                 //XXPMC_SDI_RECORD_ID = ((Decimal)(row["ISA_IDENTIFIER"])).ToString(),
                                 //PROCESSING_STATUS_CODE = ReplacePipe((String)(row["STATUS_DESCR"])),
