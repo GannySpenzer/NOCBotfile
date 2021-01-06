@@ -28,16 +28,24 @@ namespace WMReceiptsMapping
             WMReceiptsMappingAPIAccess objWMReceiptsMappingAPIAccess = new WMReceiptsMappingAPIAccess();
             WMReceiptsMappingDAL objWMReceiptsMappingDAL = new WMReceiptsMappingDAL();
             strResponse = objWMReceiptsMappingAPIAccess.postWMReceiptMappingData(m_oLogger);
-            if (strResponse.ToUpper() == "SUCCESS")
+            if (strResponse.ToUpper() != " ")
             {
-                processFlag = "I";
+
+
+                if (strResponse.ToUpper() == "SUCCESS")
+                {
+                    processFlag = "I";
+                }
+                else
+                {
+                    processFlag = "E"; //error
+                }
+                objWMReceiptsMappingDAL.UpdateWMReceiptMappingData(m_oLogger, processFlag);
             }
             else
             {
-                processFlag = "E"; //error
+                m_oLogger.LogMessage("Main","The transaction is not belong to 101");
             }
-            objWMReceiptsMappingDAL.UpdateWMReceiptMappingData(m_oLogger, processFlag);
-
             m_oLogger.LogMessage("Main", "WMReceiptsMapping End");
         }
     }
