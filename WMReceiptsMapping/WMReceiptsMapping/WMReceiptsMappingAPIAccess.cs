@@ -97,12 +97,20 @@ namespace WMReceiptsMapping
                         string xmlStringInit = string.Empty;
                         //using (StreamReader sr = new StreamReader(Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory())) + "/ZWIM_MBGMCR2-oneline-mapping3.xml"))
                         string dir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-                        using (StreamReader sr = new StreamReader(dir + "/ZWIM_MBGMCR2-oneline-mapping3.xml"))
+
+                        if (MOVE_TYPE == "101")
                         {
-                            xmlStr = sr.ReadToEnd();
-                            sbInit.AppendFormat(xmlStr, DOC_NUM, LOGDAT, LOGTIM, REFGRP, REFMES, PSTNG_DATE, MATERIAL, STGE_LOC, MOVE_TYPE, ENTRY_QNT, ENTRY_UOM, PO_NUMBER, PO_ITEM, ITEM_TEXT, SNDPRN, RCVPOR, RCVPRN );
-                            xmlStringInit = sbInit.ToString();
-                        }
+                            using (StreamReader sr = new StreamReader(dir + "/ZWIM_MBGMCR2-oneline-mapping3.xml"))
+                            {
+                                xmlStr = sr.ReadToEnd();
+                                sbInit.AppendFormat(xmlStr, DOC_NUM, LOGDAT, LOGTIM, REFGRP, REFMES, PSTNG_DATE, MATERIAL, STGE_LOC, MOVE_TYPE, ENTRY_QNT, ENTRY_UOM, PO_NUMBER, PO_ITEM, ITEM_TEXT, SNDPRN, RCVPOR, RCVPRN);
+                                xmlStringInit = sbInit.ToString();
+                            }
+                        //}
+                        //else
+                        //{
+
+                        //}
 
                         List<WMReceiptsMappingBO> target = dtResponse.AsEnumerable()
                             .Select(row => new WMReceiptsMappingBO
@@ -227,7 +235,12 @@ namespace WMReceiptsMapping
                             // strResponse = JsonConvert.SerializeObject(result);
                         }
                     }
+                    else
+                    {
+
+                    }
                 }
+            }
 
             }
 
