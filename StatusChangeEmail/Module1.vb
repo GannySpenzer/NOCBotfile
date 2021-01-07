@@ -63,27 +63,6 @@ Module Module1
 
     Private Function buildstatchgout() As Boolean
         ' get XML file of sites that require email
-
-
-        'Dim strSQLstrings As String = "select LN.*,LN.ISA_INTFC_LN, LD.PO_ID , US.THIRDPARTY_COMP_ID from PS_PO_LINE_DISTRIB LD, ps_isa_ord_intf_LN LN, SDIX_USERS_TBL US" & vbCrLf &
-        '            " where LD.Req_id = LN.order_no AND LD.REQ_LINE_NBR = LN.ISA_INTFC_LN And US.ISA_employee_ID= LN.OPRID_ENTERED_BY" & vbCrLf &
-        '            " And LN.BUSINESS_UNIT_OM = 'I0W01' and LD.PO_ID= 'W010454580'" & vbCrLf
-
-        'Dim dSet As New DataSet
-
-        'dSet = ORDBAccess.GetAdapter(strSQLstrings, connectOR)
-        'If Not dSet Is Nothing Then
-        '    If dSet.Tables.Count > 0 Then
-        '        If dSet.Tables(0).Rows.Count > 0 Then
-        '            Dim OrderNo As String = dSet.Tables(0).Rows(0).Item("order_no")
-        '            Dim Work_Order As String = dSet.Tables(0).Rows(0).Item("ISA_WORK_ORDER_NO")
-        '            Dim ThirdParty_ID As String = dSet.Tables(0).Rows(0).Item("THIRDPARTY_COMP_ID")
-
-        '            Dim apiResponse As String = GetWorkOrderParts("148915916")
-        '        End If
-        '    End If
-        'End If
-
         Dim strXMLDir As String = rootDir & "\EmailSites.xml"
         Dim xmldata As New XmlDocument
         Dim sr As System.IO.StreamReader
@@ -161,18 +140,14 @@ Module Module1
                 objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
                 objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
                 objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
-                'If dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") = "I0W01" Then
                 buildstatchgout = checkAllStatusNew(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
                 If buildstatchgout = True Then
                     bolErrorSomeWhere = True
                 End If
-                'End If
             Next
         Else
 
         End If
-
-
         '7 is stock
         'R is non-stock
         objGenerallLogStreamWriter.WriteLine("-------------------------------------------------------------------------------")
@@ -1513,7 +1488,6 @@ Module Module1
             " FROM PS_ISAORDSTATUSLOG A" & vbCrLf &
              " WHERE A.BUSINESS_UNIT_OM = '" & strBU & "' "
 
-
         Dim dr As OleDbDataReader = Nothing
 
         Try
@@ -1584,7 +1558,11 @@ Module Module1
         dteEndDate.AddSeconds(1)
 
         If strBU = "I0W01" Then
-            UpdateWalmartSourceCode(dteStartDate, dteEndDate, strBU)
+            Try
+                UpdateWalmartSourceCode(dteStartDate, dteEndDate, strBU)
+            Catch
+
+            End Try
         End If
 
         ' stock items will get item id from the ps_isa_ord_intfc_l table  but description from the PS_MASTER_ITEM_TB
@@ -1594,7 +1572,7 @@ Module Module1
         '         '  
 
         strSQLstring = "SELECT H.ISA_IOL_OP_NAME as STATUS_CODE, TBL.* FROM (SELECT distinct G.BUSINESS_UNIT_OM, G.BUSINESS_UNIT_OM AS G_BUS_UNIT, D.BUSINESS_UNIT, D.ISA_EMPLOYEE_ID, A.ORDER_NO,B.ISA_WORK_ORDER_NO As WORK_ORDER_NO, B.ISA_INTFC_LN AS line_nbr," & vbCrLf &
-                 " B.ISA_EMPLOYEE_ID AS EMPLID, B.ISA_LINE_STATUS as ORDER_TYPE,B.OPRID_ENTERED_BY," & vbCrLf &
+                 " B.ISA_EMPLOYEE_ID AS EMPLID, B.ISA_LINE_STATUS as ORDER_TYPE,B.OPRID_ENTERED_BY, B.SHIPTO_ID as SHIPTO," & vbCrLf &
                  " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, " & vbCrLf   '  & _
 
 
@@ -1686,7 +1664,7 @@ Module Module1
         Dim X As Integer
         Dim dsEmail As New DataTable
         Dim dr1 As DataRow
-
+        Dim dsShipTo As DataSet
 
         dsEmail.Columns.Add("Order No.")
         dsEmail.Columns.Add("Status")
@@ -1700,7 +1678,14 @@ Module Module1
         dsEmail.Columns.Add("PO #")
         dsEmail.Columns.Add("Line Notes")
         dsEmail.Columns.Add("Tracking No")
-
+        If strBU = "I0W01" Then
+            dsEmail.Columns.Add("Ship To")
+            Try
+                strSQLstring = "SELECT DESCR,SHIPTO_ID FROM PS_SHIPTO_TBL"
+                dsShipTo = ORDBAccess.GetAdapter(strSQLstring, connectOR)
+            Catch
+            End Try
+        End If
         Dim strdescription As String = " "
         Dim strEmailTo As String = " "
         Dim strEmpID As String = ""
@@ -1783,12 +1768,22 @@ Module Module1
             Else
                 dr1.Item(11) = ""
             End If
+            If strBU = "I0W01" Then
+                If ds.Tables(0).Rows(I).Item("SHIPTO").ToString <> "" Then
+                    Try
+                        Dim Descr As String = dsShipTo.Tables(0).AsEnumerable().
+ Where(Function(r) Convert.ToString(r.Field(Of String)("SHIPTO_ID")) = ds.Tables(0).Rows(I).Item("SHIPTO").ToString).
+ Select(Function(r) Convert.ToString(r.Field(Of String)("DESCR"))).FirstOrDefault()
+                        dr1.Item(12) = Descr + "_" + ds.Tables(0).Rows(I).Item("SHIPTO").ToString
+                    Catch
+                        dr1.Item(12) = ""
+                    End Try
 
+                End If
+            End If
             dsEmail.Rows.Add(dr1)
-
             ' "R" nonstock
             ' "7" stock
-
             If ds.Tables(0).Rows(I).Item("Origin") = "MIS" And strBU = "I0206" Then
                 strdescription = "PICKED"
             Else
