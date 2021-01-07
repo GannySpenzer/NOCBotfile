@@ -68,21 +68,32 @@ namespace PO_OpenUtility
                             DataSet dsTech = getTechDetails(POID, PO_BU);
                             string techPhno = string.Empty;
                             string techEmail = string.Empty;
+                            string Notes = string.Empty;
                             if (dsTech.Tables[0].Rows.Count != 0)
                             {
                                 techPhno = Convert.ToString(dsTech.Tables[0].Rows[0]["PHONE_NUM"]);
                                 techEmail = Convert.ToString(dsTech.Tables[0].Rows[0]["ISA_EMPLOYEE_EMAIL"]);
                             }
 
-                                string Vendr_UN = Convert.ToString(ds_UserDetail.Tables[0].Rows[0]["ISA_USER_NAME"]);
+                            string Vendr_UN = Convert.ToString(ds_UserDetail.Tables[0].Rows[0]["ISA_USER_NAME"]);
                             string Vendr_Email = Convert.ToString(ds_UserDetail.Tables[0].Rows[0]["ISA_EMPLOYEE_EMAIL"]);
                             string Vendr_OprID = Convert.ToString(ds_UserDetail.Tables[0].Rows[0]["ISA_USER_ID"]);
                             Vendr_OprID = Encrypt(Vendr_OprID, "bautista");
-
+                            try
+                            {
+                                string CTblQuery = "select A.BUSINESS_UNIT, A.PO_ID, A.LINE_NBR, B.COMMENTS_2000 from sysadm8.ps_po_comments A, ps_comments_tbl B where A.business_unit = 'WAL00' AND A.OPRID = B.OPRID AND A.COMMENT_ID = B.COMMENT_ID AND A.RANDOM_CMMT_NBR = B.RANDOM_CMMT_NBR AND A.LINE_NBR <> 0 AND B.SHARED_FLG = 'Y' AND A.PO_ID= '" + POID + "'";
+                                DataSet Comments = GetAdapter(CTblQuery);
+                                if (Comments.Tables[0].Rows.Count != 0)
+                                {
+                                    Notes = Convert.ToString(Comments.Tables[0].Rows[0]["COMMENTS_2000"]);
+                                }
+                            }
+                            catch (Exception)
+                            {
+                            }
                             string EmailBasueURL = baseWebURL + "Supplier/PODetails.aspx?POID=" + strEncrypt_POID + "&vendorid=" + strEncrypt_VendorID + "&PO_BU=" + strEncrypt_PO_BU + "&OPR_ID=" + Vendr_OprID + "";
 
-                            Boolean EmailSent = SendEmail(VendorID, Vendr_UN, Vendr_Email, POID, PO_BU, EmailBasueURL, strBuyerEmail, Email, techPhno, techEmail);
-
+                            Boolean EmailSent = SendEmail(VendorID, Vendr_UN, Vendr_Email, POID, PO_BU, EmailBasueURL, strBuyerEmail, Email, techPhno, techEmail, Notes);
 
                             if (EmailSent)
                             {
@@ -298,7 +309,7 @@ and a.business_unit = '" + strPOBU + "' and a.po_id='" + strPO + "'";
             return strReturn;
         }
 
-        public static Boolean SendEmail(string VendorID, string VendorUN, string VendorEmail, string POID, string PO_BU, string strURL, string strBuyerEmail, string Email, string techPhno, string techEmail)
+        public static Boolean SendEmail(string VendorID, string VendorUN, string VendorEmail, string POID, string PO_BU, string strURL, string strBuyerEmail, string Email, string techPhno, string techEmail, string Notes)
         {
             string strbodyhead;
             string strbodydetl = "";
@@ -328,6 +339,10 @@ and a.business_unit = '" + strPOBU + "' and a.po_id='" + strPO + "'";
                 //strbodydetl = strbodydetl + "<p>Purchase Order " + POID + " has been created for " + VendorUN + ". Please select the <a href=" + strURL + ">Link</a> to review and confirm this purchase order, <span style='color: red;'>price and anticipated delivery date</span>.</p>";
                 strbodydetl = strbodydetl + "<p>Purchase Order " + POID + " has been created for " + VendorUN + ". Please select the <a href=" + strURL + ">Link</a> to review and confirm<span style='color: red;'> pricing </span>and<span style='color: red;'> anticipated delivery date</span> for this purchase order.</p>";
                 // strbodydetl = strbodydetl + "<br>";
+                if (Notes != string.Empty)
+                {
+                    strbodydetl = strbodydetl + "<p>Note: " + Notes + "  </p>";
+                }
 
                 if (strBuyerEmail != "")
                 {
@@ -335,7 +350,16 @@ and a.business_unit = '" + strPOBU + "' and a.po_id='" + strPO + "'";
                 }
                 if (techPhno != "" && techEmail != "")
                 {
-                    string PhNo = String.Format("{0:(###)-###-####}", double.Parse(techPhno));
+                    string PhNo = string.Empty;
+                    try
+                    {
+                        PhNo = String.Format("{0:(###)-###-####}", double.Parse(techPhno));
+                    }
+                    catch (Exception)
+                    {
+                        PhNo = techPhno;
+                    }
+                   
                     strbodydetl = strbodydetl + "<p style='font-weight: bold;'>Tech e-mail: " + techEmail + " </p>";
                     strbodydetl = strbodydetl + "<p style='font-weight: bold;'>Tech Phone No: " + PhNo + "  </p>";
                 }
