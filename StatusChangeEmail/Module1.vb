@@ -13,6 +13,7 @@ Imports Newtonsoft.Json
 Imports System.Net.Http
 Imports System.Net.Http.Headers
 Imports System.Threading.Tasks
+Imports System.Web.Script.Serialization
 
 Module Module1
 
@@ -2218,7 +2219,7 @@ Module Module1
         End If
 
         If Not strEmpID.Trim = "" Then
-            sendNotification(strEmpID, strPushNoti)
+            sendNotification(strEmpID, strPushNoti, strOrderNo)
         End If
 
 
@@ -2382,7 +2383,7 @@ Module Module1
         '
     End Function
 
-    Public Sub sendNotification(ByVal Session_UserID As String, ByVal subject As String)
+    Public Sub sendNotification(ByVal Session_UserID As String, ByVal subject As String, ByVal orderNo As String)
         Dim response As String
         Try
             Dim NotificationContent As String = subject
@@ -2402,24 +2403,22 @@ Module Module1
                         .registration_ids = getTokenID
                         .notification.body = subject
                         .notification.sound = "Enabled"
+                        .data.orderid = orderNo
                     End With
-
-                    Dim json = JsonConvert.SerializeObject(webObject)
+                    Dim serializer = New JavaScriptSerializer()
+                    Dim json = serializer.Serialize(webObject)
                     Dim byteArray As Byte() = Encoding.UTF8.GetBytes(json)
                     tRequest.Headers.Add(String.Format("Authorization: key={0}", serverKey))
                     tRequest.Headers.Add(String.Format("Sender: id={0}", senderId))
-                    tRequest.ContentLength = byteArray.Length
 
+                    tRequest.ContentLength = byteArray.Length
 
                     Using dataStream As Stream = tRequest.GetRequestStream()
                         dataStream.Write(byteArray, 0, byteArray.Length)
 
-
                         Using tResponse As WebResponse = tRequest.GetResponse()
 
-
                             Using dataStreamResponse As Stream = tResponse.GetResponseStream()
-
 
                                 Using tReader As StreamReader = New StreamReader(dataStreamResponse)
                                     Dim sResponseFromServer As String = tReader.ReadToEnd()
@@ -2431,7 +2430,6 @@ Module Module1
                 End If
             End If
         Catch ex As Exception
-            response = ex.Message
         End Try
     End Sub
 
@@ -2753,6 +2751,11 @@ End Class
 Public Class WebRequestFcmData
     Public Property registration_ids As String()
     Public Property notification As New NotificationData
+    Public Property data As New dataBO
+End Class
+
+Public Class dataBO
+    Public Property orderid As String
 End Class
 
 Public Class NotificationData
