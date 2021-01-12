@@ -1920,7 +1920,12 @@ Module Module1
                                 Dim dsUser As DataSet = ORDBAccess.GetAdapter(strSQLQuery, connectOR)
                                 Dim Order As String()
                                 If dsUser.Tables.Count > 0 Then
-                                    Dim THIRDPARTY_COMP_ID As String = dsUser.Tables(0).Rows(I).Item("THIRDPARTY_COMP_ID")
+                                    Dim THIRDPARTY_COMP_ID As String = String.Empty
+                                    Try
+                                        THIRDPARTY_COMP_ID = dsUser.Tables(0).Rows(I).Item("THIRDPARTY_COMP_ID")
+                                    Catch ex As Exception
+                                        THIRDPARTY_COMP_ID = "0"
+                                    End Try
                                     Dim OrderStatusDetail As New OrderStatusDetail
                                     Dim orderDetail As String = OrdrStatus(OrderNo)
                                     objWalmartSC.WriteLine("Current Order Status: " + Convert.ToString(orderDetail))
@@ -2210,12 +2215,12 @@ Module Module1
             Mailer1.To = "webdev@sdi.com"
             Mailer1.Subject = "<<TEST SITE>>SDiExchange - Order Status records for Order Number: " & strOrderNo
 
-            strPushNoti = "<<TEST SITE>>Order Number: " + strOrderNo + " - Status Modified. Please check the details in order status menu."
+            strPushNoti = "<<TEST SITE>>Order Number: " + strOrderNo + " - Status Modified To  " + strOrderStatus + " . Please check the details in order status menu."
         Else
             Mailer1.To = strPurchaserEmail
             Mailer1.Subject = "SDiExchange - Order Status records for Order Number: " & strOrderNo
 
-            strPushNoti = "Order Number: " + strOrderNo + " - Status Modified. Please check the details in order status menu."
+            strPushNoti = "Order Number: " + strOrderNo + " - Status Modified To " + strOrderStatus + ". Please check the details in order status menu."
         End If
 
         If Not strEmpID.Trim = "" Then
