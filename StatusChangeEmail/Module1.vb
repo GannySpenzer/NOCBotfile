@@ -31,7 +31,6 @@ Module Module1
         Console.WriteLine("Start StatChg Email send")
         Console.WriteLine("")
 
-
         objStreamWriter = File.CreateText(logpath)
         objStreamWriter.WriteLine("  Send emails out " & Now())
 
@@ -2225,13 +2224,58 @@ Module Module1
 
         If Not strEmpID.Trim = "" Then
             sendNotification(strEmpID, strPushNoti, strOrderNo)
+            Dim Title As String = "Order Number: " + strOrderNo + " - Status Modified To " + strOrderStatus + ""
+            sendWebNotification(strEmpID, Title)
         End If
-
-
         Mailer1.BodyFormat = System.Web.Mail.MailFormat.Html
 
         SDIEmailService.EmailUtilityServices("MailandStore", Mailer1.From, Mailer1.To, Mailer1.Subject, String.Empty, "webdev@sdi.com", Mailer1.Body, "StatusChangeEmail1", MailAttachmentName, MailAttachmentbytes.ToArray())
 
+    End Sub
+
+    Public Sub sendWebNotification(ByVal Session_UserID As String, ByVal subject As String)
+        Try
+            Dim _notificationResult As New DataSet
+            Dim notificationSQLStr = "select max(NOTIFY_ID) As NOTIFY_ID from SDIX_NOTIFY_QUEUE where USER_ID='" + Session_UserID + "'"
+            _notificationResult = ORDBAccess.GetAdapter(notificationSQLStr, connectOR)
+            Dim NotifyID As Int16 = 1
+            If _notificationResult.Tables.Count > 0 Then
+                Try
+                    NotifyID = _notificationResult.Tables(0).Rows(0).Item("NOTIFY_ID")
+                    NotifyID = NotifyID + 1
+                Catch ex As Exception
+                End Try
+            End If
+            connectOR.Open()
+            Dim strSQLstring As String = "INSERT INTO SDIX_NOTIFY_QUEUE" & vbCrLf &
+        " (NOTIFY_ID, NOTIFY_TYPE, USER_ID,DTTMADDED, STATUS,LINK, HTMLMSG, ATTACHMENTS, TITLE) VALUES ('" & NotifyID & "'," & vbCrLf &
+        " 'ORD'," & vbCrLf &
+        " '" & Session_UserID & "'," & vbCrLf &
+        " sysdate," & vbCrLf &
+        " 'N'," & vbCrLf &
+         " ' ',' ',' '," & vbCrLf &
+        " '" & subject & "')" & vbCrLf
+
+            Dim command1 As OleDbCommand
+            command1 = New OleDbCommand(strSQLstring, connectOR)
+            Try
+                Dim rowsaffected As Integer
+                rowsaffected = command1.ExecuteNonQuery
+                If Not rowsaffected = 1 Then
+
+                End If
+                command1.Dispose()
+            Catch ex As Exception
+
+            End Try
+            Try
+                connectOR.Close()
+            Catch ex As Exception
+
+            End Try
+
+        Catch ex As Exception
+        End Try
     End Sub
 
     Private Function DuplicateRemoval(ByVal dt As DataTable)
