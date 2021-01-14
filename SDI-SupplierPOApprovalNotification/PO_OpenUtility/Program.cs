@@ -386,7 +386,17 @@ and a.business_unit = '" + strPOBU + "' and a.po_id='" + strPO + "'";
                 else
                 {
                     Mailer.To.Add(new MailAddress(VendorEmail));
-                    Mailer.To.Add(new MailAddress(Email));
+                    try
+                    {
+                        string[] values = Email.Split(';');
+                        for (int i = 0; i < values.Length; i++)
+                        {
+                            Mailer.To.Add(new MailAddress(values[i].Trim()));
+                        }
+                    }
+                    catch (Exception)
+                    {
+                    }                   
                     Mailer.Subject = "SDiExchange - Purchase Order " + POID + "";
                 }
 
