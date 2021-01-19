@@ -1938,7 +1938,8 @@ Module Module1
                                         If OrderStatusDetail.message = "Success" Then
                                             If OrderStatusDetail.statusDesc = "Delivered" Or OrderStatusDetail.statusDesc = "En Route from Vendor" Then
                                                 Dim CheckWOStatus As String = CheckWorkOrderStatus(WorkOrder, THIRDPARTY_COMP_ID)
-                                                If CheckWOStatus <> "Failed" Then
+                                                objWalmartSC.WriteLine("CheckWOStatus: " + Convert.ToString(CheckWOStatus))
+                                                If CheckWOStatus.ToUpper() <> "COMPLETED" And CheckWOStatus <> "Failed" Then
                                                     Dim WOStatus As String = If(OrderStatusDetail.statusDesc = "Delivered", "PARTS DELIVERED", "PARTS SHIPPED")
                                                     If CheckWOStatus <> WOStatus Then
                                                         Dim PurchaseNo As String = PurchaseOrderNo(WorkOrder, THIRDPARTY_COMP_ID)
@@ -2549,7 +2550,7 @@ Module Module1
                         If response.IsSuccessStatusCode Then
                             Dim workorderAPIResponse As String = response.Content.ReadAsStringAsync().result
                             Dim objCheckWo As CheckWo = JsonConvert.DeserializeObject(Of CheckWo)(workorderAPIResponse)
-                            Return objCheckWo.Status.Extended
+                            Return objCheckWo.Status.Primary
                             objWalmartSC.WriteLine("Method: CheckWorkOrderStatus() Result-" + Convert.ToString(objCheckWo.Status.Extended))
                         Else
                             objWalmartSC.WriteLine("Method: CheckWorkOrderStatus() Result- Failed in API response")
