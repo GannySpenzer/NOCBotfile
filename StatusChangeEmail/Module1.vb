@@ -63,6 +63,7 @@ Module Module1
 
     Private Function buildstatchgout() As Boolean
         ' get XML file of sites that require email
+
         Dim strXMLDir As String = rootDir & "\EmailSites.xml"
         Dim xmldata As New XmlDocument
         Dim sr As System.IO.StreamReader
@@ -2215,17 +2216,17 @@ Module Module1
             Mailer1.To = "webdev@sdi.com"
             Mailer1.Subject = "<<TEST SITE>>SDiExchange - Order Status records for Order Number: " & strOrderNo
 
-            strPushNoti = "<<TEST SITE>>Order Number: " + strOrderNo + " - Status Modified To  " + strOrderStatus + " . Please check the details in order status menu."
+            strPushNoti = "<<TEST SITE>>Order Number: " + strOrderNo + " - Status Modified To  " + strOrderStatDesc + " . Please check the details in order status menu."
         Else
             Mailer1.To = strPurchaserEmail
             Mailer1.Subject = "SDiExchange - Order Status records for Order Number: " & strOrderNo
 
-            strPushNoti = "Order Number: " + strOrderNo + " - Status Modified To " + strOrderStatus + ". Please check the details in order status menu."
+            strPushNoti = "Order Number: " + strOrderNo + " - Status Modified To " + strOrderStatDesc + ". Please check the details in order status menu."
         End If
 
         If Not strEmpID.Trim = "" Then
             sendNotification(strEmpID, strPushNoti, strOrderNo)
-            Dim Title As String = "Order Number: " + strOrderNo + " - Status Modified To " + strOrderStatus + ""
+            Dim Title As String = "Order Number: " + strOrderNo + " - Status Modified To " + strOrderStatDesc + ""
             sendWebNotification(strEmpID, Title)
         End If
         Mailer1.BodyFormat = System.Web.Mail.MailFormat.Html
