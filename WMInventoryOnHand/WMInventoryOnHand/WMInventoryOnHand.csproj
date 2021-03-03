@@ -74,7 +74,7 @@
     <Compile Include="WMInventoryOnHand.cs" />
     <Compile Include="WMInventoryOnHandAPIAccess.cs" />
     <Compile Include="WMInventoryOnHandBO.cs" />
-    <Compile Include="WMInventoryOnHandDAL.cs" />
+    <Compile Include="WMInventoryOnHandReDAL.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

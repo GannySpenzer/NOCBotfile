@@ -52,10 +52,10 @@ namespace WMInventoryOnHand
             try
             {
 
-                WMInventoryOnHandDAL objWMInventoryOnHandDAL = new WMInventoryOnHandDAL();
+                WMInventoryOnHandReDAL objWMInventoryOnHandReDAL = new WMInventoryOnHandReDAL();
                 m_oLogger.LogMessage("getWMInventoryOnHandData", "Getting WM Inventory On Hand Data starts here");
                 dtResponse.Columns.Add("DOC_NUM");
-                //dtResponse = objWMInventoryOnHandDAL.getWMInventoryOnHandData(m_oLogger);
+                //dtResponse = objWMInventoryOnHandReDAL.getWMInventoryOnHandData(m_oLogger);
                 //if (dtResponse.Rows.Count != 0)
                 //{
                 //DataTable table = new DataTable();
@@ -83,8 +83,8 @@ namespace WMInventoryOnHand
                     //string WERKS = REFGRP;
 
                     //string MATNR = rowInit["ISA_ITEM"].ToString();
-                    string[] WERKS = { "8192", "8056" };
-                    string[] REFGRP = { "8192", "8056" };
+                    string[] WERKS = { "8192", "8894" };
+                    string[] REFGRP = { "8192", "8894" };
 
                     //DateTime PSTNG_DATEcnv = Convert.ToDateTime(rowInit["DT_TIMESTAMP"]);
                     //string PSTNG_DATE = PSTNG_DATEcnv.ToString("yyyyMMdd");
@@ -155,163 +155,167 @@ namespace WMInventoryOnHand
                     using (StreamReader sr = new StreamReader(dir + "/ZIM_LOISMO.xml"))
                     {
                         xmlStr = sr.ReadToEnd();
-                        if (j != 1)
+                        if (j == 0)
                         {
                             sbInit.AppendFormat(xmlStr, LOGDAT, LOGTIM, WERKS[0], SNDPRN, RCVPOR, RCVPRN, REFGRP[0]);
 
                             //xmlStringInit1 = fulldata + xmlStringInit1;
                         }
+                        //else if(j == 1)
+                        //{
+                        //    sbInit.AppendFormat(xmlStr, LOGDAT, LOGTIM, WERKS[1], SNDPRN, RCVPOR, RCVPRN, REFGRP[1]);
+
+                        //}
                         else
                         {
                             sbInit.AppendFormat(xmlStr, LOGDAT, LOGTIM, WERKS[1], SNDPRN, RCVPOR, RCVPRN, REFGRP[1]);
-
                         }
 
 
                     }
                     xmlStringInit = sbInit.ToString();
 
-                //}
+                    //}
 
-                //        for (int j = 0; j < noOfTimes; j++)
-                //        {
-                //    using (StreamReader sr = new StreamReader(dir + "/ZIM_LOISMO.xml"))
-                //    {
-                //        xmlStr = sr.ReadToEnd();
-                //        if (j != 1)
-                //        {
-                //            sbInit.AppendFormat(xmlStr, LOGDAT, LOGTIM, WERKS[0], SNDPRN, RCVPOR, RCVPRN);
-                //            xmlStringInit1 = sbInit.ToString();
-                //            //xmlStringInit1 = fulldata + xmlStringInit1;
-                //        }
-                //        else
-                //        {
-                //            sbInit.AppendFormat(xmlStr, LOGDAT, LOGTIM, WERKS[1], SNDPRN, RCVPOR, RCVPRN);
-                //            xmlStringInit2 = sbInit.ToString();
-                //        }
-
-
-                //    }
-                //    if (j != 1)
-                //    {
-
-                //    }
-                //    else
-                //    {
-                //        xmlStringInit = fulldata + xmlStringInit2 + fulldata2;
-                //    }
-
-                //}
+                    //        for (int j = 0; j < noOfTimes; j++)
+                    //        {
+                    //    using (StreamReader sr = new StreamReader(dir + "/ZIM_LOISMO.xml"))
+                    //    {
+                    //        xmlStr = sr.ReadToEnd();
+                    //        if (j != 1)
+                    //        {
+                    //            sbInit.AppendFormat(xmlStr, LOGDAT, LOGTIM, WERKS[0], SNDPRN, RCVPOR, RCVPRN);
+                    //            xmlStringInit1 = sbInit.ToString();
+                    //            //xmlStringInit1 = fulldata + xmlStringInit1;
+                    //        }
+                    //        else
+                    //        {
+                    //            sbInit.AppendFormat(xmlStr, LOGDAT, LOGTIM, WERKS[1], SNDPRN, RCVPOR, RCVPRN);
+                    //            xmlStringInit2 = sbInit.ToString();
+                    //        }
 
 
-                //if (j != 1)
-                //{
-                //    using (StreamReader sr = new StreamReader(dir + "/ZIM_LOISMO.xml"))
-                //    {
-                //        xmlStr = sr.ReadToEnd();
-                //        sbInit.AppendFormat(xmlStr, LOGDAT, LOGTIM, WERKS[0], SNDPRN, RCVPOR, RCVPRN);
-                //    }
-                //    xmlStringInit1 = sbInit.ToString();
-                //}
-                //else
-                //{
-                //    using (StreamReader sr = new StreamReader(dir + "/ZIM_LOISMO.xml"))
-                //    {
-                //        xmlStr = sr.ReadToEnd();
-                //        sbInit.AppendFormat(xmlStr, LOGDAT, LOGTIM, WERKS[1], SNDPRN, RCVPOR, RCVPRN);
-                //    }
-                //    xmlStringInit2 = sbInit.ToString();
+                    //    }
+                    //    if (j != 1)
+                    //    {
 
-                //}
-                //xmlStringInit = xmlStringInit1 + xmlStringInit2;
+                    //    }
+                    //    else
+                    //    {
+                    //        xmlStringInit = fulldata + xmlStringInit2 + fulldata2;
+                    //    }
+
+                    //}
 
 
-
-
-                List<WMInventoryOnHandBO> target = dtResponse.AsEnumerable()
-                    .Select(row => new WMInventoryOnHandBO
-                    {
-                        Organization = "SolvaySDI",
-                        SharedSecret = "SolvaySDI",
-                        TimeStamp = System.DateTime.Now.ToString(),
-                        IDOC_TYPE = "MBGMCR03",
-                        xmlString = xmlStringInit
-
-
-                    }).ToList();
-
-
-
-
-                //string jsontest = JsonConvert.SerializeObject(new
-                //{
-                //    _postwmreceipt = target
-                //});
-                string jsontest = JsonConvert.SerializeObject(target, Formatting.None);
-                //jsontest = jsontest.Remove(0, 5);
-                //jsontest = jsontest.Remove(jsontest.Length - 3);
-                jsontest = jsontest.Remove(0, 1);
-                jsontest = jsontest.Remove(jsontest.Length - 1);
-
-                StringBuilder sb = new StringBuilder();
-                //sb.Append("{'_postwmreceipt_batch_req':");
-                //sb.Append("{");
-                sb.Append(jsontest);
-                //sb.Append("}");
-
-                //JObject resultSet = JObject.Parse(sb.ToString());
-                string resultSet = jsontest;
-
-                //JObject resultSet = JObject.Parse(jsonSampleData);
-                using (var client = new WebClient())
-                {
-                    //testOrProd = ConfigurationManager.AppSettings["TestOrProd"];
-                    //if (testOrProd == "TEST")
+                    //if (j != 1)
                     //{
-                    //    serviceURL = ConfigurationManager.AppSettings["testServiceURL"];
-                    //    authorization = ConfigurationManager.AppSettings["testAuthorization"];
+                    //    using (StreamReader sr = new StreamReader(dir + "/ZIM_LOISMO.xml"))
+                    //    {
+                    //        xmlStr = sr.ReadToEnd();
+                    //        sbInit.AppendFormat(xmlStr, LOGDAT, LOGTIM, WERKS[0], SNDPRN, RCVPOR, RCVPRN);
+                    //    }
+                    //    xmlStringInit1 = sbInit.ToString();
                     //}
                     //else
                     //{
-                    //    serviceURL = ConfigurationManager.AppSettings["prodServiceURL"];
-                    //    authorization = ConfigurationManager.AppSettings["prodAuthorization"];
+                    //    using (StreamReader sr = new StreamReader(dir + "/ZIM_LOISMO.xml"))
+                    //    {
+                    //        xmlStr = sr.ReadToEnd();
+                    //        sbInit.AppendFormat(xmlStr, LOGDAT, LOGTIM, WERKS[1], SNDPRN, RCVPOR, RCVPRN);
+                    //    }
+                    //    xmlStringInit2 = sbInit.ToString();
+
                     //}
+                    //xmlStringInit = xmlStringInit1 + xmlStringInit2;
 
 
-                    m_oLogger.LogMessage("postWMInventoryOnHandData", "POST WM Inventory On Hand to Solvay starts here");
-                    m_oLogger.LogMessage("postWMInventoryOnHandData", "POST WM Inventory On Hand Data" + resultSet.ToString());
-                    //m_oLogger.LogMessage("postWMReceiptMappingData", "POST WMMapping Data URL : https://10.118.13.27:8243/SDIOutboundWMReceiptAPI/v1_0");
-                    m_oLogger.LogMessage("postWMInventoryOnHandData", "POST WM Inventory On Hand Data URL : " + serviceURL);
 
-                    string basicAuthBase641;
-                    basicAuthBase641 = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(String.Format("{0}:{1}", authorization, authorization)));
-                    //req.Headers.Add("Authorization", String.Format("Basic {0}", basicAuthBase641))
-                    client.Headers.Add("Authorization", String.Format("Basic {0}", basicAuthBase641));
-                    //client.Headers.Add("Authorization: Basic " + authorization);
-                    client.Headers.Add("Content-Type:application/json");
-                    //client.Headers.Add("Accept:application/json");
-                    //System.Net.ServicePointManager.CertificatePolicy = new AlwaysIgnoreCertPolicy();
-                    //System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 
-                    //var result = client.UploadString("https://10.118.13.27:8243/SDIOutboundWMReceiptAPI/v1_0", resultSet.ToString());
-                    var result = client.UploadString(serviceURL, resultSet.ToString());
+                    List<WMInventoryOnHandBO> target = dtResponse.AsEnumerable()
+                        .Select(row => new WMInventoryOnHandBO
+                        {
+                            Organization = "SolvaySDI",
+                            SharedSecret = "SolvaySDI",
+                            TimeStamp = System.DateTime.Now.ToString(),
+                            IDOC_TYPE = "MBGMCR03",
+                            xmlString = xmlStringInit
 
-                    // Console.WriteLine(result);
-                    var parsed = JObject.Parse(result);
-                    strResponse = parsed.SelectToken("RequestStatus").Value<string>();
 
-                    m_oLogger.LogMessage("postWMInventoryOnHandData", "POST WMInventoryOnHand data to Solvay server status " + strResponse);
+                        }).ToList();
 
-                    if (strResponse.ToUpper() != "SUCCESS")
+
+
+
+                    //string jsontest = JsonConvert.SerializeObject(new
+                    //{
+                    //    _postwmreceipt = target
+                    //});
+                    string jsontest = JsonConvert.SerializeObject(target, Formatting.None);
+                    //jsontest = jsontest.Remove(0, 5);
+                    //jsontest = jsontest.Remove(jsontest.Length - 3);
+                    jsontest = jsontest.Remove(0, 1);
+                    jsontest = jsontest.Remove(jsontest.Length - 1);
+
+                    StringBuilder sb = new StringBuilder();
+                    //sb.Append("{'_postwmreceipt_batch_req':");
+                    //sb.Append("{");
+                    sb.Append(jsontest);
+                    //sb.Append("}");
+
+                    //JObject resultSet = JObject.Parse(sb.ToString());
+                    string resultSet = jsontest;
+
+                    //JObject resultSet = JObject.Parse(jsonSampleData);
+                    using (var client = new WebClient())
                     {
-                        //break;
-                    }
-                    // strResponse = JsonConvert.SerializeObject(result);
-                }
+                        //testOrProd = ConfigurationManager.AppSettings["TestOrProd"];
+                        //if (testOrProd == "TEST")
+                        //{
+                        //    serviceURL = ConfigurationManager.AppSettings["testServiceURL"];
+                        //    authorization = ConfigurationManager.AppSettings["testAuthorization"];
+                        //}
+                        //else
+                        //{
+                        //    serviceURL = ConfigurationManager.AppSettings["prodServiceURL"];
+                        //    authorization = ConfigurationManager.AppSettings["prodAuthorization"];
+                        //}
 
-                //    }
-                //}
-            }
+
+                        m_oLogger.LogMessage("postWMInventoryOnHandData", "POST WM Inventory On Hand to Solvay starts here");
+                        m_oLogger.LogMessage("postWMInventoryOnHandData", "POST WM Inventory On Hand Data" + resultSet.ToString());
+                        //m_oLogger.LogMessage("postWMReceiptMappingData", "POST WMMapping Data URL : https://10.118.13.27:8243/SDIOutboundWMReceiptAPI/v1_0");
+                        m_oLogger.LogMessage("postWMInventoryOnHandData", "POST WM Inventory On Hand Data URL : " + serviceURL);
+
+                        string basicAuthBase641;
+                        basicAuthBase641 = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(String.Format("{0}:{1}", authorization, authorization)));
+                        //req.Headers.Add("Authorization", String.Format("Basic {0}", basicAuthBase641))
+                        client.Headers.Add("Authorization", String.Format("Basic {0}", basicAuthBase641));
+                        //client.Headers.Add("Authorization: Basic " + authorization);
+                        client.Headers.Add("Content-Type:application/json");
+                        //client.Headers.Add("Accept:application/json");
+                        //System.Net.ServicePointManager.CertificatePolicy = new AlwaysIgnoreCertPolicy();
+                        //System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+
+                        //var result = client.UploadString("https://10.118.13.27:8243/SDIOutboundWMReceiptAPI/v1_0", resultSet.ToString());
+                        var result = client.UploadString(serviceURL, resultSet.ToString());
+
+                        // Console.WriteLine(result);
+                        var parsed = JObject.Parse(result);
+                        strResponse = parsed.SelectToken("RequestStatus").Value<string>();
+
+                        m_oLogger.LogMessage("postWMInventoryOnHandData", "POST WMInventoryOnHand data to Solvay server status " + strResponse);
+
+                        if (strResponse.ToUpper() != "SUCCESS")
+                        {
+                            //break;
+                        }
+                        // strResponse = JsonConvert.SerializeObject(result);
+                    }
+
+                    //    }
+                    //}
+                }
             }
 
             //catch (Exception ex)

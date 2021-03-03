@@ -26,7 +26,7 @@ namespace WMInventoryOnHand
             m_oLogger.LogMessage("Main", "Started utility WMInventoryOnHand");
 
             WMInventoryOnHandAPIAccess objWMInventoryOnHandAPIAccess = new WMInventoryOnHandAPIAccess();
-            WMInventoryOnHandDAL objWMInventoryOnHandDAL = new WMInventoryOnHandDAL();
+            WMInventoryOnHandReDAL objWMInventoryOnHandReDAL = new WMInventoryOnHandReDAL();
             strResponse = objWMInventoryOnHandAPIAccess.postWMInventoryOnHandData(m_oLogger);
             if (strResponse.ToUpper() != " ")
             {
@@ -43,7 +43,7 @@ namespace WMInventoryOnHand
                 //{
                 //    processFlag = "E"; //error
                 //}
-                //objWMInventoryOnHandDAL.UpdateWMInventoryOnHandData(m_oLogger, processFlag);
+                //objWMInventoryOnHandReDAL.UpdateWMInventoryOnHandData(m_oLogger, processFlag);
             }
             else
             {
