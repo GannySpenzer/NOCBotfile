@@ -899,7 +899,7 @@ Public Class QuoteNonStockProcessor
                                  "  AND L.ISA_EMPLOYEE_ID = A2.ISA_EMPLOYEE_ID (+) " & vbCrLf &
                                  "  AND 'MAIN1' = A3.SETID (+)" & vbCrLf &
                                  "  AND A4.BILL_TO_CUST_ID = A3.CUST_ID (+)" & vbCrLf &
-                                 "  AND L.OPRID_APPROVED_BY in (' ',L.ISA_EMPLOYEE_ID)" & vbCrLf &
+                                 "  AND L.OPRID_APPROVED_BY in (' ',L.ISA_EMPLOYEE_ID,'AUTOSYS')" & vbCrLf &
                                  "  AND L.ISA_LINE_STATUS in ('QTS','QTW')" & vbCrLf &
                                  "  AND NOT EXISTS ( " & vbCrLf &
                                  "                  SELECT 'X' " & vbCrLf &
@@ -1767,23 +1767,8 @@ Public Class QuoteNonStockProcessor
                             ContentSDI = LETTER_CONTENT_SDiExchange
                             LetterHead = LETTER_HEAD_SdiExch
                         End If
-                        If BU = "I0W01" Then
-                            eml.Body = "<HTML>" &
-                                   "<HEAD></HEAD>" &
-                                   "<BODY>" &
-                                       AddNoRecepientExistNote(eml.To) &
-                                       LetterHead &
-                                       FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority) &
-                                       PositionGrid(dataGridHTML) &
-                                       ContentSDI &
-                                       AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail, LineStatus) &
-                                       AddVersionNumber() &
-                                       "<HR width='100%' SIZE='1'>" &
-                                           "<img src='https://www.sdizeus.com/Images/SDIFooter_Email.png' />" &
-                                   "</BODY>" &
-                              "</HTML>"
-                        Else
-                            eml.Body = "<HTML>" &
+
+                        eml.Body = "<HTML>" &
                                    "<HEAD></HEAD>" &
                                    "<BODY>" &
                                        AddNoRecepientExistNote(eml.To) &
@@ -1798,10 +1783,10 @@ Public Class QuoteNonStockProcessor
                                            "<img src='https://www.sdizeus.com/Images/SDIFooter_Email.png' />" &
                                    "</BODY>" &
                               "</HTML>"
-                        End If
 
 
-                    Else
+
+                            Else
                         'InsiteOnline
                         If IsAscend(itmQuoted.BusinessUnitOM) Then
                             Content = LETTER_CONTENT.Replace("Requestor Approval", "Approve Quotes (Ascend)")
@@ -1901,6 +1886,8 @@ Public Class QuoteNonStockProcessor
 
                     SendLogger(eml.Subject, eml.Body, "QUOTEAPPROVAL", "Mail", eml.To, eml.Cc, eml.Bcc)
                     SendNotification(itmQuoted.EmployeeID, eml.Subject, itmQuoted.OrderID)
+                    Dim Title As String = "Order Number: " + itmQuoted.OrderID + " Requested For Quote Approval"
+                    sendWebNotification(itmQuoted.EmployeeID, Title)
                 Catch ex As Exception
 
                 End Try
@@ -2031,6 +2018,38 @@ Public Class QuoteNonStockProcessor
                     End Using
                 End If
             End If
+        Catch ex As Exception
+        End Try
+    End Sub
+
+    Public Sub sendWebNotification(ByVal Session_UserID As String, ByVal subject As String)
+        Try
+            Dim _notificationResult As New DataSet
+            Dim notificationSQLStr = "select max(NOTIFY_ID) As NOTIFY_ID from SDIX_NOTIFY_QUEUE where USER_ID='" + Session_UserID + "'"
+            _notificationResult = ORDBData.GetAdapter(notificationSQLStr)
+            Dim NotifyID As Int16 = 1
+            If _notificationResult.Tables.Count > 0 Then
+                Try
+                    NotifyID = _notificationResult.Tables(0).Rows(0).Item("NOTIFY_ID")
+                    NotifyID = NotifyID + 1
+                Catch ex As Exception
+                End Try
+            End If
+
+            Dim strSQLstring As String = "INSERT INTO SDIX_NOTIFY_QUEUE" & vbCrLf &
+        " (NOTIFY_ID, NOTIFY_TYPE, USER_ID,DTTMADDED, STATUS,LINK, HTMLMSG, ATTACHMENTS, TITLE) VALUES ('" & NotifyID & "'," & vbCrLf &
+        " 'AQO'," & vbCrLf &
+        " '" & Session_UserID & "'," & vbCrLf &
+        " sysdate," & vbCrLf &
+        " 'N'," & vbCrLf &
+         " ' ',' ',' '," & vbCrLf &
+        " '" & subject & "')" & vbCrLf
+            Try
+                Dim rowsaffected As Integer
+                rowsaffected = ORDBData.ExecNonQuery(strSQLstring)
+            Catch ex As Exception
+
+            End Try
         Catch ex As Exception
         End Try
     End Sub
