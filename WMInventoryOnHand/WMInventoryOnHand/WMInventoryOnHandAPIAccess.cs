@@ -1,390 +1,345 @@
-﻿<%@ Page Language="VB" AutoEventWireup="false" Inherits="Insiteonline.OrderItems" CodeBehind="OrderItems.aspx.vb" MasterPageFile="~/MasterPage/SDIXMaster.Master" %>
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Data;
+using System.Net;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using WMInventoryOnHand;
+using System.Configuration;
+using System.IO;
 
-<%@ Register Assembly="Telerik.Web.UI" Namespace="Telerik.Web.UI" TagPrefix="telerik" %>
-
-<asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
-    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
-
-    <title>Purchasing Cart</title>
-    <%--<link type="text/css" href="../Styles/IMSOnline/SDI_Style.css" rel="Stylesheet" />
-
-
-     <link rel="stylesheet nofollow" href="../Styles/IMSOnline/jquery-ui-1.9.2.custom.css" />--%>
-    <script type="text/javascript" src="../js/IMSOnline/jquery-1.8.3.js"></script>
-    <script type="text/javascript" src="../js/IMSOnline/jquery.bgiframe-2.1.2.js"></script>
-    <script type="text/javascript" src="../js/IMSOnline/jquery-ui-1.9.2.custom.js"></script>
-    <link rel="stylesheet" href="/resources/demos/style.css" />
-
-
-    <style type="text/css">
-        #Select1
+namespace WMInventoryOnHand
+{
+    class WMInventoryOnHandAPIAccess
+    {
+        /// <summary>
+        /// POST Receiving data to the Solvay service
+        /// </summary>
+        /// <returns></returns>
+        public string postWMInventoryOnHandData(Logger m_oLogger)
         {
-            width: 147px;
-        }
-    </style>
-</asp:Content>
-<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
+            string testOrProd = " ";
+            string authorization = " ";
+            string serviceURL = " ";
+            var strResponse = " ";
+            string responseErrorText = " ";
+            string RCVPOR = " ";
+            string RCVPRN = " ";
+            string SNDPRN = " ";
 
-    <script type="text/javascript">
-        function ComeBack() {
-            window.close("OrderItems.aspx")
-        }
-    </script>
-    <script type="text/javascript">
+            testOrProd = ConfigurationManager.AppSettings["TestOrProd"];
+            if (testOrProd == "TEST")
+            {
+                serviceURL = ConfigurationManager.AppSettings["testServiceURL"];
+                authorization = ConfigurationManager.AppSettings["testAuthorization"];
+                SNDPRN = "FRPARWM1";
+                RCVPOR = "SAPWQ1";
+                RCVPRN = "WQ1_400";
+            }
+            else if (testOrProd == "PROD")
+            {
+                serviceURL = ConfigurationManager.AppSettings["prodServiceURL"];
+                authorization = ConfigurationManager.AppSettings["prodAuthorization"];
+                SNDPRN = "FRPARWM1";
+                RCVPOR = "SAPWP1";
+                RCVPRN = "WP1_400";
+            }
 
-        function PassWhereClause() {
+            DataTable dtResponse = new DataTable();
+            try
+            {
+
+                WMInventoryOnHandDAL objWMInventoryOnHandDAL = new WMInventoryOnHandDAL();
+                m_oLogger.LogMessage("getWMInventoryOnHandData", "Getting WM Inventory On Hand Data starts here");
+                dtResponse.Columns.Add("DOC_NUM");
+                //dtResponse = objWMInventoryOnHandDAL.getWMInventoryOnHandData(m_oLogger);
+                //if (dtResponse.Rows.Count != 0)
+                //{
+                //DataTable table = new DataTable();
+                DataRow rowInit = dtResponse.NewRow();
+                dtResponse.Rows.Add(rowInit);
+                int noOfTimes = 2;
+                for (int j = 0; j < noOfTimes; j++)
+                {
 
 
+                    //       for (int i = 0; i <= dtResponse.Rows.Count - 1; i++)
+                    //      {
 
-            var parentText = window.opener.document.getElementById('txtFilter');
-            parentText.value = where;
-            window.opener.document.getElementById('BtnGetData').click();
-            window.close("FilterSearch.aspx")
+                    //    DataRow rowInit;
+                    //    rowInit = dtResponse.Rows[0];
+                    //}
+
+                    //string DOC_NUM = rowInit["ISA_IDENTIFIER"].ToString();
+                    //DOC_NUM = DOC_NUM.PadLeft(14, '0');//i.e. "0000000000000004"
+                    string LOGDAT = System.DateTime.Now.ToString("yyyyMMdd");
+                    string LOGTIM = System.DateTime.Now.ToString("HHmmss");
+
+                    //string REFGRP = rowInit["PLANT"].ToString();
+                    //string REFMES = DOC_NUM; //rowInit["ISA_IDENTIFIER"].ToString();
+                    //string WERKS = REFGRP;
+
+                    //string MATNR = rowInit["ISA_ITEM"].ToString();
+                    string[] WERKS = { "8192", "8056" };
+                    string[] REFGRP = { "8192", "8056" };
+
+                    //DateTime PSTNG_DATEcnv = Convert.ToDateTime(rowInit["DT_TIMESTAMP"]);
+                    //string PSTNG_DATE = PSTNG_DATEcnv.ToString("yyyyMMdd");
+                    //string DOC_DATE = PSTNG_DATEcnv.ToString("yyyyMMdd");
+
+                    /*string REF_DOC_NO = rowInit["REFERENCE_ID"].ToString(); */                             //?
+
+                    //string GM_CODE = "03";
 
 
-        }
+                    //string STGE_LOC = rowInit["STORAGE_AREA"].ToString();
+                    //string MOVE_TYPE = rowInit["TRANS_TYPE"].ToString();
+                    //string VENDOR = rowInit["VENDOR_ID"].ToString();
+                    //string ENTRY_QNT = rowInit["QTY"].ToString();
+                    //string ENTRY_UOM_ISO = rowInit["ISA_CUSTOMER_UOM"].ToString();
+                    //string PO_NUMBER = rowInit["ISA_CUST_PO_NBR"].ToString();
+                    //string PO_ITEM = rowInit["ISA_SAP_PO_LN"].ToString();
+                    //string RESERV_NO = rowInit["ORDER_NO"].ToString();
+                    //string RES_ITEM = rowInit["ORDER_INT_LINE_NO"].ToString();
+                    //string COSTCENTER = rowInit["ISA_COST_CENTER"].ToString();
+                    //string ORDERID = rowInit["ISA_WORK_ORDER_NO"].ToString();
+                    //string ITEM_TEXT = "";
+                    //string WITHDRAWN = "";
+                    //string MOVE_STLOC = "";
+                    //string MVT_IND = "B";
+                    //string MOVE_REAS = "0999";
+                    ////string WBS_ELEM = "";
+                    //string WBS_ELEM = rowInit["ISA_WBS_ELMNT"].ToString();
+                    //string REF_DOC = rowInit["REF_DOCUMENT_ID"].ToString();
 
+                    //string BILL_OF_LADING = ""; //unused?
+                    //string GR_GI_SLIP_NO = "";  //unused?
+                    //string HEADER_TXT = "";     //unused?
+                    //string BATCH = "";          //unused?
+                    //string NO_MORE_GR = "";     //unused?
 
-    </script>
+                    //string datastr = "{";
+                    //string datastr2 = ":";
+                    //string datastr3 = ",";
+                    //string datastr4 = "\"";
+                    //string datastr5 = "}";
+                    //string Organization = "Organization";
+                    //string SolvaySDI = "SolvaySDI";
+                    //string SharedSecret = "SharedSecret";
+                    //string TimeStamp = "TimeStamp";
+                    //string TimeStamp1 = System.DateTime.Now.ToString();
+                    //string IDOC_TYPE = "IDOC_TYPE";
+                    //string MBGMCR03 = "MBGMCR03";
+                    //string xmlstr = "xmlString";
 
-    <table style="width: 100%;">
-        <%--<tr>
-            <td>
-                <asp:Label ID="Label1" runat="server" Font-Bold="True" ForeColor="#000066" Text="Crib ID"></asp:Label>
-            </td>
-            <td>
-                <asp:DropDownList ID="ddlGrib" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlGrib_SelectedIndexChanged"></asp:DropDownList>
-
-
-                <asp:RequiredFieldValidator ForeColor="Red" Display="Dynamic" ID="rfvGrib" runat="server" InitialValue="-- SELECT --" ErrorMessage="Please Select Crib" ControlToValidate="ddlGrib" ValidationGroup="GRIBIDENT"></asp:RequiredFieldValidator>
-            </td>
-            <td>
-                <asp:Label Visible="false" ID="lblerror" ForeColor="Red" runat="server"></asp:Label>
-            </td>
-        </tr>--%>
-        <tr>
-            <td>&nbsp;
-            </td>
-
-        </tr>
-         <asp:Label Visible="false" ID="Label2" ForeColor="Red" runat="server"></asp:Label>
-        <tr>
-            <td>
-                <asp:Label ID="lblItem" runat="server" Font-Bold="True" ForeColor="#000066" Text="Item"></asp:Label>
-            </td>
-            <td>
-                <asp:Label ID="lblBU" runat="server" Font-Bold="True" ForeColor="#000066" Text="Business Unit"></asp:Label>
-            </td>
-            <td>
-                <asp:Label ID="lblDecr" runat="server" Font-Bold="True" ForeColor="#000066" Text="Description"></asp:Label>
-            </td>
-            <td>
-                <asp:Label ID="lblVendor" runat="server" Font-Bold="True" ForeColor="#000066" Text="Vendor"></asp:Label>
-            </td>
-            <td>
-                <asp:Label ID="lblprice" runat="server" Font-Bold="True" ForeColor="#000066" Text="Price"></asp:Label>
-            </td>
-            <td>
-                <asp:Label ID="lblqty1" runat="server" Font-Bold="True" ForeColor="#000066" Text="Quantity"></asp:Label>
-            </td>
-            <td>&nbsp;
-            </td>
-            <td>
-                <asp:Label ID="lblDueDate" runat="server" Font-Bold="True" ForeColor="#000066" Text="Due Date" Visible="False"></asp:Label>
-            </td>
-            <td>&nbsp;
-            </td>
-        </tr>
-        <tr>
-            <td width="110">
-                <asp:TextBox ID="txtItem" runat="server" AutoPostBack="true" TabIndex="1" Width="104px"></asp:TextBox>
-            </td>
-             <td width="110">
-         
-                  <asp:TextBox ID="txtGrib" runat="server" AutoPostBack="true" TabIndex="1" Enabled="False" Width="104px"></asp:TextBox>
-            </td>
-            <td width="210">
-                <asp:TextBox ID="txtDescr" runat="server" Height="31px" TextMode="MultiLine" Width="205px"
-                    Enabled="False"></asp:TextBox>
-            </td>
-            <td width="175">
-                <asp:TextBox ID="txtVendor" runat="server" Enabled="False" Width="167px"></asp:TextBox>
-            </td>
-            <td width="80">
-                <asp:TextBox ID="txtprice" runat="server" Enabled="False" Width="66px"></asp:TextBox>
-            </td>
-            <td width="85">
-                <asp:TextBox ID="txtQuanity" runat="server" Width="77px" TabIndex="2"></asp:TextBox>
-            </td>
-
-            <td width="155">
-                <asp:CheckBox ID="chkRushOrder" runat="server" TabIndex="4" Width="100px" Text="Rush Order" Font-Bold="true" ForeColor="Red" Font-Size="Small" />
-            </td>
-            <td width="155">
-                <asp:TextBox ID="txtDueDate" runat="server" TabIndex="3" Width="100px" Visible="False"></asp:TextBox>
-            </td>
-            <td width="100">
-                <%--<asp:ImageButton ID="imgAddToCart" runat="server" Height="32px" ImageUrl="~/Images/shopcartadd.png"
-                        ToolTip="Add Item to Cart" Width="39px" TabIndex="4" />--%>
-                <asp:Button ID="BtnAdd" runat="server" ForeColor="White" BackColor="Orange" Style="font-weight: bold" Height="20px" Width="90px" ToolTip="Add Item to Cart" Text="Add to Cart" TabIndex="4"></asp:Button>
-            </td>
-            <td>
-                <%-- <asp:ImageButton ID="ImageButton2" runat="server" Height="32px" ImageUrl="~/Images/shopcartexclude.png"
-                        Width="39px" ToolTip="Clear Item and Don't Add To Cart" CausesValidation="false" />--%>
-
-                <asp:Button ID="BtnClear" runat="server" ForeColor="White" BackColor="Orange" Style="font-weight: bold" Height="20px" Width="90px" ToolTip="Clear Item and Don't Add To Cart" CausesValidation="false" Text="Cancel"></asp:Button>
-                <%-- <asp:FileUpload ID="FileUpload1" runat="server" />--%>
-            </td>
-        </tr>
-        <tr>
-            <td>&nbsp;
-            </td>
-            <td>&nbsp;
-            </td>
-            <td>&nbsp;
-            </td>
-            <td>&nbsp;
-            </td>
-            <td>&nbsp;
-            </td>
-            <td>&nbsp;
-            </td>
-        </tr>
-    </table>
-
-    <asp:TextBox ID="txtbu" runat="server" Visible="False"></asp:TextBox>
-
-    <%--  <table style="width: 100%;">
-        <tr>
-            <td>
-                <br />
-                <br />
-                <asp:Image ID="imgCart" runat="server" Height="43px" ImageUrl="~/Images/shopcart.png"
-                    Width="52px" />
+                    //string fulldata = datastr + datastr4 + Organization + datastr4 + datastr2 + datastr4 + SolvaySDI + datastr4 + datastr3 + datastr4 + SharedSecret + datastr4 + datastr2 + datastr4 + SolvaySDI + datastr4 + datastr3 + datastr4 + TimeStamp + datastr4 + datastr2 + datastr4 + TimeStamp1 + datastr4 + datastr3 + datastr4 + IDOC_TYPE + datastr4 + datastr2 + datastr4 + MBGMCR03 + datastr4 + datastr3 + datastr4 + xmlstr + datastr4 + datastr2;
+                    //string fulldata2 = datastr4 + datastr5;
 
 
 
-                <asp:GridView ID="GridView1" runat="server" BackColor="White" BorderColor="#3366CC"
-                    BorderStyle="Solid" BorderWidth="1px" CausesValidation="false" CellPadding="4"
-                    EnableModelValidation="True" Height="10px" Width="959px" AutoGenerateColumns="False">
-                    <Columns>
-                        <asp:CommandField ShowEditButton="True"></asp:CommandField>
+                    StringBuilder sbInit = new StringBuilder();
+                    string xmlStr = string.Empty;
+                    string xmlStringInit = string.Empty;
+                    string xmlStringInit1 = string.Empty;
+                    string xmlStringInit2 = string.Empty;
+                    string xmlStringInit3 = string.Empty;
+                    //using (StreamReader sr = new StreamReader(Path.GetDirectoryName(Path.GetDirectoryName(System.IO.Directory.GetCurrentDirectory())) + "/ZWIM_MBGMCR2-oneline-mapping3.xml"))
+                    string dir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                    //int noOfTimes = 2;
 
-                        <asp:TemplateField HeaderText="Line Number" ItemStyle-HorizontalAlign="Center">
-                            <ItemTemplate>
-                                <%#Container.DataItemIndex + 1%>
-                            </ItemTemplate>
-                        </asp:TemplateField>
-                        <asp:TemplateField HeaderText="Rush Order" ItemStyle-HorizontalAlign="Center">
-                            <ItemTemplate>
-                                <asp:CheckBox ID="chkRush" runat="server" Text="Rush Order" Visible="false" />
-                                <asp:Label ID="lblRush" runat="server" Text='<%#Eval("rush") %>'></asp:Label>
-                            </ItemTemplate>
-                        </asp:TemplateField>
-                        <asp:TemplateField HeaderText="Unit">
-                            <ItemTemplate>
-                                <asp:Label ID="lblUnit" runat="server" Text='<%#Eval("Unit") %>'></asp:Label>
-                            </ItemTemplate>
-                        </asp:TemplateField>
-                        <asp:TemplateField HeaderText="Item">
-                            <ItemTemplate>
-                                <asp:Label ID="lblItem" runat="server" Text='<%#Eval("Item") %>'></asp:Label>
-                            </ItemTemplate>
-                        </asp:TemplateField>
-                        <asp:TemplateField HeaderText="Description">
-                            <ItemTemplate>
-                                <asp:Label ID="lblDescr" runat="server" Text='<%#Eval("Description") %>'></asp:Label>
-                            </ItemTemplate>
-                        </asp:TemplateField>
-                        <asp:TemplateField HeaderText="Vendor">
-                            <ItemTemplate>
-                                <asp:Label ID="lblVendor" runat="server" Text='<%#Eval("Vendor") %>'></asp:Label>
-                            </ItemTemplate>
-                        </asp:TemplateField>
-                        <asp:TemplateField HeaderText="Quantity">
-                            <ItemTemplate>
-                                <asp:TextBox ID="txtQuantity1" runat="server" Enabled="false" Text='<%#Eval("Quantity") %>'></asp:TextBox>
-                            </ItemTemplate>
-                        </asp:TemplateField>
-                        <asp:TemplateField HeaderText="Cost">
-                            <ItemTemplate>
-                                <asp:Label ID="lblCost" runat="server" Text='<%#Eval("Cost") %>'></asp:Label>
-                            </ItemTemplate>
-                        </asp:TemplateField>
-                        <asp:TemplateField HeaderText="Total">
-                            <ItemTemplate>
-                                <asp:Label ID="lblTotal" runat="server" Text='<%#Eval("Total") %>'></asp:Label>
-                            </ItemTemplate>
-                        </asp:TemplateField>
-                    </Columns>
-                    <AlternatingRowStyle BackColor="#FFFF99" ForeColor="#000066" />
-                    <FooterStyle BackColor="#FF9900" ForeColor="#003399" BorderStyle="Solid" />
-                    <HeaderStyle BackColor="#FF9900" Font-Bold="True" ForeColor="White" />
-                    <PagerStyle BackColor="#99CCCC" ForeColor="#003399" HorizontalAlign="Left" />
-                    <RowStyle BackColor="White" ForeColor="#000066" />
-                    <SelectedRowStyle BackColor="#003366" Font-Bold="True" ForeColor="#CCFF99" />
-                </asp:GridView>
-                
-                <script type="text/javascript">
-                    function ClientSideClick(myButton) {
-                        // Client side validation
-                        if (typeof (Page_ClientValidate) == 'function') {
-                            if (Page_ClientValidate() == false)
-                            { return false; }
+                    //for (int j = 0; j < noOfTimes; j++)
+                    //{
+                    using (StreamReader sr = new StreamReader(dir + "/ZIM_LOISMO.xml"))
+                    {
+                        xmlStr = sr.ReadToEnd();
+                        if (j != 1)
+                        {
+                            sbInit.AppendFormat(xmlStr, LOGDAT, LOGTIM, WERKS[0], SNDPRN, RCVPOR, RCVPRN, REFGRP[0]);
+
+                            //xmlStringInit1 = fulldata + xmlStringInit1;
+                        }
+                        else
+                        {
+                            sbInit.AppendFormat(xmlStr, LOGDAT, LOGTIM, WERKS[1], SNDPRN, RCVPOR, RCVPRN, REFGRP[1]);
+
                         }
 
-                        //make sure the button is not of type "submit" but "button"
-                        if (myButton.getAttribute('type') == 'button') {
-                            // disable the button
-                            myButton.disabled = true;
-                            myButton.className = "btn-inactive";
-                            myButton.value = "Processing...";
-                        }
-                        return true;
+
                     }
-                </script>
+                    xmlStringInit = sbInit.ToString();
 
-                <asp:SqlDataSource ID="SqlDataSource1" runat="server"></asp:SqlDataSource>
-            </td>
-        </tr>
-    </table>--%>
+                //}
 
-    <table style="width: 100%">
-        <tr>
-            <td>
-                <asp:Image ID="Image1" runat="server" Height="43px" ImageUrl="~/Images/shopcart.png" Width="52px" />
-                <asp:Label ID="LbleCart" runat="server" Font-Bold="True" ForeColor="#000066" Text="Items Currently in Cart"></asp:Label>
-            </td>
-        </tr>
-        <tr>
-            <td>
-
-                <telerik:RadGrid ID="rgIMS" runat="server" AutoGenerateColumns="false" OnNeedDataSource="rgIMS_NeedDataSource" 
-                    OnUpdateCommand="rgIMS_UpdateCommand" OnItemDataBound="rgIMS_ItemDataBound" OnDeleteCommand ="rgIMS_DeleteCommand">
-                    <ClientSettings EnableAlternatingItems="false">
-                    </ClientSettings>
-                    <MasterTableView GridLines="Both" EditMode="InPlace" DataKeyNames="Item" AutoGenerateColumns="false">
-                        <Columns>
-                            <telerik:GridEditCommandColumn ButtonType="ImageButton" UniqueName="EditCommandColumn">
-                                <ItemStyle CssClass="MyImageButton"></ItemStyle>
-                            </telerik:GridEditCommandColumn>
-                            <telerik:GridTemplateColumn HeaderText="Line No" ReadOnly="true">
-                                <ItemTemplate>
-                                    <%#Container.DataSetIndex + 1%>
-                                </ItemTemplate>
-                            </telerik:GridTemplateColumn>
-                            <telerik:GridTemplateColumn HeaderText="Rush Order" UniqueName="rush">
-                                <ItemTemplate>
-                                    <asp:Label ID="lblRushGrid" runat="server" Text='<%#Eval("rush") %>'></asp:Label>
-                                </ItemTemplate>
-                                <EditItemTemplate>
-                                    <asp:CheckBox ID="chkRush" runat="server" Text="Rush Order" />
-                                    <asp:HiddenField ID="hdnRush" runat="server" Value='<%#Eval("rush") %>' />
-                                </EditItemTemplate>
-
-                            </telerik:GridTemplateColumn>
-
-                            <telerik:GridTemplateColumn HeaderText="Unit" UniqueName="Unit">
-                                <ItemTemplate>
-                                    <asp:Label ID="lblitemUnit" runat="server" Text='<%#Eval("Unit")%>'></asp:Label>
-                                </ItemTemplate>                               
-                            </telerik:GridTemplateColumn>                         
-                            <telerik:GridTemplateColumn HeaderText="Item No" UniqueName="Item">
-                                <ItemTemplate>
-                                    <asp:Label ID="lblitemtemp" runat="server" Text='<%#Eval("Item")%>'></asp:Label>
-                                </ItemTemplate>
-                                <EditItemTemplate>
-                                    <asp:Label ID="lblitemVal" runat="server" Text='<%#Eval("Item")%>' />
-                                </EditItemTemplate>
-                            </telerik:GridTemplateColumn>
-                            <telerik:GridBoundColumn DataField="Description" HeaderText="Description" UniqueName="Description" ReadOnly="true">
-                            </telerik:GridBoundColumn>
-                            <telerik:GridBoundColumn DataField="Vendor" HeaderText="Vendor" UniqueName="Vendor" ReadOnly="true">
-                            </telerik:GridBoundColumn>
-                            <telerik:GridTemplateColumn HeaderText="Quantity" UniqueName="Quantity">
-                                <ItemTemplate>
-                                    <asp:Label ID="lblQty" runat="server" Text='<%#Eval("Quantity") %>'></asp:Label>
-                                </ItemTemplate>
-                                <EditItemTemplate>
-                                    <asp:TextBox ID="txtQuantity" runat="server" Text='<%#Eval("Quantity") %>'></asp:TextBox>
-                                </EditItemTemplate>
-                            </telerik:GridTemplateColumn>
-                            <telerik:GridBoundColumn DataField="Cost" HeaderText="Cost" UniqueName="Cost" ReadOnly="true">
-                            </telerik:GridBoundColumn>
-                            <telerik:GridBoundColumn DataField="Total" HeaderText="Total" UniqueName="Total" ReadOnly="true">
-                            </telerik:GridBoundColumn>
-                            <telerik:GridButtonColumn ConfirmText="Delete this item?" ConfirmDialogType="RadWindow"
-                                ConfirmTitle="Delete" ButtonType="ImageButton" CommandName="Delete" Text="Delete"
-                                UniqueName="DeleteColumn">
-                                <ItemStyle HorizontalAlign="Center" CssClass="MyImageButton"></ItemStyle>
-                            </telerik:GridButtonColumn>
-                        </Columns>
-                    </MasterTableView>
-                </telerik:RadGrid>
-            </td>
-
-        </tr>
-        <tr>
-            <td>
-                <asp:Button ID="btnPlaceOrder" runat="server" Text="Place Order" BackColor="#FF9900"
-                    Font-Bold="True" ForeColor="White" CausesValidation="false" OnClientClick="ClientSideClick(this)"
-                    UseSubmitBehavior="False" ToolTip="Place Items In Cart On Purchase Order" />
-                <asp:Label ID="lblAlert" runat="server" Font-Bold="True"></asp:Label>
-            </td>  
-            <td>  </td>
-        </tr>
-    </table>
+                //        for (int j = 0; j < noOfTimes; j++)
+                //        {
+                //    using (StreamReader sr = new StreamReader(dir + "/ZIM_LOISMO.xml"))
+                //    {
+                //        xmlStr = sr.ReadToEnd();
+                //        if (j != 1)
+                //        {
+                //            sbInit.AppendFormat(xmlStr, LOGDAT, LOGTIM, WERKS[0], SNDPRN, RCVPOR, RCVPRN);
+                //            xmlStringInit1 = sbInit.ToString();
+                //            //xmlStringInit1 = fulldata + xmlStringInit1;
+                //        }
+                //        else
+                //        {
+                //            sbInit.AppendFormat(xmlStr, LOGDAT, LOGTIM, WERKS[1], SNDPRN, RCVPOR, RCVPRN);
+                //            xmlStringInit2 = sbInit.ToString();
+                //        }
 
 
-    <script type="text/javascript">
+                //    }
+                //    if (j != 1)
+                //    {
 
-        function cancelBack() {
-            if ((event.keyCode == 8 ||
-           (event.keyCode == 37 && event.altKey) ||
-           (event.keyCode == 39 && event.altKey))
-            &&
-           (event.srcElement.form == null || event.srcElement.isTextEdit == false)
-          ) {
-                event.cancelBubble = true;
-                event.returnValue = false;
+                //    }
+                //    else
+                //    {
+                //        xmlStringInit = fulldata + xmlStringInit2 + fulldata2;
+                //    }
+
+                //}
+
+
+                //if (j != 1)
+                //{
+                //    using (StreamReader sr = new StreamReader(dir + "/ZIM_LOISMO.xml"))
+                //    {
+                //        xmlStr = sr.ReadToEnd();
+                //        sbInit.AppendFormat(xmlStr, LOGDAT, LOGTIM, WERKS[0], SNDPRN, RCVPOR, RCVPRN);
+                //    }
+                //    xmlStringInit1 = sbInit.ToString();
+                //}
+                //else
+                //{
+                //    using (StreamReader sr = new StreamReader(dir + "/ZIM_LOISMO.xml"))
+                //    {
+                //        xmlStr = sr.ReadToEnd();
+                //        sbInit.AppendFormat(xmlStr, LOGDAT, LOGTIM, WERKS[1], SNDPRN, RCVPOR, RCVPRN);
+                //    }
+                //    xmlStringInit2 = sbInit.ToString();
+
+                //}
+                //xmlStringInit = xmlStringInit1 + xmlStringInit2;
+
+
+
+
+                List<WMInventoryOnHandBO> target = dtResponse.AsEnumerable()
+                    .Select(row => new WMInventoryOnHandBO
+                    {
+                        Organization = "SolvaySDI",
+                        SharedSecret = "SolvaySDI",
+                        TimeStamp = System.DateTime.Now.ToString(),
+                        IDOC_TYPE = "MBGMCR03",
+                        xmlString = xmlStringInit
+
+
+                    }).ToList();
+
+
+
+
+                //string jsontest = JsonConvert.SerializeObject(new
+                //{
+                //    _postwmreceipt = target
+                //});
+                string jsontest = JsonConvert.SerializeObject(target, Formatting.None);
+                //jsontest = jsontest.Remove(0, 5);
+                //jsontest = jsontest.Remove(jsontest.Length - 3);
+                jsontest = jsontest.Remove(0, 1);
+                jsontest = jsontest.Remove(jsontest.Length - 1);
+
+                StringBuilder sb = new StringBuilder();
+                //sb.Append("{'_postwmreceipt_batch_req':");
+                //sb.Append("{");
+                sb.Append(jsontest);
+                //sb.Append("}");
+
+                //JObject resultSet = JObject.Parse(sb.ToString());
+                string resultSet = jsontest;
+
+                //JObject resultSet = JObject.Parse(jsonSampleData);
+                using (var client = new WebClient())
+                {
+                    //testOrProd = ConfigurationManager.AppSettings["TestOrProd"];
+                    //if (testOrProd == "TEST")
+                    //{
+                    //    serviceURL = ConfigurationManager.AppSettings["testServiceURL"];
+                    //    authorization = ConfigurationManager.AppSettings["testAuthorization"];
+                    //}
+                    //else
+                    //{
+                    //    serviceURL = ConfigurationManager.AppSettings["prodServiceURL"];
+                    //    authorization = ConfigurationManager.AppSettings["prodAuthorization"];
+                    //}
+
+
+                    m_oLogger.LogMessage("postWMInventoryOnHandData", "POST WM Inventory On Hand to Solvay starts here");
+                    m_oLogger.LogMessage("postWMInventoryOnHandData", "POST WM Inventory On Hand Data" + resultSet.ToString());
+                    //m_oLogger.LogMessage("postWMReceiptMappingData", "POST WMMapping Data URL : https://10.118.13.27:8243/SDIOutboundWMReceiptAPI/v1_0");
+                    m_oLogger.LogMessage("postWMInventoryOnHandData", "POST WM Inventory On Hand Data URL : " + serviceURL);
+
+                    string basicAuthBase641;
+                    basicAuthBase641 = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(String.Format("{0}:{1}", authorization, authorization)));
+                    //req.Headers.Add("Authorization", String.Format("Basic {0}", basicAuthBase641))
+                    client.Headers.Add("Authorization", String.Format("Basic {0}", basicAuthBase641));
+                    //client.Headers.Add("Authorization: Basic " + authorization);
+                    client.Headers.Add("Content-Type:application/json");
+                    //client.Headers.Add("Accept:application/json");
+                    //System.Net.ServicePointManager.CertificatePolicy = new AlwaysIgnoreCertPolicy();
+                    //System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+
+                    //var result = client.UploadString("https://10.118.13.27:8243/SDIOutboundWMReceiptAPI/v1_0", resultSet.ToString());
+                    var result = client.UploadString(serviceURL, resultSet.ToString());
+
+                    // Console.WriteLine(result);
+                    var parsed = JObject.Parse(result);
+                    strResponse = parsed.SelectToken("RequestStatus").Value<string>();
+
+                    m_oLogger.LogMessage("postWMInventoryOnHandData", "POST WMInventoryOnHand data to Solvay server status " + strResponse);
+
+                    if (strResponse.ToUpper() != "SUCCESS")
+                    {
+                        //break;
+                    }
+                    // strResponse = JsonConvert.SerializeObject(result);
+                }
+
+                //    }
+                //}
             }
-        }
-    </script>
-    <script type="text/javascript">
-        function ClientSideClick(myButton) {
-            // Client side validation
-            if (typeof (Page_ClientValidate) == 'function') {
-                if (Page_ClientValidate() == false)
-                { return false; }
             }
 
-            //make sure the button is not of type "submit" but "button"
-            if (myButton.getAttribute('type') == 'button') {
-                // disable the button
-                myButton.disabled = true;
-                myButton.className = "btn-inactive";
-                myButton.value = "Processing...";
-            }
-            return true;
-        }
-    </script>
+            //catch (Exception ex)
+            catch (WebException ex)
+            {
 
-    <script type="text/javascript">
-        function CheckNumericQty(e) {
-            // Get ASCII value of key that user pressed
-            var key
-            if (window.event) key = window.event.keyCode;
-            else if (e) key = e.which;
-            else return;
-            // Was key that was pressed a numeric character (0-9)?
-            if (key == 46) // decimal point
-                return true;
-            else if (key == 8) // backspace
-                return true;
-            else if (key > 47 && key < 58) // digits 0-9
-                return true;
-            else
-                return false;
+                var responseStream = ex.Response.GetResponseStream();
+                if (responseStream != null)
+                {
+                    using (var reader = new StreamReader(responseStream))
+                    {
+                        responseErrorText = reader.ReadToEnd();
+                    }
+                }
+
+                m_oLogger.LogMessageWeb("postWMInventoryOnHandData", "Error trying to POST data to Solvay server.", responseErrorText); //ex
+            }
+            return strResponse;
         }
-    </script>
-</asp:Content>
+
+
+        public string ReplacePipe(string x)
+        {
+            x = x.Trim();
+            return x == "|" ? "" : x;
+        }
+
+    }
+}
+
+
