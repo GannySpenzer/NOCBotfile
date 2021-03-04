@@ -385,7 +385,8 @@ and a.business_unit = '" + strPOBU + "' and a.po_id='" + strPO + "'";
                 }
                 else
                 {
-                    Mailer.To.Add(new MailAddress(VendorEmail));
+                    //As per SP-57 ticket request, commented the mail sending to Portal email
+                    //Mailer.To.Add(new MailAddress(VendorEmail));
                     try
                     {
                         string[] values = Email.Split(';');
