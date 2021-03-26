@@ -324,10 +324,8 @@ Public Class QuoteNonStockProcessor
         dstcart.Columns.Add("Manuf. Partnum")
         dstcart.Columns.Add("QTY")
         dstcart.Columns.Add("UOM")
-        If Not BU = "I0W01" Then
-            dstcart.Columns.Add("Price")
-            dstcart.Columns.Add("Ext. Price")
-        End If
+        dstcart.Columns.Add("Price")
+        dstcart.Columns.Add("Ext. Price")
 
         ' dstcart.Columns.Add("Item ID")
         'dstcart.Columns.Add("Bin Location")
@@ -425,8 +423,7 @@ Public Class QuoteNonStockProcessor
                         strQty = "0"
                     End Try
 
-                    If Not BU = "I0W01" Then
-                        strPrice = "0.00"
+                    strPrice = "0.00"
                         Try
                             strPrice = CDec(CType(dataRowMain("ISA_SELL_PRICE"), String).Trim()).ToString()
                             strPrice = strPrice.Remove(strPrice.Length - 2)
@@ -449,8 +446,6 @@ Public Class QuoteNonStockProcessor
                         Else
                             dr("Ext. Price") = ExtPrice.ToString("f")
                         End If
-                    End If
-
 
                     dr("LN") = CType(dataRowMain("ISA_INTFC_LN"), String).Trim()
 
