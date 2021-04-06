@@ -2197,9 +2197,9 @@ Public Class QuoteNonStockProcessor
                             "Buyer E-mail: " &
                             "<a href=""mailto:" & strBuyerEmail & """>" & strBuyerEmail & "</a> " &
                          "<br />"
-            cInfoHTML &= "" &
-                            "Phone Number:  888-435-7734 " &
-                         ""
+            cInfoHTML &= "" ' &
+            ' "Phone Number:  888-435-7734 " &
+            '""
             If LineStatus = "QTW" Then
                 cInfoHTML = ""
             End If
