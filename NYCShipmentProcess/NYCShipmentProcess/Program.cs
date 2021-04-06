@@ -937,9 +937,9 @@ namespace NYCShipmentProcess
                                             strSchoolSupervisor = GetScalar(strSqlString);
 
                                             if (strSchoolSupervisor.Trim() != "")
-                                                strSupervisors = strSchoolSupervisor + ";NZhang3@schools.nyc.gov;Allen.Hiller@sdi.com";
+                                                strSupervisors = strSchoolSupervisor + ";NZhang3@schools.nyc.gov";
                                             else
-                                                strSupervisors = "NZhang3@schools.nyc.gov;Allen.Hiller@sdi.com";
+                                                strSupervisors = "NZhang3@schools.nyc.gov";
 
                                             // ' Compaining School ID for email id generation 
                                             strNYCEmailID = "C" + strSchoolID + "@schools.nyc.gov";
@@ -1266,7 +1266,7 @@ namespace NYCShipmentProcess
                             else
                             {
 
-                                MailTo = "MVoros@schools.nyc.gov;JZotos@schools.nyc.gov;Allen.hiller@sdi.com";
+                                MailTo = "MVoros@schools.nyc.gov;JZotos@schools.nyc.gov";
                                 MailSub = "<<TEST SITE>>SDiZeus-School :" + strSchoolID + " - NYC Shipment Summary Report";
                                 MailCc = "WebDev@sdi.com;avacorp@sdi.com;Ron.Fijalkowski@sdi.com";
                                 MailBcc = "";
