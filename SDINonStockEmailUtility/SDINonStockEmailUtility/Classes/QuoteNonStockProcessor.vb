@@ -424,28 +424,32 @@ Public Class QuoteNonStockProcessor
                     End Try
 
                     strPrice = "0.00"
-                        Try
+                    Try
+                        If BU = "I0W01" Then
+                            strPrice = CDec(CType(dataRowMain("PRICE_VNDR"), String).Trim()).ToString()
+                        Else
                             strPrice = CDec(CType(dataRowMain("ISA_SELL_PRICE"), String).Trim()).ToString()
-                            strPrice = strPrice.Remove(strPrice.Length - 2)
-                            If strPrice Is Nothing Then
-                                strPrice = "0.00"
-                            End If
-                        Catch ex As Exception
+                        End If
+                        strPrice = strPrice.Remove(strPrice.Length - 2)
+                        If strPrice Is Nothing Then
                             strPrice = "0.00"
-                        End Try
-                        If CDec(strPrice) = 0 Then
-                            ' dr("Price") = "Call for Price"
-                            dr("Price") = "0.00"
-                        Else
-                            strPrice = CDec(strPrice).ToString("f")
-                            dr("Price") = strPrice
                         End If
-                        Dim ExtPrice As Decimal = CType(Convert.ToDecimal(strQty) * Convert.ToDecimal(strPrice), String)
-                        If (ExtPrice.ToString("f") = "0.00") Then
-                            dr("Ext. Price") = "0.00"
-                        Else
-                            dr("Ext. Price") = ExtPrice.ToString("f")
-                        End If
+                    Catch ex As Exception
+                        strPrice = "0.00"
+                    End Try
+                    If CDec(strPrice) = 0 Then
+                        ' dr("Price") = "Call for Price"
+                        dr("Price") = "0.00"
+                    Else
+                        strPrice = CDec(strPrice).ToString("f")
+                        dr("Price") = strPrice
+                    End If
+                    Dim ExtPrice As Decimal = CType(Convert.ToDecimal(strQty) * Convert.ToDecimal(strPrice), String)
+                    If (ExtPrice.ToString("f") = "0.00") Then
+                        dr("Ext. Price") = "0.00"
+                    Else
+                        dr("Ext. Price") = ExtPrice.ToString("f")
+                    End If
 
                     dr("LN") = CType(dataRowMain("ISA_INTFC_LN"), String).Trim()
 
@@ -1781,7 +1785,7 @@ Public Class QuoteNonStockProcessor
 
 
 
-                            Else
+                    Else
                         'InsiteOnline
                         If IsAscend(itmQuoted.BusinessUnitOM) Then
                             Content = LETTER_CONTENT.Replace("Requestor Approval", "Approve Quotes (Ascend)")
