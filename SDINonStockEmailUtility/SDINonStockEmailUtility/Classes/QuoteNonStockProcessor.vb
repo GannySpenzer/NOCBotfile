@@ -1379,9 +1379,9 @@ Public Class QuoteNonStockProcessor
         End Try
 
         Select Case strDBase
-            Case "PROD"
+            Case "PROD", "SPRD"
                 sRet = "https://www.sdizeus.com/"
-            Case "FSUAT", "SNBX"
+            Case "SUAT", "SNBX"
                 sRet = "http://zeustest.sdi.com:8083/ZEUSUAT/"
             Case "STST", "RPTG"
                 sRet = "http://zeustest.sdi.com:8083/ZEUSRPTG/"
