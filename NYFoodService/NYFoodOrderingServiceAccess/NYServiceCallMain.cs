@@ -88,6 +88,7 @@ namespace NYFoodOrderingServiceAccess
             string ordered_quantity = "";
             Boolean results = false;
             string error_messag = "";
+            List<String> newSchlAddrs = new List<String>();
 
             //date_from = dttm_current.AddDays(-10).ToString("yyyy-MM-dd");
             date_from = dttm_current.ToString("yyyy-MM-dd");
@@ -216,6 +217,12 @@ namespace NYFoodOrderingServiceAccess
                                 ProcessFlag = "N";
                             }
 
+
+                            if (school_address.Contains("'") && (newSchlAddrs.Contains(school_address) ==false))
+                            {
+                                school_address=school_address.Replace("'", "''");
+                                newSchlAddrs.Add(school_address);
+                            }
 
                             strSQLQuery = "INSERT INTO SYSADM8.PS_ISA_NYFS_REQ_IN VALUES(SYSDATE,'" + order_id + "',' ', '" + school_id + "','" + school_name + "','" + school_address + "'" + System.Environment.NewLine +
                            ",'" + special_instruction + "',TO_DATE('" + oDate.ToString("MM-dd-yyyy hh:mm:ss") + "', 'MM-dd-yyyy hh:mi:ss'),'" + item_key + "',' ','" + item_name + "','" + item_unit + "',' ','" + ordered_quantity + "','" + ProcessFlag + "')";
