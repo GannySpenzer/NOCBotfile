@@ -32,5 +32,15 @@ namespace NYFoodOrderingServiceAccess.Properties {
                 return ((string)(this["NYFoodOrderingServiceAccess_SFOrdering_SFWebService"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.WebServiceUrl)]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://sdixaws2016test:8083/SDIEmailSvc/EmailServices.asmx")]
+        public string NYFoodOrderingServiceAccess_sdixaws2016test_EmailServices {
+            get {
+                return ((string)(this["NYFoodOrderingServiceAccess_sdixaws2016test_EmailServices"]));
+            }
+        }
     }
 }

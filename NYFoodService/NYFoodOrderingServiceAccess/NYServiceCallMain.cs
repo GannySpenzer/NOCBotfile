@@ -12,6 +12,8 @@ using System.Net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.VisualBasic;
+
 
 namespace NYFoodOrderingServiceAccess
 {  
@@ -88,6 +90,7 @@ namespace NYFoodOrderingServiceAccess
             string ordered_quantity = "";
             Boolean results = false;
             string error_messag = "";
+            string errorMsg = "";
             List<String> newSchlAddrs = new List<String>();
 
             //date_from = dttm_current.AddDays(-10).ToString("yyyy-MM-dd");
@@ -197,6 +200,7 @@ namespace NYFoodOrderingServiceAccess
 
                             string strOrderNo = "";
                             string ProcessFlag = "N";
+                           
                             try
                             {
                                 strSQLQuery = "SELECT ORDER_NO FROM SYSADM8.PS_ISA_NYFS_REQ_IN WHERE ORDER_NO= '" + order_id + "' AND ISA_SCHOOL_CODE= '" + school_id + "' AND ISA_ITEM = '" + item_key + "' AND QTY_REQ = '" + ordered_quantity + "'";
@@ -236,15 +240,20 @@ namespace NYFoodOrderingServiceAccess
                             }
                             else
                             {
-                                log.WriteLine("Error in inserting the transaction details. Query :" + strSQLQuery);
+                                errorMsg = "Error in inserting the transaction details. Query :" + strSQLQuery;
+                                log.WriteLine(errorMsg);
                                 log.WriteLine(" ");
+                                SendEmailAlert(errorMsg);
                             }
                         }
                         else
                         {
                             if (error_messag.Trim() != "")
                             {
-                                log.WriteLine("Error in reading XML Node. Error : " + error_messag);break;
+                                errorMsg = "Error in reading XML Node. Error : " + error_messag;
+                                log.WriteLine(errorMsg);
+                                SendEmailAlert(errorMsg);
+                                break;                                
                             }
 
                         }
@@ -256,8 +265,9 @@ namespace NYFoodOrderingServiceAccess
             }
             catch (Exception ex)
             {
-
-                log.WriteLine("Error in accessing the service. Error : " + ex.Message);
+                errorMsg = "Error in accessing the service. Error : " + ex.Message;
+                log.WriteLine(errorMsg);
+                SendEmailAlert(errorMsg);
             }
             return log;
         }
@@ -359,6 +369,69 @@ namespace NYFoodOrderingServiceAccess
             return strReturn;
         }
 
+        public static void SendEmailAlert(string sLastErrorMessage)
+        {
+            try
+            {                
+                string testORProd = "";
+                testORProd = ConfigurationManager.AppSettings["TestORProd"];
+                string sLogPath = ConfigurationManager.AppSettings["LogPath"];
+                
+                string cErrMsg = "Utility NYFoodOrderingServices had a error";
+                string strBodyhead = "";
+                string strbodydetl = "";
+                string strBody = "";
+                string strSender = "";
+                if (testORProd == "TEST")
+                {
+                    strSender = "webdev@sdi.com; avacorp@sdi.com";
+                }
+                else if (testORProd == "PROD")
+                {
+                    strSender = "webdev@sdi.com; Scott.Doyle@sdi.com; Yury.Arkadin@sdi.com; avacorp@sdi.com";
+                }
+                sdixaws2016test.EmailServices SDIEmailService = new sdixaws2016test.EmailServices();                
+                string[] MailAttachmentName = null;
+                List<byte[]> MailAttachmentbytes = new List<byte[]>();
+
+                strBodyhead = strBodyhead + "<center><span style='font-family:Arial;font-size:X-Large;width:256px;Color:RED'><b>" + cErrMsg + "</b> </span><center>" + Constants.vbCrLf;
+                strBodyhead = strBodyhead + "&nbsp;" + Constants.vbCrLf;
+                strbodydetl = "&nbsp;" + Constants.vbCrLf;
+                strbodydetl = strbodydetl + "<HR width='100%' SIZE='1'>" + Constants.vbCrLf;
+                strbodydetl = strbodydetl + "&nbsp;" + Constants.vbCrLf;
+
+                strbodydetl = strbodydetl + "<TABLE cellSpacing='1' cellPadding='1' width='100%' border='0'>" + Constants.vbCrLf;
+
+                strbodydetl = strbodydetl + "<TR>" + Constants.vbCrLf;
+                strbodydetl = strbodydetl + "<TD>" + Constants.vbCrLf;
+                strbodydetl = strbodydetl + "<b>Log File :</b><span> &nbsp;" + sLogPath + " </span></td></tr>";
+                strbodydetl = strbodydetl + "<TR>" + Constants.vbCrLf;
+                strbodydetl = strbodydetl + "<TD>" + Constants.vbCrLf;
+                strbodydetl = strbodydetl + "<b>Last Error Message :</b><span> &nbsp;" + sLastErrorMessage + "</span></td></tr>";
+
+                strbodydetl = strbodydetl + "<TD>" + Constants.vbCrLf;
+
+                strbodydetl = strbodydetl + "<TR>" + Constants.vbCrLf;
+
+                strbodydetl = strbodydetl + "<TR>" + Constants.vbCrLf;
+                strbodydetl = strbodydetl + "<TD>" + Constants.vbCrLf;
+                strbodydetl = strbodydetl + "<span>&nbsp;</span></td></tr>" + Constants.vbCrLf;
+                strbodydetl = strbodydetl + "<TR>" + Constants.vbCrLf;
+                strbodydetl = strbodydetl + "<TD>" + Constants.vbCrLf;
+                strbodydetl = strbodydetl + "&nbsp;<br>" + Constants.vbCrLf;
+                strBody = strBodyhead + strbodydetl;
+                try
+                {
+                    SDIEmailService.EmailUtilityServices("Mail", "SDIExchADMIN@sdi.com", strSender, "Error from NYFoodOrderingServiceAccess Utility", "", "", strBody, "SDIERRMAIL", MailAttachmentName, MailAttachmentbytes.ToArray());
+                }
+                catch (Exception ex1)
+                {
+                }
+            }
+            catch (Exception e)
+            {
+            }
+        }
 
 
     }

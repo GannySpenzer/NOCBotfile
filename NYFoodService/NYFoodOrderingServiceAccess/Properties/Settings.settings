@@ -5,5 +5,8 @@
     <Setting Name="NYFoodOrderingServiceAccess_SFOrdering_SFWebService" Type="(Web Service URL)" Scope="Application">
       <Value Profile="(Default)">https://www.opt-osfns.org/osfns/resources/SFOrdering/sfwebservice.asmx</Value>
     </Setting>
+    <Setting Name="NYFoodOrderingServiceAccess_sdixaws2016test_EmailServices" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">http://sdixaws2016test:8083/SDIEmailSvc/EmailServices.asmx</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
