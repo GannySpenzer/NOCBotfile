@@ -377,7 +377,7 @@ namespace NYFoodOrderingServiceAccess
                 testORProd = ConfigurationManager.AppSettings["TestORProd"];
                 string sLogPath = ConfigurationManager.AppSettings["LogPath"];
                 
-                string cErrMsg = "Utility NYFoodOrderingServices had a error";
+                string cErrMsg = "Utility NYFoodOrderingServices had an error";
                 string strBodyhead = "";
                 string strbodydetl = "";
                 string strBody = "";
