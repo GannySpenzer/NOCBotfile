@@ -1214,9 +1214,9 @@ Module Module1
         Dim dteSTKREQEmail As String = objEnterprise.STKREQEmail
         Dim dteNONSKREQEmail As String = objEnterprise.NONSKREQEmail
 
-        'If strBU = "I0256" Then
-        '    dteStartDate = dteStartDate.AddMinutes(-31)
-        '    'dteStartDate = dteStartDate.AddHours(-15)
+        'If strBU = "I0440" Then
+        '    'dteStartDate = dteStartDate.AddMinutes(-31)
+        '    dteStartDate = dteStartDate.AddHours(-15)
         'End If
 
 
@@ -1260,6 +1260,7 @@ Module Module1
                                 " AND E.FIELDVALUE = G.ISA_LINE_STATUS) as ORDER_STATUS_DESC, " & vbCrLf &
                  " B.DESCR254 As NONSTOCK_DESCRIPTION, C.DESCR60 as STOCK_DESCRIPTION, D.ISA_EMPLOYEE_EMAIL," & vbCrLf &
                  " B.INV_ITEM_ID as INV_ITEM_ID," & vbCrLf &
+                 " B.QTY_REQUESTED,B.QTY_RECEIVED,B.UNIT_OF_MEASURE," & vbCrLf &
                  " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH" & vbCrLf &
                  " ,A.origin" & vbCrLf &
                  " FROM ps_isa_ord_intf_HD A," & vbCrLf  '   & _
@@ -1336,7 +1337,7 @@ Module Module1
         Dim dsEmail As New DataTable
         Dim dr1 As DataRow
 
-
+        'SDI - 23457 added qty ordered, qty received and UOM column for order status email
         dsEmail.Columns.Add("Order No.")
         dsEmail.Columns.Add("Status")
         dsEmail.Columns.Add("Non-Stock Item Description")
@@ -1348,6 +1349,9 @@ Module Module1
         dsEmail.Columns.Add("Work Order Number")
         dsEmail.Columns.Add("PO #")
         dsEmail.Columns.Add("Line Notes")
+        dsEmail.Columns.Add("Qty Ordered")
+        dsEmail.Columns.Add("Qty Received")
+        dsEmail.Columns.Add("UOM")
 
         Dim strdescription As String = " "
         Dim strEmailTo As String = " "
@@ -1407,6 +1411,21 @@ Module Module1
             dr1.Item(7) = strStatus_code
             dr1.Item(8) = ds.Tables(0).Rows(I).Item("WORK_ORDER_NO")
             dr1.Item(9) = strpo_id
+            Try
+                dr1.Item(11) = ds.Tables(0).Rows(I).Item("QTY_REQUESTED")
+            Catch ex As Exception
+                dr1.Item(11) = ""
+            End Try
+            Try
+                dr1.Item(12) = ds.Tables(0).Rows(I).Item("QTY_RECEIVED")
+            Catch ex As Exception
+                dr1.Item(12) = ""
+            End Try
+            Try
+                dr1.Item(13) = ds.Tables(0).Rows(I).Item("UNIT_OF_MEASURE")
+            Catch ex As Exception
+                dr1.Item(13) = ""
+            End Try
             dsEmail.Rows.Add(dr1)
 
             ' "R" nonstock
@@ -1668,6 +1687,7 @@ Module Module1
         Dim dr1 As DataRow
         Dim dsShipTo As DataSet
 
+        'SDI - 23457 added qty ordered, qty received and UOM column for order status email
         dsEmail.Columns.Add("Order No.")
         dsEmail.Columns.Add("Status")
         dsEmail.Columns.Add("Non-Stock Item Description")
@@ -1773,9 +1793,22 @@ Module Module1
             Else
                 dr1.Item(11) = ""
             End If
-            dr1.Item(12) = ds.Tables(0).Rows(I).Item("QTY_REQUESTED")
-            dr1.Item(13) = ds.Tables(0).Rows(I).Item("QTY_RECEIVED")
-            dr1.Item(14) = ds.Tables(0).Rows(I).Item("UNIT_OF_MEASURE")
+            Try
+                dr1.Item(12) = ds.Tables(0).Rows(I).Item("QTY_REQUESTED")
+            Catch ex As Exception
+                dr1.Item(12) = ""
+            End Try
+            Try
+                dr1.Item(13) = ds.Tables(0).Rows(I).Item("QTY_RECEIVED")
+            Catch ex As Exception
+                dr1.Item(13) = ""
+            End Try
+            Try
+                dr1.Item(14) = ds.Tables(0).Rows(I).Item("UNIT_OF_MEASURE")
+            Catch ex As Exception
+                dr1.Item(14) = ""
+            End Try
+
 
             If strBU = "I0W01" Then
                 If ds.Tables(0).Rows(I).Item("SHIPTO").ToString <> "" Then
