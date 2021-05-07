@@ -348,6 +348,8 @@ Public Class QuoteNonStockProcessor
         Dim SqlRdr As SqlDataReader = Nothing
         Dim strProdVwId As String = String.Empty
         Dim SqlRdr1 As SqlDataReader = Nothing
+        Dim SQLSTRINGQuery As String = String.Empty
+        Dim currencyds As DataSet = New DataSet
         Try
             'strOraSelectQuery = "select * from SYSADM8.PS_ISA_ORD_INTF_HD where ORDER_NO = '" & ordNumber & "'"
             ''strOraSelectQuery = "select * from PS_ISA_ORD_INTFC_H where ORDER_NO = 'M220016429'" 
@@ -361,10 +363,53 @@ Public Class QuoteNonStockProcessor
 
             strOraSelectQuery = "select * from SYSADM8.PS_ISA_ORD_INTF_LN where ORDER_NO = '" & ordNumber & "'"
             dsOrdLnItems = GetAdapter(strOraSelectQuery)
+            Try
+                SQLSTRINGQuery = "" & "SELECT" & vbCrLf &
+                                  "INTFC.ISA_INTFC_LN" & vbCrLf &
+                                  ",DECODE(TRIM(P.CURRENCY_CD), NULL, DECODE(TRIM(F.CURRENCY_CD), NULL, D.CURRENCY_CD, F.CURRENCY_CD), P.CURRENCY_CD) AS CURRENCY_CD" & vbCrLf &
+                                  "FROM" & vbCrLf &
+                                  "(" & vbCrLf &
+                                  " Select " & vbCrLf &
+                                  " A.BUSINESS_UNIT_OM " & vbCrLf &
+                                  " ,A.ORDER_NO " & vbCrLf &
+                                  " ,B.ISA_INTFC_LN " & vbCrLf &
+                                    " ,B.INV_ITEM_ID " & vbCrLf &
+                                  " From SYSADM8.PS_ISA_ORD_INTF_HD A " & vbCrLf &
+                                  " ,SYSADM8.PS_ISA_ORD_INTF_LN B " & vbCrLf &
+                                  " ,PS_BUS_UNIT_TBL_OM C " & vbCrLf &
+                                   " WHERE A.ORDER_NO = B.ORDER_NO" & vbCrLf &
+                              " And A.BUSINESS_UNIT_OM = C.BUSINESS_UNIT " & vbCrLf &
+                              " AND A.BUSINESS_UNIT_OM = '" & ordBU & "' " & vbCrLf &
+                              " AND A.ORDER_NO = '" & ordNumber & "' " & vbCrLf &
+                               "  And B.ISA_LINE_STATUS IN ('QTS','QTW')" & vbCrLf &
+                                    ")" & vbCrLf & " INTFC " & vbCrLf &
+                              ",PS_REQ_LINE D" & vbCrLf &
+                           ",SYSADM8.PS_ISA_SDIEX_PRCBU P " & vbCrLf &
+                            ", SYSADM8.PS_ISA_REQ_BI_INFO F " & vbCrLf &
+                           "WHERE INTFC.ORDER_NO = D.REQ_ID(+)" & vbCrLf &
+                           "And INTFC.ISA_INTFC_LN = D.LINE_NBR (+) " & vbCrLf &
+                          " And TRIM(INTFC.INV_ITEM_ID) = P.INV_ITEM_ID(+) " & vbCrLf &
+                          " And D.BUSINESS_UNIT = F.BUSINESS_UNIT (+) " & vbCrLf &
+                          " And D.REQ_ID = F.REQ_ID (+) " & vbCrLf &
+                           " And D.LINE_NBR = F.LINE_NBR (+) " & vbCrLf &
+                             " And INTFC.BUSINESS_UNIT_OM = P.BUSINESS_UNIT (+)" & vbCrLf & ""
+                currencyds = ORDBData.GetAdapter(SQLSTRINGQuery)
+            Catch ex As Exception
+
+            End Try
 
             If dsOrdLnItems.Tables(0).Rows.Count > 0 Then
                 Dim intMy21 As Integer = 0
+                Dim Currency As String = String.Empty
                 For Each dataRowMain As DataRow In dsOrdLnItems.Tables(0).Rows
+                    Try
+                        Currency = currencyds.Tables(0).AsEnumerable().
+   Where(Function(r) Convert.ToString(r.Field(Of Decimal)("ISA_INTFC_LN")) = Convert.ToString(dataRowMain("ISA_INTFC_LN"))).
+   Select(Function(r) Convert.ToString(r.Field(Of String)("CURRENCY_CD"))).
+   FirstOrDefault()
+                    Catch ex As Exception
+
+                    End Try
                     'code to get work order id
                     If intMy21 = 0 Then
                         strWrkOrder = " "
@@ -442,13 +487,14 @@ Public Class QuoteNonStockProcessor
                         dr("Price") = "0.00"
                     Else
                         strPrice = CDec(strPrice).ToString("f")
-                        dr("Price") = strPrice
+                        dr("Price") = strPrice & " " & Currency
+
                     End If
                     Dim ExtPrice As Decimal = CType(Convert.ToDecimal(strQty) * Convert.ToDecimal(strPrice), String)
                     If (ExtPrice.ToString("f") = "0.00") Then
                         dr("Ext. Price") = "0.00"
                     Else
-                        dr("Ext. Price") = ExtPrice.ToString("f")
+                        dr("Ext. Price") = ExtPrice.ToString("f") & " " & Currency
                     End If
 
                     dr("LN") = CType(dataRowMain("ISA_INTFC_LN"), String).Trim()
