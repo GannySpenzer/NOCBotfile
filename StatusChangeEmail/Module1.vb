@@ -1589,6 +1589,7 @@ Module Module1
                                 " AND E.FIELDVALUE = G.ISA_LINE_STATUS) as ORDER_STATUS_DESC, " & vbCrLf &
                  " B.DESCR254 As NONSTOCK_DESCRIPTION, C.DESCR60 as STOCK_DESCRIPTION, D.ISA_EMPLOYEE_EMAIL," & vbCrLf &
                  " B.INV_ITEM_ID as INV_ITEM_ID," & vbCrLf &
+                 " B.QTY_REQUESTED,B.QTY_RECEIVED,B.UNIT_OF_MEASURE," & vbCrLf &
         " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH" & vbCrLf &
                  " ,A.origin, LD.PO_ID, SH.ISA_ASN_TRACK_NO" & vbCrLf &
                  " FROM ps_isa_ord_intf_HD A," & vbCrLf  '   & _
@@ -1679,6 +1680,9 @@ Module Module1
         dsEmail.Columns.Add("PO #")
         dsEmail.Columns.Add("Line Notes")
         dsEmail.Columns.Add("Tracking No")
+        dsEmail.Columns.Add("Qty Ordered")
+        dsEmail.Columns.Add("Qty Received")
+        dsEmail.Columns.Add("UOM")
         If strBU = "I0W01" Then
             dsEmail.Columns.Add("Ship To")
             Try
@@ -1769,15 +1773,19 @@ Module Module1
             Else
                 dr1.Item(11) = ""
             End If
+            dr1.Item(12) = ds.Tables(0).Rows(I).Item("QTY_REQUESTED")
+            dr1.Item(13) = ds.Tables(0).Rows(I).Item("QTY_RECEIVED")
+            dr1.Item(14) = ds.Tables(0).Rows(I).Item("UNIT_OF_MEASURE")
+
             If strBU = "I0W01" Then
                 If ds.Tables(0).Rows(I).Item("SHIPTO").ToString <> "" Then
                     Try
                         Dim Descr As String = dsShipTo.Tables(0).AsEnumerable().
  Where(Function(r) Convert.ToString(r.Field(Of String)("SHIPTO_ID")) = ds.Tables(0).Rows(I).Item("SHIPTO").ToString).
  Select(Function(r) Convert.ToString(r.Field(Of String)("DESCR"))).FirstOrDefault()
-                        dr1.Item(12) = Descr + "_" + ds.Tables(0).Rows(I).Item("SHIPTO").ToString
+                        dr1.Item(15) = Descr + "_" + ds.Tables(0).Rows(I).Item("SHIPTO").ToString
                     Catch
-                        dr1.Item(12) = ""
+                        dr1.Item(15) = ""
                     End Try
 
                 End If
