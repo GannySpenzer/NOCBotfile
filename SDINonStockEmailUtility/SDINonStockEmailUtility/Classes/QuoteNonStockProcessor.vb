@@ -379,7 +379,7 @@ Public Class QuoteNonStockProcessor
                                   " ,PS_BUS_UNIT_TBL_OM C " & vbCrLf &
                                    " WHERE A.ORDER_NO = B.ORDER_NO" & vbCrLf &
                               " And A.BUSINESS_UNIT_OM = C.BUSINESS_UNIT " & vbCrLf &
-                              " AND A.BUSINESS_UNIT_OM = '" & ordBU & "' " & vbCrLf &
+                              " AND A.BUSINESS_UNIT_OM = '" & BU & "' " & vbCrLf &
                               " AND A.ORDER_NO = '" & ordNumber & "' " & vbCrLf &
                                "  And B.ISA_LINE_STATUS IN ('QTS','QTW')" & vbCrLf &
                                     ")" & vbCrLf & " INTFC " & vbCrLf &
@@ -483,73 +483,27 @@ Public Class QuoteNonStockProcessor
                         strPrice = "0.00"
                     End Try
                     If CDec(strPrice) = 0 Then
-                        ' dr("Price") = "Call for Price"
                         dr("Price") = "0.00"
                     Else
                         strPrice = CDec(strPrice).ToString("f")
-                        dr("Price") = strPrice & " " & Currency
-
+                        If BU = "I0W01" Then
+                            dr("Price") = strPrice
+                        Else
+                            dr("Price") = strPrice & " " & Currency
+                        End If
                     End If
                     Dim ExtPrice As Decimal = CType(Convert.ToDecimal(strQty) * Convert.ToDecimal(strPrice), String)
                     If (ExtPrice.ToString("f") = "0.00") Then
                         dr("Ext. Price") = "0.00"
                     Else
-                        dr("Ext. Price") = ExtPrice.ToString("f") & " " & Currency
+                        If BU = "I0W01" Then
+                            dr("Ext. Price") = ExtPrice.ToString("f")
+                        Else
+                            dr("Ext. Price") = ExtPrice.ToString("f") & " " & Currency
+                        End If
                     End If
 
                     dr("LN") = CType(dataRowMain("ISA_INTFC_LN"), String).Trim()
-
-                    'Dim strCplusItemid As String = String.Empty
-                    'If IsDBNull(dr("Manuf.")) And Not String.IsNullOrEmpty(dr("Item ID").ToString()) Then
-                    '    Try
-                    '        Dim strSQLString As String = "SELECT A.ISA_CP_PROD_ID" & vbCrLf & _
-                    '                                     " FROM PS_ISA_CP_JUNCTION A" & vbCrLf & _
-                    '                                     " WHERE A.INV_ITEM_ID = '" & dr("Item ID") & "'"
-                    '        Dim OrcRdr1 As OleDb.OleDbDataReader = GetReader(strSQLString)
-                    '        If OrcRdr1.HasRows Then
-                    '            Try
-                    '                OrcRdr1.Read()
-                    '                strCplusItemid = OrcRdr1.GetString(0)
-                    '            Catch ex As Exception
-                    '                strCplusItemid = ""
-                    '            End Try
-                    '        End If
-                    '    Catch ex As Exception
-                    '        strCplusItemid = ""
-                    '    End Try
-                    '    If strCplusItemid.Trim.Length > 0 Then
-                    '        If Convert.ToInt32(strCplusItemid) > 0 Then
-                    '            Dim strSQLstring As String
-                    '            strSQLstring = "SELECT ScottsDaleItemTable.manufacturerPartNumber," & vbCrLf & _
-                    '                            " ScottsDaleItemTable.manufacturerName," & vbCrLf & _
-                    '                            " ScottsDaleItemTable.shippableUnitOfMeasure," & vbCrLf & _
-                    '                            " classes.classname" & vbCrLf & _
-                    '                            " FROM ScottsDaleItemTable, classes" & vbCrLf & _
-                    '                            " WHERE ScottsDaleItemTable.ItemID = " & strCplusItemid.Trim() & vbCrLf & _
-                    '                            " AND ScottsDaleItemTable.classid = classes.classid"
-                    '            SqlRdr = GetSQLReaderDazzle(strSQLstring)
-                    '            If SqlRdr.Read() Then
-                    '                If IsDBNull(SqlRdr.Item("manufacturerName")) Then
-                    '                    dr("Manuf.") = " "
-                    '                Else
-                    '                    dr("Manuf.") = SqlRdr.Item("manufacturerName")
-                    '                End If
-
-                    '                If IsDBNull(SqlRdr.Item("manufacturerPartNumber")) Then
-                    '                    dr("Manuf. Partnum") = " "
-                    '                Else
-                    '                    dr("Manuf. Partnum") = SqlRdr.Item("manufacturerPartNumber")
-                    '                End If
-                    '                If IsDBNull(SqlRdr.Item("shippableUnitOfMeasure")) Then
-                    '                    dr("UOM") = " "
-                    '                Else
-                    '                    dr("UOM") = SqlRdr.Item("shippableUnitOfMeasure")
-                    '                End If
-                    '            End If
-                    '        End If
-                    '    End If
-                    'End If
-
                     dstcart.Rows.Add(dr)
                 Next
             End If
