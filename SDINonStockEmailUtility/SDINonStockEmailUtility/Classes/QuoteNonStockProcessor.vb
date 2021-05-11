@@ -318,6 +318,7 @@ Public Class QuoteNonStockProcessor
         Dim dstcart As DataTable
         dstcart = New DataTable
 
+        dstcart.Columns.Add("LN")
         dstcart.Columns.Add("Item ID")
         dstcart.Columns.Add("Description")
         dstcart.Columns.Add("Manuf.")
@@ -326,18 +327,9 @@ Public Class QuoteNonStockProcessor
         dstcart.Columns.Add("UOM")
         dstcart.Columns.Add("Price")
         dstcart.Columns.Add("Ext. Price")
+        dstcart.Columns.Add("Base Price")
 
-        ' dstcart.Columns.Add("Item ID")
-        'dstcart.Columns.Add("Bin Location")
-        'dstcart.Columns.Add("Item Chg Code")
-        'dstcart.Columns.Add("Requestor Name")
-        'dstcart.Columns.Add("RFQ")
-        'dstcart.Columns.Add("Machine Num")
-        'dstcart.Columns.Add("Tax Exempt")
-        'dstcart.Columns.Add("LPP")
-        'dstcart.Columns.Add("PO")
-        dstcart.Columns.Add("LN")
-        'dstcart.Columns.Add("SerialID")
+
 
         Dim strOraSelectQuery As String = String.Empty
         Dim ordIdentifier As String = String.Empty
@@ -351,22 +343,13 @@ Public Class QuoteNonStockProcessor
         Dim SQLSTRINGQuery As String = String.Empty
         Dim currencyds As DataSet = New DataSet
         Try
-            'strOraSelectQuery = "select * from SYSADM8.PS_ISA_ORD_INTF_HD where ORDER_NO = '" & ordNumber & "'"
-            ''strOraSelectQuery = "select * from PS_ISA_ORD_INTFC_H where ORDER_NO = 'M220016429'" 
-            ''strOraSelectQuery = "select * from PS_ISA_ORD_INTFC_H where ORDER_NO = 'M220016427'"
-            'OrcRdr = GetReader(strOraSelectQuery)
-            'If OrcRdr.HasRows Then
-            '    OrcRdr.Read()
-            '    ordIdentifier = CType(OrcRdr("ISA_IDENTIFIER"), String).Trim()
-            '    ordBU = CType(OrcRdr("BUSINESS_UNIT_OM"), String).Trim()
-            'End If
 
             strOraSelectQuery = "select * from SYSADM8.PS_ISA_ORD_INTF_LN where ORDER_NO = '" & ordNumber & "'"
             dsOrdLnItems = GetAdapter(strOraSelectQuery)
             Try
                 SQLSTRINGQuery = "" & "SELECT" & vbCrLf &
                                   "INTFC.ISA_INTFC_LN" & vbCrLf &
-                                  ",DECODE(TRIM(P.CURRENCY_CD), NULL, DECODE(TRIM(F.CURRENCY_CD), NULL, D.CURRENCY_CD, F.CURRENCY_CD), P.CURRENCY_CD) AS CURRENCY_CD" & vbCrLf &
+                                  ",DECODE(D.PRICE_REQ, NULL, DECODE(P.PRICE, NULL, INTFC.NET_UNIT_PRICE, P.PRICE), D.PRICE_REQ) || ' ' || DECODE(TRIM(P.CURRENCY_CD), NULL, DECODE(TRIM(F.CURRENCY_CD), NULL, D.CURRENCY_CD, F.CURRENCY_CD), P.CURRENCY_CD) AS BASECURRENCY" & vbCrLf &
                                   "FROM" & vbCrLf &
                                   "(" & vbCrLf &
                                   " Select " & vbCrLf &
@@ -374,6 +357,7 @@ Public Class QuoteNonStockProcessor
                                   " ,A.ORDER_NO " & vbCrLf &
                                   " ,B.ISA_INTFC_LN " & vbCrLf &
                                     " ,B.INV_ITEM_ID " & vbCrLf &
+                                    " ,B.ISA_SELL_PRICE AS NET_UNIT_PRICE " & vbCrLf &
                                   " From SYSADM8.PS_ISA_ORD_INTF_HD A " & vbCrLf &
                                   " ,SYSADM8.PS_ISA_ORD_INTF_LN B " & vbCrLf &
                                   " ,PS_BUS_UNIT_TBL_OM C " & vbCrLf &
@@ -400,12 +384,12 @@ Public Class QuoteNonStockProcessor
 
             If dsOrdLnItems.Tables(0).Rows.Count > 0 Then
                 Dim intMy21 As Integer = 0
-                Dim Currency As String = String.Empty
+                Dim BaseCurrency As String = String.Empty
                 For Each dataRowMain As DataRow In dsOrdLnItems.Tables(0).Rows
                     Try
-                        Currency = currencyds.Tables(0).AsEnumerable().
+                        BaseCurrency = currencyds.Tables(0).AsEnumerable().
    Where(Function(r) Convert.ToString(r.Field(Of Decimal)("ISA_INTFC_LN")) = Convert.ToString(dataRowMain("ISA_INTFC_LN"))).
-   Select(Function(r) Convert.ToString(r.Field(Of String)("CURRENCY_CD"))).
+   Select(Function(r) Convert.ToString(r.Field(Of String)("BASECURRENCY"))).
    FirstOrDefault()
                     Catch ex As Exception
 
@@ -460,9 +444,6 @@ Public Class QuoteNonStockProcessor
                         dr("QTY") = strQty
                         If IsDBNull(CType(dataRowMain("QTY_REQUESTED"), String).Trim()) Or CType(dataRowMain("QTY_REQUESTED"), String).Trim() = " " Then
                             strQty = "0"
-                            'Else
-                            '    strQty = CType(dataRowMain("QTY_REQ"), String).Trim()
-                            '    strQty = strQty.Remove(strQty.Length - 2)
                         End If
                     Catch ex As Exception
                         strQty = "0"
@@ -486,22 +467,20 @@ Public Class QuoteNonStockProcessor
                         dr("Price") = "0.00"
                     Else
                         strPrice = CDec(strPrice).ToString("f")
-                        If BU = "I0W01" Then
-                            dr("Price") = strPrice
-                        Else
-                            dr("Price") = strPrice & " " & Currency
-                        End If
+                        dr("Price") = strPrice & " " & CType(dataRowMain("CURRENCY_CD_BASE"), String).Trim()
+
                     End If
                     Dim ExtPrice As Decimal = CType(Convert.ToDecimal(strQty) * Convert.ToDecimal(strPrice), String)
                     If (ExtPrice.ToString("f") = "0.00") Then
                         dr("Ext. Price") = "0.00"
                     Else
-                        If BU = "I0W01" Then
-                            dr("Ext. Price") = ExtPrice.ToString("f")
-                        Else
-                            dr("Ext. Price") = ExtPrice.ToString("f") & " " & Currency
-                        End If
+                        dr("Ext. Price") = ExtPrice.ToString("f") & " " & CType(dataRowMain("CURRENCY_CD_BASE"), String).Trim()
                     End If
+                    Try
+                        dr("Base Price") = BaseCurrency
+                    Catch ex As Exception
+
+                    End Try
 
                     dr("LN") = CType(dataRowMain("ISA_INTFC_LN"), String).Trim()
                     dstcart.Rows.Add(dr)
