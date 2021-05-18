@@ -63,7 +63,6 @@ Module Module1
 
     Private Function buildstatchgout() As Boolean
         ' get XML file of sites that require email
-
         Dim strXMLDir As String = rootDir & "\EmailSites.xml"
         Dim xmldata As New XmlDocument
         Dim sr As System.IO.StreamReader
@@ -1963,9 +1962,11 @@ Module Module1
                                 If dsUser.Tables.Count > 0 Then
                                     Dim THIRDPARTY_COMP_ID As String = String.Empty
                                     Try
-                                        THIRDPARTY_COMP_ID = dsUser.Tables(0).Rows(I).Item("THIRDPARTY_COMP_ID")
+                                        THIRDPARTY_COMP_ID = dsUser.Tables(0).Rows(0).Item("THIRDPARTY_COMP_ID")
+                                        objWalmartSC.WriteLine("THIRDPARTY_COMP_ID: " + Convert.ToString(THIRDPARTY_COMP_ID))
                                     Catch ex As Exception
                                         THIRDPARTY_COMP_ID = "0"
+                                        objWalmartSC.WriteLine("Catch-THIRDPARTY_COMP_ID: " + Convert.ToString(THIRDPARTY_COMP_ID))
                                     End Try
                                     Dim OrderStatusDetail As New OrderStatusDetail
                                     Dim orderDetail As String = OrdrStatus(OrderNo)
