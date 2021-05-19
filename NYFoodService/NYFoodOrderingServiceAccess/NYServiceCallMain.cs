@@ -108,8 +108,8 @@ namespace NYFoodOrderingServiceAccess
             {
 
 
-                date_from = "02/01/2020";
-                date_to = "12/12/2020";
+                //date_from = "05/04/2021";
+                //date_to = "05/29/2021";
                 SFOrdering.SFWebService objSFOrdering = new SFOrdering.SFWebService();
                 log.WriteLine("Calling the SFWebService");
                 xmlNode = objSFOrdering.GetOrdersDateRangeXML(strVendor, Pass, date_from, date_to, boro);
