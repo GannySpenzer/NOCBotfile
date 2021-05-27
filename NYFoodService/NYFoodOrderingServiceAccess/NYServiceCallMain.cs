@@ -161,8 +161,13 @@ namespace NYFoodOrderingServiceAccess
                             {
                                 if (reader.NodeType == XmlNodeType.Element && reader.Name == "special_instruction")
                                 {
-                                    special_instruction = reader.ReadString(); break;
-                                }
+                                    special_instruction = reader.ReadString();
+                                    if (special_instruction == "")
+                                    {
+                                        special_instruction = " ";
+                                    }
+                                    break;
+                                }                                   
                             }
                             while (reader.Read())
                             {
