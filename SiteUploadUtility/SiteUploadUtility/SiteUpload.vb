@@ -57,7 +57,7 @@ Public Class SiteUpload
             'MsgBox(filesInFolder)
             'Exit Sub
 
-            If cmbServer.Text = "SDIX2012" Or cmbServer.Text = "SDIX2012ZEUS2" Then
+            If cmbServer.Text = "SDIX2012" Or cmbServer.Text = "SDIX2012ZEUS2" Or cmbServer.Text = "SDIXAWSZEUS" Then
                 ProcessProd()
                 Exit Sub
             End If
@@ -258,6 +258,8 @@ Public Class SiteUpload
                 strConfigSource = System.Configuration.ConfigurationSettings.AppSettings("SDIXProdConfigFiles")
             Case "SDIX2012ZEUS2"
                 strConfigSource = System.Configuration.ConfigurationSettings.AppSettings("ZeusProdConfigFiles")
+            Case "SDIXAWSZEUS"
+                strConfigSource = System.Configuration.ConfigurationSettings.AppSettings("ZeusAWSProdConfigFiles")
         End Select
 
         Dim strProdUpdateFiles As String() = New String(10) {}
@@ -269,7 +271,7 @@ Public Class SiteUpload
         strProdUpdateFiles(5) = "SDI.PrintJob.nycTruckingDelivForm.dll.config"
         strProdUpdateFiles(6) = "SDI.PrintJob.nycTruckingDelivForm.template.xml"
         strProdUpdateFiles(7) = "UpdEmailOut.dll.config"
-        If cmbServer.Text = "SDIX2012ZEUS2" Then
+        If cmbServer.Text = "SDIX2012ZEUS2" Or cmbServer.Text = "SDIXAWSZEUS" Then
             strProdUpdateFiles(8) = "CreditCardCapture.aspx"
             strProdUpdateFiles(9) = "ShoppingCartPayment.aspx"
             strProdUpdateFiles(10) = "PunchINSAP.xml"
@@ -285,7 +287,7 @@ Public Class SiteUpload
             For i = 0 To 7
                 strMessage += strProdUpdateFiles(i) + " to " & vbCrLf & txtSource.Text & "\bin" & vbCrLf
             Next i
-            If cmbServer.Text = "SDIX2012ZEUS2" Then
+            If cmbServer.Text = "SDIX2012ZEUS2" Or cmbServer.Text = "SDIXAWSZEUS" Then
                 For i = 8 To 10
                     If i <> 10 Then
                         strMessage += strProdUpdateFiles(i) + " to " & vbCrLf & txtSource.Text & "\" & vbCrLf
@@ -297,10 +299,10 @@ Public Class SiteUpload
             strMessage += vbCrLf
 
             strMessage += "4. STOP IIS Services with a 3 second pause" & vbCrLf & vbCrLf
-            strMessage += "5. Delete everything in " & cmbServer.Text & "\c$\inetpub\wwwroot\{1}" & vbCrLf & vbCrLf
-            strMessage += "6. Copy all content of " & cmbServer.Text & " to " & txtSource.Text & "\c$\inetpub\wwwroot\{1}" & vbCrLf & vbCrLf
-            strMessage += "7. START IIS Services with a 3 second pause" & vbCrLf & vbCrLf
-            strMessage += "8. Update SDIX_DEPLOY_SITES with new deployment information"
+            strMessage += "5. Delete everything in " & cmbServer.Text & "\c$\inetpub\wwwroot\{2}" & vbCrLf & vbCrLf
+            strMessage += "6. Copy all content of " & txtSource.Text & " to " & cmbServer.Text & "\c$\inetpub\wwwroot\{2}" & vbCrLf & vbCrLf
+            strMessage += "7. START IIS Services With a 3 second pause" & vbCrLf & vbCrLf
+            strMessage += "8. Update SDIX_DEPLOY_SITES With New deployment information"
             Dim strBuilder As New System.Text.StringBuilder
 
             lblMessage.Clear()
@@ -325,7 +327,7 @@ Public Class SiteUpload
                     Exit Sub
                 End Try
             End If
-            If lblWebConfigSrv.Text = "NOT FOUND" Then
+            If lblWebConfigSrv.Text = "not FOUND" Then
                 lblMessage.Text = "Select a valid web.config first."
                 lblMessage.ForeColor = Color.Red
                 Exit Sub
@@ -413,7 +415,7 @@ Public Class SiteUpload
                         End If
                     Next
                     ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-                    If cmbServer.Text = "SDIX2012ZEUS2" Then
+                    If cmbServer.Text = "SDIX2012ZEUS2" Or cmbServer.Text = "SDIXAWSZEUS" Then
                         For i = 8 To 10
                             copyFrom = strConfigSource & "\" & strProdUpdateFiles(i)
                             If i <> 10 Then
@@ -601,6 +603,8 @@ Public Class SiteUpload
             dirRoot = "\\SDIXAWS2016TEST\d$\Zeus_Copy\"
         ElseIf cmbServer.Text = "SDIX2012ZEUS2" Then
             dirRoot = "\\sdix2012zeus2\d$\PROD_Publish\"
+        ElseIf cmbServer.Text = "SDIXAWSZEUS" Then
+            dirRoot = "\\sdixawszeus\d$\PROD_Publish\"
         ElseIf cmbServer.Text = "SDIX2012" Then
             dirRoot = "\\sdix2012\d$\PROD_Publish\"
         End If
@@ -659,6 +663,8 @@ Public Class SiteUpload
                 txtWebConfig.Text = System.Configuration.ConfigurationSettings.AppSettings("SDIXProdConfigFiles") & "\web.config"
             Case "SDIX2012ZEUS2"
                 txtWebConfig.Text = System.Configuration.ConfigurationSettings.AppSettings("ZeusProdConfigFiles") & "\web.config"
+            Case "SDIXAWSZEUS"
+                txtWebConfig.Text = System.Configuration.ConfigurationSettings.AppSettings("ZeusAWSProdConfigFiles") & "\web.config"
             Case Else 'test sites
                 txtWebConfig.Text = "\\" & cmbServer.Text & "\c$\copyforvr\backup\" & strServerFolder & "\web.config"
         End Select
