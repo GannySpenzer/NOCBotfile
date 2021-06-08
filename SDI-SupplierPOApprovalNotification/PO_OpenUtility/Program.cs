@@ -64,7 +64,16 @@ namespace PO_OpenUtility
                         DataSet ds_UserDetail = GetAdapter(UsrTblQuery);
                         if (ds_UserDetail.Tables[0].Rows.Count != 0)
                         {
-                            string strBuyerEmail = getBuyerEmail(POID, PO_BU);
+                            string strBuyerEmail = string.Empty;
+                            if (PO_BU== "WAL00")
+                            {
+                                strBuyerEmail = "WalmartPurchasing@sdi.com";
+                            }
+                            else
+                            {
+                                 strBuyerEmail = getBuyerEmail(POID, PO_BU);
+                            }
+                            
                             DataSet dsTech = getTechDetails(POID, PO_BU);
                             string techPhno = string.Empty;
                             string techEmail = string.Empty;
