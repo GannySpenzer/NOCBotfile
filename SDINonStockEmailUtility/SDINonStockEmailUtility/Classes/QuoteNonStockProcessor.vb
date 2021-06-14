@@ -325,10 +325,15 @@ Public Class QuoteNonStockProcessor
         dstcart.Columns.Add("Manuf. Partnum")
         dstcart.Columns.Add("QTY")
         dstcart.Columns.Add("UOM")
-        dstcart.Columns.Add("Price")
-        dstcart.Columns.Add("Ext. Price")
-        dstcart.Columns.Add("Base Price")
+        'dstcart.Columns.Add("Price")
+        'dstcart.Columns.Add("Ext. Price")
+        'dstcart.Columns.Add("Base Price")
+        'dstcart.Columns.Add("Ext Base Price")
 
+        dstcart.Columns.Add("Item USD Price")
+        dstcart.Columns.Add("Ext. USD Price")
+        dstcart.Columns.Add("Item PO Price")
+        dstcart.Columns.Add("Item PO Ext. Price")
 
 
         Dim strOraSelectQuery As String = String.Empty
@@ -391,6 +396,17 @@ Public Class QuoteNonStockProcessor
    Where(Function(r) Convert.ToString(r.Field(Of Decimal)("ISA_INTFC_LN")) = Convert.ToString(dataRowMain("ISA_INTFC_LN"))).
    Select(Function(r) Convert.ToString(r.Field(Of String)("BASECURRENCY"))).
    FirstOrDefault()
+                    Catch ex As Exception
+
+                    End Try
+
+                    Dim ExtBasePrice As String = String.Empty
+                    Dim ExtBaseCurrency As String = String.Empty
+                    Try
+                        Dim strarr() As String
+                        strarr = BaseCurrency.Split(" "c)
+                        ExtBasePrice = strarr(0)
+                        ExtBaseCurrency = strarr(1)
                     Catch ex As Exception
 
                     End Try
@@ -464,20 +480,25 @@ Public Class QuoteNonStockProcessor
                         strPrice = "0.00"
                     End Try
                     If CDec(strPrice) = 0 Then
-                        dr("Price") = "0.00"
+                        dr("Item USD Price") = "0.00"
                     Else
                         strPrice = CDec(strPrice).ToString("f")
-                        dr("Price") = strPrice & " " & CType(dataRowMain("CURRENCY_CD_BASE"), String).Trim()
+                        dr("Item USD Price") = strPrice & " " & CType(dataRowMain("CURRENCY_CD_BASE"), String).Trim()
 
                     End If
                     Dim ExtPrice As Decimal = CType(Convert.ToDecimal(strQty) * Convert.ToDecimal(strPrice), String)
                     If (ExtPrice.ToString("f") = "0.00") Then
-                        dr("Ext. Price") = "0.00"
+                        dr("Ext. USD Price") = "0.00"
                     Else
-                        dr("Ext. Price") = ExtPrice.ToString("f") & " " & CType(dataRowMain("CURRENCY_CD_BASE"), String).Trim()
+                        dr("Ext. USD Price") = ExtPrice.ToString("f") & " " & CType(dataRowMain("CURRENCY_CD_BASE"), String).Trim()
                     End If
                     Try
-                        dr("Base Price") = BaseCurrency
+                        dr("Item PO Price") = BaseCurrency
+                    Catch ex As Exception
+
+                    End Try
+                    Try
+                        dr("Item PO Ext. Price") = FormatNumber(CType(Convert.ToDecimal(strQty) * Convert.ToDecimal(ExtBasePrice), String), 2) & " " & ExtBaseCurrency.ToString()
                     Catch ex As Exception
 
                     End Try
