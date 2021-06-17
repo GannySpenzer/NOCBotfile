@@ -348,8 +348,7 @@ Public Class QuoteNonStockProcessor
         Dim SQLSTRINGQuery As String = String.Empty
         Dim currencyds As DataSet = New DataSet
         Try
-
-            strOraSelectQuery = "select * from SYSADM8.PS_ISA_ORD_INTF_LN where ORDER_NO = '" & ordNumber & "'"
+            strOraSelectQuery = "select * from SYSADM8.PS_ISA_ORD_INTF_LN A where A.ORDER_NO = '" & ordNumber & "' AND A.ISA_LINE_STATUS in ('QTS','QTW') AND NOT EXISTS (SELECT 'X' FROM PS_ISA_REQ_EML_LOG B1 WHERE B1.REQ_ID = A.ORDER_NO AND B1.LINE_NO= A.ISA_INTFC_LN)"
             dsOrdLnItems = GetAdapter(strOraSelectQuery)
             Try
                 SQLSTRINGQuery = "" & "SELECT" & vbCrLf &
@@ -480,20 +479,17 @@ Public Class QuoteNonStockProcessor
                         strPrice = "0.00"
                     End Try
                     If CDec(strPrice) = 0 Then
-                        dr("Item USD Price") = "0.00"
+                        dr("Item USD Price") = "Price on Request"
                     Else
-                        strPrice = CDec(strPrice).ToString("f")
-                        dr("Item USD Price") = strPrice & " " & CType(dataRowMain("CURRENCY_CD_BASE"), String).Trim()
-
-                    End If
-                    Dim ExtPrice As Decimal = CType(Convert.ToDecimal(strQty) * Convert.ToDecimal(strPrice), String)
-                    If (ExtPrice.ToString("f") = "0.00") Then
-                        dr("Ext. USD Price") = "0.00"
-                    Else
-                        dr("Ext. USD Price") = ExtPrice.ToString("f") & " " & CType(dataRowMain("CURRENCY_CD_BASE"), String).Trim()
+                        dr("Item USD Price") = FormatNumber(CDec(strPrice).ToString("f"), 4) & " " & CType(dataRowMain("CURRENCY_CD_BASE"), String).Trim()
                     End If
                     Try
-                        dr("Item PO Price") = BaseCurrency
+                        dr("Ext. USD Price") = FormatNumber(CType(Convert.ToDecimal(strQty) * Convert.ToDecimal(strPrice), String), 2) & " " & CType(dataRowMain("CURRENCY_CD_BASE"), String).Trim()
+                    Catch ex As Exception
+                    End Try
+
+                    Try
+                        dr("Item PO Price") = FormatNumber(CDec(ExtBasePrice).ToString("f"), 4) & " " & ExtBaseCurrency.ToString()
                     Catch ex As Exception
 
                     End Try
@@ -858,7 +854,7 @@ Public Class QuoteNonStockProcessor
         Dim cHdr As String = "QuoteNonStockProcessor.GetQuotedItems: "
         Dim connectionString As String = ConfigurationManager.AppSettings("OLEDBconString")
         Dim connection As OleDbConnection = New OleDbConnection(connectionString)
-
+        Dim StartDate As New String(Convert.ToString(ConfigurationManager.AppSettings("StartDate")))
         Try
 
             Dim cSQL As String = "" &
@@ -893,12 +889,13 @@ Public Class QuoteNonStockProcessor
                                  "  AND I.BUSINESS_UNIT_OM = L.BUSINESS_UNIT_OM" & vbCrLf &
                                  "  AND A.REQ_ID = L.ORDER_NO" & vbCrLf &
                                  "  AND A1.line_nbr = L.ISA_INTFC_LN" & vbCrLf &
-                                 "  AND A4.ORIGIN IN ('IOL','MOB','RFQ','IAP','PCH','INT')" & vbCrLf &
+                                 "  AND A4.ORIGIN IN ('IOL','MOB','RFQ','IAP','PCH','INT','INV')" & vbCrLf &
                                  "  AND L.ISA_EMPLOYEE_ID = A2.ISA_EMPLOYEE_ID (+) " & vbCrLf &
                                  "  AND 'MAIN1' = A3.SETID (+)" & vbCrLf &
                                  "  AND A4.BILL_TO_CUST_ID = A3.CUST_ID (+)" & vbCrLf &
                                  "  AND L.OPRID_APPROVED_BY in (' ',L.ISA_EMPLOYEE_ID,'AUTOSYS')" & vbCrLf &
                                  "  AND L.ISA_LINE_STATUS in ('QTS','QTW')" & vbCrLf &
+                                 "  and trunc(L.ADD_DTTM) >= TO_DATE('" & StartDate & "','DD-MM-YY')" & vbCrLf &
                                  "  AND NOT EXISTS ( " & vbCrLf &
                                  "                  SELECT 'X' " & vbCrLf &
                                  "                  FROM SYSADM8.PS_NLINK_CUST_PLNT C " & vbCrLf &
@@ -910,6 +907,7 @@ Public Class QuoteNonStockProcessor
                                  "                  FROM PS_ISA_REQ_EML_LOG B1" & vbCrLf &
                                  "                  WHERE B1.BUSINESS_UNIT = A.BUSINESS_UNIT" & vbCrLf &
                                  "                    AND B1.REQ_ID = A.REQ_ID" & vbCrLf &
+                                 "                    AND B1.LINE_NO= A1.LINE_NBR" & vbCrLf &
                                  "                 )" & vbCrLf &
                                  " ORDER BY A1.BUSINESS_UNIT, A1.REQ_ID, A1.LINE_NBR " & vbCrLf &
                                  ""
@@ -1614,7 +1612,7 @@ Public Class QuoteNonStockProcessor
                     eml.Subject &= " - " & itmQuoted.OrderID
                 End If
                 If LineStatus = "QTW" Then
-                    eml.Subject = "SDI ZEUS - Order Number"
+                    eml.Subject = "SDI ZEUS - Order Number "
                     eml.Subject &= itmQuoted.OrderID & " needs approval"
                 End If
 
@@ -1890,42 +1888,58 @@ Public Class QuoteNonStockProcessor
 
                 End Try
 
-                ' build insert SQL command
-                cSQL =
-                "INSERT INTO PS_ISA_REQ_EML_LOG " &
-                "(BUSINESS_UNIT, REQ_ID, ISA_RECIPIENT, ISA_SENDER, ISA_SUBJECT, EMAIL_DATETIME) " &
-                "VALUES " &
-                "(" &
-                    "'" & CType(IIf(itmQuoted.BusinessUnitID.Length > 0, itmQuoted.BusinessUnitID, "."), String) & "', " &
-                    "'" & CType(IIf(itmQuoted.OrderID.Length > 0, itmQuoted.OrderID, "."), String) & "', " &
-                    "'" & "TO=" & eml.To & "CC=" & eml.Cc & "BCC=" & eml.Bcc & "', " &
-                    "'" & CType(IIf(eml.From.Length > 0, eml.From, "."), String) & "', " &
-                    "'" & CType(IIf(eml.Subject.Length > 0, eml.Subject, "."), String) & "', " &
-                    "TO_DATE('" & System.DateTime.Now.ToString & "','MM/DD/YYYY HH:MI:SS AM') " &
-                ")"
+                Dim strOraSelectQuery As String = "select * from SYSADM8.PS_ISA_ORD_INTF_LN A where A.ORDER_NO = '" & itmQuoted.OrderID & "' AND A.ISA_LINE_STATUS in ('QTS','QTW') AND NOT EXISTS (SELECT 'X' FROM PS_ISA_REQ_EML_LOG B1 WHERE B1.REQ_ID = A.ORDER_NO AND B1.LINE_NO= A.ISA_INTFC_LN)"
+                Dim dsOrdLnItems As DataSet = GetAdapter(strOraSelectQuery)
 
-                If m_CN.State = ConnectionState.Open Then
+                If dsOrdLnItems.Tables(0).Rows.Count > 0 Then
 
-                Else
-                    m_CN.Open()
+                    For Each dataRowMain As DataRow In dsOrdLnItems.Tables(0).Rows
+                        Try
+
+                            ' build insert SQL command
+                            cSQL =
+                            "INSERT INTO PS_ISA_REQ_EML_LOG " &
+                            "(BUSINESS_UNIT, REQ_ID, ISA_RECIPIENT, ISA_SENDER, ISA_SUBJECT, EMAIL_DATETIME, LINE_NO) " &
+                            "VALUES " &
+                            "(" &
+                                "'" & CType(IIf(itmQuoted.BusinessUnitID.Length > 0, itmQuoted.BusinessUnitID, "."), String) & "', " &
+                                "'" & CType(IIf(itmQuoted.OrderID.Length > 0, itmQuoted.OrderID, "."), String) & "', " &
+                                "'" & "TO=" & eml.To & "CC=" & eml.Cc & "BCC=" & eml.Bcc & "', " &
+                                "'" & CType(IIf(eml.From.Length > 0, eml.From, "."), String) & "', " &
+                                "'" & CType(IIf(eml.Subject.Length > 0, eml.Subject, "."), String) & "', " &
+                                "TO_DATE('" & System.DateTime.Now.ToString & "','MM/DD/YYYY HH:MI:SS AM'), " &
+                                "'" & dataRowMain("ISA_INTFC_LN") & "'" &
+                            ")"
+
+                            If m_CN.State = ConnectionState.Open Then
+
+                            Else
+                                m_CN.Open()
+                            End If
+                        Catch ex As Exception
+
+                        End Try
+
+
+                        ' create a new instance of the command object
+                        cmd = New OleDbCommand(cmdText:=cSQL, connection:=m_CN)
+                        cmd.CommandType = CommandType.Text
+
+                        ' execute SQL statement againts the connection object
+                        Try
+                            cmd.ExecuteNonQuery()
+                        Catch ex As Exception
+                            'm_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+                            Try
+                                m_CN.Close()
+                            Catch exErr2 As Exception
+
+                            End Try
+                            m_logger.WriteVerboseLog(cHdr & ".  Error:  " & ex.ToString)
+                        End Try
+
+                    Next
                 End If
-                ' create a new instance of the command object
-                cmd = New OleDbCommand(cmdText:=cSQL, connection:=m_CN)
-                cmd.CommandType = CommandType.Text
-
-                ' execute SQL statement againts the connection object
-                Try
-                    cmd.ExecuteNonQuery()
-                Catch ex As Exception
-                    'm_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
-                    Try
-                        m_CN.Close()
-                    Catch exErr2 As Exception
-
-                    End Try
-                    m_logger.WriteVerboseLog(cHdr & ".  Error:  " & ex.ToString)
-                End Try
-
                 ' this code is for UNCC buyer tracking purposes
                 '   let's create a copy and send it to sender.
                 '   - erwin 20081022
@@ -2511,9 +2525,14 @@ Public Class QuoteNonStockProcessor
                     eml.Subject &= " (Work Order #" & itmQuoted.WorkOrderNumber & ")"
                 End If
             End If
+            Dim strOraSelectQuery As String = "select * from SYSADM8.PS_ISA_ORD_INTF_LN A where A.ORDER_NO = '" & itmQuoted.OrderID & "' AND A.ISA_LINE_STATUS in ('QTS','QTW') AND NOT EXISTS (SELECT 'X' FROM PS_ISA_REQ_EML_LOG B1 WHERE B1.REQ_ID = A.ORDER_NO AND B1.LINE_NO= A.ISA_INTFC_LN)"
+            Dim dsOrdLnItems As DataSet = GetAdapter(strOraSelectQuery)
 
-            strInsertQuery = "INSERT INTO PS_ISA_REQ_EML_LOG " &
-                "(BUSINESS_UNIT, REQ_ID, ISA_RECIPIENT, ISA_SENDER, ISA_SUBJECT, EMAIL_DATETIME) " &
+            If dsOrdLnItems.Tables(0).Rows.Count > 0 Then
+
+                For Each dataRowMain As DataRow In dsOrdLnItems.Tables(0).Rows
+                    strInsertQuery = "INSERT INTO PS_ISA_REQ_EML_LOG " &
+                "(BUSINESS_UNIT, REQ_ID, ISA_RECIPIENT, ISA_SENDER, ISA_SUBJECT, EMAIL_DATETIME, LINE_NO) " &
                 "VALUES " &
                 "(" &
                     "'" & CType(IIf(itmQuoted.BusinessUnitID.Length > 0, itmQuoted.BusinessUnitID, "."), String) & "', " &
@@ -2521,10 +2540,13 @@ Public Class QuoteNonStockProcessor
                     "'" & "TO=" & eml.To & "CC=" & eml.Cc & "BCC=" & eml.Bcc & "', " &
                     "'" & CType(IIf(eml.From.Length > 0, eml.From, "."), String) & "', " &
                     "'" & CType(IIf(eml.Subject.Length > 0, eml.Subject, "."), String) & "', " &
-                    "TO_DATE('" & System.DateTime.Now.ToString & "','MM/DD/YYYY HH:MI:SS AM') " &
+                    "TO_DATE('" & System.DateTime.Now.ToString & "','MM/DD/YYYY HH:MI:SS AM'), " &
+                    "'" & dataRowMain("ISA_INTFC_LN") & "'" &
                 ")"
 
-            rowsaffected = ExecNonQuery(strInsertQuery)
+                    rowsaffected = ExecNonQuery(strInsertQuery)
+                Next
+            End If
 
         Catch ex As Exception
             SendLogger("Error in Quoted Non Stock Email Utility", ex, "ERROR", strInsertQuery, m_CN.ConnectionString)
