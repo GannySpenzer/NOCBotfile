@@ -432,7 +432,7 @@ Public Class QuoteNonStockProcessor
                     dr("Description") = CType(dataRowMain("DESCR254"), String).Trim()
 
                     Try
-                        dr("Manuf.") = CType(dataRowMain("ISA_MFG_FREEFORM"), String).Trim()
+                        dr("Manuf.") = If(CType(dataRowMain("MFG_ID"), String).Trim() <> "", CType(dataRowMain("MFG_ID"), String).Trim(), CType(dataRowMain("ISA_MFG_FREEFORM"), String).Trim())
                     Catch ex As Exception
                         dr("Manuf.") = " "
                     End Try
@@ -1920,7 +1920,28 @@ Public Class QuoteNonStockProcessor
                             Else
                                 cSQL = "UPDATE PS_ISA_REQ_EML_LOG set PRICE='" & dataRowMain("ISA_SELL_PRICE") & "' where REQ_ID= '" & itmQuoted.OrderID & "' and LINE_NO= '" & dataRowMain("ISA_INTFC_LN") & "'"
                             End If
-                            Dim rowsaffected As Int16 = ExecNonQuery(cSQL)
+                            'Dim rowsaffected As Int16 = ExecNonQuery(cSQL)
+                            If m_CN.State = ConnectionState.Open Then
+
+                            Else
+                                m_CN.Open()
+                            End If
+                            ' create a new instance of the command object
+                            cmd = New OleDbCommand(cmdText:=cSQL, connection:=m_CN)
+                            cmd.CommandType = CommandType.Text
+
+                            ' execute SQL statement againts the connection object
+                            Try
+                                cmd.ExecuteNonQuery()
+                            Catch ex As Exception
+                                'm_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+                                Try
+                                    m_CN.Close()
+                                Catch exErr2 As Exception
+
+                                End Try
+                                m_logger.WriteVerboseLog(cHdr & ".  Error:  " & ex.ToString)
+                            End Try
                         Catch ex As Exception
 
                         End Try
@@ -2437,6 +2458,8 @@ Public Class QuoteNonStockProcessor
 
         Dim strInsertQuery As String = String.Empty
         Dim rowsaffected As Integer = 0
+        Dim cmd As OleDbCommand
+        Dim cSQL As String = ""
 
         Try
 
@@ -2523,7 +2546,7 @@ Public Class QuoteNonStockProcessor
                         Dim ds As DataSet = GetAdapter(strOraSelectQuery1)
 
                         If ds.Tables(0).Rows.Count() = 0 Then
-                            strInsertQuery = "INSERT INTO PS_ISA_REQ_EML_LOG " &
+                            cSQL = "INSERT INTO PS_ISA_REQ_EML_LOG " &
                 "(BUSINESS_UNIT, REQ_ID, ISA_RECIPIENT, ISA_SENDER, ISA_SUBJECT, EMAIL_DATETIME, LINE_NO, PRICE) " &
                 "VALUES " &
                 "(" &
@@ -2537,12 +2560,31 @@ Public Class QuoteNonStockProcessor
                     "'" & dataRowMain("ISA_SELL_PRICE") & "'" &
                 ")"
                         Else
-                            Dim strSQLstring As String = "UPDATE PS_ISA_REQ_EML_LOG set PRICE='" & dataRowMain("ISA_SELL_PRICE") & "' where REQ_ID= '" & itmQuoted.OrderID & "' and LINE_NO= '" & dataRowMain("ISA_INTFC_LN") & "'"
+                            cSQL = "UPDATE PS_ISA_REQ_EML_LOG set PRICE='" & dataRowMain("ISA_SELL_PRICE") & "' where REQ_ID= '" & itmQuoted.OrderID & "' and LINE_NO= '" & dataRowMain("ISA_INTFC_LN") & "'"
                         End If
                     Catch ex As Exception
 
                     End Try
-                    rowsaffected = ExecNonQuery(strInsertQuery)
+                    If m_CN.State = ConnectionState.Open Then
+
+                    Else
+                        m_CN.Open()
+                    End If
+                    ' create a new instance of the command object
+                    cmd = New OleDbCommand(cmdText:=cSQL, connection:=m_CN)
+                    cmd.CommandType = CommandType.Text
+
+                    ' execute SQL statement againts the connection object
+                    Try
+                        cmd.ExecuteNonQuery()
+                    Catch ex As Exception
+                        'm_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+                        Try
+                            m_CN.Close()
+                        Catch exErr2 As Exception
+
+                        End Try
+                    End Try
                 Next
             End If
 
@@ -4145,7 +4187,7 @@ Public Class OrderApprovals
                     'If CType(dataRowMain("VNDR_CATALOG_ID"), String).Trim().Contains("NONCAT") Then
 
                     Try
-                        dr("Manuf.") = CType(dataRowMain("ISA_MFG_FREEFORM"), String).Trim()
+                        dr("Manuf.") = If(CType(dataRowMain("MFG_ID"), String).Trim() <> "", CType(dataRowMain("MFG_ID"), String).Trim(), CType(dataRowMain("ISA_MFG_FREEFORM"), String).Trim())
                     Catch ex As Exception
                         dr("Manuf.") = " "
                     End Try
