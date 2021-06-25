@@ -352,7 +352,7 @@ Public Class PODueDTChangeEmail
                     Dim iLineNBR As Integer
                     Dim iSchedNBR As Integer
                     Dim sPODueDate As String
-
+                    Dim PO_ID As String = String.Empty
 
                     For iCollectionIndex As Integer = 1 To colEmailedPOs.Count
                         sBusUnit = ""
@@ -392,8 +392,16 @@ Public Class PODueDTChangeEmail
                                                          "  PO:" & myReqLine.POID)
                                 End If
                             End If
+                            If myReq.POBusinessUnit = "WAL00" Then
+                                PO_ID += "'" & myReqLine.POID.Trim & "'" & ","
+                            End If
                         End If
                     Next
+                    If Not PO_ID = String.Empty Then
+                        PO_ID = PO_ID.Substring(0, PO_ID.Length - 1)
+                        Dim clsPODueDateUpdate As New PODueDateUpdate_SC()
+                        clsPODueDateUpdate.PODueDateUpdate(PO_ID)
+                    End If
                 End If
             Else        'If cn.State = ConnectionState.Open Then
                 logger.WriteErrorLog("Connnection to Oracle FAILED :: [" & m_oraCNstring & "]")
