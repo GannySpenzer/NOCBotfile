@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.OleDb;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -17,10 +18,45 @@ namespace UpdateWOStatus
     {
         static void Main(string[] args)
         {
-            UpdateWorkOrders();
+            StreamWriter objStreamWriter;
+            string rootDir = "";
+            rootDir = ConfigurationSettings.AppSettings["LogPath"];
+            string logpath = rootDir + "UpdateWOStatus" + DateTime.Now.Year + DateTime.Now.Month + DateTime.Now.Day + DateTime.Now.GetHashCode() + ".txt";
+
+            StreamWriter log;
+            FileStream fileStream;
+            DirectoryInfo logDirInfo;
+            FileInfo logFileInfo;
+            logFileInfo = new FileInfo(logpath);
+            logDirInfo = new DirectoryInfo(logFileInfo.DirectoryName);
+
+            if (!logDirInfo.Exists)
+            {
+                logDirInfo.Create();
+            }
+
+            if (!logFileInfo.Exists)
+            {
+                fileStream = logFileInfo.Create();
+            }
+            else
+            {
+                fileStream = new FileStream(logpath, FileMode.Append);
+            }
+
+            log = new StreamWriter(fileStream);
+
+            log.WriteLine("*********************Logs(" + String.Format(DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss")) + ")***********************************");
+
+            log = UpdateWorkOrders(log);
+
+            log.WriteLine("********************End of Update********************");
+
+            log.Close();
+            //UpdateWorkOrders();
             //string apiresponse = AuthenticateService1("Walmart");
         }
-        public async static void UpdateWorkOrders()
+        public static StreamWriter UpdateWorkOrders(StreamWriter log)
         {
             try
             {
@@ -30,7 +66,7 @@ namespace UpdateWOStatus
                 {
                     if (WOdataset.Tables[0].Rows.Count > 0)
                     {
-                        foreach (DataRow workorder in WOdataset.Tables[0].Rows)
+                        foreach (DataRow workorder in WOdataset.Tables[0].AsEnumerable().Where(x=>x.Field<string>("ISA_WO_STATUS").ToLower() !="completed"))
                         {
                             string status = CheckWorkOrderStatus(workorder["ISA_WORK_ORDER_NO"].ToString(), "");
                             if (status.ToLower() == "completed")
@@ -44,8 +80,9 @@ namespace UpdateWOStatus
             }
             catch (Exception ex)
             {
-
+                log.WriteLine(ex.Message);
             }
+            return log;
         }        
 
         public static string CheckWorkOrderStatus(string workOrder, string THIRDPARTY_COMP_ID)
@@ -70,9 +107,9 @@ namespace UpdateWOStatus
                             ValidateUserResponseBO objValidateUserResponseBO = JsonConvert.DeserializeObject<ValidateUserResponseBO>(APIresponse);
                             string apiURL = "";
                             if (ConfigurationSettings.AppSettings["OLEProdDB"] == ConfigurationSettings.AppSettings["OLECurrentDB"])
-                                apiURL = "https://api.servicechannel.com/v3/odata/" + "/workorders(" + workOrder + ")?$select=Status";
+                                apiURL = "https://api.servicechannel.com/v3/odata/" + "workorders(" + workOrder + ")?$select=Status";
                             else
-                                apiURL = "https://sb2api.servicechannel.com/v3/odata/" + "/workorders(" + workOrder + ")?$select=Status";
+                                apiURL = "https://sb2api.servicechannel.com/v3/odata/" + "workorders(" + workOrder + ")?$select=Status";
                             HttpClient httpClient = new HttpClient();
                             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", objValidateUserResponseBO.access_token);
@@ -94,7 +131,7 @@ namespace UpdateWOStatus
                 }
             }
             catch (Exception ex)
-            {
+            {                
                 return "Failed";
                 //objWalmartSC.WriteLine("Method:CheckWorkOrderStatus - " + ex.Message);
             }
