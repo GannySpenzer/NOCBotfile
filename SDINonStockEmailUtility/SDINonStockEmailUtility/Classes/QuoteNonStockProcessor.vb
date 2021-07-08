@@ -353,7 +353,7 @@ Public Class QuoteNonStockProcessor
             Try
                 SQLSTRINGQuery = "" & "SELECT" & vbCrLf &
                                   "INTFC.ISA_INTFC_LN" & vbCrLf &
-                                  ",DECODE(D.PRICE_REQ, NULL, DECODE(P.PRICE, NULL, INTFC.NET_UNIT_PRICE, P.PRICE), D.PRICE_REQ) || ' ' || DECODE(TRIM(P.CURRENCY_CD), NULL, DECODE(TRIM(F.CURRENCY_CD), NULL, D.CURRENCY_CD, F.CURRENCY_CD), P.CURRENCY_CD) AS BASECURRENCY" & vbCrLf &
+                                  ",DECODE(DECODE(INTFC.NET_UNIT_PRICE,null, 0,INTFC.NET_UNIT_PRICE),INTFC.NET_UNIT_PRICE, D.PRICE_REQ) || ' ' ||DECODE(TRIM(F.CURRENCY_CD), NULL, D.CURRENCY_CD, F.CURRENCY_CD) AS BASECURRENCY" & vbCrLf &
                                   "FROM" & vbCrLf &
                                   "(" & vbCrLf &
                                   " Select " & vbCrLf &
@@ -481,10 +481,10 @@ Public Class QuoteNonStockProcessor
                     If CDec(strPrice) = 0 Then
                         dr("Item USD Price") = "Price on Request"
                     Else
-                        dr("Item USD Price") = FormatNumber(CDec(strPrice).ToString("f"), 4) & " " & CType(dataRowMain("CURRENCY_CD_BASE"), String).Trim()
+                        dr("Item USD Price") = FormatNumber(CDec(strPrice).ToString("f"), 4)
                     End If
                     Try
-                        dr("Ext. USD Price") = FormatNumber(CType(Convert.ToDecimal(strQty) * Convert.ToDecimal(strPrice), String), 2) & " " & CType(dataRowMain("CURRENCY_CD_BASE"), String).Trim()
+                        dr("Ext. USD Price") = FormatNumber(CType(Convert.ToDecimal(strQty) * Convert.ToDecimal(strPrice), String), 2)
                     Catch ex As Exception
                     End Try
 
@@ -1383,6 +1383,8 @@ Public Class QuoteNonStockProcessor
                 sRet = "http://zeustest.sdi.com:8083/ZEUSUAT/"
             Case "STST", "RPTG"
                 sRet = "http://zeustest.sdi.com:8083/ZEUSRPTG/"
+            Case "DEVL"
+                sRet = "https://zeustest.sdi.com/"
             Case Else
                 sRet = "http://zeustest.sdi.com:8083/ZEUSUAT/"
         End Select
