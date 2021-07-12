@@ -465,26 +465,26 @@ Public Class QuoteNonStockProcessor
                     End Try
 
                     strPrice = "0.00"
+                    Dim itemPrice As Decimal = 0
                     Try
                         If BU = "I0W01" Then
                             strPrice = CDec(CType(dataRowMain("PRICE_VNDR"), String).Trim()).ToString()
                         Else
                             strPrice = CDec(CType(dataRowMain("ISA_SELL_PRICE"), String).Trim()).ToString()
                         End If
-                        strPrice = strPrice.Remove(strPrice.Length - 2)
-                        If strPrice Is Nothing Then
-                            strPrice = "0.00"
+                        itemPrice = CType(strPrice, Decimal)
+                        If CDec(strPrice) = 0 Then
+                            dr("Item USD Price") = "Price on Request"
+                        Else
+                            dr("Item USD Price") = itemPrice.ToString("####,###,##0.0000")
                         End If
                     Catch ex As Exception
-                        strPrice = "0.00"
+
                     End Try
-                    If CDec(strPrice) = 0 Then
-                        dr("Item USD Price") = "Price on Request"
-                    Else
-                        dr("Item USD Price") = FormatNumber(CDec(strPrice).ToString("f"), 4)
-                    End If
                     Try
-                        dr("Ext. USD Price") = FormatNumber(CType(Convert.ToDecimal(strQty) * Convert.ToDecimal(strPrice), String), 2)
+                        Dim itemExtPrice As Decimal = 0
+                        itemExtPrice = CType(strPrice, Decimal) * Convert.ToDecimal(strQty)
+                        dr("Ext. USD Price") = itemExtPrice.ToString("####,###,##0.00")
                     Catch ex As Exception
                     End Try
 
