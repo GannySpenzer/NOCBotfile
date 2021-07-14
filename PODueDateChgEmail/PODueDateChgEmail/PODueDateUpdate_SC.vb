@@ -250,9 +250,9 @@ Public Class PODueDateUpdate_SC
                                 .RecId = workOrder,
                              .Description = item("ItemDescription") + " " + dueDate,
                              .Quantity = item("Quantity"),
-                             .UnitCost = item("Price"),
                              .PartNumber = item("OrderNo")
                             })
+                            '.UnitCost = item("Price"),
                         Next
                         Dim serializedparameter = JsonConvert.SerializeObject(objInserWorOrdeParts)
                         Dim response = httpClient.PostAsync(apiURL, New StringContent(serializedparameter, Encoding.UTF8, "application/json")).Result()
