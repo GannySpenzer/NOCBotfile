@@ -592,10 +592,20 @@ Public Class PODueDTChangeEmail
                               "&nbsp; <DIV><P>Hello SDI Site Rep,<BR></DIV><BR>There has been a Due Date change for Order Number: <B> " & myReq.ReqId.ToString &
                               "</B><BR><BR><TABLE> <COLGROUP><COL width=""7%"" valign=""top""><COL width=""21%"" valign=""top""><COL width=""11%"" valign=""top""><COL width=""7%"" valign=""top"">" &
                               "<COL width=""36%"" valign=""top""><COL width=""9%"" valign=""top""><COL width=""9%"" valign=""top"">" &
-                              "<TR><TD><U>LINE <BR>NUMBER</U></TD><TD><U>MFG -<BR> MFG ITEM NO.</U></TD><TD><U>PO ID</U></TD><TD><U>PO LINE <BR>NUMBER</U></TD><TD><U>DESCRIPTION</U></TD>" &
+                              "<TR><TD><U>LINE <BR>NUMBER</U></TD><TD><U>MFG -<BR> MFG ITEM NO.</U></TD><TD><U>PO ID</U></TD><TD><U>PO LINE <BR>NUMBER</U></TD><TD><U>WORK ORDER</U></TD><TD><U>DESCRIPTION</U></TD>" &
                               "<TD><U>ORIGINAL <BR>DUE DATE</U></TD><TD><U>NEW <BR>DUE DATE</U></TD></TR><TR></TR>" & vbCrLf
 
         For Each myLine As ReqLine In myReq.ReqLines
+            Dim wordOrder As String = String.Empty
+            Try
+                Dim cmdEmpl As OleDbCommand = cn.CreateCommand
+                cmdEmpl.CommandText = "SELECT intfc_l.ISA_WORK_ORDER_NO FROM SYSADM8.ps_isa_ord_intf_lN intfc_l " & vbCrLf &
+                            " WHERE intfc_l.ORDER_NO = '" & myReq.ReqId.ToString & "' " & vbCrLf &
+                            " AND intfc_l.ISA_INTFC_LN = " & myLine.ReqLineNo & " "
+                cmdEmpl.CommandType = CommandType.Text
+                wordOrder = cmdEmpl.ExecuteScalar
+            Catch ex As Exception
+            End Try
             Try
                 sOrigDueDate = myLine.oldDate()
             Catch ex As Exception
@@ -604,8 +614,9 @@ Public Class PODueDTChangeEmail
             End Try
             sEmailBody &= "<TR><TD>&nbsp;" & myLine.ReqLineNo & "</TD>" &
                           "<TD>&nbsp;" & myLine.ItemID & "</TD>" &
-                          "<TD>&nbsp;" & myLine.POID & "</TD>" &
+                          "<TD>&nbsp;" & myLine.POID & "</TD>" &                          
                           "<TD>&nbsp;" & myLine.POLine_NBR & "</TD>" &
+                          "<TD>&nbsp;" & wordOrder & "</TD>" &
                           "<TD>&nbsp;" & myLine.Desc & "</TD>" &
                           "<TD>&nbsp;" & sOrigDueDate & "</TD>" &
                           "<TD>&nbsp;" & myLine.newDate & "</TD></TR>"
