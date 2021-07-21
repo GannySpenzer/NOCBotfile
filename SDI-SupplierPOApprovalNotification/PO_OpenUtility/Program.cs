@@ -368,9 +368,11 @@ and a.business_unit = '" + strPOBU + "' and a.po_id='" + strPO + "'";
                     {
                         PhNo = techPhno;
                     }
-                   
-                    strbodydetl = strbodydetl + "<p style='font-weight: bold;'>Tech e-mail: " + techEmail + " </p>";
-                    strbodydetl = strbodydetl + "<p style='font-weight: bold;'>Tech Phone No: " + PhNo + "  </p>";
+                    if (PO_BU == "WAL00")
+                    {
+                        strbodydetl = strbodydetl + "<p style='font-weight: bold;'>Tech e-mail: " + techEmail + " </p>";
+                        strbodydetl = strbodydetl + "<p style='font-weight: bold;'>Tech Phone No: " + PhNo + "  </p>";
+                    }                   
                 }
 
                 strbodydetl = strbodydetl + "&nbsp;<br>";
