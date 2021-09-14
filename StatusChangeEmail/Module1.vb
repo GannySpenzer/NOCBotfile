@@ -1852,7 +1852,10 @@ Module Module1
                 ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"),
                 strEmailTo,
                 ds.Tables(0).Rows(I).Item("Origin"),
-                strBU, strEmpID)
+                strBU, strEmpID,
+                ds.Tables(0).Rows(I).Item("WORK_ORDER_NO"),
+                ds.Tables(0).Rows(I).Item("SHIPTO")
+                    )
 
                 dsEmail.Clear()
                 If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
@@ -1875,7 +1878,10 @@ Module Module1
                ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"),
                strEmailTo,
                ds.Tables(0).Rows(I).Item("Origin"),
-               strBU, strEmpID)
+               strBU, strEmpID,
+               ds.Tables(0).Rows(I).Item("WORK_ORDER_NO"),
+               ds.Tables(0).Rows(I).Item("SHIPTO")
+               )
 
                 dsEmail.Clear()
                 If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
@@ -2164,7 +2170,7 @@ Module Module1
                           ByVal strFirstName As String,
                           ByVal strLastName As String,
                           ByVal strEmail As String, ByVal strorgin As String,
-                          ByVal strBU As String, Optional ByVal strEmpID As String = "")
+                          ByVal strBU As String, Optional ByVal strEmpID As String = "", Optional ByVal strWOno As String = "", Optional ByVal Ship_to As String ="" )
 
         Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
         Dim MailAttachmentName As String()
@@ -2256,17 +2262,25 @@ Module Module1
         Dim strPushNoti As String = ""
         If Not getDBName() Then
             Mailer1.To = "webdev@sdi.com"
-            Mailer1.Subject = "<<TEST SITE>>SDiExchange - Order Status records for Order Number: " & strOrderNo
-
-            strPushNoti = "<<TEST SITE>>Order Number: " + strOrderNo + " - Status Modified To  " + strOrderStatDesc + " . Please check the details in order status menu."
+            If strBU = "I0W01" Then
+                Mailer1.Subject = "Status Update - " + strOrderStatDesc + " - Store #" + Ship_to + " - WO # " & strWOno
+                strPushNoti = "Status Update - " + strOrderStatDesc + " - Store #" + Ship_to + " - WO # " & strWOno
+            Else
+                Mailer1.Subject = "<<TEST SITE>>SDiExchange - Order Status records for Order Number: " & strOrderNo
+                strPushNoti = "<<TEST SITE>>Order Number: " + strOrderNo + " - Status Modified To  " + strOrderStatDesc + " . Please check the details in order status menu."
+            End If
         Else
             Mailer1.To = strPurchaserEmail
-            Mailer1.Subject = "SDiExchange - Order Status records for Order Number: " & strOrderNo
-
-            strPushNoti = "Order Number: " + strOrderNo + " - Status Modified To " + strOrderStatDesc + ". Please check the details in order status menu."
+            If strBU = "I0W01" Then
+                Mailer1.Subject = "Status Update - " + strOrderStatDesc + " - Store #" + Ship_to + " - WO # " & strWOno
+                strPushNoti = "Status Update - " + strOrderStatDesc + " - Store #" + Ship_to + " - WO # " & strWOno
+            Else
+                Mailer1.Subject = "SDiExchange - Order Status records for Order Number: " & strOrderNo
+                strPushNoti = "Order Number: " + strOrderNo + " - Status Modified To " + strOrderStatDesc + ". Please check the details in order status menu."
+            End If
         End If
 
-        If Not strEmpID.Trim = "" Then
+            If Not strEmpID.Trim = "" Then
             sendNotification(strEmpID, strPushNoti, strOrderNo)
             Dim Title As String = "Order Number: " + strOrderNo + " - Status Modified To " + strOrderStatDesc + ""
             sendWebNotification(strEmpID, Title)
