@@ -2263,8 +2263,8 @@ Module Module1
         If Not getDBName() Then
             Mailer1.To = "webdev@sdi.com"
             If strBU = "I0W01" Then
-                Mailer1.Subject = "Status Update - " + strOrderStatDesc + " - Store #" + Ship_to + " - WO # " & strWOno
-                strPushNoti = "Status Update - " + strOrderStatDesc + " - Store #" + Ship_to + " - WO # " & strWOno
+                Mailer1.Subject = "<<TEST SITE>>Status Update - " + strOrderStatDesc + " - Store #" + Ship_to + " - WO # " & strWOno
+                strPushNoti = "<<TEST SITE>>Status Update - " + strOrderStatDesc + " - Store #" + Ship_to + " - WO # " & strWOno
             Else
                 Mailer1.Subject = "<<TEST SITE>>SDiExchange - Order Status records for Order Number: " & strOrderNo
                 strPushNoti = "<<TEST SITE>>Order Number: " + strOrderNo + " - Status Modified To  " + strOrderStatDesc + " . Please check the details in order status menu."
