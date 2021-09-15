@@ -595,26 +595,28 @@ Public Class PODueDTChangeEmail
                               "<TR><TD><U>LINE <BR>NUMBER</U></TD><TD><U>MFG -<BR> MFG ITEM NO.</U></TD><TD><U>ITEM ID</U></TD><TD><U>PO ID</U></TD><TD><U>PO LINE <BR>NUMBER</U></TD><TD><U>WORK ORDER</U></TD><TD><U>DESCRIPTION</U></TD>" &
                               "<TD><U>ORIGINAL <BR>DUE DATE</U></TD><TD><U>NEW <BR>DUE DATE</U></TD></TR><TR></TR>" & vbCrLf
 
+        Dim wordOrder As String = String.Empty
+        Dim itemID As String = String.Empty
+        Dim shipTo As String = String.Empty
         For Each myLine As ReqLine In myReq.ReqLines
-            Dim wordOrder As String = String.Empty
-            Dim ItemID As String = String.Empty
             Try
                 Dim cmdEmpl As OleDbCommand = cn.CreateCommand
-                cmdEmpl.CommandText = "SELECT intfc_l.INV_ITEM_ID, intfc_l.ISA_WORK_ORDER_NO FROM SYSADM8.ps_isa_ord_intf_lN intfc_l " & vbCrLf &
+                cmdEmpl.CommandText = "SELECT intfc_l.SHIPTO_ID, intfc_l.INV_ITEM_ID, intfc_l.ISA_WORK_ORDER_NO FROM SYSADM8.ps_isa_ord_intf_lN intfc_l " & vbCrLf &
                             " WHERE intfc_l.ORDER_NO = '" & myReq.ReqId.ToString & "' " & vbCrLf &
                             " AND intfc_l.ISA_INTFC_LN = " & myLine.ReqLineNo & " "
                 cmdEmpl.CommandType = CommandType.Text
                 Dim rdr As OleDbDataReader = Nothing
 
                 rdr = cmdEmpl.ExecuteReader
-                    If Not (rdr Is Nothing) Then
+                If Not (rdr Is Nothing) Then
 
-                        While rdr.Read
-                        ItemID = CStr(rdr("INV_ITEM_ID")).Trim.ToUpper
+                    While rdr.Read
+                        itemID = CStr(rdr("INV_ITEM_ID")).Trim.ToUpper
                         wordOrder = CStr(rdr("ISA_WORK_ORDER_NO")).Trim.ToUpper
+                        shipTo = CStr(rdr("SHIPTO_ID")).Trim.ToUpper
                     End While
-                    End If
-                Catch ex As Exception
+                End If
+            Catch ex As Exception
             End Try
             Try
                 sOrigDueDate = myLine.oldDate()
@@ -624,7 +626,7 @@ Public Class PODueDTChangeEmail
             End Try
             sEmailBody &= "<TR><TD>&nbsp;" & myLine.ReqLineNo & "</TD>" &
                           "<TD>&nbsp;" & myLine.ItemID & "</TD>" &
-                          "<TD>&nbsp;" & ItemID & "</TD>" &
+                          "<TD>&nbsp;" & itemID & "</TD>" &
                           "<TD>&nbsp;" & myLine.POID & "</TD>" &
                           "<TD>&nbsp;" & myLine.POLine_NBR & "</TD>" &
                           "<TD>&nbsp;" & wordOrder & "</TD>" &
@@ -665,8 +667,13 @@ Public Class PODueDTChangeEmail
                     Catch ex As Exception
                         fromAddress = New System.Net.Mail.MailAddress("service.notification@sdi.com")
                     End Try
+                    'WAL-533: Email subject lines changes for Walmart BU -->Change done by- Venkat
+                    If myReq.BusinessUnit = "I0W01" OrElse myReq.POBusinessUnit = "WAL00" Then
+                        eml.Subject = "Status Update - Due Date Change - Store #" & shipTo & " - WO #" & wordOrder & ""
+                    Else
+                        eml.Subject = "Order Due Date has Changed. Order Number: " & myReq.ReqId.ToString & ". PO_ID: " & myReq.POID.ToString & ""
+                    End If
 
-                    eml.Subject = "Order Due Date has Changed. Order Number: " & myReq.ReqId.ToString & ". PO_ID: " & myReq.POID.ToString & ""
                     eml.From = fromAddress
 
                     Dim sCNString As String = m_oraCNstring
