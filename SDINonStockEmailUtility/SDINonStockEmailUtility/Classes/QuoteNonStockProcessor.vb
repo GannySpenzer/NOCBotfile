@@ -556,55 +556,56 @@ Public Class QuoteNonStockProcessor
                     '  iCnt = 0
                     For Each itmQuoted As QuotedNStkItem In m_colMsgs
                         SBord.Append(itmQuoted.OrderID + ",")
+
                         Dim TtlPrice As Decimal = GetPrice(itmQuoted.OrderID)
-                        If itmQuoted.PriceBlockFlag = "N" Then
-                            If itmQuoted.ApprovalLimit > 0 Then
-                                If TtlPrice > itmQuoted.ApprovalLimit Then
+                            If itmQuoted.PriceBlockFlag = "N" Then
+                                If itmQuoted.ApprovalLimit > 0 Then
+                                    If TtlPrice > itmQuoted.ApprovalLimit Then
+                                        SendMessages(itmQuoted)
+                                    Else
+                                        ' set line status to QTC or QTA (itmQuoted.LineStatus) and add Audit record
+                                        Dim strUpdateLineStatusFinal As String = ""
+                                        strUpdateLineStatusFinal = "UPDATE SYSADM8.PS_ISA_ORD_INTF_LN SET ISA_LINE_STATUS = '" & itmQuoted.LineStatus & "', OPRID_APPROVED_BY = 'SDIX', APPROVAL_DTTM = SYSDATE " & vbCrLf &
+                                            "WHERE BUSINESS_UNIT_OM = '" & itmQuoted.BusinessUnitOM & "' AND ORDER_NO = '" & itmQuoted.OrderID & "' " & vbCrLf &
+                                            "AND ISA_LINE_STATUS = 'QTS'"
+
+                                        Dim iRowsAffctd As Integer = 0
+                                        Try
+                                            iRowsAffctd = ORDBData.ExecNonQuery(strUpdateLineStatusFinal, False)
+
+                                            If iRowsAffctd > 0 Then
+                                                SDIAuditInsert("PS_ISA_ORD_INTF_LN", itmQuoted.OrderID, "ISA_LINE_STATUS", itmQuoted.LineStatus, itmQuoted.BusinessUnitOM)
+
+                                            End If
+
+                                        Catch ex As Exception
+
+                                        End Try
+
+                                        'Dim oApprovalDetails As ApprovalDetails = New ApprovalDetails(itmQuoted.BusinessUnitOM, itmQuoted.EmployeeID, itmQuoted.EmployeeID, itmQuoted.OrderID)
+                                        'Dim strAppMessage() As String
+                                        'If OrderApprovals.ApproveQuote(oApprovalDetails, strAppMessage, itmQuoted.LineStatus) Then
+
+                                        'End If
+                                    End If
+                                Else
                                     SendMessages(itmQuoted)
-                                Else
-                                    ' set line status to QTC or QTA (itmQuoted.LineStatus) and add Audit record
-                                    Dim strUpdateLineStatusFinal As String = ""
-                                    strUpdateLineStatusFinal = "UPDATE SYSADM8.PS_ISA_ORD_INTF_LN SET ISA_LINE_STATUS = '" & itmQuoted.LineStatus & "', OPRID_APPROVED_BY = 'SDIX', APPROVAL_DTTM = SYSDATE " & vbCrLf &
-                                        "WHERE BUSINESS_UNIT_OM = '" & itmQuoted.BusinessUnitOM & "' AND ORDER_NO = '" & itmQuoted.OrderID & "' " & vbCrLf &
-                                        "AND ISA_LINE_STATUS = 'QTS'"
-
-                                    Dim iRowsAffctd As Integer = 0
-                                    Try
-                                        iRowsAffctd = ORDBData.ExecNonQuery(strUpdateLineStatusFinal, False)
-
-                                        If iRowsAffctd > 0 Then
-                                            SDIAuditInsert("PS_ISA_ORD_INTF_LN", itmQuoted.OrderID, "ISA_LINE_STATUS", itmQuoted.LineStatus, itmQuoted.BusinessUnitOM)
-
-                                        End If
-
-                                    Catch ex As Exception
-
-                                    End Try
-
-                                    'Dim oApprovalDetails As ApprovalDetails = New ApprovalDetails(itmQuoted.BusinessUnitOM, itmQuoted.EmployeeID, itmQuoted.EmployeeID, itmQuoted.OrderID)
-                                    'Dim strAppMessage() As String
-                                    'If OrderApprovals.ApproveQuote(oApprovalDetails, strAppMessage, itmQuoted.LineStatus) Then
-
-                                    'End If
                                 End If
-                            Else
-                                SendMessages(itmQuoted)
-                            End If
 
-                        Else
-                            If itmQuoted.ApprovalLimit > 0 Then
-                                If TtlPrice > itmQuoted.ApprovalLimit Then
+                            Else
+                                If itmQuoted.ApprovalLimit > 0 Then
+                                    If TtlPrice > itmQuoted.ApprovalLimit Then
+                                        PriceUpdate(itmQuoted.OrderID, "QTW")
+                                    Else
+                                        PriceUpdate(itmQuoted.OrderID, itmQuoted.LineStatus) ' set to 'QTC' or 'QTA'
+                                    End If
+                                Else
                                     PriceUpdate(itmQuoted.OrderID, "QTW")
-                                Else
-                                    PriceUpdate(itmQuoted.OrderID, itmQuoted.LineStatus) ' set to 'QTC' or 'QTA'
                                 End If
-                            Else
-                                PriceUpdate(itmQuoted.OrderID, "QTW")
-                            End If
 
-                            UpdateReqEmailLog(itmQuoted)
-                            buildNotifyApprover(itmQuoted)
-                        End If
+                                UpdateReqEmailLog(itmQuoted)
+                                buildNotifyApprover(itmQuoted)
+                            End If
 
                     Next
                 End If
@@ -860,7 +861,7 @@ Public Class QuoteNonStockProcessor
             Dim cSQL As String = "" &
                                  "SELECT " & vbCrLf &
                                  " L.ISA_LINE_STATUS As LINESTATUS, A.BUSINESS_UNIT AS BUSINESS_UNIT" & vbCrLf &
-                                 ",A.REQ_ID AS REQ_ID,A1.BUYER_ID,B.DESCR,B.EMAILID" & vbCrLf &
+                                 ",A.REQ_ID AS REQ_ID,A1.BUYER_ID,B.DESCR,B.EMAILID,L.SHIPTO_ID AS SHIPTO" & vbCrLf &
                                  ",A1.LINE_NBR AS LINE_NBR" & vbCrLf &
                                  ",A4.BILL_TO_CUST_ID AS SOLD_TO_CUST_ID" & vbCrLf &
                                  ",A2.ISA_EMPLOYEE_EMAIL AS ISA_EMPLOYEE_EMAIL" & vbCrLf &
@@ -944,6 +945,7 @@ Public Class QuoteNonStockProcessor
                 Dim strPriority As String = " "
                 Dim lineStatus As String = " "
 
+
                 While rdr.Read
                     cKey = ""
                     bNew = True
@@ -951,10 +953,9 @@ Public Class QuoteNonStockProcessor
 
                     ' get the key for the current record
                     cKey = CType(rdr("BUSINESS_UNIT"), String).Trim.PadLeft(5, CType(" ", Char)) &
-                           CType(rdr("REQ_ID"), String).Trim.PadLeft(10, CType(" ", Char))
+                    CType(rdr("REQ_ID"), String).Trim.PadLeft(10, CType(" ", Char))
 
                     lineStatus = CType(rdr("LINESTATUS"), String).Trim
-
                     ' check if current key exist or be in a new message instance
                     If m_colMsgs.Count > 0 Then
                         bNew = True
@@ -1029,6 +1030,10 @@ Public Class QuoteNonStockProcessor
                     ' get business unit ID (if not defined yet)
                     If Not (boItem.BusinessUnitID.Length > 0) Then
                         boItem.BusinessUnitID = CType(rdr("BUSINESS_UNIT"), String).Trim
+                    End If
+                    'WAL-533 get shipto and assign change by madhu
+                    If Not (boItem.ShipTo.Length > 0) Then
+                        boItem.ShipTo = CType(rdr("SHIPTO"), String).Trim
                     End If
 
                     ' get the first Business Unit OM available
@@ -1614,10 +1619,21 @@ Public Class QuoteNonStockProcessor
                 ElseIf itmQuoted.OrderID.Length > 0 Then
                     eml.Subject &= " - " & itmQuoted.OrderID
                 End If
-                If LineStatus = "QTW" Then
-                    eml.Subject = "SDI ZEUS - Order Number "
-                    eml.Subject &= itmQuoted.OrderID & " needs approval"
-                End If
+                'WAL-533 Subject Line email change for walmart-change by madhu
+                Try
+                    If LineStatus = "QTW" Then
+                        Dim Business_unit As String = itmQuoted.BusinessUnitID
+                        'This change is speicific for walmart so including the BU Condition
+                        If Business_unit = "WAL00" Then
+                            eml.Subject = "Status Update - Need approval" & " - Store #" & itmQuoted.ShipTo & " Need approval" & " - WO #" & itmQuoted.WorkOrderNumber
+                        Else
+                            eml.Subject = "SDI ZEUS - Order Number "
+                            eml.Subject &= itmQuoted.OrderID & " needs approval"
+                        End If
+                    End If
+                Catch ex As Exception
+                End Try
+
 
                 ' for now, showing the work order # is synonymous to origin "RFQ"
                 Dim bShowWorkOrderNo As Boolean = (itmQuoted.OrderOrigin = "RFQ")
@@ -1856,29 +1872,29 @@ Public Class QuoteNonStockProcessor
                 If Len(sCNString) > 4 Then
                     strDBase = UCase(Right(sCNString, 4))
                 End If
-                If Not getDBName() Then
-                    eml.Subject = " TEST ZEUS - " & eml.Subject
-                    eml.To = "webdev@sdi.com;avacorp@sdi.com"
-                    eml.Cc = ""
-                    eml.Bcc = ""
-                Else
-
-                End If
-
-                'Select Case strDBase
-                '    Case "STAR", "PLGR", "RPTG", "DEVL"
-                '        eml.Subject = " TEST ZEUS - " & eml.Subject
-                '        eml.To = "webdev@sdi.com;avacorp@sdi.com"
-                '        eml.Cc = "webdev@sdi.com;avacorp@sdi.com"
-                '    Case Else
-
-                'End Select
-
+                Try
+                    If Not getDBName() Then
+                        'WAL-533 Subject Line email change for walmart - change by madhu
+                        Dim Business_Unit1 As String = itmQuoted.BusinessUnitID
+                        'This change is speicific for walmart so including the BU Condition
+                        If Business_Unit1 = "WAL00" Then
+                            eml.Subject = "Status Update - Quote Process" & " - Store #" & itmQuoted.ShipTo & " - WO #" & itmQuoted.WorkOrderNumber
+                        Else
+                            eml.Subject = " TEST ZEUS - " & eml.Subject
+                            eml.To = "webdev@sdi.com;avacorp@sdi.com"
+                            eml.Cc = ""
+                            eml.Bcc = ""
+                        End If
+                    Else
+                    End If
+                Catch ex As Exception
+                End Try
                 If Trim(itmQuoted.Priority) <> "" Then
                     If Trim(itmQuoted.Priority) = "R" Then
                         eml.Subject = eml.Subject & " - PRIORITY"
                     End If
                 End If
+
 
                 ' send this email
                 Try

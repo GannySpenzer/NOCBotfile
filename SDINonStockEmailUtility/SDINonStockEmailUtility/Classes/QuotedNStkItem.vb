@@ -11,7 +11,7 @@ Public Class QuotedNStkItem
     Private m_sCC As String = ""
     Private m_sBCC As String = ""
     Private m_sSubject As String = ""
-
+    Private m_sShipTo As String = ""
     Private m_sOrderID As String = ""
     Private m_sFormattedOrderID As String = ""
     Private m_sBusinessUnitID As String = ""
@@ -107,6 +107,16 @@ Public Class QuotedNStkItem
         End Get
         Set(ByVal Value As String)
             m_sSubject = Value
+        End Set
+    End Property
+
+    'Wal-533 Including the shipto field for subjectchange- change by madhu
+    Public Property ShipTo() As String
+        Get
+            Return m_sShipTo
+        End Get
+        Set(ByVal Value As String)
+            m_sShipTo = Value
         End Set
     End Property
 
