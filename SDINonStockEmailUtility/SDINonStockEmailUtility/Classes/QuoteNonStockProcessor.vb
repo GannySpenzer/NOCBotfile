@@ -1622,18 +1622,15 @@ Public Class QuoteNonStockProcessor
                 'WAL-533 Subject Line email change for walmart-change by madhu
                 Try
                     If LineStatus = "QTW" Then
-                        Dim Business_unit As String = itmQuoted.BusinessUnitID
-                        'This change is speicific for walmart so including the BU Condition
-                        If Business_unit = "WAL00" Then
-                            eml.Subject = "Status Update - Need approval" & " - Store #" & itmQuoted.ShipTo & " Need approval" & " - WO #" & itmQuoted.WorkOrderNumber
-                        Else
-                            eml.Subject = "SDI ZEUS - Order Number "
-                            eml.Subject &= itmQuoted.OrderID & " needs approval"
-                        End If
+                        eml.Subject = "SDI ZEUS - Order Number "
+                        eml.Subject &= itmQuoted.OrderID & " needs approval"
+                    End If
+                    Dim Business_unit As String = itmQuoted.BusinessUnitID
+                    If Business_unit = "WAL00" Then
+                        eml.Subject = "Action Needed - Approval Required" & " - Store #" & itmQuoted.ShipTo & " Need approval" & " - WO #" & itmQuoted.WorkOrderNumber
                     End If
                 Catch ex As Exception
                 End Try
-
 
                 ' for now, showing the work order # is synonymous to origin "RFQ"
                 Dim bShowWorkOrderNo As Boolean = (itmQuoted.OrderOrigin = "RFQ")
@@ -1878,7 +1875,7 @@ Public Class QuoteNonStockProcessor
                         Dim Business_Unit1 As String = itmQuoted.BusinessUnitID
                         'This change is speicific for walmart so including the BU Condition
                         If Business_Unit1 = "WAL00" Then
-                            eml.Subject = "TEST ZEUS - Status Update - Quote Process" & " - Store #" & itmQuoted.ShipTo & " - WO #" & itmQuoted.WorkOrderNumber
+                            eml.Subject = "TEST ZEUS - Action Needed - Approval Required" & " - Store #" & itmQuoted.ShipTo & " - WO #" & itmQuoted.WorkOrderNumber
                         Else
                             eml.Subject = " TEST ZEUS - " & eml.Subject
                             eml.To = "webdev@sdi.com;avacorp@sdi.com"
@@ -1894,8 +1891,6 @@ Public Class QuoteNonStockProcessor
                         eml.Subject = eml.Subject & " - PRIORITY"
                     End If
                 End If
-
-
                 ' send this email
                 Try
 
