@@ -1878,7 +1878,7 @@ Public Class QuoteNonStockProcessor
                         Dim Business_Unit1 As String = itmQuoted.BusinessUnitID
                         'This change is speicific for walmart so including the BU Condition
                         If Business_Unit1 = "WAL00" Then
-                            eml.Subject = "Status Update - Quote Process" & " - Store #" & itmQuoted.ShipTo & " - WO #" & itmQuoted.WorkOrderNumber
+                            eml.Subject = "TEST ZEUS - Status Update - Quote Process" & " - Store #" & itmQuoted.ShipTo & " - WO #" & itmQuoted.WorkOrderNumber
                         Else
                             eml.Subject = " TEST ZEUS - " & eml.Subject
                             eml.To = "webdev@sdi.com;avacorp@sdi.com"
@@ -1901,8 +1901,8 @@ Public Class QuoteNonStockProcessor
 
                     SendLogger(eml.Subject, eml.Body, "QUOTEAPPROVAL", "Mail", eml.To, eml.Cc, eml.Bcc)
                     SendNotification(itmQuoted.EmployeeID, eml.Subject, itmQuoted.OrderID)
-                    Dim Title As String = "Order Number: " + itmQuoted.OrderID + " Requested For Quote Approval"
-                    sendWebNotification(itmQuoted.EmployeeID, Title)
+                    'Dim Title As String = "Order Number: " + itmQuoted.OrderID + " Requested For Quote Approval"
+                    sendWebNotification(itmQuoted.EmployeeID, eml.Subject)
                 Catch ex As Exception
 
                 End Try
