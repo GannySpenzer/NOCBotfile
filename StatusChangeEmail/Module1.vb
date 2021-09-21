@@ -1595,7 +1595,7 @@ Module Module1
                  " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, " & vbCrLf   '  & _
 
 
-        strSQLstring += "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','01','QTW','02','QTC','03','QTS','04','CST','05','VND','06','APR','07','QTA','08','QTR','09','RFA','10','RFR','11','RFC','12','RCF','13','RCP','14','CNC','15','DLF','16') AS OLD_ORDER_STATUS," & vbCrLf &
+        strSQLstring += "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','01','QTW','02','QTC','03','QTS','04','CST','05','VND','06','APR','07','QTA','08','QTR','09','RFA','10','RFR','11','RFC','12','RCF','13','RCP','14','CNC','15','DLF','16','PKA','17') AS OLD_ORDER_STATUS," & vbCrLf &
                  " (SELECT E.XLATLONGNAME" & vbCrLf &
                                 " FROM XLATTABLE E" & vbCrLf &
                                 " WHERE E.EFFDT =" & vbCrLf &
@@ -2170,7 +2170,7 @@ Module Module1
                           ByVal strFirstName As String,
                           ByVal strLastName As String,
                           ByVal strEmail As String, ByVal strorgin As String,
-                          ByVal strBU As String, Optional ByVal strEmpID As String = "", Optional ByVal strWOno As String = "", Optional ByVal Ship_to As String ="" )
+                          ByVal strBU As String, Optional ByVal strEmpID As String = "", Optional ByVal strWOno As String = "", Optional ByVal Ship_to As String = "")
 
         Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
         Dim MailAttachmentName As String()
@@ -2280,7 +2280,7 @@ Module Module1
             End If
         End If
 
-            If Not strEmpID.Trim = "" Then
+        If Not strEmpID.Trim = "" Then
             sendNotification(strEmpID, strPushNoti, strOrderNo)
             Dim Title As String = "Order Number: " + strOrderNo + " - Status Modified To " + strOrderStatDesc + ""
             sendWebNotification(strEmpID, Title)
