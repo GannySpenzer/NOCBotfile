@@ -78,6 +78,7 @@ Module CustInfoMail
 
         Dim dtrAppReader As OleDbDataReader = GetReader(strSQLString)
         If dtrAppReader.HasRows() = True Then
+            Dim OrderNo As List(Of String) = New List(Of String)()
             While dtrAppReader.Read()
 
                 Dim strEmpName As String = ""
@@ -88,39 +89,44 @@ Module CustInfoMail
                 Dim strOrdDate As String = ""
                 Dim strBuyer As String = ""
 
-                If Not IsDBNull(dtrAppReader.Item("ISA_EMPLOYEE_NAME")) Then
-                    strEmpName = Convert.ToString(dtrAppReader.Item("ISA_EMPLOYEE_NAME"))
+                Dim ORDER_NO As String = Convert.ToString(dtrAppReader.Item("ORDER_NO"))
+
+                If Not OrderNo.Contains(Convert.ToString(ORDER_NO)) Then
+                    OrderNo.Add(Convert.ToString(ORDER_NO))
+
+                    If Not IsDBNull(dtrAppReader.Item("ISA_EMPLOYEE_NAME")) Then
+                        strEmpName = Convert.ToString(dtrAppReader.Item("ISA_EMPLOYEE_NAME"))
+                    End If
+
+                    If Not IsDBNull(dtrAppReader.Item("ORDER_NO")) Then
+                        strORderNo = Convert.ToString(dtrAppReader.Item("ORDER_NO"))
+                    End If
+
+                    If Not IsDBNull(dtrAppReader.Item("ISA_EMPLOYEE_EMAIL")) Then
+                        strEmail = Convert.ToString(dtrAppReader.Item("ISA_EMPLOYEE_EMAIL"))
+                    End If
+
+                    If Not IsDBNull(dtrAppReader.Item("ISA_REQUIRED_BY_DT")) Then
+                        Required_By_Dttm = CDate(dtrAppReader.Item("ISA_REQUIRED_BY_DT")).ToString("MM-dd-yyyy")
+                    End If
+
+                    If Not IsDBNull(dtrAppReader.Item("ISA_WORK_ORDER_NO")) Then
+                        strWorkONo = Convert.ToString(dtrAppReader.Item("ISA_WORK_ORDER_NO"))
+                    End If
+
+                    If Not IsDBNull(dtrAppReader.Item("order_date")) Then
+                        strOrdDate = CDate(dtrAppReader.Item("order_date")).ToString("MM-dd-yyyy")
+                    End If
+
+                    If Not IsDBNull(dtrAppReader.Item("buyer_id")) Then
+                        strBuyer = Convert.ToString(dtrAppReader.Item("buyer_id"))
+                    End If
+
+
+                    log.WriteLine("OrderNo {0} is need more information from customer {1}", strORderNo, strEmpName)
+
+                    buildNotifyApprover(strORderNo, strEmail, strEmpName, Required_By_Dttm, strWorkONo, strOrdDate, strBuyer)
                 End If
-
-                If Not IsDBNull(dtrAppReader.Item("ORDER_NO")) Then
-                    strORderNo = Convert.ToString(dtrAppReader.Item("ORDER_NO"))
-                End If
-
-                If Not IsDBNull(dtrAppReader.Item("ISA_EMPLOYEE_EMAIL")) Then
-                    strEmail = Convert.ToString(dtrAppReader.Item("ISA_EMPLOYEE_EMAIL"))
-                End If
-
-                If Not IsDBNull(dtrAppReader.Item("ISA_REQUIRED_BY_DT")) Then
-                    Required_By_Dttm = CDate(dtrAppReader.Item("ISA_REQUIRED_BY_DT")).ToString("MM-dd-yyyy")
-                End If
-
-                If Not IsDBNull(dtrAppReader.Item("ISA_WORK_ORDER_NO")) Then
-                    strWorkONo = Convert.ToString(dtrAppReader.Item("ISA_WORK_ORDER_NO"))
-                End If
-
-                If Not IsDBNull(dtrAppReader.Item("order_date")) Then
-                    strOrdDate = CDate(dtrAppReader.Item("order_date")).ToString("MM-dd-yyyy")
-                End If
-
-                If Not IsDBNull(dtrAppReader.Item("buyer_id")) Then
-                    strBuyer = Convert.ToString(dtrAppReader.Item("buyer_id"))
-                End If
-
-
-                log.WriteLine("OrderNo {0} is need more information from customer {1}", strORderNo, strEmpName)
-
-                buildNotifyApprover(strORderNo, strEmail, strEmpName, Required_By_Dttm, strWorkONo, strOrdDate, strBuyer)
-
             End While
             dtrAppReader.Close()
         Else
