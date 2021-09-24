@@ -329,14 +329,15 @@ and a.business_unit = '" + strPOBU + "' and a.po_id='" + strPO + "'";
 
             try
             {
+                //SP-136: Change the email address from sdiexchange@sdi.com to sdizeus@sdi.com. Change made by Venkat
                 MailMessage Mailer = new MailMessage();
-                string FromAddress = "SDIExchange@SDI.com";
+                string FromAddress = "SDIZEUS@SDI.COM";
                 string Mailcc = "";
                 string MailBcc = "webdev@sdi.com;Tony.Smith@sdi.com";
 
-                strbodyhead = "<table bgcolor='black' Width='100%'><tbody><tr><td style='width:1%;'><img src='http://www.sdiexchange.com/images/SDNewLogo_Email.png' alt='SDI' style='padding: 10px 0;' vspace='0' hspace='0' /></td>";
+                strbodyhead = "<table bgcolor='black' Width='100%'><tbody><tr><td style='width:1%;'><img src='http://www.sdizeus.com/images/SDNewLogo_Email.png' alt='SDI' style='padding: 10px 0;' vspace='0' hspace='0' /></td>";
                 strbodyhead = strbodyhead + "<td style='width:50% ;'><center><span style='font-weight:bold;color:white;font-size:24px;'>SDI Marketplace</span></center>";
-                strbodyhead = strbodyhead + "<center><span style='color:white;'>SDiExchange - Purchase Order Notification</span></center></td></tr></tbody></table>";
+                strbodyhead = strbodyhead + "<center><span style='color:white;'>SDIZEUS - Purchase Order Notification</span></center></td></tr></tbody></table>";
                 strbodyhead = strbodyhead + "<HR width='100%' SIZE='1'>";
                 strbodydetl = "<div>";
 
@@ -392,7 +393,7 @@ and a.business_unit = '" + strPOBU + "' and a.po_id='" + strPO + "'";
                 {
                     Mailer.To.Add(new MailAddress("WebDev@sdi.com"));
                     Mailer.To.Add(new MailAddress("avacorp@sdi.com"));
-                    Mailer.Subject = "<<TEST SITE>> SDiExchange - Purchase Order " + POID + "";
+                    Mailer.Subject = "<<TEST SITE>> SDIZEUS - Purchase Order " + POID + "";
                 }
                 else
                 {
@@ -409,7 +410,7 @@ and a.business_unit = '" + strPOBU + "' and a.po_id='" + strPO + "'";
                     catch (Exception)
                     {
                     }                   
-                    Mailer.Subject = "SDiExchange - Purchase Order " + POID + "";
+                    Mailer.Subject = "SDIZEUS - Purchase Order " + POID + "";
                 }
 
                 OleDbConnection connectionEmail = new OleDbConnection(ConfigurationSettings.AppSettings["OLEDBconString"]);
@@ -459,7 +460,7 @@ and a.business_unit = '" + strPOBU + "' and a.po_id='" + strPO + "'";
 
             try
             {
-                SDIEmailService.EmailUtilityServices("MailandStore", "SDIExchange@SDI.com", mailer.To.ToString(), mailer.Subject, string.Empty, string.Empty, mailer.Body, "SDIERRMAIL", null, null);
+                SDIEmailService.EmailUtilityServices("MailandStore", "SDIZEUS@SDI.com", mailer.To.ToString(), mailer.Subject, string.Empty, string.Empty, mailer.Body, "SDIERRMAIL", null, null);
             }
             catch (Exception ex)
             {
