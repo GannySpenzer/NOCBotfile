@@ -284,7 +284,7 @@ Module Module1
         If Trim(strBusUnitMy) <> "" Then
             strBusUnitMy = UCase(Trim(strBusUnitMy))
             Select Case strBusUnitMy
-                Case "I0906", "I0907", "I0908"
+                Case "I0906", "I0907"
                     Try
                         strMySettngsValue = My.Settings("BU_I090X_VISTEON").ToString.Trim
                     Catch ex As Exception
