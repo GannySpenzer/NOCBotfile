@@ -597,11 +597,11 @@ Public Class PODueDTChangeEmail
 
         Dim wordOrder As String = String.Empty
         Dim itemID As String = String.Empty
-        Dim shipTo As String = String.Empty
+        Dim store As String = String.Empty
         For Each myLine As ReqLine In myReq.ReqLines
             Try
                 Dim cmdEmpl As OleDbCommand = cn.CreateCommand
-                cmdEmpl.CommandText = "SELECT intfc_l.SHIPTO_ID, intfc_l.INV_ITEM_ID, intfc_l.ISA_WORK_ORDER_NO FROM SYSADM8.ps_isa_ord_intf_lN intfc_l " & vbCrLf &
+                cmdEmpl.CommandText = "SELECT intfc_l.ISA_USER2 as STORE, intfc_l.INV_ITEM_ID, intfc_l.ISA_WORK_ORDER_NO FROM SYSADM8.ps_isa_ord_intf_lN intfc_l " & vbCrLf &
                             " WHERE intfc_l.ORDER_NO = '" & myReq.ReqId.ToString & "' " & vbCrLf &
                             " AND intfc_l.ISA_INTFC_LN = " & myLine.ReqLineNo & " "
                 cmdEmpl.CommandType = CommandType.Text
@@ -613,7 +613,10 @@ Public Class PODueDTChangeEmail
                     While rdr.Read
                         itemID = CStr(rdr("INV_ITEM_ID")).Trim.ToUpper
                         wordOrder = CStr(rdr("ISA_WORK_ORDER_NO")).Trim.ToUpper
-                        shipTo = CStr(rdr("SHIPTO_ID")).Trim.ToUpper
+                        Try
+                            store = CStr(rdr("STORE")).Split("-").LastOrDefault().Trim()
+                        Catch ex As Exception
+                        End Try
                     End While
                 End If
             Catch ex As Exception
@@ -669,7 +672,7 @@ Public Class PODueDTChangeEmail
                     End Try
                     'WAL-533: Email subject lines changes for Walmart BU -->Change done by- Venkat
                     If myReq.BusinessUnit = "I0W01" OrElse myReq.POBusinessUnit = "WAL00" Then
-                        eml.Subject = "Status Update - Due Date Change - Store #" & shipTo & " - WO #" & wordOrder & ""
+                        eml.Subject = "Status Update - Due Date Change - Store #" & store & " - WO #" & wordOrder & ""
                     Else
                         eml.Subject = "Order Due Date has Changed. Order Number: " & myReq.ReqId.ToString & ". PO_ID: " & myReq.POID.ToString & ""
                     End If
@@ -684,7 +687,7 @@ Public Class PODueDTChangeEmail
 
                     Select Case strDBase
                         Case "STAR", "PLGR", "RPTG", "DEVL", "STST", "SUAT"
-                            eml.Subject = " TEST SDI ZEUS - " & eml.Subject
+                            eml.Subject = "<<TEST SITE>> " & eml.Subject
                             eml.To.Clear()
                             eml.To.Add("webdev@sdi.com")
                             sEmailTo = "webdev@sdi.com"
