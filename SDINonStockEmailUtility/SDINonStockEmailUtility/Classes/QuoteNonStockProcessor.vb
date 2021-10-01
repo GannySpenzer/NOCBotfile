@@ -869,7 +869,7 @@ Public Class QuoteNonStockProcessor
                                  ",L.ISA_EMPLOYEE_ID AS ISA_EMPLOYEE_ID" & vbCrLf &
                                  ",A4.BUSINESS_UNIT_OM AS BUSINESS_UNIT_OM" & vbCrLf &
                                  ",L.ISA_PRIORITY_FLAG,A4.ORIGIN" & vbCrLf &
-                                 ",L.OPRID_MODIFIED_BY AS OPRID_MODIFIED_BY, L.ISA_WORK_ORDER_NO AS WORK_ORDER_ID , A3.APPRVALTHRESHOLD AS APPROVAL_LIMIT " & vbCrLf &
+                                 ",L.OPRID_MODIFIED_BY AS OPRID_MODIFIED_BY, L.ISA_WORK_ORDER_NO AS WORK_ORDER_ID,L.ISA_USER2 AS STORE , A3.APPRVALTHRESHOLD AS APPROVAL_LIMIT " & vbCrLf &
                                  ",A3.ISA_CUSTINT_APPRVL " & vbCrLf &
                                  "FROM " & vbCrLf &
                                  " PS_REQ_HDR A" & vbCrLf &
@@ -942,6 +942,7 @@ Public Class QuoteNonStockProcessor
                 Dim appLimit As Double = 0
                 Dim strPriority As String = " "
                 Dim lineStatus As String = " "
+                Dim store As String = " "
 
 
                 While rdr.Read
@@ -1115,6 +1116,17 @@ Public Class QuoteNonStockProcessor
                         End If
                     End If
 
+                    store = " "
+                    Try
+                        If boItem.BusinessUnitID = "WAL00" Then
+                            If Not (rdr("STORE") Is System.DBNull.Value) Then
+                                store = CStr(rdr("STORE")).Split("-").LastOrDefault().Trim()
+                            End If
+                        End If
+                    Catch ex As Exception
+                        store = " "
+                    End Try
+
                     ' get Buyer ID (if not defined yet)
                     If Not (boItem.BuyerId.Length > 0) Then
                         Try
@@ -1276,6 +1288,10 @@ Public Class QuoteNonStockProcessor
                     '   - erwin
                     If Not (boItem.WorkOrderNumber.Length > 0) Then
                         boItem.WorkOrderNumber = workOrderNo
+                    End If
+
+                    If Not (boItem.Store.Length > 0) Then
+                        boItem.Store = store
                     End If
 
                     ' New code for Approval Limit 
@@ -1625,7 +1641,7 @@ Public Class QuoteNonStockProcessor
                     End If
                     Dim Business_unit As String = itmQuoted.BusinessUnitID
                     If Business_unit = "WAL00" Then
-                        eml.Subject = "Action Needed - Approval Required" & " - Store #" & itmQuoted.ShipTo & " Need approval" & " - WO #" & itmQuoted.WorkOrderNumber
+                        eml.Subject = "Action Needed - Approval Required" & " - Store #" & itmQuoted.Store & " Need approval" & " - WO #" & itmQuoted.WorkOrderNumber
                     End If
                 Catch ex As Exception
                 End Try
@@ -1873,7 +1889,7 @@ Public Class QuoteNonStockProcessor
                         Dim Business_Unit1 As String = itmQuoted.BusinessUnitID
                         'This change is speicific for walmart so including the BU Condition
                         If Business_Unit1 = "WAL00" Then
-                            eml.Subject = "TEST ZEUS - Action Needed - Approval Required" & " - Store #" & itmQuoted.ShipTo & " - WO #" & itmQuoted.WorkOrderNumber
+                            eml.Subject = "TEST ZEUS - Action Needed - Approval Required" & " - Store #" & itmQuoted.Store & " - WO #" & itmQuoted.WorkOrderNumber
                         Else
                             eml.Subject = " TEST ZEUS - " & eml.Subject
                             eml.To = "webdev@sdi.com;avacorp@sdi.com"

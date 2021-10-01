@@ -22,6 +22,7 @@ Public Class QuotedNStkItem
     Private m_sAddressee As String = ""
 
     Private m_workOrderNo As String = ""
+    Private m_store As String = ""
     Private m_orderOrigin As String = ""
 
     Private m_priceblock As String = ""
@@ -207,6 +208,15 @@ Public Class QuotedNStkItem
         End Get
         Set(value As String)
             m_workOrderNo = value
+        End Set
+    End Property
+
+    Public Property Store() As String
+        Get
+            Return m_store
+        End Get
+        Set(value As String)
+            m_store = value
         End Set
     End Property
 
