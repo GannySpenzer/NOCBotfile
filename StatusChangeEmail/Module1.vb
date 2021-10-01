@@ -1556,7 +1556,7 @@ Module Module1
 
         'If strBU = "I0W01" Then
         'dteStartDate = dteStartDate.AddMinutes(+1)
-        'dteStartDate = dteStartDate.AddHours(-36)
+        'dteStartDate = dteStartDate.AddHours(-36)          
         'End If
 
         Try
@@ -1591,7 +1591,7 @@ Module Module1
         '         '  
 
         strSQLstring = "SELECT H.ISA_IOL_OP_NAME as STATUS_CODE, TBL.* FROM (SELECT distinct G.BUSINESS_UNIT_OM, G.BUSINESS_UNIT_OM AS G_BUS_UNIT, D.BUSINESS_UNIT, D.ISA_EMPLOYEE_ID, A.ORDER_NO,B.ISA_WORK_ORDER_NO As WORK_ORDER_NO, B.ISA_INTFC_LN AS line_nbr," & vbCrLf &
-                 " B.ISA_EMPLOYEE_ID AS EMPLID, B.ISA_LINE_STATUS as ORDER_TYPE,B.OPRID_ENTERED_BY, B.SHIPTO_ID as SHIPTO," & vbCrLf &
+                 " B.ISA_EMPLOYEE_ID AS EMPLID, B.ISA_LINE_STATUS as ORDER_TYPE,B.OPRID_ENTERED_BY, B.SHIPTO_ID as SHIPTO,B.ISA_USER2 as STORE," & vbCrLf &
                  " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, " & vbCrLf   '  & _
 
 
@@ -1837,6 +1837,13 @@ Module Module1
             End If
             strEmailTo = ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_EMAIL")
             strEmpID = ds.Tables(0).Rows(I).Item("ISA_EMPLOYEE_ID")
+            Dim Store As String = String.Empty
+            Try
+                Store = ds.Tables(0).Rows(I).Item("STORE")
+                Store = Store.Split("-").LastOrDefault().Trim()
+
+            Catch ex As Exception
+            End Try
 
             If I = ds.Tables(0).Rows.Count - 1 Then
 
@@ -1854,7 +1861,7 @@ Module Module1
                 ds.Tables(0).Rows(I).Item("Origin"),
                 strBU, strEmpID,
                 ds.Tables(0).Rows(I).Item("WORK_ORDER_NO"),
-                ds.Tables(0).Rows(I).Item("SHIPTO")
+                Store
                     )
 
                 dsEmail.Clear()
@@ -1880,7 +1887,7 @@ Module Module1
                ds.Tables(0).Rows(I).Item("Origin"),
                strBU, strEmpID,
                ds.Tables(0).Rows(I).Item("WORK_ORDER_NO"),
-               ds.Tables(0).Rows(I).Item("SHIPTO")
+               Store
                )
 
                 dsEmail.Clear()
@@ -2170,7 +2177,7 @@ Module Module1
                           ByVal strFirstName As String,
                           ByVal strLastName As String,
                           ByVal strEmail As String, ByVal strorgin As String,
-                          ByVal strBU As String, Optional ByVal strEmpID As String = "", Optional ByVal strWOno As String = "", Optional ByVal Ship_to As String = "")
+                          ByVal strBU As String, Optional ByVal strEmpID As String = "", Optional ByVal strWOno As String = "", Optional ByVal Store As String = "")
 
         Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
         Dim MailAttachmentName As String()
@@ -2263,8 +2270,8 @@ Module Module1
         If Not getDBName() Then
             Mailer1.To = "webdev@sdi.com"
             If strBU = "I0W01" Then
-                Mailer1.Subject = "<<TEST SITE>>Status Update - " + strOrderStatDesc + " - Store #" + Ship_to + " - WO # " & strWOno
-                strPushNoti = "<<TEST SITE>>Status Update - " + strOrderStatDesc + " - Store #" + Ship_to + " - WO # " & strWOno
+                Mailer1.Subject = "<<TEST SITE>>Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
+                strPushNoti = "<<TEST SITE>>Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
             Else
                 Mailer1.Subject = "<<TEST SITE>>SDiExchange - Order Status records for Order Number: " & strOrderNo
                 strPushNoti = "<<TEST SITE>>Order Number: " + strOrderNo + " - Status Modified To  " + strOrderStatDesc + " . Please check the details in order status menu."
@@ -2272,8 +2279,8 @@ Module Module1
         Else
             Mailer1.To = strPurchaserEmail
             If strBU = "I0W01" Then
-                Mailer1.Subject = "Status Update - " + strOrderStatDesc + " - Store #" + Ship_to + " - WO # " & strWOno
-                strPushNoti = "Status Update - " + strOrderStatDesc + " - Store #" + Ship_to + " - WO # " & strWOno
+                Mailer1.Subject = "Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
+                strPushNoti = "Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
             Else
                 Mailer1.Subject = "SDiExchange - Order Status records for Order Number: " & strOrderNo
                 strPushNoti = "Order Number: " + strOrderNo + " - Status Modified To " + strOrderStatDesc + ". Please check the details in order status menu."
