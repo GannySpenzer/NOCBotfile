@@ -171,7 +171,7 @@ Module Module1
             '' To get teh list of BU if the privilage was set to any site
             Dim getBuQuery As String = "SELECT DISTINCT(E.ISA_BUSINESS_UNIT) AS BUSINESS_UNIT from PS_ISA_USERS_PRIVS P,PS_ISA_ENTERPRISE E  where E.ISA_BUSINESS_UNIT = P.BUSINESS_UNIT AND " & vbCrLf &
                 "P.ISA_IOL_OP_NAME in ('EMAILCRE01','EMAILQTW02','EMAILQTC03','EMAILQTS04','EMAILCST05','EMAILVND06','EMAILAPR07','EMAILQTA08'," & vbCrLf &
-                "'EMAILQTR09','EMAILRFA10','EMAILRFR11','EMAILRFC12','EMAILRCF13','EMAILRCP14','EMAILCNC15','EMAILDLF16')"
+                "'EMAILQTR09','EMAILRFA10','EMAILRFR11','EMAILRFC12','EMAILRCF13','EMAILRCP14','EMAILCNC15','EMAILDLF16','EMAILPKA17')"
 
             Dim Command As OleDbCommand = New OleDbCommand(getBuQuery, connectOR)
             If connectOR.State = ConnectionState.Open Then
