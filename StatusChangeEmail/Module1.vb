@@ -14,6 +14,7 @@ Imports System.Net.Http
 Imports System.Net.Http.Headers
 Imports System.Threading.Tasks
 Imports System.Web.Script.Serialization
+Imports System.Web
 
 Module Module1
 
@@ -2624,6 +2625,8 @@ Module Module1
                     Dim getTokenID As String() = _notificationResult.Tables(0).AsEnumerable().[Select](Function(r) r.Field(Of String)("DEVICE_INFO")).ToArray()
                     Dim serverKey As String = ConfigurationManager.AppSettings("serverKey")
                     Dim senderId As String = ConfigurationManager.AppSettings("senderId")
+                    Dim serverKey1 As String = ConfigurationManager.AppSettings("serverKey1")
+                    Dim senderId1 As String = ConfigurationManager.AppSettings("senderId1")
                     Dim tRequest As WebRequest = WebRequest.Create("https://fcm.googleapis.com/fcm/send")
                     tRequest.Method = "post"
                     tRequest.ContentType = "application/json"
@@ -2637,8 +2640,14 @@ Module Module1
                     Dim serializer = New JavaScriptSerializer()
                     Dim json = serializer.Serialize(webObject)
                     Dim byteArray As Byte() = Encoding.UTF8.GetBytes(json)
-                    tRequest.Headers.Add(String.Format("Authorization: key={0}", serverKey))
-                    tRequest.Headers.Add(String.Format("Sender: id={0}", senderId))
+                    If HttpContext.Current.Session("BUSUNIT") = "I0W01" Then
+                        tRequest.Headers.Add(String.Format("Authorization: key={0}", serverKey))
+                        tRequest.Headers.Add(String.Format("Sender: id={0}", senderId))
+                    Else
+                        tRequest.Headers.Add(String.Format("Authorization: key={0}", serverKey1))
+                        tRequest.Headers.Add(String.Format("Sender: id={0}", senderId1))
+
+                    End If
 
                     tRequest.ContentLength = byteArray.Length
 
