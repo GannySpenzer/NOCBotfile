@@ -1378,7 +1378,7 @@ Public Class QuoteNonStockProcessor
         Return strOrigApproverID
     End Function
 
-    Public Shared Function GetURL() As String
+    Public Shared Function GetURL(Optional ByVal cBusinessUnitOM As String = "") As String
         Dim sRet As String = ""
         Dim sWebAppName As String = "ims.sdi.com:8080/sdiconnect/"
         Dim sCNString As String = m_CN.ConnectionString
@@ -1407,6 +1407,17 @@ Public Class QuoteNonStockProcessor
             Case Else
                 sRet = "http://zeustest.sdi.com:8083/ZEUSUAT/"
         End Select
+
+        If cBusinessUnitOM = "I0W01" Then
+            Select Case strDBase
+                Case "PROD", "SPRD"
+                    sRet = "https://walmart.sdi.com/"
+                Case "DEVL"
+                    sRet = "https://walmarttest.sdi.com/"
+                Case Else
+                    sRet = "https://walmarttest.sdi.com/"
+            End Select
+        End If
 
         Return sRet
     End Function
@@ -2056,22 +2067,22 @@ Public Class QuoteNonStockProcessor
 
                     tRequest.ContentLength = byteArray.Length
 
-                        Using dataStream As Stream = tRequest.GetRequestStream()
-                            dataStream.Write(byteArray, 0, byteArray.Length)
+                    Using dataStream As Stream = tRequest.GetRequestStream()
+                        dataStream.Write(byteArray, 0, byteArray.Length)
 
-                            Using tResponse As WebResponse = tRequest.GetResponse()
+                        Using tResponse As WebResponse = tRequest.GetResponse()
 
-                                Using dataStreamResponse As Stream = tResponse.GetResponseStream()
+                            Using dataStreamResponse As Stream = tResponse.GetResponseStream()
 
-                                    Using tReader As StreamReader = New StreamReader(dataStreamResponse)
-                                        Dim sResponseFromServer As String = tReader.ReadToEnd()
-                                        response = sResponseFromServer
-                                    End Using
+                                Using tReader As StreamReader = New StreamReader(dataStreamResponse)
+                                    Dim sResponseFromServer As String = tReader.ReadToEnd()
+                                    response = sResponseFromServer
                                 End Using
                             End Using
                         End Using
-                    End If
+                    End Using
                 End If
+            End If
         Catch ex As Exception
         End Try
     End Sub
@@ -2202,11 +2213,20 @@ Public Class QuoteNonStockProcessor
         If bShowLink Then
             Try
                 'Dim m_cURL1 As String = "http://" & ConfigurationManager.AppSettings("WebAppName") & "Approvequote.aspx"
-                If LineStatus = "QTW" Then
-                    m_cURL1 = GetURL() & "approveorder.aspx"
+                If cBusinessUnitOM = "I0W01" Then
+                    If LineStatus = "QTW" Then
+                        m_cURL1 = GetURL(cBusinessUnitOM) & "approveorder"
+                    Else
+                        m_cURL1 = GetURL(cBusinessUnitOM) & "Approvequote"
+                    End If
                 Else
-                    m_cURL1 = GetURL() & "Approvequote.aspx"
+                    If LineStatus = "QTW" Then
+                        m_cURL1 = GetURL(cBusinessUnitOM) & "approveorder.aspx"
+                    Else
+                        m_cURL1 = GetURL(cBusinessUnitOM) & "Approvequote.aspx"
+                    End If
                 End If
+
 
                 Dim boEncrypt As New Encryption64
 
