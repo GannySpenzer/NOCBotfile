@@ -2034,7 +2034,7 @@ Public Class QuoteNonStockProcessor
         Try
             Dim NotificationContent As String = subject
             Dim _notificationResult As New DataSet
-            Dim notificationSQLStr = "SELECT DISTINCT(DEVICE_INFO) FROM SDIX_USER_TOKEN WHERE ISA_EMPLOYEE_ID = '" + Session_UserID + "' AND DEVICE_INFO IS NOT NULL AND LOWER(DEVICE_INFO) <> 'unknown unknown' AND LOWER(DEVICE_INFO)<>'webapp' order by last_update_dttm desc fetch first 1000 rows only"
+            Dim notificationSQLStr = "Select distinct(DEVICE_INFO) FROM (SELECT DISTINCT(DEVICE_INFO) FROM SDIX_USER_TOKEN WHERE ISA_EMPLOYEE_ID = '" + Session_UserID + "' AND DEVICE_INFO IS NOT NULL AND LOWER(DEVICE_INFO) <> 'unknown unknown' AND LOWER(DEVICE_INFO)<>'webapp' order by last_update_dttm desc fetch first 1000 rows only)"
             _notificationResult = ORDBData.GetAdapter(notificationSQLStr)
             If _notificationResult.Tables.Count > 0 Then
                 If _notificationResult.Tables(0).Rows.Count > 0 Then
