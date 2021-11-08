@@ -2215,7 +2215,7 @@ Public Class QuoteNonStockProcessor
                 'Dim m_cURL1 As String = "http://" & ConfigurationManager.AppSettings("WebAppName") & "Approvequote.aspx"
                 If cBusinessUnitOM = "I0W01" Then
                     If LineStatus = "QTW" Then
-                        m_cURL1 = GetURL(cBusinessUnitOM) & "approveorder"
+                        m_cURL1 = GetURL(cBusinessUnitOM) & "needapprove"
                     Else
                         m_cURL1 = GetURL(cBusinessUnitOM) & "Approvequote"
                     End If
