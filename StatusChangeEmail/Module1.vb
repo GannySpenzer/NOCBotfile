@@ -1226,7 +1226,8 @@ Module Module1
         Dim dteNONSKREQEmail As String = objEnterprise.NONSKREQEmail
 
         'If strBU = "I0440" Then
-        '    'dteStartDate = dteStartDate.AddMinutes(-31)
+        'dteStartDate = dteStartDate.AddMinutes(-31)
+        'dteStartDate = dteStartDate.AddHours(3)
         '    dteStartDate = dteStartDate.AddHours(-15)
         'End If
 
@@ -2404,7 +2405,7 @@ Module Module1
         End If
 
         If Not strEmpID.Trim = "" Then
-            sendNotification(strEmpID, strPushNoti, strOrderNo)
+            sendNotification(strEmpID, strPushNoti, strOrderNo, strBU)
             Dim Title As String = "Order Number: " + strOrderNo + " - Status Modified To " + strOrderStatDesc + ""
             sendWebNotification(strEmpID, Title)
         End If
@@ -2613,7 +2614,7 @@ Module Module1
         '
     End Function
 
-    Public Sub sendNotification(ByVal Session_UserID As String, ByVal subject As String, ByVal orderNo As String)
+    Public Sub sendNotification(ByVal Session_UserID As String, ByVal subject As String, ByVal orderNo As String, Optional ByVal strbu As String = Nothing)
         Dim response As String
         Try
             Dim NotificationContent As String = subject
@@ -2640,7 +2641,7 @@ Module Module1
                     Dim serializer = New JavaScriptSerializer()
                     Dim json = serializer.Serialize(webObject)
                     Dim byteArray As Byte() = Encoding.UTF8.GetBytes(json)
-                    If HttpContext.Current.Session("BUSUNIT") = "I0W01" Then
+                    If strbu = "I0W01" Then
                         tRequest.Headers.Add(String.Format("Authorization: key={0}", serverKey))
                         tRequest.Headers.Add(String.Format("Sender: id={0}", senderId))
                     Else
