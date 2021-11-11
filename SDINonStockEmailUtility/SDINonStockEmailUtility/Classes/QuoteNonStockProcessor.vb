@@ -1920,7 +1920,7 @@ Public Class QuoteNonStockProcessor
                 Try
 
                     SendLogger(eml.Subject, eml.Body, "QUOTEAPPROVAL", "Mail", eml.To, eml.Cc, eml.Bcc)
-                    SendNotification(itmQuoted.EmployeeID, eml.Subject, itmQuoted.OrderID)
+                    SendNotification(itmQuoted.EmployeeID, eml.Subject, itmQuoted.OrderID, itmQuoted.BusinessUnitOM)
                     'Dim Title As String = "Order Number: " + itmQuoted.OrderID + " Requested For Quote Approval"
                     sendWebNotification(itmQuoted.EmployeeID, eml.Subject)
                 Catch ex As Exception
@@ -2029,7 +2029,7 @@ Public Class QuoteNonStockProcessor
         End Try
     End Sub
 
-    Public Shared Sub SendNotification(ByVal Session_UserID As String, ByVal subject As String, ByVal orderNo As String)
+    Public Shared Sub SendNotification(ByVal Session_UserID As String, ByVal subject As String, ByVal orderNo As String, Optional ByVal cBusinessUnitOM As String = "")
         Dim response As String
         Try
             Dim NotificationContent As String = subject
@@ -2056,7 +2056,7 @@ Public Class QuoteNonStockProcessor
                     Dim serializer = New JavaScriptSerializer()
                     Dim json = serializer.Serialize(webObject)
                     Dim byteArray As Byte() = Encoding.UTF8.GetBytes(json)
-                    If HttpContext.Current.Session("BUSUNIT") = "I0W01" Then
+                    If cBusinessUnitOM = "I0W01" Then
                         tRequest.Headers.Add(String.Format("Authorization: key={0}", serverKey))
                         tRequest.Headers.Add(String.Format("Sender: id={0}", senderId))
                     Else
