@@ -119,7 +119,9 @@
       <CustomToolNamespace>My</CustomToolNamespace>
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Web References\EmailService\EmailServices.wsdl" />
     <None Include="Web References\EmailService\Reference.map">
       <Generator>MSDiscoCodeGenerator</Generator>
@@ -137,10 +139,10 @@
     <WebReferences Include="Web References\" />
   </ItemGroup>
   <ItemGroup>
-    <WebReferenceUrl Include="http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx">
+    <WebReferenceUrl Include="http://sdixaws2016test:8083/SDIEmailSvc/EmailServices.asmx">
       <UrlBehavior>Dynamic</UrlBehavior>
       <RelPath>Web References\EmailService\</RelPath>
-      <UpdateFromURL>http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx</UpdateFromURL>
+      <UpdateFromURL>http://sdixaws2016test:8083/SDIEmailSvc/EmailServices.asmx</UpdateFromURL>
       <ServiceLocationURL>
       </ServiceLocationURL>
       <CachedDynamicPropName>
