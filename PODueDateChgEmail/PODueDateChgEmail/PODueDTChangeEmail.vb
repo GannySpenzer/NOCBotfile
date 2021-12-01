@@ -586,139 +586,168 @@ Public Class PODueDTChangeEmail
         Dim fromAddress As System.Net.Mail.MailAddress
 
 
-        sEmailBody = "<HTML><HEAD><META name=GENERATOR content=""MSHTML 8.00.6001.18876""><span style=""background-color: black;""><img src='https://www.sdiezeus.com/images/SDNewLogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></span></HEAD>" &
+        sEmailBody = "<HTML><HEAD><META name=GENERATOR content=""MSHTML 8.00.6001.18876""><span style=""background-color: black;""><img src='https://www.sdizeus.com/images/SDNewLogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></span></HEAD>" &
                              "<BODY><CENTER><SPAN style=""WIDTH: 256px; FONT-FAMILY: Arial; FONT-SIZE: x-large"">SDI Marketplace</SPAN></CENTER>" &
                              "<CENTER><SPAN>SDI ZEUS -<B> Order Due Date Change</B></SPAN></CENTER>&nbsp;" &
                               "&nbsp; <DIV><P>Hello SDI Site Rep,<BR></DIV><BR>There has been a Due Date change for Order Number: <B> " & myReq.ReqId.ToString &
                               "</B><BR><BR><TABLE> <COLGROUP><COL width=""7%"" valign=""top""><COL width=""21%"" valign=""top""><COL width=""11%"" valign=""top""><COL width=""7%"" valign=""top"">" &
                               "<COL width=""36%"" valign=""top""><COL width=""9%"" valign=""top""><COL width=""9%"" valign=""top"">" &
                               "<TR><TD><U>LINE <BR>NUMBER</U></TD><TD><U>MFG -<BR> MFG ITEM NO.</U></TD><TD><U>ITEM ID</U></TD><TD><U>PO ID</U></TD><TD><U>PO LINE <BR>NUMBER</U></TD><TD><U>WORK ORDER</U></TD><TD><U>DESCRIPTION</U></TD>" &
-                              "<TD><U>ORIGINAL <BR>DUE DATE</U></TD><TD><U>NEW <BR>DUE DATE</U></TD></TR><TR></TR>" & vbCrLf
+                              "<TD><U>LAST <BR>DUE DATE</U></TD><TD><U>NEW <BR>DUE DATE</U></TD></TR><TR></TR>" & vbCrLf
 
         Dim wordOrder As String = String.Empty
         Dim itemID As String = String.Empty
         Dim store As String = String.Empty
+        Dim dataExist As Boolean = False
         For Each myLine As ReqLine In myReq.ReqLines
-            Try
-                Dim cmdEmpl As OleDbCommand = cn.CreateCommand
-                cmdEmpl.CommandText = "SELECT intfc_l.ISA_USER2 as STORE, intfc_l.INV_ITEM_ID, intfc_l.ISA_WORK_ORDER_NO FROM SYSADM8.ps_isa_ord_intf_lN intfc_l " & vbCrLf &
-                            " WHERE intfc_l.ORDER_NO = '" & myReq.ReqId.ToString & "' " & vbCrLf &
-                            " AND intfc_l.ISA_INTFC_LN = " & myLine.ReqLineNo & " "
-                cmdEmpl.CommandType = CommandType.Text
-                Dim rdr As OleDbDataReader = Nothing
+            'WAL-590: Due Date Change on All PO's - Order Date Showing Up as Due Date:Change made by Venkat
+            Dim DueDate As String = GetPOExists(myLine.POID, myLine.POLine_NBR, myLine.POLineSched_NBR)
+            If DueDate <> "" Then
+                dataExist = True
+                Try
+                    Dim cmdEmpl As OleDbCommand = cn.CreateCommand
+                    cmdEmpl.CommandText = "SELECT intfc_l.ISA_USER2 as STORE, intfc_l.INV_ITEM_ID, intfc_l.ISA_WORK_ORDER_NO FROM SYSADM8.ps_isa_ord_intf_lN intfc_l " & vbCrLf &
+                                " WHERE intfc_l.ORDER_NO = '" & myReq.ReqId.ToString & "' " & vbCrLf &
+                                " AND intfc_l.ISA_INTFC_LN = " & myLine.ReqLineNo & " "
+                    cmdEmpl.CommandType = CommandType.Text
+                    Dim rdr As OleDbDataReader = Nothing
 
-                rdr = cmdEmpl.ExecuteReader
-                If Not (rdr Is Nothing) Then
+                    rdr = cmdEmpl.ExecuteReader
+                    If Not (rdr Is Nothing) Then
 
-                    While rdr.Read
-                        itemID = CStr(rdr("INV_ITEM_ID")).Trim.ToUpper
-                        wordOrder = CStr(rdr("ISA_WORK_ORDER_NO")).Trim.ToUpper
-                        Try
-                            store = CStr(rdr("STORE")).Split("-").LastOrDefault().Trim()
-                        Catch ex As Exception
-                        End Try
-                    End While
-                End If
-            Catch ex As Exception
-            End Try
-            Try
-                sOrigDueDate = myLine.oldDate()
-            Catch ex As Exception
-                logger.WriteErrorLog("sendEmailForPO: tried to get property oldDate: " & ex.Message)
-                sOrigDueDate = ""
-            End Try
-            sEmailBody &= "<TR><TD>&nbsp;" & myLine.ReqLineNo & "</TD>" &
-                          "<TD>&nbsp;" & myLine.ItemID & "</TD>" &
-                          "<TD>&nbsp;" & itemID & "</TD>" &
-                          "<TD>&nbsp;" & myLine.POID & "</TD>" &
-                          "<TD>&nbsp;" & myLine.POLine_NBR & "</TD>" &
-                          "<TD>&nbsp;" & wordOrder & "</TD>" &
-                          "<TD>&nbsp;" & myLine.Desc & "</TD>" &
-                          "<TD>&nbsp;" & sOrigDueDate & "</TD>" &
-                          "<TD>&nbsp;" & myLine.newDate & "</TD></TR>"
-
-
-        Next
-
-        sEmailBody &= vbCrLf & "</TABLE> <br><br>&nbsp;<BR>Sincerely,<BR>SDI Customer " &
-                     "Care<BR>&nbsp;<BR></P></DIV><DIV>&nbsp;</DIV><DIV>&nbsp;</DIV><HR width='100%' SIZE='1'><img src='https://www.sdizeus.com/Images/SDIFooter_Email.png' /></BODY></HTML>"
-
-        Try
-
-            sEmailTo = GetPOEmailAddress(myReq.BusinessUnit, myReq.EmployeeId)
-
-            If Trim(sEmailTo) <> "" Then
-                If sEmailTo = "NONE" Then
-                    logger.WriteVerboseLog("Email not sent due to lack of email addresses. Order Number: " & myReq.ReqId.ToString & ".")
-                    logger.WriteVerboseLog("Item will be marked sent for   " & myReq.BusinessUnit.ToString() & "  " & myReq.EmployeeId & ".")
-                Else
-                    saEmailTos = sEmailTo.Split(";")
-
-                    For iCount As Integer = 0 To UBound(saEmailTos) - 1
-                        If Trim(saEmailTos(iCount)) <> "" Then
-                            eml.To.Add(saEmailTos(iCount).ToString)
-                        End If
-
-                    Next
-
-                    Try
-                        If Not m_settingsObj.Item("notifyFrom").ToString Is Nothing Then
-                            fromAddress = New System.Net.Mail.MailAddress(m_settingsObj.Item("notifyFrom").ToString)
-                        Else
-                            fromAddress = New System.Net.Mail.MailAddress("service.notification@sdi.com")
-                        End If
-                    Catch ex As Exception
-                        fromAddress = New System.Net.Mail.MailAddress("service.notification@sdi.com")
-                    End Try
-                    'WAL-533: Email subject lines changes for Walmart BU -->Change done by- Venkat
-                    If myReq.BusinessUnit = "I0W01" OrElse myReq.POBusinessUnit = "WAL00" Then
-                        eml.Subject = "Status Update - Due Date Change - Store #" & store & " - WO #" & wordOrder & ""
-                    Else
-                        eml.Subject = "Order Due Date has Changed. Order Number: " & myReq.ReqId.ToString & ". PO_ID: " & myReq.POID.ToString & ""
+                        While rdr.Read
+                            itemID = CStr(rdr("INV_ITEM_ID")).Trim.ToUpper
+                            wordOrder = CStr(rdr("ISA_WORK_ORDER_NO")).Trim.ToUpper
+                            Try
+                                store = CStr(rdr("STORE")).Split("-").LastOrDefault().Trim()
+                            Catch ex As Exception
+                            End Try
+                        End While
                     End If
-
-                    eml.From = fromAddress
-
-                    Dim sCNString As String = m_oraCNstring
-                    Dim strDBase As String = "PLGR"
-                    If Len(sCNString) > 4 Then
-                        strDBase = UCase(Right(sCNString, 4))
-                    End If
-
-                    Select Case strDBase
-                        Case "STAR", "PLGR", "RPTG", "DEVL", "STST", "SUAT"
-                            eml.Subject = "<<TEST SITE>> " & eml.Subject
-                            eml.To.Clear()
-                            eml.To.Add("webdev@sdi.com")
-                            sEmailTo = "webdev@sdi.com"
-                        Case Else
-
-                    End Select
-
-                    eml.IsBodyHtml = True
-                    eml.Body = sEmailBody
-
-                    Try
-                        SendLogger(eml.Subject, sEmailBody, "PODUEDATECHGEMAIL", "Mail", sEmailTo, " ", "webdev@sdi.com")
-                        logger.WriteVerboseLog("Order Due Date has Changed. Order Number: " & myReq.ReqId.ToString & ". PO_ID: " & myReq.POID.ToString & "")
-                        bIsSuccessful = True
-
-                    Catch ex As Exception
-                        bIsSuccessful = False
-                        logger.WriteVerboseLog("Error Sending Email to: " & myReq.ReqId.ToString & ". PO_ID: " & myReq.POID.ToString & "")
-                    End Try
-                End If
-            Else
-                logger.WriteVerboseLog("No Email Address Found: " & myReq.ReqId.ToString & ". PO_ID: " & myReq.POID.ToString & "")
-                bIsSuccessful = False
+                Catch ex As Exception
+                End Try
+                sEmailBody &= "<TR><TD>&nbsp;" & myLine.ReqLineNo & "</TD>" &
+                              "<TD>&nbsp;" & myLine.ItemID & "</TD>" &
+                              "<TD>&nbsp;" & itemID & "</TD>" &
+                              "<TD>&nbsp;" & myLine.POID & "</TD>" &
+                              "<TD>&nbsp;" & myLine.POLine_NBR & "</TD>" &
+                              "<TD>&nbsp;" & wordOrder & "</TD>" &
+                              "<TD>&nbsp;" & myLine.Desc & "</TD>" &
+                              "<TD>&nbsp;" & DueDate & "</TD>" &
+                              "<TD>&nbsp;" & myLine.newDate & "</TD></TR>"
             End If
+        Next
+        If dataExist = True Then
+            Try
+                sEmailBody &= vbCrLf & "</TABLE> <br><br>&nbsp;<BR>Sincerely,<BR>SDI Customer " &
+                     "Care<BR>&nbsp;<BR></P></DIV><DIV>&nbsp;</DIV><DIV>&nbsp;</DIV><HR width='100%' SIZE='1'><img src='https://www.sdizeus.com/Images/SDIFooter_Email.png' /></BODY></HTML>"
+                sEmailTo = GetPOEmailAddress(myReq.BusinessUnit, myReq.EmployeeId)
 
-        Catch ex As Exception
-            bIsSuccessful = False
-        End Try
+                If Trim(sEmailTo) <> "" Then
+                    If sEmailTo = "NONE" Then
+                        logger.WriteVerboseLog("Email not sent due to lack of email addresses. Order Number: " & myReq.ReqId.ToString & ".")
+                        logger.WriteVerboseLog("Item will be marked sent for   " & myReq.BusinessUnit.ToString() & "  " & myReq.EmployeeId & ".")
+                    Else
+                        saEmailTos = sEmailTo.Split(";")
 
+                        For iCount As Integer = 0 To UBound(saEmailTos) - 1
+                            If Trim(saEmailTos(iCount)) <> "" Then
+                                eml.To.Add(saEmailTos(iCount).ToString)
+                            End If
+
+                        Next
+
+                        Try
+                            If Not m_settingsObj.Item("notifyFrom").ToString Is Nothing Then
+                                fromAddress = New System.Net.Mail.MailAddress(m_settingsObj.Item("notifyFrom").ToString)
+                            Else
+                                fromAddress = New System.Net.Mail.MailAddress("service.notification@sdi.com")
+                            End If
+                        Catch ex As Exception
+                            fromAddress = New System.Net.Mail.MailAddress("service.notification@sdi.com")
+                        End Try
+                        'WAL-533: Email subject lines changes for Walmart BU -->Change done by- Venkat
+                        If myReq.BusinessUnit = "I0W01" OrElse myReq.POBusinessUnit = "WAL00" Then
+                            eml.Subject = "Status Update - Due Date Change - Store #" & store & " - WO #" & wordOrder & ""
+                        Else
+                            eml.Subject = "Order Due Date has Changed. Order Number: " & myReq.ReqId.ToString & ". PO_ID: " & myReq.POID.ToString & ""
+                        End If
+
+                        eml.From = fromAddress
+
+                        Dim sCNString As String = m_oraCNstring
+                        Dim strDBase As String = "PLGR"
+                        If Len(sCNString) > 4 Then
+                            strDBase = UCase(Right(sCNString, 4))
+                        End If
+
+                        Select Case strDBase
+                            Case "STAR", "PLGR", "RPTG", "DEVL", "STST", "SUAT"
+                                eml.Subject = "<<TEST SITE>> " & eml.Subject
+                                eml.To.Clear()
+                                eml.To.Add("webdev@sdi.com")
+                                sEmailTo = "webdev@sdi.com"
+                            Case Else
+
+                        End Select
+
+                        eml.IsBodyHtml = True
+                        eml.Body = sEmailBody
+
+                        Try
+                            SendLogger(eml.Subject, sEmailBody, "PODUEDATECHGEMAIL", "Mail", sEmailTo, " ", "webdev@sdi.com")
+                            logger.WriteVerboseLog("Order Due Date has Changed. Order Number: " & myReq.ReqId.ToString & ". PO_ID: " & myReq.POID.ToString & "")
+                            bIsSuccessful = True
+
+                        Catch ex As Exception
+                            bIsSuccessful = False
+                            logger.WriteVerboseLog("Error Sending Email to: " & myReq.ReqId.ToString & ". PO_ID: " & myReq.POID.ToString & "")
+                        End Try
+                    End If
+                Else
+                    logger.WriteVerboseLog("No Email Address Found: " & myReq.ReqId.ToString & ". PO_ID: " & myReq.POID.ToString & "")
+                    bIsSuccessful = False
+                End If
+
+            Catch ex As Exception
+                bIsSuccessful = False
+            End Try
+        Else
+            bIsSuccessful = True
+        End If
         Return (bIsSuccessful)
 
+    End Function
+
+    Public Function GetPOExists(ByVal PO_ID As String, ByVal LineNo As String, ByVal SchedNO As String) As String
+
+        Dim connection As New OleDbConnection(m_oraCNstring)
+        Dim p_strQuery As String = ""
+        Dim oleCommand As New OleDbCommand()
+        Dim dueDate As String = ""
+        Try
+            p_strQuery = "SELECT DUE_DT FROM SYSADM8.PS_ISA_PODUEDTMON  WHERE PO_ID = '" + PO_ID + "' AND LINE_NBR = '" + LineNo + "'AND SCHED_NBR = '" + SchedNO + "'"
+            oleCommand = New OleDbCommand(p_strQuery, connection)
+            oleCommand.CommandTimeout = 120
+            connection.Open()
+            Try
+                dueDate = CType(oleCommand.ExecuteScalar(), String)
+            Catch ex32 As Exception
+                dueDate = ""
+            End Try
+            Try
+                connection.Close()
+            Catch ex1 As Exception
+
+            End Try
+        Catch objException As Exception
+            dueDate = ""
+            If connection.State = ConnectionState.Open Then
+                connection.Close()
+            End If
+        End Try
+
+        Return dueDate
     End Function
 
     Private Function SendUserEmail(ByVal myBusinessUnit As String, ByVal myUserID As String) As EventLogEntryType
@@ -1033,8 +1062,8 @@ Public Class PODueDTChangeEmail
         End Try
         Return (bReturn)
     End Function
-    Private Function sqlUpdateISA_PODUEDTMON(ByVal myBusinessUnit As String, ByVal myPOID As String, _
-                                           ByVal myLineNBR As Integer, ByVal mySchedNBR As Integer, _
+    Private Function sqlUpdateISA_PODUEDTMON(ByVal myBusinessUnit As String, ByVal myPOID As String,
+                                           ByVal myLineNBR As Integer, ByVal mySchedNBR As Integer,
                                            ByVal myPODueDate As String, Optional ByVal IsReq As Boolean = False) As Boolean
         Dim cHdr As String = m_sCommonMsgText & "sqlUpdateISA_PODUEDTMON: "
         Dim sSQL As String
@@ -1042,10 +1071,10 @@ Public Class PODueDTChangeEmail
 
         Try
 
-            sSQL = "" & _
-    "                  UPDATE SYSADM8.PS_ISA_PODUEDTMON " & vbCrLf & _
-    "                     SET DUE_DT = to_date('" & myPODueDate & "', 'mm/dd/yyyy'), ADD_DTTM = SYSDATE, NOTIFY_DTTM = SYSDATE " & vbCrLf & _
-    "                  WHERE BUSINESS_UNIT = '" & myBusinessUnit & "' AND PO_ID = '" & myPOID & "' " & vbCrLf & _
+            sSQL = "" &
+    "                  UPDATE SYSADM8.PS_ISA_PODUEDTMON " & vbCrLf &
+    "                     SET DUE_DT = to_date('" & myPODueDate & "', 'mm/dd/yyyy'), ADD_DTTM = SYSDATE, NOTIFY_DTTM = SYSDATE " & vbCrLf &
+    "                  WHERE BUSINESS_UNIT = '" & myBusinessUnit & "' AND PO_ID = '" & myPOID & "' " & vbCrLf &
     "                    AND LINE_NBR= '" & myLineNBR & "'  AND SCHED_NBR = '" & mySchedNBR & "'"
             If cn.State = ConnectionState.Open Then
                 Dim cmd As OleDbCommand = cn.CreateCommand
@@ -1083,49 +1112,49 @@ Public Class PODueDTChangeEmail
         Dim s As String
 
         Try
-            s = "" & _
-            " SELECT BUSINESS_UNIT, PO_ID, PO_DT, LINE_NBR, SCHED_NBR, BUSINESS_UNIT_IN, bu_nstk, ORDER_NO " & vbCrLf & _
-            ", ORDER_INT_LINE_NO, " & vbCrLf & _
-            " ' ' AS ISA_EMPLOYEE_ID,  " & vbCrLf & _
-            "MFG_ID || ' - ' ||  MFG_ITM_ID AS ITEM_ID, DESCR254_MIXED, SHIPTO_ID, " & vbCrLf & _
-            "ORIG_PROMISE_DT, DUE_DT FROM (" & vbCrLf & _
-            "SELECT " & vbCrLf & _
-            " B.BUSINESS_UNIT " & vbCrLf & _
-            ",B.PO_ID " & vbCrLf & _
-            ",B.PO_DT " & vbCrLf & _
-            ",A.LINE_NBR " & vbCrLf & _
-            ",A.SCHED_NBR " & vbCrLf & _
-            ",A.BUSINESS_UNIT_IN " & vbCrLf & _
-            ",LB.business_unit_in as bu_nstk " & vbCrLf & _
-            ",LB.REQ_ID  AS ORDER_NO  " & vbCrLf & _
-            ",LB.req_line_nbr AS ORDER_INT_LINE_NO " & vbCrLf & _
-            ",L.MFG_ID ,L.MFG_ITM_ID " & vbCrLf & _
-            ",l.DESCR254_MIXED, A.SHIPTO_ID " & vbCrLf & _
-            ",MAX(trunc(A.ORIG_PROM_DT)) AS ORIG_PROMISE_DT " & vbCrLf & _
-            ",MAX(trunc(A.DUE_DT)) AS DUE_DT " & vbCrLf & _
-            "FROM " & vbCrLf & _
-            " SYSADM8.PS_PO_LINE_SHIP A " & vbCrLf & _
-            ",SYSADM8.PS_PO_HDR B " & vbCrLf & _
-            ",SYSADM8.PS_PO_LINE L " & vbCrLf & _
-            ",sysadm8.PS_PO_LINE_DISTRIB LB " & vbCrLf & _
-            ",sysadm8.PS_REQ_LINE RL " & vbCrLf & _
-            "WHERE B.PO_STATUS NOT IN ('X','C') " & vbCrLf & _
-            "  AND B.PO_DT > LAST_DAY(ADD_MONTHS(SYSDATE, -12)) " & vbCrLf & _
-            "  AND B.BUSINESS_UNIT = A.BUSINESS_UNIT " & vbCrLf & _
-            "  AND B.PO_ID = A.PO_ID " & vbCrLf & _
-            "  AND A.DUE_DT > LAST_DAY(ADD_MONTHS(SYSDATE,-3)) " & vbCrLf & _
-            "  AND A.BUSINESS_UNIT = L.BUSINESS_UNIT " & vbCrLf & _
-            "  AND A.PO_ID = L.PO_ID " & vbCrLf & _
-            "  AND A.LINE_NBR = L.LINE_NBR " & vbCrLf & _
-            "  AND A.BUSINESS_UNIT = LB.BUSINESS_UNIT " & vbCrLf & _
-            "  And A.PO_ID = LB.PO_ID " & vbCrLf & _
-            "  AND A.LINE_NBR = LB.LINE_NBR " & vbCrLf & _
-            "  and lb.business_unit_REQ = rl.business_unit " & vbCrLf & _
-            "  and lb.req_id = rl.req_id " & vbCrLf & _
-            "  AND lb.REQ_line_nbr = rl.LINE_NBR " & vbCrLf & _
-            "  AND l.unit_of_measure <> 'DO' " & vbCrLf & _
-            "  AND A.CANCEL_STATUS <> 'X' " & vbCrLf & _
-            "  AND L.CANCEL_STATUS <> 'X' " & vbCrLf & _
+            s = "" &
+            " SELECT BUSINESS_UNIT, PO_ID, PO_DT, LINE_NBR, SCHED_NBR, BUSINESS_UNIT_IN, bu_nstk, ORDER_NO " & vbCrLf &
+            ", ORDER_INT_LINE_NO, " & vbCrLf &
+            " ' ' AS ISA_EMPLOYEE_ID,  " & vbCrLf &
+            "MFG_ID || ' - ' ||  MFG_ITM_ID AS ITEM_ID, DESCR254_MIXED, SHIPTO_ID, " & vbCrLf &
+            "ORIG_PROMISE_DT, DUE_DT FROM (" & vbCrLf &
+            "SELECT " & vbCrLf &
+            " B.BUSINESS_UNIT " & vbCrLf &
+            ",B.PO_ID " & vbCrLf &
+            ",B.PO_DT " & vbCrLf &
+            ",A.LINE_NBR " & vbCrLf &
+            ",A.SCHED_NBR " & vbCrLf &
+            ",A.BUSINESS_UNIT_IN " & vbCrLf &
+            ",LB.business_unit_in as bu_nstk " & vbCrLf &
+            ",LB.REQ_ID  AS ORDER_NO  " & vbCrLf &
+            ",LB.req_line_nbr AS ORDER_INT_LINE_NO " & vbCrLf &
+            ",L.MFG_ID ,L.MFG_ITM_ID " & vbCrLf &
+            ",l.DESCR254_MIXED, A.SHIPTO_ID " & vbCrLf &
+            ",MAX(trunc(A.ORIG_PROM_DT)) AS ORIG_PROMISE_DT " & vbCrLf &
+            ",MAX(trunc(A.DUE_DT)) AS DUE_DT " & vbCrLf &
+            "FROM " & vbCrLf &
+            " SYSADM8.PS_PO_LINE_SHIP A " & vbCrLf &
+            ",SYSADM8.PS_PO_HDR B " & vbCrLf &
+            ",SYSADM8.PS_PO_LINE L " & vbCrLf &
+            ",sysadm8.PS_PO_LINE_DISTRIB LB " & vbCrLf &
+            ",sysadm8.PS_REQ_LINE RL " & vbCrLf &
+            "WHERE B.PO_STATUS NOT IN ('X','C') " & vbCrLf &
+            "  AND B.PO_DT > LAST_DAY(ADD_MONTHS(SYSDATE, -12)) " & vbCrLf &
+            "  AND B.BUSINESS_UNIT = A.BUSINESS_UNIT " & vbCrLf &
+            "  AND B.PO_ID = A.PO_ID " & vbCrLf &
+            "  AND A.DUE_DT > LAST_DAY(ADD_MONTHS(SYSDATE,-3)) " & vbCrLf &
+            "  AND A.BUSINESS_UNIT = L.BUSINESS_UNIT " & vbCrLf &
+            "  AND A.PO_ID = L.PO_ID " & vbCrLf &
+            "  AND A.LINE_NBR = L.LINE_NBR " & vbCrLf &
+            "  AND A.BUSINESS_UNIT = LB.BUSINESS_UNIT " & vbCrLf &
+            "  And A.PO_ID = LB.PO_ID " & vbCrLf &
+            "  AND A.LINE_NBR = LB.LINE_NBR " & vbCrLf &
+            "  and lb.business_unit_REQ = rl.business_unit " & vbCrLf &
+            "  and lb.req_id = rl.req_id " & vbCrLf &
+            "  AND lb.REQ_line_nbr = rl.LINE_NBR " & vbCrLf &
+            "  AND l.unit_of_measure <> 'DO' " & vbCrLf &
+            "  AND A.CANCEL_STATUS <> 'X' " & vbCrLf &
+            "  AND L.CANCEL_STATUS <> 'X' " & vbCrLf &
             "   "
             '"  AND A.BUSINESS_UNIT_IN <> ' ' " & vbCrLf & _
             '"  AND B.BUSINESS_UNIT = 'ISA00' " & vbCrLf & _
@@ -1148,32 +1177,32 @@ Public Class PODueDTChangeEmail
             End If
             ''  "                   ' AND DTMON.NOTIFY_DTTM IS NOT NULL " & vbCrLf & _
             s = ""
-            s = " AND NOT EXISTS ( " & vbCrLf & _
-            "                  SELECT 'X' " & vbCrLf & _
-            "                  FROM SYSADM8.PS_ISA_PODUEDTMON DTMON " & vbCrLf & _
-            "                  WHERE DTMON.BUSINESS_UNIT = A.BUSINESS_UNIT " & vbCrLf & _
-            "                    AND DTMON.PO_ID = A.PO_ID " & vbCrLf & _
-            "                    AND DTMON.LINE_NBR = A.LINE_NBR " & vbCrLf & _
-            "                    AND DTMON.SCHED_NBR = A.SCHED_NBR " & vbCrLf & _
-            "                    AND (DTMON.NOTIFY_DTTM IS NOT NULL  and trunc(A.DUE_DT) = trunc(dtmon.due_dt)) " & vbCrLf & _
-                        "                 ) " & vbCrLf & _
-                        " and not exists (Select 'X' FROM SYSADM8.PS_RECV_LN_SHIP RCV WHERE A.BUSINESS_UNIT = RCV.BUSINESS_UNIT " & vbCrLf & _
-                                          "AND A.PO_ID = RCV.PO_ID  AND A.LINE_NBR = RCV.LINE_NBR ) " & vbCrLf & _
-            "GROUP BY " & vbCrLf & _
-            " B.BUSINESS_UNIT " & vbCrLf & _
-            ",B.PO_ID " & vbCrLf & _
-            ",B.PO_DT " & vbCrLf & _
-            ",A.LINE_NBR " & vbCrLf & _
-            ",A.SCHED_NBR " & vbCrLf & _
-            ",A.BUSINESS_UNIT_IN " & vbCrLf & _
-            ", LB.business_unit_in " & vbCrLf & _
-            ",A.ORDER_NO " & vbCrLf & _
-            ",A.ORDER_INT_LINE_NO " & vbCrLf & _
-            ",LB.REQ_ID    ,LB.req_line_nbr  " & _
-            ",L.MFG_ID ,L.MFG_ITM_ID " & vbCrLf & _
-            ",l.DESCR254_MIXED, A.SHIPTO_ID " & vbCrLf & _
-            "ORDER BY B.BUSINESS_UNIT, B.PO_ID, A.LINE_NBR, A.SCHED_NBR " & vbCrLf & _
-            ") WHERE ((to_char(ORIG_PROMISE_DT) <> to_char(DUE_DT)) or(ORIG_PROMISE_DT is null and  DUE_DT is not null) ) " & vbCrLf & _
+            s = " AND NOT EXISTS ( " & vbCrLf &
+            "                  SELECT 'X' " & vbCrLf &
+            "                  FROM SYSADM8.PS_ISA_PODUEDTMON DTMON " & vbCrLf &
+            "                  WHERE DTMON.BUSINESS_UNIT = A.BUSINESS_UNIT " & vbCrLf &
+            "                    AND DTMON.PO_ID = A.PO_ID " & vbCrLf &
+            "                    AND DTMON.LINE_NBR = A.LINE_NBR " & vbCrLf &
+            "                    AND DTMON.SCHED_NBR = A.SCHED_NBR " & vbCrLf &
+            "                    AND (DTMON.NOTIFY_DTTM IS NOT NULL  and trunc(A.DUE_DT) = trunc(dtmon.due_dt)) " & vbCrLf &
+                        "                 ) " & vbCrLf &
+                        " and not exists (Select 'X' FROM SYSADM8.PS_RECV_LN_SHIP RCV WHERE A.BUSINESS_UNIT = RCV.BUSINESS_UNIT " & vbCrLf &
+                                          "AND A.PO_ID = RCV.PO_ID  AND A.LINE_NBR = RCV.LINE_NBR ) " & vbCrLf &
+            "GROUP BY " & vbCrLf &
+            " B.BUSINESS_UNIT " & vbCrLf &
+            ",B.PO_ID " & vbCrLf &
+            ",B.PO_DT " & vbCrLf &
+            ",A.LINE_NBR " & vbCrLf &
+            ",A.SCHED_NBR " & vbCrLf &
+            ",A.BUSINESS_UNIT_IN " & vbCrLf &
+            ", LB.business_unit_in " & vbCrLf &
+            ",A.ORDER_NO " & vbCrLf &
+            ",A.ORDER_INT_LINE_NO " & vbCrLf &
+            ",LB.REQ_ID    ,LB.req_line_nbr  " &
+            ",L.MFG_ID ,L.MFG_ITM_ID " & vbCrLf &
+            ",l.DESCR254_MIXED, A.SHIPTO_ID " & vbCrLf &
+            "ORDER BY B.BUSINESS_UNIT, B.PO_ID, A.LINE_NBR, A.SCHED_NBR " & vbCrLf &
+            ") WHERE ((to_char(ORIG_PROMISE_DT) <> to_char(DUE_DT)) or(ORIG_PROMISE_DT is null and  DUE_DT is not null) ) " & vbCrLf &
             " and due_dt >= sysdate  "
             strBuild.Append(s)
             s = ""
