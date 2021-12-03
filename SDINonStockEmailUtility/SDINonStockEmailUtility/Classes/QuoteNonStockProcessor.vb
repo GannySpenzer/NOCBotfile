@@ -317,12 +317,13 @@ Public Class QuoteNonStockProcessor
         Dim strQty As String
         Dim dstcart As DataTable
         dstcart = New DataTable
-
+        Dim AltPartFlag As Boolean = False 'Mythili - SDI-37570,to add alt part num in material request email
         dstcart.Columns.Add("LN")
         dstcart.Columns.Add("Item ID")
         dstcart.Columns.Add("Description")
         dstcart.Columns.Add("Manuf.")
         dstcart.Columns.Add("Manuf. Partnum")
+        dstcart.Columns.Add("Alt. Partnum")  'Mythili - SDI-37570,to add alt part num in material request email
         dstcart.Columns.Add("QTY")
         dstcart.Columns.Add("UOM")
         'dstcart.Columns.Add("Price")
@@ -446,7 +447,19 @@ Public Class QuoteNonStockProcessor
                     Catch ex As Exception
                         dr("Item ID") = " "
                     End Try
+                    Dim alt_part_num As String = " "  'Mythili - SDI-37570,to add alt part num in material request email
+                    Try
+                        Dim item_id As String = Trim(dr("Item ID"))
+                        Dim sqlstring As String = " "
+                        sqlstring = "select SUB_ITM_ID from PS_SUBSTITUTE_ITM where INV_ITEM_ID = '" + item_id + "'"
+                        alt_part_num = ORDBData.GetScalar(sqlstring)
+                        If Trim(alt_part_num) <> "" Then
+                            AltPartFlag = True
+                            dr("Alt. Partnum") = alt_part_num
+                        End If
+                    Catch ex As Exception
 
+                    End Try
                     Try
                         dr("UOM") = CType(dataRowMain("UNIT_OF_MEASURE"), String).Trim()
                     Catch ex As Exception
@@ -502,6 +515,9 @@ Public Class QuoteNonStockProcessor
                     dr("LN") = CType(dataRowMain("ISA_INTFC_LN"), String).Trim()
                     dstcart.Rows.Add(dr)
                 Next
+                If AltPartFlag = False Then  'Mythili - SDI-37570,to add alt part num in material request email
+                    dstcart.Columns.Remove("Alt. Partnum")
+                End If
             End If
         Catch ex As Exception
 
