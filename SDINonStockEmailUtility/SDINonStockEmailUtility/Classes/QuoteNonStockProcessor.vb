@@ -451,7 +451,7 @@ Public Class QuoteNonStockProcessor
                     Try
                         Dim item_id As String = Trim(dr("Item ID"))
                         Dim sqlstring As String = " "
-                        sqlstring = "select SUB_ITM_ID from PS_SUBSTITUTE_ITM where INV_ITEM_ID = '" + item_id + "'"
+                        sqlstring = "select SUB_ITM_ID from PS_SUBSTITUTE_ITM where INV_ITEM_ID like '%" + item_id + "'"
                         alt_part_num = ORDBData.GetScalar(sqlstring)
                         If Trim(alt_part_num) <> "" Then
                             AltPartFlag = True
