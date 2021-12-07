@@ -441,7 +441,7 @@ Public Class punchOutSetupRequestDoc
                 Dim nodeOrderReq As XmlNode = docXML.SelectSingleNode(xpath:="//cXML//Request")
 
                 ' for each order get all order info including lines info
-                Dim strOrder As String = "select * from SYSADM.PS_ISA_PO_DISP_XML where po_id='" & strOrderNo & "'"
+                Dim strOrder As String = "select * from SYSADM8.PS_ISA_PO_DISP_XML where po_id='" & strOrderNo & "'"
                 If Not connectOR.State = ConnectionState.Open Then
                     connectOR.Open()
                 End If
