@@ -1379,10 +1379,14 @@ Public Class QuoteNonStockProcessor
             Dim ds As DataSet
             Dim strSQLstring As String
 
+
             strSQLstring = "SELECT isa_iol_apr_emp_id" & vbCrLf &
-                    " FROM SDIX_USERS_APPRV" & vbCrLf &
-                    " WHERE isa_employee_id = '" & strLastApprover & "'" & vbCrLf &
-                    " AND business_unit = '" & strBU & "'"
+                   " FROM SDIX_USERS_APPRV" & vbCrLf &
+                   " WHERE isa_employee_id = '" & strLastApprover & "'" & vbCrLf
+            If strBU <> "I0W01" Then
+                strSQLstring &= " AND business_unit = '" & strBU & "'"
+            End If
+
             ds = ORDBData.GetAdapter(strSQLstring)
             If ds.Tables(0).Rows.Count > 0 Then
                 strOrigApproverID = ds.Tables(0).Rows(0).Item("isa_iol_apr_emp_id").ToString
@@ -2227,47 +2231,52 @@ Public Class QuoteNonStockProcessor
         Dim cHdr As String = "QuoteNonStockProcessor.FormHTMLLink: "
         Dim m_cURL1 As String = ""
         If bShowLink Then
-            Try
-                'Dim m_cURL1 As String = "http://" & ConfigurationManager.AppSettings("WebAppName") & "Approvequote.aspx"
-                If cBusinessUnitOM = "I0W01" Then
-                    If LineStatus = "QTW" Then
-                        m_cURL1 = GetURL(cBusinessUnitOM) & "needapprove"
+            If cOrderID = "WM02833641" Then
+
+
+
+                Try
+                    'Dim m_cURL1 As String = "http://" & ConfigurationManager.AppSettings("WebAppName") & "Approvequote.aspx"
+                    If cBusinessUnitOM = "I0W01" Then
+                        If LineStatus = "QTW" Then
+                            m_cURL1 = GetURL(cBusinessUnitOM) & "needapprove"
+                        Else
+                            m_cURL1 = GetURL(cBusinessUnitOM) & "Approvequote"
+                        End If
                     Else
-                        m_cURL1 = GetURL(cBusinessUnitOM) & "Approvequote"
+                        If LineStatus = "QTW" Then
+                            m_cURL1 = GetURL(cBusinessUnitOM) & "approveorder.aspx"
+                        Else
+                            m_cURL1 = GetURL(cBusinessUnitOM) & "Approvequote.aspx"
+                        End If
                     End If
-                Else
-                    If LineStatus = "QTW" Then
-                        m_cURL1 = GetURL(cBusinessUnitOM) & "approveorder.aspx"
-                    Else
-                        m_cURL1 = GetURL(cBusinessUnitOM) & "Approvequote.aspx"
-                    End If
-                End If
 
 
-                Dim boEncrypt As New Encryption64
+                    Dim boEncrypt As New Encryption64
 
-                Dim cParam As String = "?fer=" & boEncrypt.Encrypt(cOrderID, m_cEncryptionKey) &
-                                       "&op=" & boEncrypt.Encrypt(cEmployeeID, m_cEncryptionKey) &
-                                       "&xyz=" & boEncrypt.Encrypt(cBusinessUnitOM, m_cEncryptionKey) &
-                                       "&HOME=N" &
-                                       "&ExchHome23=N"
+                    Dim cParam As String = "?fer=" & boEncrypt.Encrypt(cOrderID, m_cEncryptionKey) &
+                                           "&op=" & boEncrypt.Encrypt(cEmployeeID, m_cEncryptionKey) &
+                                           "&xyz=" & boEncrypt.Encrypt(cBusinessUnitOM, m_cEncryptionKey) &
+                                           "&HOME=N" &
+                                           "&ExchHome23=N"
 
-                cLink &= "<p>" &
-                            "Click this " &
-                            "<a href=""" & m_cURL1 & cParam & """ target=""_blank"">link</a> " &
-                            " to APPROVE or DECLINE order." &
-                         "</p>"
+                    cLink &= "<p>" &
+                                "Click this " &
+                                "<a href=""" & m_cURL1 & cParam & """ target=""_blank"">link</a> " &
+                                " to APPROVE or DECLINE order." &
+                             "</p>"
 
-                boEncrypt = Nothing
+                    boEncrypt = Nothing
 
-                Return cLink
+                    Return cLink
 
-            Catch ex As Exception
-                'm_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+                Catch ex As Exception
+                    'm_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
 
-                m_logger.WriteVerboseLog(cHdr & ".  Error:  " & ex.ToString)
-                SendAlertMessage(msg:=cHdr & ex.ToString)
-            End Try
+                    m_logger.WriteVerboseLog(cHdr & ".  Error:  " & ex.ToString)
+                    SendAlertMessage(msg:=cHdr & ex.ToString)
+                End Try
+            End If
         End If
         Return (cLink)
     End Function
@@ -3809,7 +3818,7 @@ Public Class OrderApprovals
             'Mailer.To = strBuyerEmail
             MailTo = strBuyerEmail
             MailSub = "SDI ZEUS - Order Number " & strreqID & " has been " & strAction
-            If Not bMoreAppr And _
+            If Not bMoreAppr And
                 Not strType = "quote" Then
                 'Mailer.To = strBuyerEmail & "; " & strSDIBuyer
                 MailTo = strBuyerEmail & "; " & strSDIBuyer
@@ -3850,7 +3859,7 @@ Public Class OrderApprovals
 
     End Class
 
-    Public Shared Function NotifyApprover(ByVal strReqID As String, ByVal strCurrentUserID As String, ByVal strBU As String, ByVal strNextApproverID As String, _
+    Public Shared Function NotifyApprover(ByVal strReqID As String, ByVal strCurrentUserID As String, ByVal strBU As String, ByVal strNextApproverID As String,
                                          ByVal strHldStatus As String, ByVal strChargeCode As String) As String
         Dim strAppMessage As String = ""
 
@@ -3912,11 +3921,13 @@ Public Class OrderApprovals
             Dim ds As DataSet
             Dim strSQLstring As String
 
-            strSQLstring = "SELECT isa_iol_apr_emp_id" & vbCrLf & _
-                " FROM SDIX_USERS_APPRV" & vbCrLf & _
-                " WHERE isa_iol_apr_alt = '" & strAlternateApproverID & "'" & vbCrLf & _
-                " AND isa_employee_id = '" & strLastApprover & "'" & vbCrLf & _
-                " AND business_unit = '" & strBU & "'"
+            strSQLstring = "SELECT isa_iol_apr_emp_id" & vbCrLf &
+                " FROM SDIX_USERS_APPRV" & vbCrLf &
+                " WHERE isa_iol_apr_alt = '" & strAlternateApproverID & "'" & vbCrLf &
+                " AND isa_employee_id = '" & strLastApprover & "'" & vbCrLf
+            If strBU <> "I0W01" Then
+                strSQLstring &= " AND business_unit = '" & strBU & "'"
+            End If
             ds = ORDBData.GetAdapter(strSQLstring)
             If ds.Tables(0).Rows.Count > 0 Then
                 strOrigApproverID = ds.Tables(0).Rows(0).Item("isa_iol_apr_emp_id").ToString
@@ -3940,11 +3951,11 @@ Public Class OrderApprovals
         Dim strappEmail As String
         Dim strBuyerName As String = " "
 
-        strSQLString = "SELECT FIRST_NAME_SRCH," & vbCrLf & _
-                " LAST_NAME_SRCH," & vbCrLf & _
-                " ISA_EMPLOYEE_EMAIL" & vbCrLf & _
-                " FROM SDIX_USERS_TBL" & vbCrLf & _
-                " WHERE BUSINESS_UNIT = '" & strBU & "'" & vbCrLf & _
+        strSQLString = "SELECT FIRST_NAME_SRCH," & vbCrLf &
+                " LAST_NAME_SRCH," & vbCrLf &
+                " ISA_EMPLOYEE_EMAIL" & vbCrLf &
+                " FROM SDIX_USERS_TBL" & vbCrLf &
+                " WHERE BUSINESS_UNIT = '" & strBU & "'" & vbCrLf &
                 " AND ISA_EMPLOYEE_ID = '" & strAppUserid & "'"
 
         Dim dtrAppReader As OleDbDataReader = ORDBData.GetReader(strSQLString)
@@ -3959,11 +3970,11 @@ Public Class OrderApprovals
             Exit Sub
         End If
 
-        strSQLString = "SELECT FIRST_NAME_SRCH," & vbCrLf & _
-                " LAST_NAME_SRCH," & vbCrLf & _
-                " ISA_EMPLOYEE_EMAIL" & vbCrLf & _
-                " FROM SDIX_USERS_TBL" & vbCrLf & _
-                " WHERE BUSINESS_UNIT = '" & strBU & "'" & vbCrLf & _
+        strSQLString = "SELECT FIRST_NAME_SRCH," & vbCrLf &
+                " LAST_NAME_SRCH," & vbCrLf &
+                " ISA_EMPLOYEE_EMAIL" & vbCrLf &
+                " FROM SDIX_USERS_TBL" & vbCrLf &
+                " WHERE BUSINESS_UNIT = '" & strBU & "'" & vbCrLf &
                 " AND ISA_EMPLOYEE_ID = '" & strAgent & "'"
 
         Dim dtrBuyerReader As OleDbDataReader = ORDBData.GetReader(strSQLString)
@@ -3986,38 +3997,38 @@ Public Class OrderApprovals
         'pfd
         '1/02/2009
         ' get the detail line for the the approver quote email
-        strSQLString = "SELECT ' ' AS ISA_IDENTIFIER," & vbCrLf & _
-                " A.ORDER_NO, B.OPRID_ENTERED_BY," & vbCrLf & _
-                " TO_CHAR(B.ISA_REQUIRED_BY_DT,'YYYY-MM-DD') as REQ_DT," & vbCrLf & _
-                " TO_CHAR(A.ADD_DTTM,'YYYY-MM-DD') as ADD_DT," & vbCrLf & _
-                " B.ISA_EMPLOYEE_ID, B.ISA_CUST_CHARGE_CD," & vbCrLf & _
-                " B.ISA_WORK_ORDER_NO, B.ISA_MACHINE_NO," & vbCrLf & _
-                " ' ' AS ISA_CUST_NOTES," & vbCrLf & _
-                " B.INV_ITEM_ID, B.DESCR254, B.MFG_ID," & vbCrLf & _
-                " B.ISA_MFG_FREEFORM, B.MFG_ITM_ID," & vbCrLf & _
-                " B.UNIT_OF_MEASURE," & vbCrLf & _
-                " ' ' AS VNDR_CATALOG_ID, B.ISA_SELL_PRICE," & vbCrLf & _
-                " (B.ORDER_NO || B.ISA_INTFC_LN) as UNIQUEIDENT, B.ISA_INTFC_LN," & vbCrLf & _
-                " B.ISA_LINE_STATUS," & vbCrLf & _
-                " C.QTY_REQ, C.PRICE_REQ, F.ISA_SELL_PRICE," & vbCrLf & _
-                " F.INV_ITEM_TYPE, F.INV_STOCK_TYPE," & vbCrLf & _
-                " TO_CHAR(D.DUE_DT,'YYYY-MM-DD') as DUE_DT" & vbCrLf & _
-                " FROM SYSADM8.PS_ISA_ORD_INTF_HD A, SYSADM8.PS_ISA_ORD_INTF_LN B," & vbCrLf & _
-                " PS_REQ_LINE C, PS_REQ_LINE_SHIP D, SYSADM8.PS_ISA_REQ_BI_INFO F" & vbCrLf & _
-                " WHERE A.BUSINESS_UNIT_OM = '" & strBU & "'" & vbCrLf & _
-                " AND A.ORDER_NO = '" & strreqID & "'" & vbCrLf & _
-                " AND B.OPRID_ENTERED_BY = '" & strAgent & "'" & vbCrLf & _
-                " AND B.ISA_LINE_STATUS = 'QTS'" & vbCrLf & _
-                " AND A.ORDER_NO = B.ORDER_NO" & vbCrLf & _
-                " AND B.QTY_REQUESTED > 0" & vbCrLf & _
-                " AND A.ORDER_NO = C.REQ_ID" & vbCrLf & _
-                " AND B.ISA_INTFC_LN = C.LINE_NBR" & vbCrLf & _
-                " AND C.BUSINESS_UNIT = '" & strBU & "'" & vbCrLf & _
-                " AND C.BUSINESS_UNIT = D.BUSINESS_UNIT" & vbCrLf & _
-                " AND C.REQ_ID = D.REQ_ID" & vbCrLf & _
-                " AND C.LINE_NBR = D.LINE_NBR" & vbCrLf & _
-                " AND C.BUSINESS_UNIT = F.BUSINESS_UNIT (+)" & vbCrLf & _
-                " AND C.REQ_ID = F.REQ_ID (+)" & vbCrLf & _
+        strSQLString = "SELECT ' ' AS ISA_IDENTIFIER," & vbCrLf &
+                " A.ORDER_NO, B.OPRID_ENTERED_BY," & vbCrLf &
+                " TO_CHAR(B.ISA_REQUIRED_BY_DT,'YYYY-MM-DD') as REQ_DT," & vbCrLf &
+                " TO_CHAR(A.ADD_DTTM,'YYYY-MM-DD') as ADD_DT," & vbCrLf &
+                " B.ISA_EMPLOYEE_ID, B.ISA_CUST_CHARGE_CD," & vbCrLf &
+                " B.ISA_WORK_ORDER_NO, B.ISA_MACHINE_NO," & vbCrLf &
+                " ' ' AS ISA_CUST_NOTES," & vbCrLf &
+                " B.INV_ITEM_ID, B.DESCR254, B.MFG_ID," & vbCrLf &
+                " B.ISA_MFG_FREEFORM, B.MFG_ITM_ID," & vbCrLf &
+                " B.UNIT_OF_MEASURE," & vbCrLf &
+                " ' ' AS VNDR_CATALOG_ID, B.ISA_SELL_PRICE," & vbCrLf &
+                " (B.ORDER_NO || B.ISA_INTFC_LN) as UNIQUEIDENT, B.ISA_INTFC_LN," & vbCrLf &
+                " B.ISA_LINE_STATUS," & vbCrLf &
+                " C.QTY_REQ, C.PRICE_REQ, F.ISA_SELL_PRICE," & vbCrLf &
+                " F.INV_ITEM_TYPE, F.INV_STOCK_TYPE," & vbCrLf &
+                " TO_CHAR(D.DUE_DT,'YYYY-MM-DD') as DUE_DT" & vbCrLf &
+                " FROM SYSADM8.PS_ISA_ORD_INTF_HD A, SYSADM8.PS_ISA_ORD_INTF_LN B," & vbCrLf &
+                " PS_REQ_LINE C, PS_REQ_LINE_SHIP D, SYSADM8.PS_ISA_REQ_BI_INFO F" & vbCrLf &
+                " WHERE A.BUSINESS_UNIT_OM = '" & strBU & "'" & vbCrLf &
+                " AND A.ORDER_NO = '" & strreqID & "'" & vbCrLf &
+                " AND B.OPRID_ENTERED_BY = '" & strAgent & "'" & vbCrLf &
+                " AND B.ISA_LINE_STATUS = 'QTS'" & vbCrLf &
+                " AND A.ORDER_NO = B.ORDER_NO" & vbCrLf &
+                " AND B.QTY_REQUESTED > 0" & vbCrLf &
+                " AND A.ORDER_NO = C.REQ_ID" & vbCrLf &
+                " AND B.ISA_INTFC_LN = C.LINE_NBR" & vbCrLf &
+                " AND C.BUSINESS_UNIT = '" & strBU & "'" & vbCrLf &
+                " AND C.BUSINESS_UNIT = D.BUSINESS_UNIT" & vbCrLf &
+                " AND C.REQ_ID = D.REQ_ID" & vbCrLf &
+                " AND C.LINE_NBR = D.LINE_NBR" & vbCrLf &
+                " AND C.BUSINESS_UNIT = F.BUSINESS_UNIT (+)" & vbCrLf &
+                " AND C.REQ_ID = F.REQ_ID (+)" & vbCrLf &
                 " AND C.LINE_NBR = F.LINE_NBR (+)"
 
         Dim dtgcart As DataGrid
@@ -4515,24 +4526,24 @@ Public Class OrderApprovals
             '    "       AND H.business_unit_om = '" & oApprovalDetails.BU & "' " & vbCrLf & _
             '    "       AND L.inv_item_id = ' ' "
 
-            strSQLstring = "SELECT L.ISA_INTFC_LN, L.QTY_REQUESTED, L.ISA_SELL_PRICE, L.INV_ITEM_ID, L.ISA_CUST_CHARGE_CD,C.inv_stock_type " & vbCrLf & _
-               " FROM SYSADM8.PS_ISA_ORD_INTF_LN  L, ps_inv_items C " & vbCrLf & _
-               " WHERE " & _
-               "       L.order_no = '" & oApprovalDetails.ReqID & "' " & vbCrLf & _
-               "       AND L.business_unit_om = '" & oApprovalDetails.BU & "' " & vbCrLf & _
-               "       AND C.setid(+) = L.ITM_SETID " & vbCrLf & _
-               "       AND C.inv_item_id(+) = L.inv_item_id " & vbCrLf & _
-               "       AND L.inv_item_id != ' ' " & vbCrLf & _
-               "       AND C.EFFDT = " & vbCrLf & _
-               "		        (SELECT MAX(A_ED.EFFDT) FROM PS_INV_ITEMS A_ED" & vbCrLf & _
-               "               WHERE C.SETID = A_ED.SETID" & vbCrLf & _
-               "               AND C.INV_ITEM_ID = A_ED.INV_ITEM_ID" & vbCrLf & _
-               "               AND A_ED.EFFDT <= SYSDATE)" & vbCrLf & _
-               " UNION " & vbCrLf & _
-               " SELECT L.ISA_INTFC_LN, L.QTY_REQUESTED, L.ISA_SELL_PRICE, L.INV_ITEM_ID, L.ISA_CUST_CHARGE_CD , 'NSTK' AS inv_stock_type" & vbCrLf & _
-               " FROM  SYSADM8.PS_ISA_ORD_INTF_LN L WHERE " & vbCrLf & _
-               "       L.order_no = '" & oApprovalDetails.ReqID & "' " & vbCrLf & _
-               "       AND L.business_unit_om = '" & oApprovalDetails.BU & "' " & vbCrLf & _
+            strSQLstring = "SELECT L.ISA_INTFC_LN, L.QTY_REQUESTED, L.ISA_SELL_PRICE, L.INV_ITEM_ID, L.ISA_CUST_CHARGE_CD,C.inv_stock_type " & vbCrLf &
+               " FROM SYSADM8.PS_ISA_ORD_INTF_LN  L, ps_inv_items C " & vbCrLf &
+               " WHERE " &
+               "       L.order_no = '" & oApprovalDetails.ReqID & "' " & vbCrLf &
+               "       AND L.business_unit_om = '" & oApprovalDetails.BU & "' " & vbCrLf &
+               "       AND C.setid(+) = L.ITM_SETID " & vbCrLf &
+               "       AND C.inv_item_id(+) = L.inv_item_id " & vbCrLf &
+               "       AND L.inv_item_id != ' ' " & vbCrLf &
+               "       AND C.EFFDT = " & vbCrLf &
+               "		        (SELECT MAX(A_ED.EFFDT) FROM PS_INV_ITEMS A_ED" & vbCrLf &
+               "               WHERE C.SETID = A_ED.SETID" & vbCrLf &
+               "               AND C.INV_ITEM_ID = A_ED.INV_ITEM_ID" & vbCrLf &
+               "               AND A_ED.EFFDT <= SYSDATE)" & vbCrLf &
+               " UNION " & vbCrLf &
+               " SELECT L.ISA_INTFC_LN, L.QTY_REQUESTED, L.ISA_SELL_PRICE, L.INV_ITEM_ID, L.ISA_CUST_CHARGE_CD , 'NSTK' AS inv_stock_type" & vbCrLf &
+               " FROM  SYSADM8.PS_ISA_ORD_INTF_LN L WHERE " & vbCrLf &
+               "       L.order_no = '" & oApprovalDetails.ReqID & "' " & vbCrLf &
+               "       AND L.business_unit_om = '" & oApprovalDetails.BU & "' " & vbCrLf &
                "       AND L.inv_item_id = ' ' "
 
 
@@ -4548,18 +4559,18 @@ Public Class OrderApprovals
         Return bSuccess
     End Function
 
-    Private Shared Sub HandleApprovalError(ByRef trnsactSession As OleDbTransaction, ByRef connection As OleDbConnection, _
+    Private Shared Sub HandleApprovalError(ByRef trnsactSession As OleDbTransaction, ByRef connection As OleDbConnection,
                                        strSQLstring As String, ex As Exception, oApprovalDetails As ApprovalDetails, sCaller As String)
         Dim sErrorDetails As String
-        sErrorDetails = "Caller=" & sCaller & vbCrLf & _
-            " SQL=" & strSQLstring & vbCrLf & _
-            " ex.Message=" & ex.Message & vbCrLf & _
+        sErrorDetails = "Caller=" & sCaller & vbCrLf &
+            " SQL=" & strSQLstring & vbCrLf &
+            " ex.Message=" & ex.Message & vbCrLf &
             " ex.StackTrace=" & ex.StackTrace
 
         RollBackTransfer(trnsactSession, connection, sErrorDetails, oApprovalDetails)
     End Sub
 
-    Private Shared Sub HandleApprovalError(trnsactSession As OleDbTransaction, connection As OleDbConnection, _
+    Private Shared Sub HandleApprovalError(trnsactSession As OleDbTransaction, connection As OleDbConnection,
                                          ex As Exception, oApprovalDetails As ApprovalDetails)
         Dim sErrorDetails As String
         sErrorDetails = "ex.Message=" & ex.Message & " ex.StackTrace=" & ex.StackTrace
@@ -4567,8 +4578,8 @@ Public Class OrderApprovals
         RollBackTransfer(trnsactSession, connection, sErrorDetails, oApprovalDetails)
     End Sub
 
-    Private Shared Sub HandleApprovalError(ByRef trnsactSession As OleDbTransaction, ByRef connection As OleDbConnection, _
-                                          sMethodName As String, rowsaffected As Integer, strSQLstring As String, _
+    Private Shared Sub HandleApprovalError(ByRef trnsactSession As OleDbTransaction, ByRef connection As OleDbConnection,
+                                          sMethodName As String, rowsaffected As Integer, strSQLstring As String,
                                           oApprovalDetails As ApprovalDetails)
         Dim sErrorDetails As String
         sErrorDetails = sMethodName & ": rowsaffected=" & rowsaffected.ToString & " strSQLstring=" & strSQLstring
@@ -4577,14 +4588,14 @@ Public Class OrderApprovals
 
     End Sub
 
-    Private Shared Sub HandleApprovalError(ByRef trnsactSession As OleDbTransaction, ByRef connection As OleDbConnection, _
+    Private Shared Sub HandleApprovalError(ByRef trnsactSession As OleDbTransaction, ByRef connection As OleDbConnection,
                                           sMethodName As String, oApprovalDetails As ApprovalDetails, sErrorDetails As String)
         sErrorDetails = sMethodName & ": " & sErrorDetails
 
         RollBackTransfer(trnsactSession, connection, sErrorDetails, oApprovalDetails)
     End Sub
 
-    Private Shared Sub RollBackTransfer(ByRef trnsactSession As OleDbTransaction, ByRef connection As OleDbConnection, _
+    Private Shared Sub RollBackTransfer(ByRef trnsactSession As OleDbTransaction, ByRef connection As OleDbConnection,
                                        sErrorDetails As String, oApprovalDetails As ApprovalDetails)
         Try
             trnsactSession.Rollback()
@@ -4593,10 +4604,10 @@ Public Class OrderApprovals
             Const cSubject As String = "Approval Error"
 
             Dim sErrorMessage As String
-            sErrorMessage = sErrorDetails & vbCrLf & _
-                " ApproverID: " & oApprovalDetails.ApproverID & vbCrLf & _
-                " BU: " & oApprovalDetails.BU & vbCrLf & _
-                " ReqID: " & oApprovalDetails.ReqID & vbCrLf & _
+            sErrorMessage = sErrorDetails & vbCrLf &
+                " ApproverID: " & oApprovalDetails.ApproverID & vbCrLf &
+                " BU: " & oApprovalDetails.BU & vbCrLf &
+                " ReqID: " & oApprovalDetails.ReqID & vbCrLf &
                 " Database: " & DbUrl.Substring(DbUrl.Length - 4).ToUpper
 
             Try
@@ -4612,17 +4623,17 @@ Public Class OrderApprovals
         connection = Nothing
     End Sub
 
-    Private Shared Function RetrieveNetOrderPrice(sBU As String, sOrdNo As String, ByRef dblNetOrderPrice As Double, _
+    Private Shared Function RetrieveNetOrderPrice(sBU As String, sOrdNo As String, ByRef dblNetOrderPrice As Double,
                                      Optional sChgCd As String = "|~|") As Boolean
         Dim bSuccess As Boolean = False
         Dim strSQLstring As String
 
         Try
-            strSQLstring = "SELECT SUM(B.ISA_SELL_PRICE * B.QTY_REQUESTED) AS NET_ORDR_PRICE_VAR " & vbCrLf & _
-                " FROM SYSADM8.PS_ISA_ORD_INTF_HD  A, SYSADM8.PS_ISA_ORD_INTF_LN B " & vbCrLf & _
-                " WHERE A.BUSINESS_UNIT_OM = '" & sBU & "'" & vbCrLf & _
-                " AND A.ORDER_NO = '" & sOrdNo & "'" & vbCrLf & _
-                " AND A.ORDER_NO = B.ORDER_NO " & vbCrLf & _
+            strSQLstring = "SELECT SUM(B.ISA_SELL_PRICE * B.QTY_REQUESTED) AS NET_ORDR_PRICE_VAR " & vbCrLf &
+                " FROM SYSADM8.PS_ISA_ORD_INTF_HD  A, SYSADM8.PS_ISA_ORD_INTF_LN B " & vbCrLf &
+                " WHERE A.BUSINESS_UNIT_OM = '" & sBU & "'" & vbCrLf &
+                " AND A.ORDER_NO = '" & sOrdNo & "'" & vbCrLf &
+                " AND A.ORDER_NO = B.ORDER_NO " & vbCrLf &
                 " AND B.QTY_REQUESTED > 0 AND NOT B.ISA_LINE_STATUS = '" & m_cDeletedLine & "' "
             If sChgCd <> "|~|" Then
                 strSQLstring &= " AND B.ISA_CUST_CHARGE_CD = '" & sChgCd & "'"
@@ -4641,7 +4652,7 @@ Public Class OrderApprovals
         Return bSuccess
     End Function
 
-    Public Shared Function CheckLimits(ByRef trnsactSession As OleDbTransaction, ByRef connection As OleDbConnection, _
+    Public Shared Function CheckLimits(ByRef trnsactSession As OleDbTransaction, ByRef connection As OleDbConnection,
        oApprovalDetails As ApprovalDetails, ByRef oApprovalResults As ApprovalResults, ByVal LineStatus As String) As Boolean
 
         Dim bSuccess As Boolean = False
@@ -4656,7 +4667,7 @@ Public Class OrderApprovals
         Return bSuccess
     End Function
 
-    Private Shared Function CheckLimitsOrder(ByRef trnsactSession As OleDbTransaction, ByRef connection As OleDbConnection, _
+    Private Shared Function CheckLimitsOrder(ByRef trnsactSession As OleDbTransaction, ByRef connection As OleDbConnection,
         ByRef oApprovalDetails As ApprovalDetails, ByRef oApprovalResults As ApprovalResults, Optional ByVal bIsMultiCurrency As Boolean = False, Optional ByVal LineStatus As String = "") As Boolean
 
         Dim bSuccessful As Boolean = False
@@ -4666,8 +4677,8 @@ Public Class OrderApprovals
 
             If bIsMultiCurrency Then
                 Const cPriorDaysAgo As Integer = 0 ' prior days (in number) ago
-                bSuccessful = MultiCurrencyOrder.CustEmp(trnsactSession, connection, oApprovalDetails, _
-                    sdiMultiCurrency.getSiteCurrency(oApprovalDetails.BU).Id, _
+                bSuccessful = MultiCurrencyOrder.CustEmp(trnsactSession, connection, oApprovalDetails,
+                    sdiMultiCurrency.getSiteCurrency(oApprovalDetails.BU).Id,
                     cPriorDaysAgo, oApprovalResults, LineStatus)
             Else
                 bSuccessful = SingleCurrencyOrder.CustEmp(trnsactSession, connection, oApprovalDetails, oApprovalResults)
@@ -4685,8 +4696,8 @@ Public Class OrderApprovals
 
     Private Class MultiCurrencyOrder
 
-        Public Shared Function CustEmp(trnsactSession As OleDbTransaction, connection As OleDbConnection, _
-           oApprovalDetails As ApprovalDetails, sBaseCurrCd As String, iExDaysAgo As Integer, _
+        Public Shared Function CustEmp(trnsactSession As OleDbTransaction, connection As OleDbConnection,
+           oApprovalDetails As ApprovalDetails, sBaseCurrCd As String, iExDaysAgo As Integer,
            oApprovalResults As ApprovalResults, ByVal LineStatus As String) As Boolean
 
             Dim bSuccessful As Boolean = True ' Processing is successful by default
@@ -4788,7 +4799,7 @@ Public Class OrderApprovals
             Return bSuccessful
         End Function
 
-        Private Shared Function UpdateHeader_ApproveOrder(trnsactSession As OleDbTransaction, connection As OleDbConnection, _
+        Private Shared Function UpdateHeader_ApproveOrder(trnsactSession As OleDbTransaction, connection As OleDbConnection,
           ByVal oApprovalDetails As ApprovalDetails, ByRef oApprovalResults As ApprovalResults, ByVal Linestatus As String) As Boolean
 
             Const cNewHeaderStatus As String = "QTW"
@@ -4802,11 +4813,11 @@ Public Class OrderApprovals
             Try
                 oApprovalResults.NewOrderHeaderStatus = cNewHeaderStatus
 
-                strSQLstring = "UPDATE SYSADM8.PS_ISA_ORD_INTF_HD " & vbCrLf & _
-                    " SET " & vbCrLf & _
-                    " LASTUPDDTTM = TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
-                    ", ORDER_STATUS = '" & cNewHeaderStatus & "' " & vbCrLf & _
-                    " WHERE BUSINESS_UNIT_OM = '" & oApprovalDetails.BU & "' " & vbCrLf & _
+                strSQLstring = "UPDATE SYSADM8.PS_ISA_ORD_INTF_HD " & vbCrLf &
+                    " SET " & vbCrLf &
+                    " LASTUPDDTTM = TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf &
+                    ", ORDER_STATUS = '" & cNewHeaderStatus & "' " & vbCrLf &
+                    " WHERE BUSINESS_UNIT_OM = '" & oApprovalDetails.BU & "' " & vbCrLf &
                     " AND ORDER_NO = '" & oApprovalDetails.ReqID & "'"
 
                 If ExecuteSQL(trnsactSession, connection, strSQLstring, oApprovalDetails, rowsaffected, cCaller) Then
@@ -4815,8 +4826,8 @@ Public Class OrderApprovals
                         HandleApprovalError(trnsactSession, connection, cCaller, rowsaffected, strSQLstring, oApprovalDetails)
                     Else
                         Dim sErrorDetails As String = ""
-                        If clsSDIAudit.AddRecord(trnsactSession, connection, m_cClassFileName, _
-                                "Approve order", "SYSADM8.PS_ISA_ORD_INTF_HD", oApprovalDetails.ApproverID, oApprovalDetails.BU, _
+                        If clsSDIAudit.AddRecord(trnsactSession, connection, m_cClassFileName,
+                                "Approve order", "SYSADM8.PS_ISA_ORD_INTF_HD", oApprovalDetails.ApproverID, oApprovalDetails.BU,
                                 oApprovalDetails.ReqID, sColumnChg:="ORDER_STATUS", sNewValue:=cNewHeaderStatus, sErrorDetails:=sErrorDetails) Then
 
                             bSuccess = True
@@ -4826,12 +4837,12 @@ Public Class OrderApprovals
                     End If
                 End If
 
-                strSQLstring = "UPDATE SYSADM8.PS_ISA_ORD_INTF_LN " & vbCrLf & _
-                    " SET " & vbCrLf & _
-                    " OPRID_APPROVED_BY = '" & oApprovalDetails.ApproverID & "' " & vbCrLf & _
-                    ", APPROVAL_DTTM = TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
-                    ", ISA_LINE_STATUS = '" & Linestatus & "' " & vbCrLf & _
-                    " WHERE BUSINESS_UNIT_OM = '" & oApprovalDetails.BU & "' " & vbCrLf & _
+                strSQLstring = "UPDATE SYSADM8.PS_ISA_ORD_INTF_LN " & vbCrLf &
+                    " SET " & vbCrLf &
+                    " OPRID_APPROVED_BY = '" & oApprovalDetails.ApproverID & "' " & vbCrLf &
+                    ", APPROVAL_DTTM = TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf &
+                    ", ISA_LINE_STATUS = '" & Linestatus & "' " & vbCrLf &
+                    " WHERE BUSINESS_UNIT_OM = '" & oApprovalDetails.BU & "' " & vbCrLf &
                     " AND ORDER_NO = '" & oApprovalDetails.ReqID & "'"
 
                 If ExecuteSQL(trnsactSession, connection, strSQLstring, oApprovalDetails, rowsaffected, cCaller) Then
@@ -4840,8 +4851,8 @@ Public Class OrderApprovals
                         HandleApprovalError(trnsactSession, connection, cCaller, rowsaffected, strSQLstring, oApprovalDetails)
                     Else
                         Dim sErrorDetails As String = ""
-                        If clsSDIAudit.AddRecord(trnsactSession, connection, m_cClassFileName, _
-                                "Approve order", "SYSADM8.PS_ISA_ORD_INTF_LN", oApprovalDetails.ApproverID, oApprovalDetails.BU, _
+                        If clsSDIAudit.AddRecord(trnsactSession, connection, m_cClassFileName,
+                                "Approve order", "SYSADM8.PS_ISA_ORD_INTF_LN", oApprovalDetails.ApproverID, oApprovalDetails.BU,
                                 oApprovalDetails.ReqID, sColumnChg:="ISA_LINE_STATUS", sNewValue:=cNewLineStatus, sErrorDetails:=sErrorDetails) Then
 
                             bSuccess = True
@@ -4863,23 +4874,23 @@ Public Class OrderApprovals
             Dim bSuccess As Boolean = False
             Dim strSQLstring As String
 
-            strSQLstring = "SELECT  R.CURRENCY_CD, SUM(B.ISA_SELL_PRICE * B.QTY_REQUESTED) SUBTOTAL " & vbCrLf & _
-                " FROM  SYSADM8.PS_ISA_ORD_INTF_HD  A, SYSADM8.PS_ISA_ORD_INTF_LN  B, PS_REQ_LINE R " & vbCrLf & _
-                " WHERE  A.BUSINESS_UNIT_OM = '" & sBU & "' " & vbCrLf & _
-                " AND  A.ORDER_NO = '" & sOrdNo & "' " & vbCrLf & _
-                " AND  A.ORDER_NO = B.ORDER_NO " & vbCrLf & _
-                " AND  B.QTY_REQUESTED > 0 AND NOT B.ISA_LINE_STATUS = '" & m_cDeletedLine & "' " & vbCrLf & _
-                " AND  NOT EXISTS (SELECT 'X' " & vbCrLf & _
-                "   FROM PS_INV_ITEMS C " & vbCrLf & _
-                "   WHERE C.EFFDT = (SELECT MAX(C_ED.EFFDT) " & vbCrLf & _
-                "       FROM PS_INV_ITEMS C_ED " & vbCrLf & _
-                "       WHERE C.SETID = C_ED.SETID " & vbCrLf & _
-                "       AND C.INV_ITEM_ID = C_ED.INV_ITEM_ID " & vbCrLf & _
-                "       AND C_ED.EFFDT <= SYSDATE) " & vbCrLf & _
-                "   AND C.INV_ITEM_ID = B.INV_ITEM_ID " & vbCrLf & _
-                "   AND C.INV_STOCK_TYPE = 'STK') " & vbCrLf & _
-                " AND  A.ORDER_NO = R.REQ_ID " & vbCrLf & _
-                " AND  B.ISA_INTFC_LN = R.LINE_NBR " & vbCrLf & _
+            strSQLstring = "SELECT  R.CURRENCY_CD, SUM(B.ISA_SELL_PRICE * B.QTY_REQUESTED) SUBTOTAL " & vbCrLf &
+                " FROM  SYSADM8.PS_ISA_ORD_INTF_HD  A, SYSADM8.PS_ISA_ORD_INTF_LN  B, PS_REQ_LINE R " & vbCrLf &
+                " WHERE  A.BUSINESS_UNIT_OM = '" & sBU & "' " & vbCrLf &
+                " AND  A.ORDER_NO = '" & sOrdNo & "' " & vbCrLf &
+                " AND  A.ORDER_NO = B.ORDER_NO " & vbCrLf &
+                " AND  B.QTY_REQUESTED > 0 AND NOT B.ISA_LINE_STATUS = '" & m_cDeletedLine & "' " & vbCrLf &
+                " AND  NOT EXISTS (SELECT 'X' " & vbCrLf &
+                "   FROM PS_INV_ITEMS C " & vbCrLf &
+                "   WHERE C.EFFDT = (SELECT MAX(C_ED.EFFDT) " & vbCrLf &
+                "       FROM PS_INV_ITEMS C_ED " & vbCrLf &
+                "       WHERE C.SETID = C_ED.SETID " & vbCrLf &
+                "       AND C.INV_ITEM_ID = C_ED.INV_ITEM_ID " & vbCrLf &
+                "       AND C_ED.EFFDT <= SYSDATE) " & vbCrLf &
+                "   AND C.INV_ITEM_ID = B.INV_ITEM_ID " & vbCrLf &
+                "   AND C.INV_STOCK_TYPE = 'STK') " & vbCrLf &
+                " AND  A.ORDER_NO = R.REQ_ID " & vbCrLf &
+                " AND  B.ISA_INTFC_LN = R.LINE_NBR " & vbCrLf &
                 " GROUP BY R.CURRENCY_CD"
             ds = ORDBData.GetAdapter(strSQLstring)
 
@@ -4890,30 +4901,30 @@ Public Class OrderApprovals
             Dim bSuccess As Boolean = False
             Dim strSQLstring As String
 
-            strSQLstring = "SELECT R.CURRENCY_CD, SUM(B.ISA_SELL_PRICE * B.QTY_REQUESTED) SUBTOTAL " & vbCrLf & _
-                " FROM SYSADM8.PS_ISA_ORD_INTF_HD  A, SYSADM8.PS_ISA_ORD_INTF_LN  B, PS_REQ_LINE R " & vbCrLf & _
-                " WHERE A.BUSINESS_UNIT_OM = '" & sBU & "' " & vbCrLf & _
-                " AND " & vbCrLf & _
-                " ( " & vbCrLf & _
-                "   ( B.OPRID_ENTERED_BY = '" & sEnteredBy & "' AND A.ORDER_STATUS in ('O','P',' ') " & vbCrLf & _
-                "     AND TRUNC(A.ADD_DTTM) = TRUNC(SYSDATE) " & vbCrLf & _
-                "   ) " & vbCrLf & _
-                "   OR " & vbCrLf & _
-                "   ( A.ORDER_STATUS IN ('W','B',' ') AND A.ORDER_NO = '" & sOrdNo & "' ) " & vbCrLf & _
-                " ) " & vbCrLf & _
-                " AND  A.ORDER_NO = B.ORDER_NO " & vbCrLf & _
-                " AND  B.QTY_REQUESTED > 0 AND NOT B.ISA_LINE_STATUS = '" & m_cDeletedLine & "' " & vbCrLf & _
-                " AND  NOT EXISTS (SELECT 'X' " & vbCrLf & _
-                "   FROM  PS_INV_ITEMS C " & vbCrLf & _
-                "   WHERE  C.EFFDT = (SELECT MAX(C_ED.EFFDT) " & vbCrLf & _
-                "       FROM PS_INV_ITEMS C_ED " & vbCrLf & _
-                "       WHERE C.SETID = C_ED.SETID " & vbCrLf & _
-                "       AND C.INV_ITEM_ID = C_ED.INV_ITEM_ID " & vbCrLf & _
-                "       AND C_ED.EFFDT <= SYSDATE) " & vbCrLf & _
-                "   AND C.INV_ITEM_ID = B.INV_ITEM_ID" & vbCrLf & _
-                "   AND C.INV_STOCK_TYPE = 'STK') " & vbCrLf & _
-                " AND  A.ORDER_NO = R.REQ_ID " & vbCrLf & _
-                " AND  B.ISA_INTFC_LN = R.LINE_NBR " & vbCrLf & _
+            strSQLstring = "SELECT R.CURRENCY_CD, SUM(B.ISA_SELL_PRICE * B.QTY_REQUESTED) SUBTOTAL " & vbCrLf &
+                " FROM SYSADM8.PS_ISA_ORD_INTF_HD  A, SYSADM8.PS_ISA_ORD_INTF_LN  B, PS_REQ_LINE R " & vbCrLf &
+                " WHERE A.BUSINESS_UNIT_OM = '" & sBU & "' " & vbCrLf &
+                " AND " & vbCrLf &
+                " ( " & vbCrLf &
+                "   ( B.OPRID_ENTERED_BY = '" & sEnteredBy & "' AND A.ORDER_STATUS in ('O','P',' ') " & vbCrLf &
+                "     AND TRUNC(A.ADD_DTTM) = TRUNC(SYSDATE) " & vbCrLf &
+                "   ) " & vbCrLf &
+                "   OR " & vbCrLf &
+                "   ( A.ORDER_STATUS IN ('W','B',' ') AND A.ORDER_NO = '" & sOrdNo & "' ) " & vbCrLf &
+                " ) " & vbCrLf &
+                " AND  A.ORDER_NO = B.ORDER_NO " & vbCrLf &
+                " AND  B.QTY_REQUESTED > 0 AND NOT B.ISA_LINE_STATUS = '" & m_cDeletedLine & "' " & vbCrLf &
+                " AND  NOT EXISTS (SELECT 'X' " & vbCrLf &
+                "   FROM  PS_INV_ITEMS C " & vbCrLf &
+                "   WHERE  C.EFFDT = (SELECT MAX(C_ED.EFFDT) " & vbCrLf &
+                "       FROM PS_INV_ITEMS C_ED " & vbCrLf &
+                "       WHERE C.SETID = C_ED.SETID " & vbCrLf &
+                "       AND C.INV_ITEM_ID = C_ED.INV_ITEM_ID " & vbCrLf &
+                "       AND C_ED.EFFDT <= SYSDATE) " & vbCrLf &
+                "   AND C.INV_ITEM_ID = B.INV_ITEM_ID" & vbCrLf &
+                "   AND C.INV_STOCK_TYPE = 'STK') " & vbCrLf &
+                " AND  A.ORDER_NO = R.REQ_ID " & vbCrLf &
+                " AND  B.ISA_INTFC_LN = R.LINE_NBR " & vbCrLf &
                 " GROUP BY R.CURRENCY_CD "
             ds = ORDBData.GetAdapter(strSQLstring)
 
@@ -4924,31 +4935,31 @@ Public Class OrderApprovals
             Dim bSuccess As Boolean = False
             Dim strSQLstring As String
 
-            strSQLstring = "SELECT R.CURRENCY_CD, SUM(B.ISA_SELL_PRICE * B.QTY_REQUESTED) SUBTOTAL " & vbCrLf & _
-                " FROM SYSADM8.PS_ISA_ORD_INTF_HD  A, SYSADM8.PS_ISA_ORD_INTF_LN  B, PS_REQ_LINE R " & vbCrLf & _
-                " WHERE A.BUSINESS_UNIT_OM = '" & sBU & "' " & vbCrLf & _
-                " AND " & vbCrLf & _
-                " ( " & vbCrLf & _
-                "   ( B.OPRID_ENTERED_BY = '" & sEnteredBy & "' AND A.ORDER_STATUS in ('O','P',' ') " & vbCrLf & _
-                "     AND TO_CHAR(A.ADD_DTTM, 'MM') = TO_CHAR(SYSDATE, 'MM') " & vbCrLf & _
-                "   ) " & vbCrLf & _
-                "   OR " & vbCrLf & _
-                "   ( A.ORDER_STATUS IN ('W','B',' ') AND A.ORDER_NO = '" & sOrdNo & "' " & vbCrLf & _
-                "   ) " & vbCrLf & _
-                " ) " & vbCrLf & _
-                " AND  A.ORDER_NO = B.ORDER_NO " & vbCrLf & _
-                " AND  B.QTY_REQUESTED > 0 AND NOT B.ISA_LINE_STATUS = '" & m_cDeletedLine & "' " & vbCrLf & _
-                " AND  NOT EXISTS (SELECT 'X' " & vbCrLf & _
-                "   FROM  PS_INV_ITEMS C " & vbCrLf & _
-                "   WHERE  C.EFFDT = (SELECT MAX(C_ED.EFFDT) " & vbCrLf & _
-                "       FROM PS_INV_ITEMS C_ED " & vbCrLf & _
-                "       WHERE C.SETID = C_ED.SETID " & vbCrLf & _
-                "       AND C.INV_ITEM_ID = C_ED.INV_ITEM_ID " & vbCrLf & _
-                "       AND C_ED.EFFDT <= SYSDATE) " & vbCrLf & _
-                "   AND C.INV_ITEM_ID = B.INV_ITEM_ID " & vbCrLf & _
-                "   AND C.INV_STOCK_TYPE = 'STK') " & vbCrLf & _
-                " AND  A.ORDER_NO=R.REQ_ID " & vbCrLf & _
-                " AND  B.ISA_INTFC_LN=R.LINE_NBR " & vbCrLf & _
+            strSQLstring = "SELECT R.CURRENCY_CD, SUM(B.ISA_SELL_PRICE * B.QTY_REQUESTED) SUBTOTAL " & vbCrLf &
+                " FROM SYSADM8.PS_ISA_ORD_INTF_HD  A, SYSADM8.PS_ISA_ORD_INTF_LN  B, PS_REQ_LINE R " & vbCrLf &
+                " WHERE A.BUSINESS_UNIT_OM = '" & sBU & "' " & vbCrLf &
+                " AND " & vbCrLf &
+                " ( " & vbCrLf &
+                "   ( B.OPRID_ENTERED_BY = '" & sEnteredBy & "' AND A.ORDER_STATUS in ('O','P',' ') " & vbCrLf &
+                "     AND TO_CHAR(A.ADD_DTTM, 'MM') = TO_CHAR(SYSDATE, 'MM') " & vbCrLf &
+                "   ) " & vbCrLf &
+                "   OR " & vbCrLf &
+                "   ( A.ORDER_STATUS IN ('W','B',' ') AND A.ORDER_NO = '" & sOrdNo & "' " & vbCrLf &
+                "   ) " & vbCrLf &
+                " ) " & vbCrLf &
+                " AND  A.ORDER_NO = B.ORDER_NO " & vbCrLf &
+                " AND  B.QTY_REQUESTED > 0 AND NOT B.ISA_LINE_STATUS = '" & m_cDeletedLine & "' " & vbCrLf &
+                " AND  NOT EXISTS (SELECT 'X' " & vbCrLf &
+                "   FROM  PS_INV_ITEMS C " & vbCrLf &
+                "   WHERE  C.EFFDT = (SELECT MAX(C_ED.EFFDT) " & vbCrLf &
+                "       FROM PS_INV_ITEMS C_ED " & vbCrLf &
+                "       WHERE C.SETID = C_ED.SETID " & vbCrLf &
+                "       AND C.INV_ITEM_ID = C_ED.INV_ITEM_ID " & vbCrLf &
+                "       AND C_ED.EFFDT <= SYSDATE) " & vbCrLf &
+                "   AND C.INV_ITEM_ID = B.INV_ITEM_ID " & vbCrLf &
+                "   AND C.INV_STOCK_TYPE = 'STK') " & vbCrLf &
+                " AND  A.ORDER_NO=R.REQ_ID " & vbCrLf &
+                " AND  B.ISA_INTFC_LN=R.LINE_NBR " & vbCrLf &
                 " GROUP BY R.CURRENCY_CD"
 
             ds = ORDBData.GetAdapter(strSQLstring)
@@ -4981,7 +4992,7 @@ Public Class OrderApprovals
             Return dblTotalCost
         End Function
 
-        Private Shared Function GetReqLineCount(trnsactSession As OleDbTransaction, connection As OleDbConnection, _
+        Private Shared Function GetReqLineCount(trnsactSession As OleDbTransaction, connection As OleDbConnection,
                                                oApprovalDetails As ApprovalDetails, ByRef iReqLnCount As Integer) As Boolean
 
             Const cCaller As String = "MultiCurrencyOrder.GetReqLineCount"
@@ -4992,13 +5003,13 @@ Public Class OrderApprovals
             Try
                 iReqLnCount = 0
 
-                strSQLstring = "SELECT  COUNT(1) " & vbCrLf & _
-                    " FROM SYSADM8.PS_ISA_ORD_INTF_HD  A, SYSADM8.PS_ISA_ORD_INTF_LN  B, PS_REQ_LINE R " & vbCrLf & _
-                    " WHERE  A.BUSINESS_UNIT_OM = '" & oApprovalDetails.BU & "' " & vbCrLf & _
-                    " AND  A.ORDER_NO = '" & oApprovalDetails.ReqID & "' " & vbCrLf & _
-                    " AND  A.ORDER_NO = B.ORDER_NO " & vbCrLf & _
-                    " AND  B.QTY_REQUESTED > 0 AND NOT B.ISA_LINE_STATUS = '" & m_cDeletedLine & "' " & vbCrLf & _
-                    " AND  A.ORDER_NO = R.REQ_ID " & vbCrLf & _
+                strSQLstring = "SELECT  COUNT(1) " & vbCrLf &
+                    " FROM SYSADM8.PS_ISA_ORD_INTF_HD  A, SYSADM8.PS_ISA_ORD_INTF_LN  B, PS_REQ_LINE R " & vbCrLf &
+                    " WHERE  A.BUSINESS_UNIT_OM = '" & oApprovalDetails.BU & "' " & vbCrLf &
+                    " AND  A.ORDER_NO = '" & oApprovalDetails.ReqID & "' " & vbCrLf &
+                    " AND  A.ORDER_NO = B.ORDER_NO " & vbCrLf &
+                    " AND  B.QTY_REQUESTED > 0 AND NOT B.ISA_LINE_STATUS = '" & m_cDeletedLine & "' " & vbCrLf &
+                    " AND  A.ORDER_NO = R.REQ_ID " & vbCrLf &
                     " AND  B.ISA_INTFC_LN = R.LINE_NBR"
 
                 Dim sReqLnCount As String
@@ -5019,11 +5030,11 @@ Public Class OrderApprovals
             Dim dblTotalCost As Double = 0
             Dim strSQLstring As String
 
-            strSQLstring = "SELECT SUM(B.ISA_SELL_PRICE * B.QTY_REQUESTED) " & vbCrLf & _
-                " FROM SYSADM8.PS_ISA_ORD_INTF_HD  A, SYSADM8.PS_ISA_ORD_INTF_LN  B " & vbCrLf & _
-                " WHERE A.BUSINESS_UNIT_OM = '" & sBU & "' " & vbCrLf & _
-                " AND A.ORDER_NO = '" & sOrdNo & "' " & vbCrLf & _
-                " AND A.ORDER_NO = B.ORDER_NO " & vbCrLf & _
+            strSQLstring = "SELECT SUM(B.ISA_SELL_PRICE * B.QTY_REQUESTED) " & vbCrLf &
+                " FROM SYSADM8.PS_ISA_ORD_INTF_HD  A, SYSADM8.PS_ISA_ORD_INTF_LN  B " & vbCrLf &
+                " WHERE A.BUSINESS_UNIT_OM = '" & sBU & "' " & vbCrLf &
+                " AND A.ORDER_NO = '" & sOrdNo & "' " & vbCrLf &
+                " AND A.ORDER_NO = B.ORDER_NO " & vbCrLf &
                 " AND B.QTY_REQUESTED > 0 AND NOT B.ISA_LINE_STATUS = '" & m_cDeletedLine & "'"
 
             Dim sTotalCost As String
@@ -5037,19 +5048,19 @@ Public Class OrderApprovals
             Dim dblTotalCost As Double = 0
             Dim strSQLstring As String
 
-            strSQLstring = "SELECT SUM(B.ISA_SELL_PRICE * B.QTY_REQUESTED) " & vbCrLf & _
-                " FROM SYSADM8.PS_ISA_ORD_INTF_HD  A, SYSADM8.PS_ISA_ORD_INTF_LN  B " & vbCrLf & _
-                " WHERE A.BUSINESS_UNIT_OM = '" & sBU & "' " & vbCrLf & _
-                " AND " & vbCrLf & _
-                " ( " & vbCrLf & _
-                "   ( B.OPRID_ENTERED_BY = '" & sEnteredByID & "' AND A.ORDER_STATUS in ('O','P',' ') " & vbCrLf & _
-                "     AND TRUNC(A.ADD_DTTM) = TRUNC(SYSDATE) " & vbCrLf & _
-                "   ) " & vbCrLf & _
-                "   OR " & vbCrLf & _
-                "   (     A.ORDER_STATUS IN ('W','B',' ') AND A.ORDER_NO = '" & sOrdNo & "' " & vbCrLf & _
-                "   ) " & vbCrLf & _
-                " ) " & vbCrLf & _
-                " AND  A.ORDER_NO = B.ORDER_NO " & vbCrLf & _
+            strSQLstring = "SELECT SUM(B.ISA_SELL_PRICE * B.QTY_REQUESTED) " & vbCrLf &
+                " FROM SYSADM8.PS_ISA_ORD_INTF_HD  A, SYSADM8.PS_ISA_ORD_INTF_LN  B " & vbCrLf &
+                " WHERE A.BUSINESS_UNIT_OM = '" & sBU & "' " & vbCrLf &
+                " AND " & vbCrLf &
+                " ( " & vbCrLf &
+                "   ( B.OPRID_ENTERED_BY = '" & sEnteredByID & "' AND A.ORDER_STATUS in ('O','P',' ') " & vbCrLf &
+                "     AND TRUNC(A.ADD_DTTM) = TRUNC(SYSDATE) " & vbCrLf &
+                "   ) " & vbCrLf &
+                "   OR " & vbCrLf &
+                "   (     A.ORDER_STATUS IN ('W','B',' ') AND A.ORDER_NO = '" & sOrdNo & "' " & vbCrLf &
+                "   ) " & vbCrLf &
+                " ) " & vbCrLf &
+                " AND  A.ORDER_NO = B.ORDER_NO " & vbCrLf &
                 " AND  B.QTY_REQUESTED > 0 AND B.ISA_LINE_STATUS = '" & m_cDeletedLine & "'"
 
             Dim sTotalCost As String
@@ -5063,19 +5074,19 @@ Public Class OrderApprovals
             Dim dblTotalCost As Double = 0
             Dim strSQLstring As String
 
-            strSQLstring = "SELECT SUM(B.ISA_SELL_PRICE * B.QTY_REQUESTED) " & vbCrLf & _
-                " FROM SYSADM8.PS_ISA_ORD_INTF_HD  A, SYSADM8.PS_ISA_ORD_INTF_LN  B " & vbCrLf & _
-                " WHERE A.BUSINESS_UNIT_OM = '" & sBU & "' " & vbCrLf & _
-                " AND " & vbCrLf & _
-                " ( " & vbCrLf & _
-                "   ( B.OPRID_ENTERED_BY = '" & sEnteredByID & "' AND A.ORDER_STATUS in ('O','P',' ') " & vbCrLf & _
-                "     AND TO_CHAR(A.ADD_DTTM, 'MM') = TO_CHAR(SYSDATE, 'MM') " & vbCrLf & _
-                "   ) " & vbCrLf & _
-                "   OR " & vbCrLf & _
-                "   ( A.ORDER_STATUS IN ('W','B',' ') AND A.ORDER_NO = V_ORDNO " & vbCrLf & _
-                "   ) " & vbCrLf & _
-                " ) " & vbCrLf & _
-                " AND  A.ORDER_NO = B.ORDER_NO " & vbCrLf & _
+            strSQLstring = "SELECT SUM(B.ISA_SELL_PRICE * B.QTY_REQUESTED) " & vbCrLf &
+                " FROM SYSADM8.PS_ISA_ORD_INTF_HD  A, SYSADM8.PS_ISA_ORD_INTF_LN  B " & vbCrLf &
+                " WHERE A.BUSINESS_UNIT_OM = '" & sBU & "' " & vbCrLf &
+                " AND " & vbCrLf &
+                " ( " & vbCrLf &
+                "   ( B.OPRID_ENTERED_BY = '" & sEnteredByID & "' AND A.ORDER_STATUS in ('O','P',' ') " & vbCrLf &
+                "     AND TO_CHAR(A.ADD_DTTM, 'MM') = TO_CHAR(SYSDATE, 'MM') " & vbCrLf &
+                "   ) " & vbCrLf &
+                "   OR " & vbCrLf &
+                "   ( A.ORDER_STATUS IN ('W','B',' ') AND A.ORDER_NO = V_ORDNO " & vbCrLf &
+                "   ) " & vbCrLf &
+                " ) " & vbCrLf &
+                " AND  A.ORDER_NO = B.ORDER_NO " & vbCrLf &
                 " AND  B.QTY_REQUESTED > 0 AND B.ISA_LINE_STATUS = '" & m_cDeletedLine & "'"
 
             Dim sTotalCost As String
@@ -5089,14 +5100,14 @@ Public Class OrderApprovals
             Dim bSuccess As Boolean = False
             Dim strSQLstring As String
 
-            strSQLstring = "SELECT  R.CURRENCY_CD, SUM(B.ISA_SELL_PRICE * B.QTY_REQUESTED) SUBTOTAL " & vbCrLf & _
-                " FROM  SYSADM8.PS_ISA_ORD_INTF_HD  A, SYSADM8.PS_ISA_ORD_INTF_LN  B, PS_REQ_LINE R " & vbCrLf & _
-                " WHERE  A.BUSINESS_UNIT_OM = '" & sBU & "' " & vbCrLf & _
-                " AND  A.ORDER_NO = '" & sOrdNo & "' " & vbCrLf & _
-                " AND  A.ORDER_NO = B.ORDER_NO " & vbCrLf & _
-                " AND  B.QTY_REQUESTED > 0 AND NOT B.ISA_LINE_STATUS = '" & m_cDeletedLine & "' " & vbCrLf & _
-                " AND  A.ORDER_NO = R.REQ_ID " & vbCrLf & _
-                " AND  B.ISA_INTFC_LN = R.LINE_NBR " & vbCrLf & _
+            strSQLstring = "SELECT  R.CURRENCY_CD, SUM(B.ISA_SELL_PRICE * B.QTY_REQUESTED) SUBTOTAL " & vbCrLf &
+                " FROM  SYSADM8.PS_ISA_ORD_INTF_HD  A, SYSADM8.PS_ISA_ORD_INTF_LN  B, PS_REQ_LINE R " & vbCrLf &
+                " WHERE  A.BUSINESS_UNIT_OM = '" & sBU & "' " & vbCrLf &
+                " AND  A.ORDER_NO = '" & sOrdNo & "' " & vbCrLf &
+                " AND  A.ORDER_NO = B.ORDER_NO " & vbCrLf &
+                " AND  B.QTY_REQUESTED > 0 AND NOT B.ISA_LINE_STATUS = '" & m_cDeletedLine & "' " & vbCrLf &
+                " AND  A.ORDER_NO = R.REQ_ID " & vbCrLf &
+                " AND  B.ISA_INTFC_LN = R.LINE_NBR " & vbCrLf &
                 " GROUP BY R.CURRENCY_CD"
 
             ds = ORDBData.GetAdapter(strSQLstring)
@@ -5108,22 +5119,22 @@ Public Class OrderApprovals
             Dim bSuccess As Boolean = False
             Dim strSQLstring As String
 
-            strSQLstring = "SELECT R.CURRENCY_CD, SUM(B.ISA_SELL_PRICE * B.QTY_REQUESTED) SUBTOTAL " & vbCrLf & _
-                " FROM SYSADM8.PS_ISA_ORD_INTF_HD  A, SYSADM8.PS_ISA_ORD_INTF_LN  B, PS_REQ_LINE R " & vbCrLf & _
-                " WHERE A.BUSINESS_UNIT_OM = '" & sBU & "' " & vbCrLf & _
-                " AND " & vbCrLf & _
-                " ( " & vbCrLf & _
-                "   ( B.OPRID_ENTERED_BY = '" & sEnteredByID & "' AND A.ORDER_STATUS in ('O','P',' ') " & vbCrLf & _
-                "     AND TRUNC(B.ADD_DTTM) = TRUNC(SYSDATE) " & vbCrLf & _
-                "   ) " & vbCrLf & _
-                "   OR " & vbCrLf & _
-                "   ( A.ORDER_STATUS IN ('W','B',' ') AND A.ORDER_NO = '" & sOrdNo & "' " & vbCrLf & _
-                "   ) " & vbCrLf & _
-                " ) " & vbCrLf & _
-                " AND  A.ORDER_NO = B.ORDER_NO " & vbCrLf & _
-                " AND  B.QTY_REQUESTED > 0 AND NOT B.ISA_LINE_STATUS = '" & m_cDeletedLine & "' " & vbCrLf & _
-                " AND  A.ORDER_NO = R.REQ_ID " & vbCrLf & _
-                " AND  B.ISA_INTFC_LN = R.LINE_NBR " & vbCrLf & _
+            strSQLstring = "SELECT R.CURRENCY_CD, SUM(B.ISA_SELL_PRICE * B.QTY_REQUESTED) SUBTOTAL " & vbCrLf &
+                " FROM SYSADM8.PS_ISA_ORD_INTF_HD  A, SYSADM8.PS_ISA_ORD_INTF_LN  B, PS_REQ_LINE R " & vbCrLf &
+                " WHERE A.BUSINESS_UNIT_OM = '" & sBU & "' " & vbCrLf &
+                " AND " & vbCrLf &
+                " ( " & vbCrLf &
+                "   ( B.OPRID_ENTERED_BY = '" & sEnteredByID & "' AND A.ORDER_STATUS in ('O','P',' ') " & vbCrLf &
+                "     AND TRUNC(B.ADD_DTTM) = TRUNC(SYSDATE) " & vbCrLf &
+                "   ) " & vbCrLf &
+                "   OR " & vbCrLf &
+                "   ( A.ORDER_STATUS IN ('W','B',' ') AND A.ORDER_NO = '" & sOrdNo & "' " & vbCrLf &
+                "   ) " & vbCrLf &
+                " ) " & vbCrLf &
+                " AND  A.ORDER_NO = B.ORDER_NO " & vbCrLf &
+                " AND  B.QTY_REQUESTED > 0 AND NOT B.ISA_LINE_STATUS = '" & m_cDeletedLine & "' " & vbCrLf &
+                " AND  A.ORDER_NO = R.REQ_ID " & vbCrLf &
+                " AND  B.ISA_INTFC_LN = R.LINE_NBR " & vbCrLf &
                 " GROUP BY R.CURRENCY_CD"
 
             ds = ORDBData.GetAdapter(strSQLstring)
@@ -5135,22 +5146,22 @@ Public Class OrderApprovals
             Dim bSuccess As Boolean = False
             Dim strSQLstring As String
 
-            strSQLstring = "SELECT R.CURRENCY_CD, SUM(B.ISA_SELL_PRICE * B.QTY_REQUESTED) SUBTOTAL " & vbCrLf & _
-                " FROM SYSADM8.PS_ISA_ORD_INTF_HD  A, SYSADM8.PS_ISA_ORD_INTF_LN  B, PS_REQ_LINE R " & vbCrLf & _
-                " WHERE A.BUSINESS_UNIT_OM = '" & sBU & "' " & vbCrLf & _
-                " AND " & vbCrLf & _
-                " ( " & vbCrLf & _
-                "   ( B.OPRID_ENTERED_BY = '" & sEnteredByID & "' AND A.ORDER_STATUS in ('O','P',' ') " & vbCrLf & _
-                "     AND TO_CHAR(A.ADD_DTTM, 'MM') = TO_CHAR(SYSDATE, 'MM') " & vbCrLf & _
-                "   ) " & vbCrLf & _
-                "   OR " & vbCrLf & _
-                "   ( A.ORDER_STATUS IN ('W','B',' ') AND A.ORDER_NO = '" & sOrdNo & "' " & vbCrLf & _
-                "   ) " & vbCrLf & _
-                " ) " & vbCrLf & _
-                " AND  A.ORDER_NO = B.ORDER_NO " & vbCrLf & _
-                " AND  B.QTY_REQUESTED > 0 AND NOT B.ISA_LINE_STATUS = '" & m_cDeletedLine & "' " & vbCrLf & _
-                " AND  A.ORDER_NO = R.REQ_ID " & vbCrLf & _
-                " AND  B.ISA_INTFC_LN = R.LINE_NBR " & vbCrLf & _
+            strSQLstring = "SELECT R.CURRENCY_CD, SUM(B.ISA_SELL_PRICE * B.QTY_REQUESTED) SUBTOTAL " & vbCrLf &
+                " FROM SYSADM8.PS_ISA_ORD_INTF_HD  A, SYSADM8.PS_ISA_ORD_INTF_LN  B, PS_REQ_LINE R " & vbCrLf &
+                " WHERE A.BUSINESS_UNIT_OM = '" & sBU & "' " & vbCrLf &
+                " AND " & vbCrLf &
+                " ( " & vbCrLf &
+                "   ( B.OPRID_ENTERED_BY = '" & sEnteredByID & "' AND A.ORDER_STATUS in ('O','P',' ') " & vbCrLf &
+                "     AND TO_CHAR(A.ADD_DTTM, 'MM') = TO_CHAR(SYSDATE, 'MM') " & vbCrLf &
+                "   ) " & vbCrLf &
+                "   OR " & vbCrLf &
+                "   ( A.ORDER_STATUS IN ('W','B',' ') AND A.ORDER_NO = '" & sOrdNo & "' " & vbCrLf &
+                "   ) " & vbCrLf &
+                " ) " & vbCrLf &
+                " AND  A.ORDER_NO = B.ORDER_NO " & vbCrLf &
+                " AND  B.QTY_REQUESTED > 0 AND NOT B.ISA_LINE_STATUS = '" & m_cDeletedLine & "' " & vbCrLf &
+                " AND  A.ORDER_NO = R.REQ_ID " & vbCrLf &
+                " AND  B.ISA_INTFC_LN = R.LINE_NBR " & vbCrLf &
                 " GROUP BY R.CURRENCY_CD"
 
             ds = ORDBData.GetAdapter(strSQLstring)
@@ -5158,7 +5169,7 @@ Public Class OrderApprovals
             Return bSuccess
         End Function
 
-        Private Shared Function RetrieveOrderLimAndNextApprv(BU As String, sEnteredBy As String, sApproverID As String, ByRef dblApprLimit As Double, _
+        Private Shared Function RetrieveOrderLimAndNextApprv(BU As String, sEnteredBy As String, sApproverID As String, ByRef dblApprLimit As Double,
                                                     ByRef sNextApproverID As String, ByRef eErrorInApprovals As ApprovalResults.ApprovalError) As Boolean
             Dim bSuccess As Boolean = False
             Dim strSQLstring As String = ""
@@ -5166,9 +5177,9 @@ Public Class OrderApprovals
             Try
                 Dim sChainToCurrentApprover As String = GetCurrentApprovalChain(BU, sEnteredBy, sApproverID)
 
-                strSQLstring = "SELECT A.ISA_IOL_APR_LIMIT, A.ISA_IOL_APR_ALT " & vbCrLf & _
-                " FROM SDIX_USERS_APPRV A " & vbCrLf & _
-                " WHERE ISA_EMPLOYEE_ID = '" & sApproverID & "' " & vbCrLf & _
+                strSQLstring = "SELECT A.ISA_IOL_APR_LIMIT, A.ISA_IOL_APR_ALT " & vbCrLf &
+                " FROM SDIX_USERS_APPRV A " & vbCrLf &
+                " WHERE ISA_EMPLOYEE_ID = '" & sApproverID & "' " & vbCrLf &
                 " AND BUSINESS_UNIT = '" & BU & "'"
 
                 Dim ds As DataSet
@@ -5212,9 +5223,9 @@ Public Class OrderApprovals
 
             If sEnteredBy <> sCurrentApprover Then
                 While Not bFinalApprover
-                    strSQLstring = "SELECT A.isa_employee_ID AS Approver, A.isa_iol_apr_limit AS Limit, A.isa_iol_apr_alt AS NextApprover " & vbCrLf & _
-                        " , A.business_unit AS BU " & vbCrLf & _
-                        " FROM SDIX_USERS_APPRV A WHERE A.isa_employee_id = '" & sNextApprover & "' " & vbCrLf & _
+                    strSQLstring = "SELECT A.isa_employee_ID AS Approver, A.isa_iol_apr_limit AS Limit, A.isa_iol_apr_alt AS NextApprover " & vbCrLf &
+                        " , A.business_unit AS BU " & vbCrLf &
+                        " FROM SDIX_USERS_APPRV A WHERE A.isa_employee_id = '" & sNextApprover & "' " & vbCrLf &
                         " AND A.business_unit = '" & sBU & "'"
 
                     Dim ds As DataSet = ORDBData.GetAdapter(strSQLstring)
@@ -5247,7 +5258,7 @@ Public Class OrderApprovals
 
     Private Class SingleCurrencyOrder
 
-        Public Shared Function CustEmp(ByRef trnsactSession As OleDbTransaction, ByRef connection As OleDbConnection, _
+        Public Shared Function CustEmp(ByRef trnsactSession As OleDbTransaction, ByRef connection As OleDbConnection,
            oApprovalDetails As ApprovalDetails, ByRef oApprovalResults As ApprovalResults) As Boolean
 
             Dim bSuccess As Boolean = True ' Processing is successful by default
@@ -5304,8 +5315,8 @@ Public Class OrderApprovals
             Return bSuccess
         End Function
 
-        Private Shared Function RetrieveNetUnitPrice(bCalcNSTKOnly As Boolean, strOrdApprType As String, _
-                                                    sBU As String, sEnteredByID As String, sReqID As String, _
+        Private Shared Function RetrieveNetUnitPrice(bCalcNSTKOnly As Boolean, strOrdApprType As String,
+                                                    sBU As String, sEnteredByID As String, sReqID As String,
                                                     ByRef dblNetUnitPrice As Double, Optional strChgCd As String = "|~|") As Boolean
             Dim bSuccess As Boolean = False
 
@@ -5336,7 +5347,7 @@ Public Class OrderApprovals
             Return bSuccess
         End Function
 
-        Private Shared Function RetrieveOrderLimAndNextApprv(BU As String, sEnteredBy As String, sApproverID As String, ByRef dblApprLimit As Double, _
+        Private Shared Function RetrieveOrderLimAndNextApprv(BU As String, sEnteredBy As String, sApproverID As String, ByRef dblApprLimit As Double,
                                                     ByRef sNextApproverID As String, ByRef eErrorInApprovals As ApprovalResults.ApprovalError) As Boolean
             Dim bSuccess As Boolean = False
             Dim strSQLstring As String = ""
@@ -5344,9 +5355,9 @@ Public Class OrderApprovals
             Try
                 Dim sChainToCurrentApprover As String = GetCurrentApprovalChain(BU, sEnteredBy, sApproverID)
 
-                strSQLstring = "SELECT A.ISA_IOL_APR_LIMIT, A.ISA_IOL_APR_ALT " & vbCrLf & _
-                " FROM SDIX_USERS_APPRV A " & vbCrLf & _
-                " WHERE ISA_EMPLOYEE_ID = '" & sApproverID & "' " & vbCrLf & _
+                strSQLstring = "SELECT A.ISA_IOL_APR_LIMIT, A.ISA_IOL_APR_ALT " & vbCrLf &
+                " FROM SDIX_USERS_APPRV A " & vbCrLf &
+                " WHERE ISA_EMPLOYEE_ID = '" & sApproverID & "' " & vbCrLf &
                 " AND BUSINESS_UNIT = '" & BU & "'"
 
                 Dim ds As DataSet
@@ -5382,7 +5393,7 @@ Public Class OrderApprovals
             Return bSuccess
         End Function
 
-        Private Shared Function UpdateHeader_ApproveOrder(trnsactSession As OleDbTransaction, connection As OleDbConnection, _
+        Private Shared Function UpdateHeader_ApproveOrder(trnsactSession As OleDbTransaction, connection As OleDbConnection,
           ByVal oApprovalDetails As ApprovalDetails, ByRef sNewStatus As String) As Boolean
 
             Const cNewHeaderStatus As String = "QTW"
@@ -5396,11 +5407,11 @@ Public Class OrderApprovals
             Try
                 sNewStatus = cNewHeaderStatus
 
-                strSQLstring = "UPDATE SYSADM8.PS_ISA_ORD_INTF_HD  " & vbCrLf & _
-                   " SET " & vbCrLf & _
-                   " ORDER_STATUS = '" & sNewStatus & "' " & vbCrLf & _
-                   ", LASTUPDDTTM = TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
-                   " WHERE BUSINESS_UNIT_OM = '" & oApprovalDetails.BU & "' " & vbCrLf & _
+                strSQLstring = "UPDATE SYSADM8.PS_ISA_ORD_INTF_HD  " & vbCrLf &
+                   " SET " & vbCrLf &
+                   " ORDER_STATUS = '" & sNewStatus & "' " & vbCrLf &
+                   ", LASTUPDDTTM = TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf &
+                   " WHERE BUSINESS_UNIT_OM = '" & oApprovalDetails.BU & "' " & vbCrLf &
                    " AND ORDER_NO = '" & oApprovalDetails.ReqID & "'"
 
                 If ExecuteSQL(trnsactSession, connection, strSQLstring, oApprovalDetails, rowsaffected, cCaller) Then
@@ -5409,8 +5420,8 @@ Public Class OrderApprovals
                         HandleApprovalError(trnsactSession, connection, cCaller, rowsaffected, strSQLstring, oApprovalDetails)
                     Else
                         Dim sErrorDetails As String = ""
-                        If clsSDIAudit.AddRecord(trnsactSession, connection, m_cClassFileName, _
-                                "Approve budget", "SYSADM8.PS_ISA_ORD_INTF_HD", oApprovalDetails.ApproverID, oApprovalDetails.BU, _
+                        If clsSDIAudit.AddRecord(trnsactSession, connection, m_cClassFileName,
+                                "Approve budget", "SYSADM8.PS_ISA_ORD_INTF_HD", oApprovalDetails.ApproverID, oApprovalDetails.BU,
                                 oApprovalDetails.ReqID, sColumnChg:="ORDER_STATUS", sNewValue:=sNewStatus, sErrorDetails:=sErrorDetails) Then
 
                             bSuccess = True
@@ -5427,11 +5438,11 @@ Public Class OrderApprovals
                 '", ISA_LINE_STATUS = '" & cNewLineStatus & "' " & vbCrLf & _
                 '" WHERE BUSINESS_UNIT_OM = '" & oApprovalDetails.BU & "' " & vbCrLf & _
                 '" AND ORDER_NO = '" & oApprovalDetails.ReqID & "'"
-                strSQLstring = "UPDATE SYSADM8.PS_ISA_ORD_INTF_LN  " & vbCrLf & _
-                " SET " & vbCrLf & _
-                " OPRID_APPROVED_BY = '" & oApprovalDetails.ApproverID & "' " & vbCrLf & _
-                ", APPROVAL_DTTM = TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf & _
-                " WHERE BUSINESS_UNIT_OM = '" & oApprovalDetails.BU & "' " & vbCrLf & _
+                strSQLstring = "UPDATE SYSADM8.PS_ISA_ORD_INTF_LN  " & vbCrLf &
+                " SET " & vbCrLf &
+                " OPRID_APPROVED_BY = '" & oApprovalDetails.ApproverID & "' " & vbCrLf &
+                ", APPROVAL_DTTM = TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM') " & vbCrLf &
+                " WHERE BUSINESS_UNIT_OM = '" & oApprovalDetails.BU & "' " & vbCrLf &
                 " AND ORDER_NO = '" & oApprovalDetails.ReqID & "'"
 
                 If ExecuteSQL(trnsactSession, connection, strSQLstring, oApprovalDetails, rowsaffected, cCaller) Then
@@ -5440,8 +5451,8 @@ Public Class OrderApprovals
                         HandleApprovalError(trnsactSession, connection, cCaller, rowsaffected, strSQLstring, oApprovalDetails)
                     Else
                         Dim sErrorDetails As String = ""
-                        If clsSDIAudit.AddRecord(trnsactSession, connection, m_cClassFileName, _
-                                "Approve budget", "SYSADM8.PS_ISA_ORD_INTF_LN", oApprovalDetails.ApproverID, oApprovalDetails.BU, _
+                        If clsSDIAudit.AddRecord(trnsactSession, connection, m_cClassFileName,
+                                "Approve budget", "SYSADM8.PS_ISA_ORD_INTF_LN", oApprovalDetails.ApproverID, oApprovalDetails.BU,
                                 oApprovalDetails.ReqID, sColumnChg:="ISA_LINE_STATUS", sNewValue:=cNewLineStatus, sErrorDetails:=sErrorDetails) Then
 
                             bSuccess = True
@@ -5458,28 +5469,28 @@ Public Class OrderApprovals
             Return bSuccess
         End Function
 
-        Private Shared Function RetrieveNetUnitPrice_NSTK_O(sBU As String, sOrdNo As String, sChgCd As String, _
+        Private Shared Function RetrieveNetUnitPrice_NSTK_O(sBU As String, sOrdNo As String, sChgCd As String,
                                                   ByRef dblNetUnitPrice As Double) As Boolean
             Dim bSuccess As Boolean = False
             Dim strSQLstring As String
 
-            strSQLstring = "Select SUM(B.ISA_SELL_PRICE * B.QTY_RECEIVED) AS dblNetUnitPrice " & vbCrLf & _
-                " FROM SYSADM8.PS_ISA_ORD_INTF_HD A, SYSADM8.PS_ISA_ORD_INTF_LN B " & vbCrLf & _
-                " WHERE A.BUSINESS_UNIT_OM = '" & sBU & "'" & vbCrLf & _
-                " AND A.ORDER_NO = '" & sOrdNo & "'" & vbCrLf & _
-                " AND A.ORDER_NO = B.ORDER_NO " & vbCrLf & _
+            strSQLstring = "Select SUM(B.ISA_SELL_PRICE * B.QTY_RECEIVED) AS dblNetUnitPrice " & vbCrLf &
+                " FROM SYSADM8.PS_ISA_ORD_INTF_HD A, SYSADM8.PS_ISA_ORD_INTF_LN B " & vbCrLf &
+                " WHERE A.BUSINESS_UNIT_OM = '" & sBU & "'" & vbCrLf &
+                " AND A.ORDER_NO = '" & sOrdNo & "'" & vbCrLf &
+                " AND A.ORDER_NO = B.ORDER_NO " & vbCrLf &
                 " AND B.QTY_RECEIVED > 0 AND NOT B.ISA_LINE_STATUS = '" & m_cDeletedLine & "' " & vbCrLf
             If sChgCd <> "|~|" Then
                 strSQLstring &= " AND B.ISA_CUST_CHARGE_CD = '" & sChgCd & "'"
             End If
-            strSQLstring &= " AND NOT EXISTS (SELECT 'X' " & vbCrLf & _
-                "   FROM PS_INV_ITEMS C " & vbCrLf & _
-                "   WHERE C.EFFDT = " & vbCrLf & _
-                "       (SELECT MAX(C_ED.EFFDT) FROM PS_INV_ITEMS C_ED " & vbCrLf & _
-                "       WHERE C.SETID = C_ED.SETID " & vbCrLf & _
-                "       AND C.INV_ITEM_ID = C_ED.INV_ITEM_ID " & vbCrLf & _
-                "       AND C_ED.EFFDT <= SYSDATE) " & vbCrLf & _
-                " AND C.INV_ITEM_ID = B.INV_ITEM_ID " & vbCrLf & _
+            strSQLstring &= " AND NOT EXISTS (SELECT 'X' " & vbCrLf &
+                "   FROM PS_INV_ITEMS C " & vbCrLf &
+                "   WHERE C.EFFDT = " & vbCrLf &
+                "       (SELECT MAX(C_ED.EFFDT) FROM PS_INV_ITEMS C_ED " & vbCrLf &
+                "       WHERE C.SETID = C_ED.SETID " & vbCrLf &
+                "       AND C.INV_ITEM_ID = C_ED.INV_ITEM_ID " & vbCrLf &
+                "       AND C_ED.EFFDT <= SYSDATE) " & vbCrLf &
+                " AND C.INV_ITEM_ID = B.INV_ITEM_ID " & vbCrLf &
                 " AND C.INV_STOCK_TYPE = 'STK') "
 
             Dim sNetUnitPriceVar As String
@@ -5493,14 +5504,14 @@ Public Class OrderApprovals
             Return bSuccess
         End Function
 
-        Private Shared Function RetrieveNetUnitPrice_NSTK_D(sBU As String, sOrdNo As String, sEnteredByID As String, sChgCd As String, _
+        Private Shared Function RetrieveNetUnitPrice_NSTK_D(sBU As String, sOrdNo As String, sEnteredByID As String, sChgCd As String,
                                                      ByRef dblNetUnitPrice As Double) As Boolean
             Dim bSuccess As Boolean = False
             Dim strSQLstring As String
 
-            strSQLstring = "Select SUM(B.ISA_SELL_PRICE * B.QTY_RECEIVED) " & vbCrLf & _
-                " FROM SYSADM8.PS_ISA_ORD_INTF_HD A, SYSADM8.PS_ISA_ORD_INTF_LN B " & vbCrLf & _
-                " WHERE A.BUSINESS_UNIT_OM = '" & sBU & "'" & vbCrLf & _
+            strSQLstring = "Select SUM(B.ISA_SELL_PRICE * B.QTY_RECEIVED) " & vbCrLf &
+                " FROM SYSADM8.PS_ISA_ORD_INTF_HD A, SYSADM8.PS_ISA_ORD_INTF_LN B " & vbCrLf &
+                " WHERE A.BUSINESS_UNIT_OM = '" & sBU & "'" & vbCrLf &
                 " AND ((A.ORDER_STATUS in ('O','P',' ') "
             If sChgCd = "|~|" Then
                 strSQLstring &= " AND B.OPRID_ENTERED_BY = '" & sEnteredByID & "'"
@@ -5511,20 +5522,20 @@ Public Class OrderApprovals
             Else
                 strSQLstring &= "   OR (A.ORDER_STATUS IN ('W','B') "
             End If
-            strSQLstring &= "   AND A.ORDER_NO = '" & sOrdNo & "')) " & vbCrLf & _
+            strSQLstring &= "   AND A.ORDER_NO = '" & sOrdNo & "')) " & vbCrLf &
                 " AND A.ORDER_NO = B.ORDER_NO "
             If sChgCd <> "|~|" Then
                 strSQLstring &= " AND B.ISA_CUST_CHARGE_CD = '" & sChgCd & "'"
             End If
-            strSQLstring &= " AND B.QTY_RECEIVED > 0 AND NOT B.ISA_LINE_STATUS = '" & m_cDeletedLine & "' " & vbCrLf & _
-                " AND NOT EXISTS (SELECT 'X' " & vbCrLf & _
-                "   FROM PS_INV_ITEMS C " & vbCrLf & _
-                "   WHERE C.EFFDT = " & vbCrLf & _
-                "       (SELECT MAX(C_ED.EFFDT) FROM PS_INV_ITEMS C_ED " & vbCrLf & _
-                "       WHERE C.SETID = C_ED.SETID " & vbCrLf & _
-                "       AND C.INV_ITEM_ID = C_ED.INV_ITEM_ID " & vbCrLf & _
-                "       AND C_ED.EFFDT <= SYSDATE) " & vbCrLf & _
-                "   AND C.INV_ITEM_ID = B.INV_ITEM_ID " & vbCrLf & _
+            strSQLstring &= " AND B.QTY_RECEIVED > 0 AND NOT B.ISA_LINE_STATUS = '" & m_cDeletedLine & "' " & vbCrLf &
+                " AND NOT EXISTS (SELECT 'X' " & vbCrLf &
+                "   FROM PS_INV_ITEMS C " & vbCrLf &
+                "   WHERE C.EFFDT = " & vbCrLf &
+                "       (SELECT MAX(C_ED.EFFDT) FROM PS_INV_ITEMS C_ED " & vbCrLf &
+                "       WHERE C.SETID = C_ED.SETID " & vbCrLf &
+                "       AND C.INV_ITEM_ID = C_ED.INV_ITEM_ID " & vbCrLf &
+                "       AND C_ED.EFFDT <= SYSDATE) " & vbCrLf &
+                "   AND C.INV_ITEM_ID = B.INV_ITEM_ID " & vbCrLf &
                 "   AND C.INV_STOCK_TYPE = 'STK')"
 
             Dim sNetUnitPriceVar As String
@@ -5538,45 +5549,45 @@ Public Class OrderApprovals
             Return bSuccess
         End Function
 
-        Private Shared Function RetrieveNetUnitPrice_NSTK_M(sBU As String, sOrdNo As String, sEnteredByID As String, sChgCd As String, _
+        Private Shared Function RetrieveNetUnitPrice_NSTK_M(sBU As String, sOrdNo As String, sEnteredByID As String, sChgCd As String,
                                                      ByRef dblNetUnitPrice As Double) As Boolean
             Dim bSuccess As Boolean = False
             Dim strSQLstring As String
 
-            strSQLstring = "Select SUM(B.ISA_SELL_PRICE * B.QTY_RECEIVED) " & vbCrLf & _
-                " FROM SYSADM8.PS_ISA_ORD_INTF_HD A, SYSADM8.PS_ISA_ORD_INTF_LN B " & vbCrLf & _
-                " WHERE A.BUSINESS_UNIT_OM = '" & sBU & "'" & vbCrLf & _
-                " AND " & vbCrLf & _
+            strSQLstring = "Select SUM(B.ISA_SELL_PRICE * B.QTY_RECEIVED) " & vbCrLf &
+                " FROM SYSADM8.PS_ISA_ORD_INTF_HD A, SYSADM8.PS_ISA_ORD_INTF_LN B " & vbCrLf &
+                " WHERE A.BUSINESS_UNIT_OM = '" & sBU & "'" & vbCrLf &
+                " AND " & vbCrLf &
                 " ("
 
             If sChgCd = "|~|" Then
-                strSQLstring &= "   (B.OPRID_ENTERED_BY = '" & sEnteredByID & "' AND A.ORDER_STATUS in ('O','P',' '))" & vbCrLf & _
-                "   OR " & vbCrLf & _
+                strSQLstring &= "   (B.OPRID_ENTERED_BY = '" & sEnteredByID & "' AND A.ORDER_STATUS in ('O','P',' '))" & vbCrLf &
+                "   OR " & vbCrLf &
                 "   (A.ORDER_STATUS IN ('W','B',' ') AND A.ORDER_NO = '" & sOrdNo & "')"
             Else
-                strSQLstring &= "   A.ORDER_STATUS in ('O','P',' ')" & vbCrLf & _
-                "   OR " & vbCrLf & _
+                strSQLstring &= "   A.ORDER_STATUS in ('O','P',' ')" & vbCrLf &
+                "   OR " & vbCrLf &
                 "   (A.ORDER_STATUS IN ('W','B') AND A.ORDER_NO = '" & sOrdNo & "')"
             End If
 
-            strSQLstring &= vbCrLf & _
-                " ) " & vbCrLf & _
-                " AND TO_CHAR(B.ADD_DTTM, 'MM') = TO_CHAR(SYSDATE, 'MM') " & vbCrLf & _
+            strSQLstring &= vbCrLf &
+                " ) " & vbCrLf &
+                " AND TO_CHAR(B.ADD_DTTM, 'MM') = TO_CHAR(SYSDATE, 'MM') " & vbCrLf &
                 " AND A.ORDER_NO = B.ORDER_NO "
 
             If sChgCd <> "|~|" Then
                 strSQLstring &= " AND B.ISA_CUST_CHARGE_CD = '" & sChgCd & "'"
             End If
 
-            strSQLstring &= " AND B.QTY_RECEIVED > 0 AND NOT B.ISA_LINE_STATUS = '" & m_cDeletedLine & "' " & vbCrLf & _
-                " AND NOT EXISTS (SELECT 'X' " & vbCrLf & _
-                "   FROM PS_INV_ITEMS C " & vbCrLf & _
-                "   WHERE C.EFFDT = " & vbCrLf & _
-                "       (SELECT MAX(C_ED.EFFDT) FROM PS_INV_ITEMS C_ED " & vbCrLf & _
-                "       WHERE C.SETID = C_ED.SETID " & vbCrLf & _
-                "       AND C.INV_ITEM_ID = C_ED.INV_ITEM_ID " & vbCrLf & _
-                "       AND C_ED.EFFDT <= SYSDATE) " & vbCrLf & _
-                " AND C.INV_ITEM_ID = B.INV_ITEM_ID " & vbCrLf & _
+            strSQLstring &= " AND B.QTY_RECEIVED > 0 AND NOT B.ISA_LINE_STATUS = '" & m_cDeletedLine & "' " & vbCrLf &
+                " AND NOT EXISTS (SELECT 'X' " & vbCrLf &
+                "   FROM PS_INV_ITEMS C " & vbCrLf &
+                "   WHERE C.EFFDT = " & vbCrLf &
+                "       (SELECT MAX(C_ED.EFFDT) FROM PS_INV_ITEMS C_ED " & vbCrLf &
+                "       WHERE C.SETID = C_ED.SETID " & vbCrLf &
+                "       AND C.INV_ITEM_ID = C_ED.INV_ITEM_ID " & vbCrLf &
+                "       AND C_ED.EFFDT <= SYSDATE) " & vbCrLf &
+                " AND C.INV_ITEM_ID = B.INV_ITEM_ID " & vbCrLf &
                 " AND C.INV_STOCK_TYPE = 'STK')"
 
             Dim sNetUnitPriceVar As String
@@ -5590,16 +5601,16 @@ Public Class OrderApprovals
             Return bSuccess
         End Function
 
-        Private Shared Function RetrieveNetUnitPrice_STK_O(sBU As String, sOrdNo As String, sChgCd As String, _
+        Private Shared Function RetrieveNetUnitPrice_STK_O(sBU As String, sOrdNo As String, sChgCd As String,
                                                            ByRef dblNetUnitPrice As Double) As Boolean
             Dim bSuccess As Boolean = False
             Dim strSQLstring As String
 
-            strSQLstring = "Select SUM(B.ISA_SELL_PRICE * B.QTY_RECEIVED) " & vbCrLf & _
-                " FROM SYSADM8.PS_ISA_ORD_INTF_HD A, SYSADM8.PS_ISA_ORD_INTF_LN B " & vbCrLf & _
-                " WHERE A.BUSINESS_UNIT_OM = '" & sBU & "'" & vbCrLf & _
-                " AND A.ORDER_NO = '" & sOrdNo & "'" & vbCrLf & _
-                " AND A.ORDER_NO = B.ORDER_NO " & vbCrLf & _
+            strSQLstring = "Select SUM(B.ISA_SELL_PRICE * B.QTY_RECEIVED) " & vbCrLf &
+                " FROM SYSADM8.PS_ISA_ORD_INTF_HD A, SYSADM8.PS_ISA_ORD_INTF_LN B " & vbCrLf &
+                " WHERE A.BUSINESS_UNIT_OM = '" & sBU & "'" & vbCrLf &
+                " AND A.ORDER_NO = '" & sOrdNo & "'" & vbCrLf &
+                " AND A.ORDER_NO = B.ORDER_NO " & vbCrLf &
                 " AND B.QTY_RECEIVED > 0 AND NOT B.ISA_LINE_STATUS = '" & m_cDeletedLine & "' " & vbCrLf
             If sChgCd <> "|~|" Then
                 strSQLstring &= " AND B.ISA_CUST_CHARGE_CD = '" & sChgCd & "'"
@@ -5616,28 +5627,28 @@ Public Class OrderApprovals
             Return bSuccess
         End Function
 
-        Private Shared Function RetrieveNetUnitPrice_STK_D(sBU As String, sOrdNo As String, sEnteredByID As String, sChgCd As String, _
+        Private Shared Function RetrieveNetUnitPrice_STK_D(sBU As String, sOrdNo As String, sEnteredByID As String, sChgCd As String,
                                                            ByRef dblNetUnitPrice As Double) As Boolean
             Dim bSuccess As Boolean = False
             Dim strSQLstring As String
 
-            strSQLstring = "Select SUM(B.ISA_SELL_PRICE * B.QTY_RECEIVED) " & vbCrLf & _
-                " FROM SYSADM8.PS_ISA_ORD_INTF_HD A, SYSADM8.PS_ISA_ORD_INTF_LN B " & vbCrLf & _
-                " WHERE A.BUSINESS_UNIT_OM = '" & sBU & "'" & vbCrLf & _
-                " AND " & vbCrLf & _
+            strSQLstring = "Select SUM(B.ISA_SELL_PRICE * B.QTY_RECEIVED) " & vbCrLf &
+                " FROM SYSADM8.PS_ISA_ORD_INTF_HD A, SYSADM8.PS_ISA_ORD_INTF_LN B " & vbCrLf &
+                " WHERE A.BUSINESS_UNIT_OM = '" & sBU & "'" & vbCrLf &
+                " AND " & vbCrLf &
                 "("
             If sChgCd = "|~|" Then
-                strSQLstring &= "  (B.OPRID_ENTERED_BY = '" & sEnteredByID & "' AND A.ORDER_STATUS in ('O','P',' ') AND TO_CHAR(A.ADD_DTTM) = TO_CHAR(SYSDATE)) " & vbCrLf & _
-                "  OR " & vbCrLf & _
+                strSQLstring &= "  (B.OPRID_ENTERED_BY = '" & sEnteredByID & "' AND A.ORDER_STATUS in ('O','P',' ') AND TO_CHAR(A.ADD_DTTM) = TO_CHAR(SYSDATE)) " & vbCrLf &
+                "  OR " & vbCrLf &
                 "  (A.ORDER_STATUS IN ('W','B',' ') AND A.ORDER_NO = '" & sOrdNo & "')"
             Else
-                strSQLstring &= "  (A.ORDER_STATUS in ('O','P',' ') AND TO_CHAR(A.ADD_DTTM) = TO_CHAR(SYSDATE)) " & vbCrLf & _
-                "  OR " & vbCrLf & _
+                strSQLstring &= "  (A.ORDER_STATUS in ('O','P',' ') AND TO_CHAR(A.ADD_DTTM) = TO_CHAR(SYSDATE)) " & vbCrLf &
+                "  OR " & vbCrLf &
                 "  (A.ORDER_STATUS IN ('W','B') AND A.ORDER_NO = '" & sOrdNo & "')"
 
             End If
-            strSQLstring &= ") " & vbCrLf & _
-                " AND A.ORDER_NO = B.ORDER_NO " & vbCrLf & _
+            strSQLstring &= ") " & vbCrLf &
+                " AND A.ORDER_NO = B.ORDER_NO " & vbCrLf &
                 " AND B.QTY_RECEIVED > 0 AND NOT B.ISA_LINE_STATUS = '" & m_cDeletedLine & "' " & vbCrLf
             If sChgCd <> "|~|" Then
                 strSQLstring &= " AND B.ISA_CUST_CHARGE_CD = '" & sChgCd & "'"
@@ -5654,28 +5665,28 @@ Public Class OrderApprovals
             Return bSuccess
         End Function
 
-        Private Shared Function RetrieveNetUnitPrice_STK_M(sBU As String, sOrdNo As String, sEnteredByID As String, sChgCd As String, _
+        Private Shared Function RetrieveNetUnitPrice_STK_M(sBU As String, sOrdNo As String, sEnteredByID As String, sChgCd As String,
                                                            ByRef dblNetUnitPrice As Double) As Boolean
             Dim bSuccess As Boolean = False
             Dim strSQLstring As String
 
-            strSQLstring = "Select SUM(B.ISA_SELL_PRICE * B.QTY_RECEIVED) " & vbCrLf & _
-                " FROM SYSADM8.PS_ISA_ORD_INTF_HD A, SYSADM8.PS_ISA_ORD_INTF_LN B " & vbCrLf & _
-                " WHERE A.BUSINESS_UNIT_OM = '" & sBU & "'" & vbCrLf & _
-                " AND " & vbCrLf & _
+            strSQLstring = "Select SUM(B.ISA_SELL_PRICE * B.QTY_RECEIVED) " & vbCrLf &
+                " FROM SYSADM8.PS_ISA_ORD_INTF_HD A, SYSADM8.PS_ISA_ORD_INTF_LN B " & vbCrLf &
+                " WHERE A.BUSINESS_UNIT_OM = '" & sBU & "'" & vbCrLf &
+                " AND " & vbCrLf &
                 " ("
             If sChgCd = "|~|" Then
-                strSQLstring &= "   (B.OPRID_ENTERED_BY = '" & sEnteredByID & "' AND A.ORDER_STATUS in ('O','P',' ')) " & vbCrLf & _
-                "   OR " & vbCrLf & _
+                strSQLstring &= "   (B.OPRID_ENTERED_BY = '" & sEnteredByID & "' AND A.ORDER_STATUS in ('O','P',' ')) " & vbCrLf &
+                "   OR " & vbCrLf &
                 "   (A.ORDER_STATUS IN ('W','B',' ') AND A.ORDER_NO = '" & sOrdNo & "') "
             Else
-                strSQLstring &= "    A.ORDER_STATUS in ('O','P',' ') " & vbCrLf & _
-                "   OR " & vbCrLf & _
+                strSQLstring &= "    A.ORDER_STATUS in ('O','P',' ') " & vbCrLf &
+                "   OR " & vbCrLf &
                 "   (A.ORDER_STATUS IN ('W','B') AND A.ORDER_NO = '" & sOrdNo & "') "
             End If
-            strSQLstring &= " ) " & vbCrLf & _
-                " AND TO_CHAR(B.ADD_DTTM, 'MM') = TO_CHAR(SYSDATE, 'MM') " & vbCrLf & _
-                " AND A.ORDER_NO = B.ORDER_NO " & vbCrLf & _
+            strSQLstring &= " ) " & vbCrLf &
+                " AND TO_CHAR(B.ADD_DTTM, 'MM') = TO_CHAR(SYSDATE, 'MM') " & vbCrLf &
+                " AND A.ORDER_NO = B.ORDER_NO " & vbCrLf &
                 " AND B.QTY_RECEIVED > 0 AND B.ISA_LINE_STATUS = '" & m_cDeletedLine & "' " & vbCrLf
             If sChgCd <> "|~|" Then
                 strSQLstring &= " AND B.ISA_CUST_CHARGE_CD = '" & sChgCd & "'"
@@ -5701,9 +5712,9 @@ Public Class OrderApprovals
 
             If sEnteredBy <> sCurrentApprover Then
                 While Not bFinalApprover
-                    strSQLstring = "SELECT A.isa_employee_ID AS Approver, A.isa_iol_apr_limit AS Limit, A.isa_iol_apr_alt AS NextApprover " & vbCrLf & _
-                        " , A.business_unit AS BU " & vbCrLf & _
-                        " FROM SDIX_USERS_APPRV A WHERE A.isa_employee_id = '" & sNextApprover & "' " & vbCrLf & _
+                    strSQLstring = "SELECT A.isa_employee_ID AS Approver, A.isa_iol_apr_limit AS Limit, A.isa_iol_apr_alt AS NextApprover " & vbCrLf &
+                        " , A.business_unit AS BU " & vbCrLf &
+                        " FROM SDIX_USERS_APPRV A WHERE A.isa_employee_id = '" & sNextApprover & "' " & vbCrLf &
                         " AND A.business_unit = '" & sBU & "'"
 
                     Dim ds As DataSet = ORDBData.GetAdapter(strSQLstring)
@@ -5773,7 +5784,7 @@ Public Class OrderApprovals
 
     End Sub
 
-    Public Shared Function ExecuteSQL(ByRef trnsactSession As OleDbTransaction, ByRef connection As OleDbConnection, strSQLstring As String, _
+    Public Shared Function ExecuteSQL(ByRef trnsactSession As OleDbTransaction, ByRef connection As OleDbConnection, strSQLstring As String,
                                     oApprovalDetails As ApprovalDetails, ByRef rowsaffected As Integer, sCaller As String) As Boolean
         Dim bSuccess As Boolean = False
         Dim exError As Exception
@@ -5829,7 +5840,7 @@ Public Class sdiMultiCurrency
 
             'Code to get currency code
             Dim strSQLString As String
-            strSQLString = String.Format("SELECT A.CURRENCY_CD_BASE AS BASE_CURRENCY FROM PS_BUS_UNIT_TBL_OM A  " & vbCrLf & _
+            strSQLString = String.Format("SELECT A.CURRENCY_CD_BASE AS BASE_CURRENCY FROM PS_BUS_UNIT_TBL_OM A  " & vbCrLf &
                             "WHERE A.BUSINESS_UNIT LIKE '%{0}' AND A.CURRENCY_CD_BASE <> ' ' GROUP BY A.CURRENCY_CD_BASE ", bu3digit)
             strCurrencyCode = Trim(ORDBData.GetScalar(strSQLString))
 
@@ -5848,22 +5859,22 @@ Public Class sdiMultiCurrency
     Public Shared Function GetCurrency(ByVal currencyCode As String) As DataSet
         Dim dsCurrencyInfo As New DataSet
         Try
-            Dim strSQLString As String = "SELECT " & vbCrLf & _
-                                    " CD.CURRENCY_CD " & vbCrLf & _
-                                    ",CD.DESCRSHORT " & vbCrLf & _
-                                    ",CD.DESCR " & vbCrLf & _
-                                    ",CD.CUR_SYMBOL " & vbCrLf & _
-                                    ",CD.COUNTRY " & vbCrLf & _
-                                    "FROM SYSADM8.PS_CURRENCY_CD_TBL CD " & vbCrLf & _
-                                    "WHERE CD.EFF_STATUS = 'A' " & vbCrLf & _
-                                    "  AND CD.CURRENCY_CD = '" & currencyCode & "' " & vbCrLf & _
-                                    "  AND CD.EFFDT = ( " & vbCrLf & _
-                                    "                  SELECT MAX(A1.EFFDT) " & vbCrLf & _
-                                    "                  FROM SYSADM8.PS_CURRENCY_CD_TBL A1 " & vbCrLf & _
-                                    "                  WHERE A1.CURRENCY_CD = CD.CURRENCY_CD " & vbCrLf & _
-                                    "                    AND A1.EFF_STATUS = CD.EFF_STATUS " & vbCrLf & _
-                                    "                    AND A1.EFFDT <= SYSDATE " & vbCrLf & _
-                                    "                 ) " & vbCrLf & _
+            Dim strSQLString As String = "SELECT " & vbCrLf &
+                                    " CD.CURRENCY_CD " & vbCrLf &
+                                    ",CD.DESCRSHORT " & vbCrLf &
+                                    ",CD.DESCR " & vbCrLf &
+                                    ",CD.CUR_SYMBOL " & vbCrLf &
+                                    ",CD.COUNTRY " & vbCrLf &
+                                    "FROM SYSADM8.PS_CURRENCY_CD_TBL CD " & vbCrLf &
+                                    "WHERE CD.EFF_STATUS = 'A' " & vbCrLf &
+                                    "  AND CD.CURRENCY_CD = '" & currencyCode & "' " & vbCrLf &
+                                    "  AND CD.EFFDT = ( " & vbCrLf &
+                                    "                  SELECT MAX(A1.EFFDT) " & vbCrLf &
+                                    "                  FROM SYSADM8.PS_CURRENCY_CD_TBL A1 " & vbCrLf &
+                                    "                  WHERE A1.CURRENCY_CD = CD.CURRENCY_CD " & vbCrLf &
+                                    "                    AND A1.EFF_STATUS = CD.EFF_STATUS " & vbCrLf &
+                                    "                    AND A1.EFFDT <= SYSDATE " & vbCrLf &
+                                    "                 ) " & vbCrLf &
                                     "ORDER BY CD.CURRENCY_CD "
 
             dsCurrencyInfo = ORDBData.GetAdapterSpc(strSQLString)
@@ -6371,8 +6382,8 @@ Public Class ApprovalDetails
             If Trim(strSiteBu1) <> "" Then
                 strSiteBU = Trim(strSiteBu1)
             Else
-                strSQLstring = "SELECT A.BUSINESS_UNIT" & vbCrLf & _
-                    " FROM PS_REQ_LOADER_DFL A" & vbCrLf & _
+                strSQLstring = "SELECT A.BUSINESS_UNIT" & vbCrLf &
+                    " FROM PS_REQ_LOADER_DFL A" & vbCrLf &
                     " WHERE SUBSTR(A.LOADER_BU,2) = '" & sBU.Substring(1, 4) & "'" & vbCrLf
                 dtrPrefixReader = ORDBData.GetReader(strSQLstring)
                 If dtrPrefixReader.Read() Then
@@ -6380,8 +6391,8 @@ Public Class ApprovalDetails
                 Else
                     If strTaxCompany = "" Then
                         dtrPrefixReader.Close()
-                        strSQLstring = "SELECT A.TAX_COMPANY" & vbCrLf & _
-                                    " FROM PS_BUS_UNIT_TBL_OM A" & vbCrLf & _
+                        strSQLstring = "SELECT A.TAX_COMPANY" & vbCrLf &
+                                    " FROM PS_BUS_UNIT_TBL_OM A" & vbCrLf &
                                     " WHERE A.BUSINESS_UNIT = '" & sBU & "'" & vbCrLf
                         dtrPrefixReader = ORDBData.GetReader(strSQLstring)
                         If dtrPrefixReader.Read() Then
@@ -6425,8 +6436,8 @@ Public Class ApprovalDetails
         'Dim strSQLString = "SELECT ISA_SITE_CODE" & vbCrLf & _
         '    " FROM PS_BUS_UNIT_TBL_OM" & vbCrLf & _
         '    " WHERE BUSINESS_UNIT = '" & sBU & "'" & vbCrLf
-        Dim strSQLString = "select ISA_CUST_PREFIX " & vbCrLf & _
-             " FROM sysadm8.PS_ISA_ENTERPRISE" & vbCrLf & _
+        Dim strSQLString = "select ISA_CUST_PREFIX " & vbCrLf &
+             " FROM sysadm8.PS_ISA_ENTERPRISE" & vbCrLf &
              " WHERE ISA_BUSINESS_UNIT = '" & sBU & "' "
 
 
@@ -6456,7 +6467,7 @@ Public Class ApprovalDetails
 
     Public Class OrderLineDetails
 
-        Public Sub New(iLineNbr As Integer, sCurrLineStatus As String, decQtyReq As Decimal, decUnitPrice As Decimal, _
+        Public Sub New(iLineNbr As Integer, sCurrLineStatus As String, decQtyReq As Decimal, decUnitPrice As Decimal,
                       dtCurrDueDt As DateTime, dtNewDueDt As DateTime, sInvItemID As String, sStockType As String, bDeleteItem As Boolean)
             m_iLineNbr = iLineNbr
             m_sCurrLineStatus = sCurrLineStatus
@@ -6470,7 +6481,7 @@ Public Class ApprovalDetails
             m_sItemChgCd = ""
         End Sub
 
-        Public Sub New(iLineNbr As Integer, sStockType As String, decQtyReq As Decimal, sItemChgCd As String, decUnitPrice As Decimal, _
+        Public Sub New(iLineNbr As Integer, sStockType As String, decQtyReq As Decimal, sItemChgCd As String, decUnitPrice As Decimal,
                        sInvItemID As String, bDeleteItem As Boolean)
 
             m_iLineNbr = iLineNbr
@@ -6559,7 +6570,7 @@ Public Class ApprovalDetails
         End Property
     End Class
 
-    Public Sub AddLineDetailsForOrder(iLineNbr As Integer, decQtyReq As Decimal, sStockType As String, sItemChgCd As String, _
+    Public Sub AddLineDetailsForOrder(iLineNbr As Integer, decQtyReq As Decimal, sStockType As String, sItemChgCd As String,
                               decUnitPrice As Decimal, sInvItemID As String, bDeleteItem As Boolean)
 
         Dim oLineDetails As New OrderLineDetails(iLineNbr, sStockType, decQtyReq, sItemChgCd, decUnitPrice, sInvItemID, bDeleteItem)
@@ -6700,33 +6711,33 @@ Public Class clsUserTbl
     Public Sub New(ByVal Employee_ID As String, ByVal Business_unit As String)
         Dim strSQLstring As String
 
-        strSQLstring = "SELECT A.ISA_USER_ID, A.FIRST_NAME_SRCH," & vbCrLf & _
-                        " A.LAST_NAME_SRCH," & vbCrLf & _
-                        " A.ISA_PASSWORD_ENCR," & vbCrLf & _
-                        " A.BUSINESS_UNIT," & vbCrLf & _
-                        " A.ISA_EMPLOYEE_NAME," & vbCrLf & _
-                        " A.ISA_SDI_EMPLOYEE," & vbCrLf & _
-                        " A.PHONE_NUM," & vbCrLf & _
-                        " A.ISA_EMPLOYEE_EMAIL," & vbCrLf & _
-                        " A.ISA_EMPLOYEE_ACTYP," & vbCrLf & _
-                        " B.ISA_IOL_APR_EMP_ID," & vbCrLf & _
-                        " B.ISA_IOL_APR_LIMIT," & vbCrLf & _
-                        " C.ISA_TRACK_USR_NAME," & vbCrLf & _
-                        " C.ISA_TRACK_USR_PSSW," & vbCrLf & _
-                        " C.ISA_TRACK_USR_GUID," & vbCrLf & _
-                        " C.ISA_TRACK_TO_DATE," & vbCrLf & _
-                        " A.ISA_CUST_SERV_FLG" & vbCrLf & _
-                        " FROM SDIX_USERS_TBL A," & vbCrLf & _
-                        " SDIX_USERS_APPRV B, SDIX_SDITRACK_USERS_TBL C " & vbCrLf & _
-                        " WHERE A.ISA_EMPLOYEE_ID = '" & Employee_ID & "'" & vbCrLf & _
+        strSQLstring = "SELECT A.ISA_USER_ID, A.FIRST_NAME_SRCH," & vbCrLf &
+                        " A.LAST_NAME_SRCH," & vbCrLf &
+                        " A.ISA_PASSWORD_ENCR," & vbCrLf &
+                        " A.BUSINESS_UNIT," & vbCrLf &
+                        " A.ISA_EMPLOYEE_NAME," & vbCrLf &
+                        " A.ISA_SDI_EMPLOYEE," & vbCrLf &
+                        " A.PHONE_NUM," & vbCrLf &
+                        " A.ISA_EMPLOYEE_EMAIL," & vbCrLf &
+                        " A.ISA_EMPLOYEE_ACTYP," & vbCrLf &
+                        " B.ISA_IOL_APR_EMP_ID," & vbCrLf &
+                        " B.ISA_IOL_APR_LIMIT," & vbCrLf &
+                        " C.ISA_TRACK_USR_NAME," & vbCrLf &
+                        " C.ISA_TRACK_USR_PSSW," & vbCrLf &
+                        " C.ISA_TRACK_USR_GUID," & vbCrLf &
+                        " C.ISA_TRACK_TO_DATE," & vbCrLf &
+                        " A.ISA_CUST_SERV_FLG" & vbCrLf &
+                        " FROM SDIX_USERS_TBL A," & vbCrLf &
+                        " SDIX_USERS_APPRV B, SDIX_SDITRACK_USERS_TBL C " & vbCrLf &
+                        " WHERE A.ISA_EMPLOYEE_ID = '" & Employee_ID & "'" & vbCrLf &
                         " AND A.ACTIVE_STATUS = 'A'" & vbCrLf
         If Not Business_unit = "" Then
             strSQLstring = strSQLstring & " AND A.BUSINESS_UNIT = '" & Business_unit & "'" & vbCrLf
         End If
-        strSQLstring = strSQLstring & _
-                    " AND A.BUSINESS_UNIT = B.BUSINESS_UNIT(+)" & vbCrLf & _
-                    " AND A.ISA_EMPLOYEE_ID = B.ISA_EMPLOYEE_ID(+)" & vbCrLf & _
-                    " AND A.BUSINESS_UNIT = C.BUSINESS_UNIT(+)" & vbCrLf & _
+        strSQLstring = strSQLstring &
+                    " AND A.BUSINESS_UNIT = B.BUSINESS_UNIT(+)" & vbCrLf &
+                    " AND A.ISA_EMPLOYEE_ID = B.ISA_EMPLOYEE_ID(+)" & vbCrLf &
+                    " AND A.BUSINESS_UNIT = C.BUSINESS_UNIT(+)" & vbCrLf &
                     " AND A.ISA_EMPLOYEE_ID = C.ISA_EMPLOYEE_ID(+)"
 
         Dim objReader As OleDbDataReader = ORDBData.GetReader(strSQLstring)
@@ -7160,9 +7171,9 @@ Public Class clsEnterprise
 
         strSQLstring = "SELECT A.*, B.NAME1" & vbCrLf
 
-        strSQLstring = strSQLstring & " FROM sysadm8.PS_ISA_ENTERPRISE A, sysadm8.PS_CUSTOMER B" & vbCrLf & _
-                " WHERE A.ISA_BUSINESS_UNIT = '" & BusinessUnit & "'" & vbCrLf & _
-                " AND A.SETID = B.SETID(+)" & vbCrLf & _
+        strSQLstring = strSQLstring & " FROM sysadm8.PS_ISA_ENTERPRISE A, sysadm8.PS_CUSTOMER B" & vbCrLf &
+                " WHERE A.ISA_BUSINESS_UNIT = '" & BusinessUnit & "'" & vbCrLf &
+                " AND A.SETID = B.SETID(+)" & vbCrLf &
                 " AND A.CUST_ID = B.CUST_ID(+)" & vbCrLf
 
 
@@ -7470,12 +7481,12 @@ Public Class clsSDIAudit
     Private Shared m_bGotSchema As Boolean = False
     Private Shared m_dtSchema As DataTable
 
-    Public Shared Function AddRecord(trnsactSession As OleDbTransaction, connection As OleDbConnection, _
-                                sSourceProgram As String, sFunctionDesc As String, sTableName As String, _
-                                sOprID As String, sBU As String, sKey01 As String, Optional sColumnChg As String = " ", _
-                                Optional sOldValue As String = " ", Optional sNewValue As String = " ", _
-                                Optional sKey02 As String = " ", Optional sKey03 As String = " ", _
-                                Optional sUDF1 As String = " ", Optional sUDF2 As String = " ", _
+    Public Shared Function AddRecord(trnsactSession As OleDbTransaction, connection As OleDbConnection,
+                                sSourceProgram As String, sFunctionDesc As String, sTableName As String,
+                                sOprID As String, sBU As String, sKey01 As String, Optional sColumnChg As String = " ",
+                                Optional sOldValue As String = " ", Optional sNewValue As String = " ",
+                                Optional sKey02 As String = " ", Optional sKey03 As String = " ",
+                                Optional sUDF1 As String = " ", Optional sUDF2 As String = " ",
                                 Optional sUDF3 As String = " ", Optional ByRef sErrorDetails As String = "") As Boolean
         ' sSourceProgram: e.g., InterUnitReceipts.aspx
         ' sFunctionDesc: e.g., Location update; e.g., Receive interunit inventory - insert record
@@ -7490,7 +7501,7 @@ Public Class clsSDIAudit
         Dim bError As Boolean = False
 
         Try
-            If GetInsertCommand(sSourceProgram, sFunctionDesc, sTableName, sOprID, sBU, sColumnChg, sOldValue, sNewValue, _
+            If GetInsertCommand(sSourceProgram, sFunctionDesc, sTableName, sOprID, sBU, sColumnChg, sOldValue, sNewValue,
                                 sKey01, sKey02, sKey03, sUDF1, sUDF2, sUDF3, strSQLstring, sErrorDetails) Then
                 Try
                     Dim cmd As OleDbCommand = New OleDbCommand(strSQLstring, connection)
@@ -7517,10 +7528,10 @@ Public Class clsSDIAudit
         Return bAddSuccess
     End Function
 
-    Private Shared Function GetInsertCommand(sSourceProgram As String, sFunctionDesc As String, sTableName As String, _
-                                             sOprID As String, sBU As String, sColumnChg As String, sOldValue As String, _
-                                             sNewValue As String, sKey01 As String, sKey02 As String, sKey03 As String, _
-                                             sUDF1 As String, sUDF2 As String, sUDF3 As String, ByRef strSQLstring As String, _
+    Private Shared Function GetInsertCommand(sSourceProgram As String, sFunctionDesc As String, sTableName As String,
+                                             sOprID As String, sBU As String, sColumnChg As String, sOldValue As String,
+                                             sNewValue As String, sKey01 As String, sKey02 As String, sKey03 As String,
+                                             sUDF1 As String, sUDF2 As String, sUDF3 As String, ByRef strSQLstring As String,
                                              ByRef sErrorDetails As String) As Boolean
         Dim bGotCommand As Boolean = False
         Dim sServer As String = ""
@@ -7534,27 +7545,27 @@ Public Class clsSDIAudit
 
             sServer = "SDIMOBILE03"
 
-            If TruncateData(sSourceProgram, sFunctionDesc, sTableName, sOprID, sBU, sColumnChg, sOldValue, _
+            If TruncateData(sSourceProgram, sFunctionDesc, sTableName, sOprID, sBU, sColumnChg, sOldValue,
                                              sNewValue, sKey01, sKey02, sKey03, sUDF1, sUDF2, sUDF3, sServer, sErrorDetails) Then
 
                 'Yury Ticket 117944 20170609
                 'strSQLstring = "INSERT INTO SYSADM8.ps_isa_SDIXaudit " & vbCrLf & _
-                strSQLstring = "INSERT INTO SDIX_audit " & vbCrLf & _
-                " ( " & vbCrLf & _
-                " descr, rcdsrc, table_name " & vbCrLf & _
-                ", key_01, key_02, key_03 " & vbCrLf & _
-                ", columnchg, newvalue, oldvalue " & vbCrLf & _
-                ", oprid, server_name " & vbCrLf & _
-                ", dt_timestamp " & vbCrLf & _
-                ", business_unit, isa_udf1, isa_udf2, isa_udf3 " & vbCrLf & _
-                " ) " & vbCrLf & _
-                " VALUES (" & vbCrLf & _
-                " '" & sFunctionDesc & "', '" & sSourceProgram & "', '" & sTableName & "' " & vbCrLf & _
-                ", '" & sKey01 & "', '" & sKey02 & "', '" & sKey03 & "' " & vbCrLf & _
-                ", '" & sColumnChg & "', '" & sNewValue & "', '" & sOldValue & "' " & vbCrLf & _
-                ", '" & sOprID & "', '" & sServer & "' " & vbCrLf & _
-                ", TO_DATE('" & Now.ToString("MM/dd/yyyy HH:mm:ss") & "', 'MM/DD/YYYY HH24:MI:SS') " & vbCrLf & _
-                ", '" & sBU & "', '" & sUDF1 & "', '" & sUDF2 & "', '" & sUDF3 & "' " & vbCrLf & _
+                strSQLstring = "INSERT INTO SDIX_audit " & vbCrLf &
+                " ( " & vbCrLf &
+                " descr, rcdsrc, table_name " & vbCrLf &
+                ", key_01, key_02, key_03 " & vbCrLf &
+                ", columnchg, newvalue, oldvalue " & vbCrLf &
+                ", oprid, server_name " & vbCrLf &
+                ", dt_timestamp " & vbCrLf &
+                ", business_unit, isa_udf1, isa_udf2, isa_udf3 " & vbCrLf &
+                " ) " & vbCrLf &
+                " VALUES (" & vbCrLf &
+                " '" & sFunctionDesc & "', '" & sSourceProgram & "', '" & sTableName & "' " & vbCrLf &
+                ", '" & sKey01 & "', '" & sKey02 & "', '" & sKey03 & "' " & vbCrLf &
+                ", '" & sColumnChg & "', '" & sNewValue & "', '" & sOldValue & "' " & vbCrLf &
+                ", '" & sOprID & "', '" & sServer & "' " & vbCrLf &
+                ", TO_DATE('" & Now.ToString("MM/dd/yyyy HH:mm:ss") & "', 'MM/DD/YYYY HH24:MI:SS') " & vbCrLf &
+                ", '" & sBU & "', '" & sUDF1 & "', '" & sUDF2 & "', '" & sUDF3 & "' " & vbCrLf &
                 " )"
 
                 strSQLstring = strSQLstring.Replace(", ''", ", ' '") ' make sure nulls aren't written to table
@@ -7568,10 +7579,10 @@ Public Class clsSDIAudit
 
         Return bGotCommand
     End Function
-    Private Shared Function TruncateData(ByRef sSourceProgram As String, ByRef sFunctionDesc As String, ByRef sTableName As String, _
-                                            ByRef sOprID As String, ByRef sBU As String, ByRef sColumnChg As String, _
-                                            ByRef sOldValue As String, ByRef sNewValue As String, ByRef sKey01 As String, _
-                                            ByRef sKey02 As String, ByRef sKey03 As String, ByRef sUDF1 As String, _
+    Private Shared Function TruncateData(ByRef sSourceProgram As String, ByRef sFunctionDesc As String, ByRef sTableName As String,
+                                            ByRef sOprID As String, ByRef sBU As String, ByRef sColumnChg As String,
+                                            ByRef sOldValue As String, ByRef sNewValue As String, ByRef sKey01 As String,
+                                            ByRef sKey02 As String, ByRef sKey03 As String, ByRef sUDF1 As String,
                                             ByRef sUDF2 As String, ByRef sUDF3 As String, ByRef sServerName As String,
                                             ByRef sErrorDetails As String) As Boolean
         Dim bSuccess As Boolean = False
@@ -7679,8 +7690,8 @@ Public Class clsSDIAudit
     Private Shared Function GetExceptionDetails(ex As Exception, Optional strSQLstring As String = "", Optional OprID As String = " ", Optional StrBU As String = " ") As String
         Dim sErrorDetails As String
 
-        sErrorDetails = "ex.Message=" & ex.Message & vbCrLf & _
-            "; USERID=" & OprID & vbCrLf & _
+        sErrorDetails = "ex.Message=" & ex.Message & vbCrLf &
+            "; USERID=" & OprID & vbCrLf &
             "; BU=" & StrBU
         If strSQLstring.Trim.Length > 0 Then
             sErrorDetails &= "; strSQLstring=" & strSQLstring
@@ -7693,10 +7704,10 @@ Public Class clsSDIAudit
     Private Shared Function GetErrorDetails(sFunction As String, rowsaffected As Integer, strSQLstring As String, ByVal OprID As String, ByVal StrBU As String) As String
         Dim sErrorDetails As String
 
-        sErrorDetails = sFunction & vbCrLf & _
-            "; rowsaffected=" & rowsaffected.ToString & vbCrLf & _
-            "; USERID=" & OprID & vbCrLf & _
-            "; BU=" & StrBU & vbCrLf & _
+        sErrorDetails = sFunction & vbCrLf &
+            "; rowsaffected=" & rowsaffected.ToString & vbCrLf &
+            "; USERID=" & OprID & vbCrLf &
+            "; BU=" & StrBU & vbCrLf &
             "; strSQLstring=" & strSQLstring
 
         Return sErrorDetails
@@ -7874,8 +7885,8 @@ Public Class ApprovalHistory
     End Enum
 
 
-    Public Shared Function RecordApprovalType(trnsactSession As OleDbTransaction, connection As OleDbConnection, _
-                                              apprStatus As ApprHistStatus, apprType As ApprHistType, _
+    Public Shared Function RecordApprovalType(trnsactSession As OleDbTransaction, connection As OleDbConnection,
+                                              apprStatus As ApprHistStatus, apprType As ApprHistType,
                                               oApprovalDetails As ApprovalDetails, ByRef sErrorDetails As String) As Boolean
 
         Const cMethodName As String = "ApprovalHistory.RecordApprovalType"
@@ -7893,7 +7904,7 @@ Public Class ApprovalHistory
             While I < oApprovalDetails.LineDetails.Count
                 Dim oLineDetails As ApprovalDetails.OrderLineDetails
                 oLineDetails = CType(oApprovalDetails.LineDetails(I), ApprovalDetails.OrderLineDetails)
-                strSQLstring = GetApprHistInsertSQL(oApprovalDetails.BU, oApprovalDetails.ReqID, oApprovalDetails.EnteredByID, _
+                strSQLstring = GetApprHistInsertSQL(oApprovalDetails.BU, oApprovalDetails.ReqID, oApprovalDetails.EnteredByID,
                                                 oApprovalDetails.ApproverID, sApprovalStatus, sApprovalTypeCode, oLineDetails.LineNbr)
                 If ExecuteNonQuery(trnsactSession, connection, strSQLstring, rowsaffected, exError) Then
                     If rowsaffected = 0 Then
@@ -7948,27 +7959,27 @@ Public Class ApprovalHistory
     End Function
 
 
-    Private Shared Function GetApprHistInsertSQL(sBU As String, sOrderNo As String, sEnteredBy As String, _
-                                                 sApprovedBy As String, sApprovalStatus As String, _
+    Private Shared Function GetApprHistInsertSQL(sBU As String, sOrderNo As String, sEnteredBy As String,
+                                                 sApprovedBy As String, sApprovalStatus As String,
                                                  sApprovalTypeCode As String, Optional ByVal sLineNbr As Integer = 0) As String
         Dim strSQLstring As String
         Try
             '  If sLineNbr = 0 Then
-            strSQLstring = " INSERT INTO SDIX_APPR_PATH" & vbCrLf & _
-            " (BUSINESS_UNIT_OM, ORDER_NO," & vbCrLf & _
-            " SEQ_NBR," & vbCrLf & _
-            " OPRID_ENTERED_BY, OPRID_APPROVED_BY," & vbCrLf & _
-            " APPR_STATUS, ISA_APPR_TYPE," & vbCrLf & _
-            "  ADD_DTTM, LASTUPDDTTM,ISA_LINE_NO)" & vbCrLf & _
-            " VALUES" & vbCrLf & _
-            " ('" & sBU & "', '" & sOrderNo & "'," & vbCrLf & _
-            " (select (DECODE(max(B.SEQ_NBR),null,0,max(B.SEQ_NBR)) + 1)" & vbCrLf & _
-            " FROM SDIX_APPR_PATH B" & vbCrLf & _
-            " WHERE B.BUSINESS_UNIT_OM = '" & sBU & "'" & vbCrLf & _
-            " AND B.ORDER_NO = '" & sOrderNo & "')," & vbCrLf & _
-            " '" & sEnteredBy & "','" & sApprovedBy & "'," & vbCrLf & _
-            " '" & sApprovalStatus & "', '" & sApprovalTypeCode & "'," & vbCrLf & _
-            " TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')," & vbCrLf & _
+            strSQLstring = " INSERT INTO SDIX_APPR_PATH" & vbCrLf &
+            " (BUSINESS_UNIT_OM, ORDER_NO," & vbCrLf &
+            " SEQ_NBR," & vbCrLf &
+            " OPRID_ENTERED_BY, OPRID_APPROVED_BY," & vbCrLf &
+            " APPR_STATUS, ISA_APPR_TYPE," & vbCrLf &
+            "  ADD_DTTM, LASTUPDDTTM,ISA_LINE_NO)" & vbCrLf &
+            " VALUES" & vbCrLf &
+            " ('" & sBU & "', '" & sOrderNo & "'," & vbCrLf &
+            " (select (DECODE(max(B.SEQ_NBR),null,0,max(B.SEQ_NBR)) + 1)" & vbCrLf &
+            " FROM SDIX_APPR_PATH B" & vbCrLf &
+            " WHERE B.BUSINESS_UNIT_OM = '" & sBU & "'" & vbCrLf &
+            " AND B.ORDER_NO = '" & sOrderNo & "')," & vbCrLf &
+            " '" & sEnteredBy & "','" & sApprovedBy & "'," & vbCrLf &
+            " '" & sApprovalStatus & "', '" & sApprovalTypeCode & "'," & vbCrLf &
+            " TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')," & vbCrLf &
             " TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')," & sLineNbr & ")" & vbCrLf
         Catch ex As Exception
         End Try
