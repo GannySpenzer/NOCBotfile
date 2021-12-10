@@ -2231,52 +2231,47 @@ Public Class QuoteNonStockProcessor
         Dim cHdr As String = "QuoteNonStockProcessor.FormHTMLLink: "
         Dim m_cURL1 As String = ""
         If bShowLink Then
-            If cOrderID = "WM02833641" Then
-
-
-
-                Try
-                    'Dim m_cURL1 As String = "http://" & ConfigurationManager.AppSettings("WebAppName") & "Approvequote.aspx"
-                    If cBusinessUnitOM = "I0W01" Then
-                        If LineStatus = "QTW" Then
-                            m_cURL1 = GetURL(cBusinessUnitOM) & "needapprove"
-                        Else
-                            m_cURL1 = GetURL(cBusinessUnitOM) & "Approvequote"
-                        End If
+            Try
+                'Dim m_cURL1 As String = "http://" & ConfigurationManager.AppSettings("WebAppName") & "Approvequote.aspx"
+                If cBusinessUnitOM = "I0W01" Then
+                    If LineStatus = "QTW" Then
+                        m_cURL1 = GetURL(cBusinessUnitOM) & "needapprove"
                     Else
-                        If LineStatus = "QTW" Then
-                            m_cURL1 = GetURL(cBusinessUnitOM) & "approveorder.aspx"
-                        Else
-                            m_cURL1 = GetURL(cBusinessUnitOM) & "Approvequote.aspx"
-                        End If
+                        m_cURL1 = GetURL(cBusinessUnitOM) & "Approvequote"
                     End If
+                Else
+                    If LineStatus = "QTW" Then
+                        m_cURL1 = GetURL(cBusinessUnitOM) & "approveorder.aspx"
+                    Else
+                        m_cURL1 = GetURL(cBusinessUnitOM) & "Approvequote.aspx"
+                    End If
+                End If
 
 
-                    Dim boEncrypt As New Encryption64
+                Dim boEncrypt As New Encryption64
 
-                    Dim cParam As String = "?fer=" & boEncrypt.Encrypt(cOrderID, m_cEncryptionKey) &
-                                           "&op=" & boEncrypt.Encrypt(cEmployeeID, m_cEncryptionKey) &
-                                           "&xyz=" & boEncrypt.Encrypt(cBusinessUnitOM, m_cEncryptionKey) &
-                                           "&HOME=N" &
-                                           "&ExchHome23=N"
+                Dim cParam As String = "?fer=" & boEncrypt.Encrypt(cOrderID, m_cEncryptionKey) &
+                                       "&op=" & boEncrypt.Encrypt(cEmployeeID, m_cEncryptionKey) &
+                                       "&xyz=" & boEncrypt.Encrypt(cBusinessUnitOM, m_cEncryptionKey) &
+                                       "&HOME=N" &
+                                       "&ExchHome23=N"
 
-                    cLink &= "<p>" &
-                                "Click this " &
-                                "<a href=""" & m_cURL1 & cParam & """ target=""_blank"">link</a> " &
-                                " to APPROVE or DECLINE order." &
-                             "</p>"
+                cLink &= "<p>" &
+                            "Click this " &
+                            "<a href=""" & m_cURL1 & cParam & """ target=""_blank"">link</a> " &
+                            " to APPROVE or DECLINE order." &
+                         "</p>"
 
-                    boEncrypt = Nothing
+                boEncrypt = Nothing
 
-                    Return cLink
+                Return cLink
 
-                Catch ex As Exception
-                    'm_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+            Catch ex As Exception
+                'm_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
 
-                    m_logger.WriteVerboseLog(cHdr & ".  Error:  " & ex.ToString)
-                    SendAlertMessage(msg:=cHdr & ex.ToString)
-                End Try
-            End If
+                m_logger.WriteVerboseLog(cHdr & ".  Error:  " & ex.ToString)
+                SendAlertMessage(msg:=cHdr & ex.ToString)
+            End Try
         End If
         Return (cLink)
     End Function
