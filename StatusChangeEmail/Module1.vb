@@ -1975,55 +1975,57 @@ Module Module1
 
                     Try
                         Dim OrderNo As String = ds.Tables(0).Rows(I).Item("ORDER_NO")
-                        If Not lstOfString.Contains(OrderNo) Then
-                            objWalmartSC.WriteLine("Order No: " + Convert.ToString(OrderNo))
-                            lstOfString.Add(OrderNo)
-                            Dim WorkOrder As String = ds.Tables(0).Rows(I).Item("WORK_ORDER_NO")
-                            objWalmartSC.WriteLine("WorkOrder No: " + Convert.ToString(WorkOrder))
-                            Dim EnteredBy As String = ds.Tables(0).Rows(I).Item("OPRID_ENTERED_BY")
-                            If Not String.IsNullOrEmpty(WorkOrder) Then
-                                Dim strSQLQuery As String = "select THIRDPARTY_COMP_ID from SDIX_USERS_TBL where ISA_EMPLOYEE_ID='" & EnteredBy & "' "
-                                Dim dsUser As DataSet = ORDBAccess.GetAdapter(strSQLQuery, connectOR)
-                                Dim Order As String()
-                                If dsUser.Tables.Count > 0 Then
-                                    Dim THIRDPARTY_COMP_ID As String = String.Empty
-                                    Try
-                                        THIRDPARTY_COMP_ID = dsUser.Tables(0).Rows(0).Item("THIRDPARTY_COMP_ID")
-                                        objWalmartSC.WriteLine("THIRDPARTY_COMP_ID: " + Convert.ToString(THIRDPARTY_COMP_ID))
-                                    Catch ex As Exception
-                                        THIRDPARTY_COMP_ID = "0"
-                                        objWalmartSC.WriteLine("Catch-THIRDPARTY_COMP_ID: " + Convert.ToString(THIRDPARTY_COMP_ID))
-                                    End Try
-                                    Dim OrderStatusDetail As New OrderStatusDetail
-                                    Dim orderDetail As String = OrdrStatus(OrderNo)
-                                    objWalmartSC.WriteLine("Current Order Status: " + Convert.ToString(orderDetail))
-                                    If orderDetail.Trim() <> "" Then
-                                        Order = orderDetail.Split("^"c)
-                                        OrderStatusDetail.orderStatus = Order(0)
-                                        OrderStatusDetail.statusDesc = Order(1)
-                                        OrderStatusDetail.dueDate = Order(2)
-                                        OrderStatusDetail.message = "Success"
-                                        objWalmartSC.WriteLine("Order No: " + Convert.ToString(OrderNo) + "Status" + Convert.ToString(OrderStatusDetail.statusDesc))
-                                        If OrderStatusDetail.message = "Success" Then
-                                            If OrderStatusDetail.statusDesc = "Delivered" Or OrderStatusDetail.statusDesc = "En Route from Vendor" Then
-                                                Dim CheckWOStatus As String = CheckWorkOrderStatus(WorkOrder, THIRDPARTY_COMP_ID)
-                                                objWalmartSC.WriteLine("CheckWOStatus: " + Convert.ToString(CheckWOStatus))
-                                                If CheckWOStatus.ToUpper() <> "COMPLETED" And CheckWOStatus <> "Failed" Then
-                                                    Dim WOStatus As String = If(OrderStatusDetail.statusDesc = "Delivered", "PARTS DELIVERED", "PARTS SHIPPED")
-                                                    If CheckWOStatus <> WOStatus Then
-                                                        Dim PurchaseNo As String = PurchaseOrderNo(WorkOrder, THIRDPARTY_COMP_ID)
-                                                        If PurchaseNo <> "Failed" Then
-                                                            If Not String.IsNullOrEmpty(THIRDPARTY_COMP_ID) Then
-                                                                If THIRDPARTY_COMP_ID = ConfigurationManager.AppSettings("CBRECompanyID").ToString() Then
-                                                                    UpdateWorkOrderStatus(WorkOrder, "CBRE", WOStatus)
-                                                                    UpdateWorkOrderStatus(PurchaseNo, "Walmart", WOStatus)
+                        If OrderNo.ToUpper.Substring(0, 1) = "W" Then
+                            If Not lstOfString.Contains(OrderNo) Then
+                                objWalmartSC.WriteLine("Order No: " + Convert.ToString(OrderNo))
+                                lstOfString.Add(OrderNo)
+                                Dim WorkOrder As String = ds.Tables(0).Rows(I).Item("WORK_ORDER_NO")
+                                objWalmartSC.WriteLine("WorkOrder No: " + Convert.ToString(WorkOrder))
+                                Dim EnteredBy As String = ds.Tables(0).Rows(I).Item("OPRID_ENTERED_BY")
+                                If Not String.IsNullOrEmpty(WorkOrder) Then
+                                    Dim strSQLQuery As String = "select THIRDPARTY_COMP_ID from SDIX_USERS_TBL where ISA_EMPLOYEE_ID='" & EnteredBy & "' "
+                                    Dim dsUser As DataSet = ORDBAccess.GetAdapter(strSQLQuery, connectOR)
+                                    Dim Order As String()
+                                    If dsUser.Tables.Count > 0 Then
+                                        Dim THIRDPARTY_COMP_ID As String = String.Empty
+                                        Try
+                                            THIRDPARTY_COMP_ID = dsUser.Tables(0).Rows(0).Item("THIRDPARTY_COMP_ID")
+                                            objWalmartSC.WriteLine("THIRDPARTY_COMP_ID: " + Convert.ToString(THIRDPARTY_COMP_ID))
+                                        Catch ex As Exception
+                                            THIRDPARTY_COMP_ID = "0"
+                                            objWalmartSC.WriteLine("Catch-THIRDPARTY_COMP_ID: " + Convert.ToString(THIRDPARTY_COMP_ID))
+                                        End Try
+                                        Dim OrderStatusDetail As New OrderStatusDetail
+                                        Dim orderDetail As String = OrdrStatus(OrderNo)
+                                        objWalmartSC.WriteLine("Current Order Status: " + Convert.ToString(orderDetail))
+                                        If orderDetail.Trim() <> "" Then
+                                            Order = orderDetail.Split("^"c)
+                                            OrderStatusDetail.orderStatus = Order(0)
+                                            OrderStatusDetail.statusDesc = Order(1)
+                                            OrderStatusDetail.dueDate = Order(2)
+                                            OrderStatusDetail.message = "Success"
+                                            objWalmartSC.WriteLine("Order No: " + Convert.ToString(OrderNo) + "Status" + Convert.ToString(OrderStatusDetail.statusDesc))
+                                            If OrderStatusDetail.message = "Success" Then
+                                                If OrderStatusDetail.statusDesc = "Delivered" Or OrderStatusDetail.statusDesc = "En Route from Vendor" Then
+                                                    Dim CheckWOStatus As String = CheckWorkOrderStatus(WorkOrder, THIRDPARTY_COMP_ID)
+                                                    objWalmartSC.WriteLine("CheckWOStatus: " + Convert.ToString(CheckWOStatus))
+                                                    If CheckWOStatus.ToUpper() <> "COMPLETED" And CheckWOStatus <> "Failed" Then
+                                                        Dim WOStatus As String = If(OrderStatusDetail.statusDesc = "Delivered", "PARTS DELIVERED", "PARTS SHIPPED")
+                                                        If CheckWOStatus <> WOStatus Then
+                                                            Dim PurchaseNo As String = PurchaseOrderNo(WorkOrder, THIRDPARTY_COMP_ID)
+                                                            If PurchaseNo <> "Failed" Then
+                                                                If Not String.IsNullOrEmpty(THIRDPARTY_COMP_ID) Then
+                                                                    If THIRDPARTY_COMP_ID = ConfigurationManager.AppSettings("CBRECompanyID").ToString() Then
+                                                                        UpdateWorkOrderStatus(WorkOrder, "CBRE", WOStatus)
+                                                                        UpdateWorkOrderStatus(PurchaseNo, "Walmart", WOStatus)
+                                                                    Else
+                                                                        UpdateWorkOrderStatus(WorkOrder, "Walmart", WOStatus)
+                                                                    End If
                                                                 Else
                                                                     UpdateWorkOrderStatus(WorkOrder, "Walmart", WOStatus)
                                                                 End If
-                                                            Else
-                                                                UpdateWorkOrderStatus(WorkOrder, "Walmart", WOStatus)
-                                                            End If
 
+                                                            End If
                                                         End If
                                                     End If
                                                 End If
