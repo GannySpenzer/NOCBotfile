@@ -52,68 +52,70 @@ Public Class PODueDateUpdate_SC
                                     ThirdParty_ID = "0"
                                 End Try
                                 objWalmartSC.WriteLine("Order No -" + OrderNo + ", Work Order -" + Work_Order + ", Third Party ID -" + ThirdParty_ID)
-                                If Not String.IsNullOrEmpty(Work_Order) Then
-                                    Dim apiResponse As String = GetWorkOrderParts(Work_Order, ThirdParty_ID)
-                                    If Not String.IsNullOrEmpty(apiResponse) Then
-                                        Dim objWorkOrder As List(Of WorkOrderParts) = JsonConvert.DeserializeObject(Of List(Of WorkOrderParts))(apiResponse)
-                                        Dim deletearrayOfID As New List(Of Int32)
-                                        Dim deletearrayOfDesc As New List(Of String)
-                                        For Each objWorkOrders As WorkOrderParts In objWorkOrder
-                                            If objWorkOrders.Description.ToLower().Contains(Desc.Trim().ToLower()) And objWorkOrders.SupplierPartId.Contains(OrderNo) Then
-                                                deletearrayOfID.Add(objWorkOrders.id)
-                                                deletearrayOfDesc.Add(objWorkOrders.Description)
-                                                Dim deleteResponse As Boolean = DeleteWorkOrders(Work_Order, deletearrayOfID.ToArray(), ThirdParty_ID)
-                                                If deleteResponse = True Then
-                                                    Dim dsCart As New DataTable
-                                                    Dim drs As DataRow
-                                                    dsCart.Columns.Add("ItemDescription")
-                                                    dsCart.Columns.Add("Quantity")
-                                                    dsCart.Columns.Add("Price")
-                                                    dsCart.Columns.Add("UDueDate")
-                                                    dsCart.Columns.Add("OrderNo")
-                                                    drs = dsCart.NewRow()
-                                                    drs.Item(0) = Desc
-                                                    drs.Item(1) = objWorkOrders.Quantity
-                                                    drs.Item(2) = objWorkOrders.Price
-                                                    drs.Item(3) = DUE_DT
-                                                    drs.Item(4) = objWorkOrders.SupplierPartId
-                                                    dsCart.Rows.Add(drs)
-                                                    If dsCart.Rows.Count > 0 Then
-                                                        Dim insertResponse As Boolean = InsertWorkOrder(Work_Order, dsCart, ThirdParty_ID)
-                                                        'If insertResponse = True Then
-                                                        '    Dim rowsaffected As Integer
-                                                        '    connectOR.Open()
-                                                        '    Dim strSQLstring As String = "UPDATE ps_isa_poduedtmon" & vbCrLf &
-                                                        '                   " SET NOTIFY_DTTM = TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf &
-                                                        '                   " WHERE PO_ID = '" & PO_ID & "'" & vbCrLf &
-                                                        '                   " AND LINE_NBR = '" & LINE_NBR & "'" & vbCrLf &
-                                                        '                   " AND SCHED_NBR = '" & SCHED_NBR & "'"
+                                If OrderNo.ToUpper.Substring(0, 1) = "W" Then
+                                    If Not String.IsNullOrEmpty(Work_Order) Then
+                                        Dim apiResponse As String = GetWorkOrderParts(Work_Order, ThirdParty_ID)
+                                        If Not String.IsNullOrEmpty(apiResponse) Then
+                                            Dim objWorkOrder As List(Of WorkOrderParts) = JsonConvert.DeserializeObject(Of List(Of WorkOrderParts))(apiResponse)
+                                            Dim deletearrayOfID As New List(Of Int32)
+                                            Dim deletearrayOfDesc As New List(Of String)
+                                            For Each objWorkOrders As WorkOrderParts In objWorkOrder
+                                                If objWorkOrders.Description.ToLower().Contains(Desc.Trim().ToLower()) And objWorkOrders.SupplierPartId.Contains(OrderNo) Then
+                                                    deletearrayOfID.Add(objWorkOrders.id)
+                                                    deletearrayOfDesc.Add(objWorkOrders.Description)
+                                                    Dim deleteResponse As Boolean = DeleteWorkOrders(Work_Order, deletearrayOfID.ToArray(), ThirdParty_ID)
+                                                    If deleteResponse = True Then
+                                                        Dim dsCart As New DataTable
+                                                        Dim drs As DataRow
+                                                        dsCart.Columns.Add("ItemDescription")
+                                                        dsCart.Columns.Add("Quantity")
+                                                        dsCart.Columns.Add("Price")
+                                                        dsCart.Columns.Add("UDueDate")
+                                                        dsCart.Columns.Add("OrderNo")
+                                                        drs = dsCart.NewRow()
+                                                        drs.Item(0) = Desc
+                                                        drs.Item(1) = objWorkOrders.Quantity
+                                                        drs.Item(2) = objWorkOrders.Price
+                                                        drs.Item(3) = DUE_DT
+                                                        drs.Item(4) = objWorkOrders.SupplierPartId
+                                                        dsCart.Rows.Add(drs)
+                                                        If dsCart.Rows.Count > 0 Then
+                                                            Dim insertResponse As Boolean = InsertWorkOrder(Work_Order, dsCart, ThirdParty_ID)
+                                                            'If insertResponse = True Then
+                                                            '    Dim rowsaffected As Integer
+                                                            '    connectOR.Open()
+                                                            '    Dim strSQLstring As String = "UPDATE ps_isa_poduedtmon" & vbCrLf &
+                                                            '                   " SET NOTIFY_DTTM = TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf &
+                                                            '                   " WHERE PO_ID = '" & PO_ID & "'" & vbCrLf &
+                                                            '                   " AND LINE_NBR = '" & LINE_NBR & "'" & vbCrLf &
+                                                            '                   " AND SCHED_NBR = '" & SCHED_NBR & "'"
 
-                                                        '    Dim Command1 As OleDbCommand
-                                                        '    Command1 = New OleDbCommand(strSQLstring, connectOR)
-                                                        '    Try
-                                                        '        rowsaffected = Command1.ExecuteNonQuery
-                                                        '        If rowsaffected = 1 Then
-                                                        '            objWalmartSC.WriteLine("PO_ID -" + PO_ID + ", Updated Successfully")
-                                                        '        Else
-                                                        '            objWalmartSC.WriteLine("PO_ID -" + PO_ID + ", Updated Failed")
-                                                        '        End If
-                                                        '    Catch ex As Exception
-                                                        '        objWalmartSC.WriteLine("PO_ID -" + PO_ID + ", Updated Failed")
-                                                        '    End Try
-                                                        '    Command1.Dispose()
-                                                        '    Try
-                                                        '        connectOR.Close()
-                                                        '    Catch ex As Exception
+                                                            '    Dim Command1 As OleDbCommand
+                                                            '    Command1 = New OleDbCommand(strSQLstring, connectOR)
+                                                            '    Try
+                                                            '        rowsaffected = Command1.ExecuteNonQuery
+                                                            '        If rowsaffected = 1 Then
+                                                            '            objWalmartSC.WriteLine("PO_ID -" + PO_ID + ", Updated Successfully")
+                                                            '        Else
+                                                            '            objWalmartSC.WriteLine("PO_ID -" + PO_ID + ", Updated Failed")
+                                                            '        End If
+                                                            '    Catch ex As Exception
+                                                            '        objWalmartSC.WriteLine("PO_ID -" + PO_ID + ", Updated Failed")
+                                                            '    End Try
+                                                            '    Command1.Dispose()
+                                                            '    Try
+                                                            '        connectOR.Close()
+                                                            '    Catch ex As Exception
 
-                                                        '    End Try
-                                                        'End If
+                                                            '    End Try
+                                                            'End If
+                                                        End If
                                                     End If
+                                                    objWalmartSC.WriteLine("////////////////////////////////////////////////////////////////////////////////////////////")
+                                                    Exit For
                                                 End If
-                                                objWalmartSC.WriteLine("////////////////////////////////////////////////////////////////////////////////////////////")
-                                                Exit For
-                                            End If
-                                        Next
+                                            Next
+                                        End If
                                     End If
                                 End If
                             Else
