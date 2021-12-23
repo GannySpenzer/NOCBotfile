@@ -882,7 +882,7 @@ Public Class QuoteNonStockProcessor
                                  ",A2.ISA_EMPLOYEE_NAME AS ISA_EMPLOYEE_NAME" & vbCrLf &
                                  ",A2.ISA_PRICE_BLOCK AS ISA_PRICE_BLOCK" & vbCrLf &
                                  ",A3.ISA_NONSKREQ_EMAIL AS ISA_NONSKREQ_EMAIL" & vbCrLf &
-                                 ",L.ISA_EMPLOYEE_ID AS ISA_EMPLOYEE_ID" & vbCrLf &
+                                 ",L.ISA_EMPLOYEE_ID AS ISA_EMPLOYEE_ID,L.isa_user1 AS WALMARTAPPROVER" & vbCrLf &
                                  ",A4.BUSINESS_UNIT_OM AS BUSINESS_UNIT_OM" & vbCrLf &
                                  ",L.ISA_PRIORITY_FLAG,A4.ORIGIN" & vbCrLf &
                                  ",L.OPRID_MODIFIED_BY AS OPRID_MODIFIED_BY, L.ISA_WORK_ORDER_NO AS WORK_ORDER_ID,L.ISA_USER2 AS STORE , A3.APPRVALTHRESHOLD AS APPROVAL_LIMIT " & vbCrLf &
@@ -1208,7 +1208,13 @@ Public Class QuoteNonStockProcessor
                                 arr = Nothing
                             End If
                         Else
-                            Dim strOrigApproverID As String = GetOriginalApprover(rdr("BUSINESS_UNIT_OM").trim, rdr("ISA_EMPLOYEE_ID").trim)
+                            Dim strOrigApproverID As String = String.Empty
+                            If boItem.BusinessUnitID = "WAL00" Then
+                                strOrigApproverID = rdr("WALMARTAPPROVER").trim
+                            Else
+                                strOrigApproverID = GetOriginalApprover(rdr("BUSINESS_UNIT_OM").trim, rdr("ISA_EMPLOYEE_ID").trim)
+
+                            End If
                             If strOrigApproverID.Trim <> "" Then
                                 Dim strSQLString As String = "SELECT FIRST_NAME_SRCH," & vbCrLf &
                    " LAST_NAME_SRCH," & vbCrLf &
@@ -1390,6 +1396,30 @@ Public Class QuoteNonStockProcessor
             ds = ORDBData.GetAdapter(strSQLstring)
             If ds.Tables(0).Rows.Count > 0 Then
                 strOrigApproverID = ds.Tables(0).Rows(0).Item("isa_iol_apr_emp_id").ToString
+            End If
+
+        Catch ex As Exception
+        End Try
+
+        Return strOrigApproverID
+    End Function
+
+    Private Shared Function GetWalmartApprover(ByVal order_no As String) As String
+        Dim strOrigApproverID As String = ""
+
+        Try
+            Dim ds As DataSet
+            Dim strSQLstring As String
+
+
+            strSQLstring = "SELECT ISA_USER1" & vbCrLf &
+                   " FROM PS_ISA_ORD_INTF_LN" & vbCrLf &
+                   " WHERE order_no = '" & order_no & "'" & vbCrLf
+
+
+            ds = ORDBData.GetAdapter(strSQLstring)
+            If ds.Tables(0).Rows.Count > 0 Then
+                strOrigApproverID = ds.Tables(0).Rows(0).Item("ISA_USER1").ToString
             End If
 
         Catch ex As Exception
