@@ -152,6 +152,13 @@
     <Content Include="EmailSites.xml">
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="Images\chain0.png" />
+    <Content Include="Images\chain1.png" />
+    <Content Include="Images\chain2.png" />
+    <Content Include="Images\chain3.png" />
+    <Content Include="Images\chain4.png" />
+    <Content Include="Images\chain5.png" />
+    <Content Include="Images\chain6.png" />
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
@@ -202,7 +209,9 @@
     </WebReferenceUrl>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Web References\SDiEmailUtilityService\EmailServices.wsdl" />
+    <None Include="Web References\SDiEmailUtilityService\EmailServices.wsdl">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <PropertyGroup>
