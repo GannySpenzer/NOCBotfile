@@ -162,10 +162,10 @@ Module Module1
                 'buildstatchgout = checkAllStatusWAL(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
                 'Else
                 Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                    objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                    objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
-                    objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
-                    buildstatchgout = checkAllStatusNew(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
+                objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
+                objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                buildstatchgout = checkAllStatusNew(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
                 'End If
                 If buildstatchgout = True Then
                     bolErrorSomeWhere = True
@@ -1239,11 +1239,6 @@ Module Module1
         Dim dteSTKREQEmail As String = objEnterprise.STKREQEmail
         Dim dteNONSKREQEmail As String = objEnterprise.NONSKREQEmail
 
-        'If strBU = "I0440" Then
-        'dteStartDate = dteStartDate.AddMinutes(-31)
-        'dteStartDate = dteStartDate.AddHours(3)
-        '    dteStartDate = dteStartDate.AddHours(-15)
-        'End If
 
 
         Try
@@ -1288,13 +1283,13 @@ Module Module1
                  " B.INV_ITEM_ID as INV_ITEM_ID," & vbCrLf &
                  " B.QTY_REQUESTED,B.QTY_RECEIVED,B.UNIT_OF_MEASURE," & vbCrLf &
                  " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH" & vbCrLf &
-                 " ,A.origin" & vbCrLf &
+                 " ,A.origin, LD.PO_ID, SH.ISA_ASN_TRACK_NO" & vbCrLf &
                  " FROM ps_isa_ord_intf_HD A," & vbCrLf  '   & _
 
         strSQLstring += " ps_isa_ord_intf_LN B," & vbCrLf &
                  " PS_MASTER_ITEM_TBL C," & vbCrLf &
                  " PS_ISA_USERS_TBL D," & vbCrLf &
-                 " PS_ISAORDSTATUSLOG G " & vbCrLf &
+                 " PS_ISAORDSTATUSLOG G, PS_ISA_ASN_SHIPPED SH, PS_PO_LINE_DISTRIB LD" & vbCrLf &
                  " where G.BUSINESS_UNIT_OM = '" & strBU & "' " & vbCrLf &
                  " AND G.BUSINESS_UNIT_OM = A.BUSINESS_UNIT_OM " & vbCrLf &
                  " AND G.BUSINESS_UNIT_OM = D.BUSINESS_UNIT " & vbCrLf     '   & _
@@ -1306,6 +1301,7 @@ Module Module1
                  " AND G.ORDER_NO = A.ORDER_NO " & vbCrLf &
                  " AND B.ISA_INTFC_LN = G.ISA_INTFC_LN" & vbCrLf &
                  " AND A.BUSINESS_UNIT_OM = D.BUSINESS_UNIT" & vbCrLf &
+                 " AND SH.PO_ID (+) = LD.PO_ID And SH.LINE_NBR (+) = LD.LINE_NBR And SH.SCHED_NBR (+) = LD.SCHED_NBR And LD.Req_id (+) = B.order_no AND LD.REQ_LINE_NBR (+) = B.ISA_INTFC_LN" & vbCrLf &
                  " AND G.DTTM_STAMP > TO_DATE('" & dteStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf &
                  " AND G.DTTM_STAMP <= TO_DATE('" & dteEndDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf &
                  " AND UPPER(B.ISA_EMPLOYEE_ID) = UPPER(D.ISA_EMPLOYEE_ID)) TBL, PS_ISA_USERS_PRIVS H " & vbCrLf &
@@ -1374,6 +1370,7 @@ Module Module1
         dsEmail.Columns.Add("Status Code")
         dsEmail.Columns.Add("Work Order Number")
         dsEmail.Columns.Add("PO #")
+        dsEmail.Columns.Add("Tracking No")
         dsEmail.Columns.Add("Line Notes")
         dsEmail.Columns.Add("Qty Ordered")
         dsEmail.Columns.Add("Qty Received")
@@ -1425,7 +1422,7 @@ Module Module1
             dr1.Item(5) = ds.Tables(0).Rows(I).Item("LINE_NBR")
             Dim ln_notes As String = ""
             ln_notes = GetLineNotes(stroderno, strBU, strlineno)
-            dr1.Item(10) = ln_notes
+            dr1.Item(11) = ln_notes
             connectOR.Open()
             dr1.Item(6) = ds.Tables(0).Rows(I).Item("DTTM_STAMP")
             If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
@@ -1437,20 +1434,41 @@ Module Module1
             dr1.Item(7) = strStatus_code
             dr1.Item(8) = ds.Tables(0).Rows(I).Item("WORK_ORDER_NO")
             dr1.Item(9) = strpo_id
+            Dim trackingNo As String = ""
             Try
-                dr1.Item(11) = ds.Tables(0).Rows(I).Item("QTY_REQUESTED")
+                trackingNo = ds.Tables(0).Rows(I).Item("ISA_ASN_TRACK_NO")
             Catch ex As Exception
-                dr1.Item(11) = ""
+                trackingNo = ""
             End Try
+
+
+            If Not String.IsNullOrEmpty(trackingNo) Then
+                If trackingNo.Contains("1Z") Then
+                    Dim URL As String = "http://wwwapps.ups.com/WebTracking/processInputRequest?HTMLVersion=5.0&sort_by=status&term_warn=yes&tracknums_displayed=5&TypeOfInquiryNumber=T&loc=en_US&InquiryNumber1=" & trackingNo & "&InquiryNumber2=&InquiryNumber3=&InquiryNumber4=&InquiryNumber5=&AgreeToTermsAndConditions=yes&track.x=25&track.y=9','','"
+                    Dim m_cURL1 As String = "<a href=""" & URL & """ target=""_blank"">" & trackingNo & "</a>"
+                    dr1.Item(10) = m_cURL1
+                Else
+                    Dim URL As String = "https://www.fedex.com/apps/fedextrack/?action=track&trackingnumber=" & trackingNo & "&cntry_code=us&locale=en_US"
+                    Dim m_cURL1 As String = "<a href=""" & URL & """ target=""_blank"">" & trackingNo & "</a>"
+                    dr1.Item(10) = m_cURL1
+                End If
+            Else
+                dr1.Item(10) = ""
+            End If
             Try
-                dr1.Item(12) = ds.Tables(0).Rows(I).Item("QTY_RECEIVED")
+                dr1.Item(12) = ds.Tables(0).Rows(I).Item("QTY_REQUESTED")
             Catch ex As Exception
                 dr1.Item(12) = ""
             End Try
             Try
-                dr1.Item(13) = ds.Tables(0).Rows(I).Item("UNIT_OF_MEASURE")
+                dr1.Item(13) = ds.Tables(0).Rows(I).Item("QTY_RECEIVED")
             Catch ex As Exception
                 dr1.Item(13) = ""
+            End Try
+            Try
+                dr1.Item(14) = ds.Tables(0).Rows(I).Item("UNIT_OF_MEASURE")
+            Catch ex As Exception
+                dr1.Item(14) = ""
             End Try
             dsEmail.Rows.Add(dr1)
 
@@ -1995,7 +2013,7 @@ Module Module1
                  " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, " & vbCrLf   '  & _
 
 
-        strSQLstring += "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','01','QTW','02','QTC','03','QTS','04','CST','05','VND','06','APR','07','QTA','08','QTR','09','RFA','10','RFR','11','RFC','12','RCF','13','RCP','14','CNC','15','DLF','16','PKA','17') AS OLD_ORDER_STATUS," & vbCrLf &
+        strSQLstring += "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','01','QTW','02','QTC','03','QTS','04','CST','05','VND','06','APR','07','QTA','08','QTR','09','RFA','10','RFR','11','RFC','12','RCF','13','RCP','14','CNC','15','DLF','16','PKA','17','ASN','18') AS OLD_ORDER_STATUS," & vbCrLf &
                 " (SELECT E.XLATLONGNAME" & vbCrLf &
                                 " FROM XLATTABLE E" & vbCrLf &
                                 " WHERE E.EFFDT =" & vbCrLf &
