@@ -153,20 +153,25 @@ Module Module1
             objGenerallLogStreamWriter.WriteLine("-------------------------------------------------------------------------------")
             For I = 0 To dsBU.Tables(0).Rows.Count - 1
 
+                Dim time As DateTime = DateTime.Now
+                Dim format As String = "HH:mm:ss"
+                Dim TimeNow As String = time.ToString(format)
+
                 'Added checkAllStatusWAL() by checking I0W01 BU, Email time for order status summary email--  WW-287 & WAL-632 Poornima S
-                'If (dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") = "I0W01") And ((Now.ToLongTimeString > SumryStartLngTime) And (Now.ToLongTimeString < Convert.ToDateTime(SumryEndLngTime))) Then
-                'Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                'objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                'objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
-                'objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
-                'buildstatchgout = checkAllStatusWAL(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
-                'Else
-                Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
-                objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
-                buildstatchgout = checkAllStatusNew(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
-                'End If
+                If (dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") = "I0W01") And ((TimeNow > SumryStartLngTime) And (TimeNow < SumryEndLngTime)) Then
+                    Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
+                    objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
+                    objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
+                    objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                    buildstatchgout = checkAllStatusWAL(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                Else
+                    Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
+                    objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
+                    objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
+                    objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                    buildstatchgout = checkAllStatusNew(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                End If
+
                 If buildstatchgout = True Then
                     bolErrorSomeWhere = True
                 End If
@@ -1821,7 +1826,7 @@ Module Module1
                     Try
                         trackingNo = OrderDetailDT.Rows(I).Item("ISA_ASN_TRACK_NO")
                     Catch ex As Exception
-                        trackingNo = ""
+                        trackingNo = "-"
                     End Try
 
                     If Not String.IsNullOrEmpty(trackingNo) Then
@@ -2417,25 +2422,20 @@ Module Module1
             For Each StoreNum As String In StoreNumArr
 
                 Dim NewStoreNumDT As New DataTable
-                    NewStoreNumDT = (From C In StoreNumDT.AsEnumerable Where C.Field(Of String)("STORE") = StoreNum).CopyToDataTable()
+                NewStoreNumDT = (From C In StoreNumDT.AsEnumerable Where C.Field(Of String)("STORE") = StoreNum).CopyToDataTable()
 
-                    objGenerallLogStreamWriter.WriteLine("Reading order details of Store Num:" + StoreNum)
-                    objStreamWriter.WriteLine("Reading order details of Store Num:" + StoreNum)
+                objGenerallLogStreamWriter.WriteLine("Reading order details of Store Num:" + StoreNum)
+                objStreamWriter.WriteLine("Reading order details of Store Num:" + StoreNum)
 
-                    If Not (String.IsNullOrEmpty(StoreNum.Trim())) Then
-                        strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;'> Install Store:</span> <span>&nbsp;" & StoreNum & "</span></p> "
-                    End If
+                If Not (String.IsNullOrEmpty(StoreNum.Trim())) Then
+                    strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;'> Install Store:</span> <span>&nbsp;" & StoreNum & "</span></p> "
+                End If
 
-                    Dim WOArr As String() = NewStoreNumDT.AsEnumerable().[Select](Function(r) r.Field(Of String)("Work Order Number")).Distinct().ToArray()
+                Dim WOArr As String() = NewStoreNumDT.AsEnumerable().[Select](Function(r) r.Field(Of String)("Work Order Number")).Distinct().ToArray()
 
                 For Each WONum As String In WOArr
                     Dim WONumDetails As New DataTable
                     WONumDetails = (From C In NewStoreNumDT.AsEnumerable Where C.Field(Of String)("Work Order Number") = WONum).CopyToDataTable()
-                    Try
-                        WONumDetails.DefaultView.ToTable(True, "Order No.")
-                    Catch ex As Exception
-
-                    End Try
 
                     strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;'> Work Order Num:</span> <span>&nbsp;" & WONum & "</span></p> "
 
@@ -2458,17 +2458,17 @@ Module Module1
                             Dim statusImg As String
                             OrdStatusArr = OrderStatus.Split("^")
                             If OrdStatusArr(3) = 1 Then
-                                statusImg = "'D:\vsfoundations\StatusChangeEmail\Images\chain0.png'"
+                                statusImg = "'https://walmarttest.sdi.com/images/chain0.png'"
                             ElseIf OrdStatusArr(3) = 2 Then
-                                statusImg = "'D:\vsfoundations\StatusChangeEmail\Images\chain1.png'"
+                                statusImg = "'https://walmarttest.sdi.com/images/chain1.png'"
                             ElseIf OrdStatusArr(3) = 3 Then
-                                statusImg = "'D:\vsfoundations\StatusChangeEmail\Images\chain2.png'"
+                                statusImg = "'https://walmarttest.sdi.com/images/chain2.png'"
                             ElseIf OrdStatusArr(3) = 4 Then
-                                statusImg = "'D:\vsfoundations\StatusChangeEmail\Images\chain3.png'"
+                                statusImg = "'https://walmarttest.sdi.com/images/chain3.png'"
                             ElseIf OrdStatusArr(3) = 5 Then
-                                statusImg = "'D:\vsfoundations\StatusChangeEmail\Images\chain4.png'"
+                                statusImg = "'https://walmarttest.sdi.com/images/chain4.png'"
                             Else
-                                statusImg = "'D:\vsfoundations\StatusChangeEmail\Images\chain6.png'"
+                                statusImg = "'https://walmarttest.sdi.com/images/chain6.png'"
                             End If
 
                             Dim bgColor As String = ""
@@ -2476,30 +2476,28 @@ Module Module1
                             Dim borderColor As String = ""
 
                             If OrdStatusArr(4) = "YELLOW" Then
-                                bgColor = "'Yellow'"
-                                Color = "'dimgrey'"
-                                borderColor = "'Yellow'"
+                                bgColor = "Yellow"
+                                Color = "dimgrey"
+                                borderColor = "Yellow"
                             ElseIf OrdStatusArr(4) = "RED" Then
-                                bgColor = "'Red'"
-                                Color = "'white'"
-                                borderColor = "'Red'"
+                                bgColor = "Red"
+                                Color = "white"
+                                borderColor = "Red"
                             ElseIf OrdStatusArr(4) = "GREEN" Then
-                                bgColor = "'forestgreen'"
-                                Color = "'white'"
-                                borderColor = "'forestgreen'"
+                                bgColor = "forestgreen"
+                                Color = "white"
+                                borderColor = "forestgreen"
                             ElseIf OrdStatusArr(4) = "GRAY" Then
-                                bgColor = "'darkgray'"
-                                Color = "'white'"
-                                borderColor = "'darkgray'"
+                                bgColor = "darkgray"
+                                Color = "white"
+                                borderColor = "darkgray"
                             End If
 
                             OrderDetails = (From C In WONumDetails.AsEnumerable Where C.Field(Of String)("Order No.") = orderno).CopyToDataTable()
 
-                            strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;'> Order Number:</span> <span>&nbsp;" & orderno & "</span></p> "
-                            strbodydet1 = strbodydet1 & "<span><img src =" & statusImg & " alt='SDI' width='98px' height='82px' vspace='0' hspace='0' /><button style='pointerEvents: 'none'; fontSize: '13px', padding: '4px 15px', background-color:" & bgColor & ", color: " & Color & ",padding:'4px 22px',border-radius: '50px',margin-left: '15px',font-size:'15px'>&nbsp; " & OrdStatusArr(1) & "</button></span>"
+                            strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;font-family:Calibri;'> Order Number:</span> <span>&nbsp;" & orderno & "</span></p> "
+                            strbodydet1 = strbodydet1 & "<div><span><img src =" & statusImg & " alt='SDI' width='50%' height='5%' vspace='0' hspace='0' /></span>&nbsp;&nbsp;&nbsp;<span style='font-Size:18px; background-color:" & bgColor & ";color: " & Color & ";font-family:Calibri;border-radius:50px; text-align:center;padding:5px 10px 5px 5px;'>&nbsp; " & OrdStatusArr(1) & "</span></div>"
 
-                            strQuery = "SELECT DISTINCT NVL(RA.ISA_ASN_TRACK_NO, RS.BILL_OF_LADING) AS TRACK_NO, NVL(RA.LINE_NBR,RS.LINE_NBR) As LINE_NBR FROM SYSADM8.PS_ISA_ASN_SHIPPED RA, SYSADM8.PS_RECV_LN_SHIP RS, SYSADM8.PS_PO_LINE_DISTRIB AB WHERE AB.REQ_ID = '" & orderno & "' AND AB.PO_ID=NVL(RA.PO_ID,RS.PO_ID)"
-                            Dim dsTrackNum As DataSet = ORDBAccess.GetAdapter(strQuery, connectOR)
 
                             strQuery = "SELECT DUE_DT, LS.LINE_NBR FROM PS_PO_LINE_SHIP LS, SYSADM8.PS_PO_LINE_DISTRIB AB  WHERE AB.REQ_ID = '" & orderno & "' AND AB.PO_ID=LS.PO_ID"
                             Dim dsDeliverDt As DataSet = ORDBAccess.GetAdapter(strQuery, connectOR)
@@ -2508,31 +2506,19 @@ Module Module1
                             For K = 0 To OrderDetails.Rows.Count - 1
 
                                 If K = 0 Then
-                                    strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;'> Ship-to Store:</span> <span>&nbsp;" & OrderDetails.Rows(K).Item("Ship To") & "</span></p> "
-                                    strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;'> Items Ordered:</span></p> "
+                                    strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;font-family:Calibri;'> Ship-to Store:</span> <span style='font-family:Calibri;'>&nbsp;" & OrderDetails.Rows(K).Item("Ship To") & "</span></p> "
+                                    strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;font-family:Calibri;'> Items Ordered:</span></p> "
                                 End If
-                                strbodydet1 = strbodydet1 & "<p><span> &nbsp;&nbsp;&nbsp; Qty-</span> <span>" & OrderDetails.Rows(K).Item("Qty Ordered") & "</span><span>&nbsp;" & OrderDetails.Rows(K).Item("Non-Stock Item Description") & "</span></p> "
+                                strbodydet1 = strbodydet1 & "<p><span style='font-family:Calibri;'> &nbsp;&nbsp;&nbsp; Qty-</span> <span style='font-family:Calibri;'>" & OrderDetails.Rows(K).Item("Qty Ordered") & "</span><span style='font-family:Calibri;'>,&nbsp; " & OrderDetails.Rows(K).Item("Non-Stock Item Description") & "</span></p> "
 
-                                Console.WriteLine(dsTrackNum.Tables(0).Rows(K).Item("LINE_NBR").[GetType]().FullName)
-
-                                Console.WriteLine(OrderDetails.Rows(K).Item("Line Number").[GetType]().FullName)
-                                Console.WriteLine(dsTrackNum.Tables(0).Rows(K).Item("TRACK_NO").[GetType]().FullName)
-
-                                Dim TrackNum As String = " "
-                                TrackNum = dsTrackNum.Tables(0).AsEnumerable().
-     Where(Function(r) Convert.ToString(r.Field(Of Decimal)("LINE_NBR")) = OrderDetails.Rows(K).Item("Line Number").ToString).
-     Select(Function(r) Convert.ToString(r.Field(Of String)("TRACK_NO"))).FirstOrDefault()
+                                Dim Due_Dt As String = "-"
 
                                 Dim DeliveryDate As DateTime = dsDeliverDt.Tables(0).AsEnumerable().
      Where(Function(r) Convert.ToString(r.Field(Of Decimal)("LINE_NBR")) = OrderDetails.Rows(K).Item("Line Number").ToString).
      Select(Function(r) Convert.ToString(r.Field(Of DateTime)("DUE_DT"))).FirstOrDefault()
 
-                                If TrackNum.Trim() = "" Then
-                                    TrackNum = "-"
-                                End If
-
-                                strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;'> Tracking Number:</span> <span>&nbsp;" & TrackNum & "</span></p> "
-                                strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;'> Delivery Date:</span> <span>&nbsp;" & DeliveryDate & "</span></p> "
+                                strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;font-family:Calibri;'>&nbsp;&nbsp;&nbsp; Tracking Number:</span> <span style='font-family:Calibri;'>&nbsp;" & OrderDetails.Rows(K).Item("Tracking No") & "</span></p> "
+                                strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;font-family:Calibri;'> &nbsp;&nbsp;&nbsp; Delivery Date:</span> <span style='font-family:Calibri;'>&nbsp;" & Due_Dt & "</span></p> "
 
                             Next
                         Catch ex As Exception
@@ -2551,14 +2537,14 @@ Module Module1
         Next
 
         strbodydet1 = strbodydet1 & "&nbsp;<br>"
-                strbodydet1 = strbodydet1 & "Sincerely,<br>"
-                strbodydet1 = strbodydet1 & "&nbsp;<br>"
-                strbodydet1 = strbodydet1 & "SDI Customer Care<br>"
-                strbodydet1 = strbodydet1 & "&nbsp;<br>"
-                strbodydet1 = strbodydet1 & "</p>"
-                strbodydet1 = strbodydet1 & "</div>"
-                strbodydet1 = strbodydet1 & "<HR width='100%' SIZE='1'>" & vbCrLf
-                strbodydet1 = strbodydet1 & "<img src='http://www.sdiexchange.com/Images/SDIFooter_Email.png'/>" & vbCrLf
+        strbodydet1 = strbodydet1 & "Sincerely,<br>"
+        strbodydet1 = strbodydet1 & "&nbsp;<br>"
+        strbodydet1 = strbodydet1 & "SDI Customer Care<br>"
+        strbodydet1 = strbodydet1 & "&nbsp;<br>"
+        strbodydet1 = strbodydet1 & "</p>"
+        strbodydet1 = strbodydet1 & "</div>"
+        strbodydet1 = strbodydet1 & "<HR width='100%' SIZE='1'>" & vbCrLf
+        strbodydet1 = strbodydet1 & "<img src='http://www.sdiexchange.com/Images/SDIFooter_Email.png'/>" & vbCrLf
 
         Mailer1.Body = strbodyhead1 & strbodydet1
 
@@ -2967,97 +2953,135 @@ Module Module1
         Dim SWnstk1 As New StringWriter(SBnstk1)
         Dim htmlTWnstk1 As New HtmlTextWriter(SWnstk1)
         Dim bolSelectItem1 As Boolean
+        Dim sendEmailAlert As Boolean
+        Dim IsProdDB As Boolean = False
 
-        Dim Mailer1 As MailMessage = New MailMessage
-        Dim strccfirst1 As String = "erwin.bautista"  '  "pete.doyle"
-        Dim strcclast1 As String = "sdi.com"
-        Mailer1.From = "SDIExchange@SDI.com"  '  "Insiteonline@SDI.com"
-        Mailer1.Cc = ""
-        Mailer1.Bcc = strccfirst1 & "@" & strcclast1
-        strbodyhead1 = "<table width='100%'><tbody><tr><td><img src='http://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='82px' vspace='0' hspace='0' /></td><td width='100%'><br /><br /><br /><br /><br /><br /><center><span style='font-family: Arial; font-size: x-large; text-align: center;'>SDI Marketplace</span></center><center><span style='text-align: center; margin: 0px auto;'>SDiExchange - Order Status</span></center></td></tr></tbody></table>"
-        strbodyhead1 = strbodyhead1 & "<HR width='100%' SIZE='1'>"
-        strbodyhead1 = strbodyhead1 & "&nbsp;" & vbCrLf
-
-        Dim dtgEmail1 As WebControls.DataGrid
-        dtgEmail1 = New WebControls.DataGrid
-
-        dsEmail = DuplicateRemoval(dsEmail)
-
-        dtgEmail1.DataSource = dsEmail
-        dtgEmail1.DataBind()
-        dtgEmail1.BorderColor = Gray
-        dtgEmail1.HeaderStyle.BackColor = System.Drawing.Color.LightGray
-        dtgEmail1.HeaderStyle.Font.Bold = True
-        dtgEmail1.HeaderStyle.ForeColor = Black
-        WebControls.Unit.Percentage(90)
-        dtgEmail1.CellPadding = 3
-        'dtgEmail1.Width.Percentage(90)
-
-        'dtgPO.Columns(9).ItemStyle.HorizontalAlign = HorizontalAlign.Center
-        dtgEmail1.RenderControl(htmlTWnstk1)
-        dataGridHTML1 = SBnstk1.ToString()
-
-        ''Get Order Notes here
-        Dim Ord_notes As String = ""
-        Ord_notes = GetOrderNotes(strOrderNo, strBU)
-
-        'Dim strPurchaserName As String = strCustID
-        Dim strPurchaserName As String = strFirstName &
-           " " & strLastName
-        'Dim ted As String = ";erwin.bautista@sdi.com"
-        Dim strPurchaserEmail As String = strEmail
-        'Dim strPurchaserEmail As String = strEmail
-        strbodydet1 = "&nbsp;" & vbCrLf
-        strbodydet1 = strbodydet1 & "<div>"
-        strbodydet1 = strbodydet1 & "<p >Hello " & strPurchaserName & ",</p>"
-        'strbodydet1 = strbodydet1 & "&nbsp;<BR>" 
-        strbodydet1 = strbodydet1 & "<p style='font-weight:bold;'>Order Number: " & strOrderNo & " </p> "
-
-        If Not Ord_notes Is Nothing Then
-            If Not (String.IsNullOrEmpty(Ord_notes.Trim())) Then
-                strbodydet1 = strbodydet1 & "<p style='font-weight:bold;'>Customer Notes: " & Ord_notes & " </p> "
+        'Only for "DLF" status email will be sent for WAL users - WAL-632&WW-287 Poornima S
+        If strBU = "I0W01" Then
+            If strOrderStatus.Trim() = "DLF" Then
+                sendEmailAlert = True
+            Else
+                sendEmailAlert = False
             End If
+        Else
+            sendEmailAlert = True
         End If
 
-        strbodydet1 = strbodydet1 & "<p style='font-weight:bold;'>Order contents: </p>"
-        'strbodydet1 = strbodydet1 & "&nbsp;<BR>"
-        ' strbodydet1 = strbodydet1 & "Order Status:  " & strOrderStatDesc & " <br>"
-        'strbodydet1 = strbodydet1 & "Order Number:  " & strOrderNo & " <br>"
-        ' strbodydet1 = strbodydet1 & "Line Number:  " & strLineNbr & " <br>"
-        strbodydet1 = strbodydet1 & "&nbsp;"
-        strbodydet1 = strbodydet1 & "<TABLE cellSpacing='1' cellPadding='1' width='100%' border='0'>" & vbCrLf
-        strbodydet1 = strbodydet1 + "<TR><TD Class='DetailRow' width='100%'>" & dataGridHTML1 & "</TD></TR>"
-        strbodydet1 = strbodydet1 + "<TR><TD Class='DetailRow'>&nbsp;</TD></TR>"
-        strbodydet1 = strbodydet1 & "</TABLE>" & vbCrLf
-
-        strbodydet1 = strbodydet1 & "&nbsp;<br>"
-        strbodydet1 = strbodydet1 & "Sincerely,<br>"
-        strbodydet1 = strbodydet1 & "&nbsp;<br>"
-        strbodydet1 = strbodydet1 & "SDI Customer Care<br>"
-        strbodydet1 = strbodydet1 & "&nbsp;<br>"
-        strbodydet1 = strbodydet1 & "</p>"
-        strbodydet1 = strbodydet1 & "</div>"
-        strbodydet1 = strbodydet1 & "<HR width='100%' SIZE='1'>" & vbCrLf
-        strbodydet1 = strbodydet1 & "<img src='http://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & vbCrLf
-
-        Mailer1.Body = strbodyhead1 & strbodydet1
-        Dim strPushNoti As String = ""
         If Not getDBName() Then
-            Mailer1.To = "webdev@sdi.com"
+            IsProdDB = False
+        Else
+            IsProdDB = True
+        End If
+
+        If sendEmailAlert Then
+            Dim Mailer1 As MailMessage = New MailMessage
+            Dim strccfirst1 As String = "erwin.bautista"  '  "pete.doyle"
+            Dim strcclast1 As String = "sdi.com"
+            Mailer1.From = "SDIExchange@SDI.com"  '  "Insiteonline@SDI.com"
+            Mailer1.Cc = ""
+            Mailer1.Bcc = strccfirst1 & "@" & strcclast1
+            strbodyhead1 = "<table width='100%'><tbody><tr><td><img src='http://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='82px' vspace='0' hspace='0' /></td><td width='100%'><br /><br /><br /><br /><br /><br /><center><span style='font-family: Arial; font-size: x-large; text-align: center;'>SDI Marketplace</span></center><center><span style='text-align: center; margin: 0px auto;'>SDiExchange - Order Status</span></center></td></tr></tbody></table>"
+            strbodyhead1 = strbodyhead1 & "<HR width='100%' SIZE='1'>"
+            strbodyhead1 = strbodyhead1 & "&nbsp;" & vbCrLf
+
+            Dim dtgEmail1 As WebControls.DataGrid
+            dtgEmail1 = New WebControls.DataGrid
+
+            dsEmail = DuplicateRemoval(dsEmail)
+
+            dtgEmail1.DataSource = dsEmail
+            dtgEmail1.DataBind()
+            dtgEmail1.BorderColor = Gray
+            dtgEmail1.HeaderStyle.BackColor = System.Drawing.Color.LightGray
+            dtgEmail1.HeaderStyle.Font.Bold = True
+            dtgEmail1.HeaderStyle.ForeColor = Black
+            WebControls.Unit.Percentage(90)
+            dtgEmail1.CellPadding = 3
+            'dtgEmail1.Width.Percentage(90)
+
+            'dtgPO.Columns(9).ItemStyle.HorizontalAlign = HorizontalAlign.Center
+            dtgEmail1.RenderControl(htmlTWnstk1)
+            dataGridHTML1 = SBnstk1.ToString()
+
+            ''Get Order Notes here
+            Dim Ord_notes As String = ""
+            Ord_notes = GetOrderNotes(strOrderNo, strBU)
+
+            'Dim strPurchaserName As String = strCustID
+            Dim strPurchaserName As String = strFirstName &
+               " " & strLastName
+            'Dim ted As String = ";erwin.bautista@sdi.com"
+            Dim strPurchaserEmail As String = strEmail
+            'Dim strPurchaserEmail As String = strEmail
+            strbodydet1 = "&nbsp;" & vbCrLf
+            strbodydet1 = strbodydet1 & "<div>"
+            strbodydet1 = strbodydet1 & "<p >Hello " & strPurchaserName & ",</p>"
+            'strbodydet1 = strbodydet1 & "&nbsp;<BR>" 
+            strbodydet1 = strbodydet1 & "<p style='font-weight:bold;'>Order Number: " & strOrderNo & " </p> "
+
+            If Not Ord_notes Is Nothing Then
+                If Not (String.IsNullOrEmpty(Ord_notes.Trim())) Then
+                    strbodydet1 = strbodydet1 & "<p style='font-weight:bold;'>Customer Notes: " & Ord_notes & " </p> "
+                End If
+            End If
+
+            strbodydet1 = strbodydet1 & "<p style='font-weight:bold;'>Order contents: </p>"
+            'strbodydet1 = strbodydet1 & "&nbsp;<BR>"
+            ' strbodydet1 = strbodydet1 & "Order Status:  " & strOrderStatDesc & " <br>"
+            'strbodydet1 = strbodydet1 & "Order Number:  " & strOrderNo & " <br>"
+            ' strbodydet1 = strbodydet1 & "Line Number:  " & strLineNbr & " <br>"
+            strbodydet1 = strbodydet1 & "&nbsp;"
+            strbodydet1 = strbodydet1 & "<TABLE cellSpacing='1' cellPadding='1' width='100%' border='0'>" & vbCrLf
+            strbodydet1 = strbodydet1 + "<TR><TD Class='DetailRow' width='100%'>" & dataGridHTML1 & "</TD></TR>"
+            strbodydet1 = strbodydet1 + "<TR><TD Class='DetailRow'>&nbsp;</TD></TR>"
+            strbodydet1 = strbodydet1 & "</TABLE>" & vbCrLf
+
+            strbodydet1 = strbodydet1 & "&nbsp;<br>"
+            strbodydet1 = strbodydet1 & "Sincerely,<br>"
+            strbodydet1 = strbodydet1 & "&nbsp;<br>"
+            strbodydet1 = strbodydet1 & "SDI Customer Care<br>"
+            strbodydet1 = strbodydet1 & "&nbsp;<br>"
+            strbodydet1 = strbodydet1 & "</p>"
+            strbodydet1 = strbodydet1 & "</div>"
+            strbodydet1 = strbodydet1 & "<HR width='100%' SIZE='1'>" & vbCrLf
+            strbodydet1 = strbodydet1 & "<img src='http://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & vbCrLf
+
+            Mailer1.Body = strbodyhead1 & strbodydet1
+
+            If Not IsProdDB Then
+                Mailer1.To = "webdev@sdi.com"
+                If strBU = "I0W01" Then
+                    Mailer1.Subject = "<<TEST SITE>>Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
+                Else
+                    Mailer1.Subject = "<<TEST SITE>>SDiExchange - Order Status records for Order Number: " & strOrderNo
+                End If
+            Else
+                Mailer1.To = strPurchaserEmail
+                If strBU = "I0W01" Then
+                    Mailer1.Subject = "Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
+                Else
+                    Mailer1.Subject = "SDiExchange - Order Status records for Order Number: " & strOrderNo
+                End If
+            End If
+
+            Mailer1.BodyFormat = System.Web.Mail.MailFormat.Html
+
+            SDIEmailService.EmailUtilityServices("MailandStore", Mailer1.From, Mailer1.To, Mailer1.Subject, String.Empty, "webdev@sdi.com", Mailer1.Body, "StatusChangeEmail1", MailAttachmentName, MailAttachmentbytes.ToArray())
+        End If
+
+        'Push & Web notifications will be sent for all orders of all BUs lively- WAL-632&WW-287 Poornima S
+        Dim strPushNoti As String = ""
+
+        If Not IsProdDB Then
             If strBU = "I0W01" Then
-                Mailer1.Subject = "<<TEST SITE>>Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
                 strPushNoti = "<<TEST SITE>>Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
             Else
-                Mailer1.Subject = "<<TEST SITE>>SDiExchange - Order Status records for Order Number: " & strOrderNo
                 strPushNoti = "<<TEST SITE>>Order Number: " + strOrderNo + " - Status Modified To  " + strOrderStatDesc + " . Please check the details in order status menu."
             End If
         Else
-            Mailer1.To = strPurchaserEmail
             If strBU = "I0W01" Then
-                Mailer1.Subject = "Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
                 strPushNoti = "Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
             Else
-                Mailer1.Subject = "SDiExchange - Order Status records for Order Number: " & strOrderNo
                 strPushNoti = "Order Number: " + strOrderNo + " - Status Modified To " + strOrderStatDesc + ". Please check the details in order status menu."
             End If
         End If
@@ -3067,9 +3091,6 @@ Module Module1
             Dim Title As String = "Order Number: " + strOrderNo + " - Status Modified To " + strOrderStatDesc + ""
             sendWebNotification(strEmpID, Title)
         End If
-        Mailer1.BodyFormat = System.Web.Mail.MailFormat.Html
-
-        SDIEmailService.EmailUtilityServices("MailandStore", Mailer1.From, Mailer1.To, Mailer1.Subject, String.Empty, "webdev@sdi.com", Mailer1.Body, "StatusChangeEmail1", MailAttachmentName, MailAttachmentbytes.ToArray())
 
     End Sub
 
