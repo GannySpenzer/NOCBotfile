@@ -335,6 +335,12 @@ Public Class QuoteNonStockProcessor
         dstcart.Columns.Add("Ext. USD Price")
         dstcart.Columns.Add("Item PO Price")
         dstcart.Columns.Add("Item PO Ext. Price")
+        'Added Supplier & Supplier part num in approval email for WAL orders - WW-287 & WAL-632 Poornima S
+        If BU = "I0W01" Then
+            dstcart.Columns.Add("Supplier")
+            dstcart.Columns.Add("Supplier Part Number")
+        End If
+
 
 
         Dim strOraSelectQuery As String = String.Empty
@@ -513,6 +519,20 @@ Public Class QuoteNonStockProcessor
                     End Try
 
                     dr("LN") = CType(dataRowMain("ISA_INTFC_LN"), String).Trim()
+
+                    'Added Supplier & Supplier part num in approval email for WAL orders - WW-287 & WAL-632 Poornima S
+                    If BU = "I0W01" Then
+                        Try
+                            dr("Supplier") = CType(dataRowMain("VENDOR_ID"), String).Trim()
+                        Catch ex As Exception
+                        End Try
+
+                        Try
+                            dr("Supplier Part Number") = CType(dataRowMain("MFG_ITM_ID"), String).Trim()
+                        Catch ex As Exception
+                        End Try
+                    End If
+
                     dstcart.Rows.Add(dr)
                 Next
                 If AltPartFlag = False Then  'Mythili - SDI-37570,to add alt part num in material request email
