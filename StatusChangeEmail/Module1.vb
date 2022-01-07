@@ -2541,9 +2541,9 @@ Module Module1
         Next
 
         strbodydet1 = strbodydet1 & "&nbsp;<br>"
-        strbodydet1 = strbodydet1 & "Sincerely,<br>"
+        strbodydet1 = strbodydet1 & "<span style='font-family:Calibri;'>Sincerely,</span><br>"
         strbodydet1 = strbodydet1 & "&nbsp;<br>"
-        strbodydet1 = strbodydet1 & "SDI Customer Care<br>"
+        strbodydet1 = strbodydet1 & "<span style='font-family:Calibri;'>SDI Customer Care</span><br>"
         strbodydet1 = strbodydet1 & "&nbsp;<br>"
         strbodydet1 = strbodydet1 & "</p>"
         strbodydet1 = strbodydet1 & "</div>"
