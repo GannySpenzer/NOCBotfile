@@ -2504,7 +2504,8 @@ Module Module1
                             OrderDetails = (From C In WONumDetails.AsEnumerable Where C.Field(Of String)("Order No.") = orderno).CopyToDataTable()
 
                             strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;font-family:Calibri;'> Order Number:</span> <span style='font-family:Calibri;'>&nbsp;" & orderno & "</span></p> "
-                            strbodydet1 = strbodydet1 & "<div><span><img src =" & statusImg & " alt='SDI' width='50%' height='5%' vspace='0' hspace='0' /></span>&nbsp;&nbsp;&nbsp;<span style='font-Size:18px; background-color:" & bgColor & ";color: " & Color & ";font-family:Calibri;border-radius:50px; text-align:center;padding:5px 10px 5px 5px;'>&nbsp; " & OrdStatusArr(1) & "</span></div>"
+                            strbodydet1 = strbodydet1 & "<div><span><img src =" & statusImg & " alt='SDI' width='50%' height='5%' vspace='0' hspace='0' /></span>&nbsp;&nbsp;&nbsp;</div><br>"
+                            strbodydet1 = strbodydet1 & "<span style='font-Size:16px; background-color:" & bgColor & ";color: " & Color & ";font-family:Calibri;border-radius:50px; text-align:center;padding:2px 8px 2px 2px;'>&nbsp; " & OrdStatusArr(1) & "</span>"
 
                             Try
                                 OrderDetails = OrderDetails.AsEnumerable().GroupBy(Function(row) row.Field(Of String)("Line Number")).Select(Function(group) group.First()).CopyToDataTable()
@@ -2518,7 +2519,7 @@ Module Module1
                                     strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;font-family:Calibri;'> Ship-to Store:</span> <span style='font-family:Calibri;'>&nbsp;" & OrderDetails.Rows(K).Item("Ship To") & "</span></p> "
                                     strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;font-family:Calibri;'> Items Ordered:</span></p> "
                                 End If
-                                strbodydet1 = strbodydet1 & "<p><span style='font-family:Calibri;'> &nbsp;&nbsp;&nbsp; Qty-</span> <span style='font-family:Calibri;'>" & OrderDetails.Rows(K).Item("Qty Ordered") & "</span><span style='font-family:Calibri;'>,&nbsp; " & OrderDetails.Rows(K).Item("Non-Stock Item Description") & "</span></p> "
+                                strbodydet1 = strbodydet1 & "<p><span style='font-family:Calibri;font-weight:bold;'> &nbsp;&nbsp;&nbsp; Qty:</span> <span style='font-family:Calibri;'>" & OrderDetails.Rows(K).Item("Qty Ordered") & "</span><span style='font-family:Calibri;'>,&nbsp; " & OrderDetails.Rows(K).Item("Non-Stock Item Description") & "</span></p> "
 
                                 strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;font-family:Calibri;'>&nbsp;&nbsp;&nbsp; Tracking Number:</span> <span style='font-family:Calibri;'>&nbsp;" & OrderDetails.Rows(K).Item("Tracking No") & "</span></p> "
                                 strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;font-family:Calibri;'> &nbsp;&nbsp;&nbsp; Delivery Date:</span> <span style='font-family:Calibri;'>&nbsp;" & OrderDetails.Rows(K).Item("Delivery Date") & "</span></p> "
