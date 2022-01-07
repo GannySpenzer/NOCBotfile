@@ -1629,8 +1629,8 @@ Module Module1
 
         strSQLstring = "SELECT H.ISA_IOL_OP_NAME as STATUS_CODE, TBL.* FROM (SELECT distinct G.BUSINESS_UNIT_OM, G.BUSINESS_UNIT_OM AS G_BUS_UNIT, D.BUSINESS_UNIT, D.ISA_EMPLOYEE_ID, A.ORDER_NO,B.ISA_WORK_ORDER_NO As WORK_ORDER_NO, B.ISA_INTFC_LN AS line_nbr," & vbCrLf &
                  " B.ISA_EMPLOYEE_ID AS EMPLID, B.ISA_LINE_STATUS as ORDER_TYPE,B.OPRID_ENTERED_BY, B.SHIPTO_ID as SHIPTO,B.ISA_USER2 as STORE," & vbCrLf &
-                 " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, B.ISA_PRIORITY_FLAG As IsPriority," & vbCrLf &
-                 "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','01','QTW','02','QTC','03','QTS','04','CST','05','VND','06','APR','07','QTA','08','QTR','09','RFA','10','RFR','11','RFC','12','RCF','13','RCP','14','CNC','15','PKA','17') AS OLD_ORDER_STATUS," & vbCrLf
+                 " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, B.ISA_PRIORITY_FLAG As IsPriority, B.ISA_REQUIRED_BY_DT," & vbCrLf &
+                 "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','01','QTW','02','QTC','03','QTS','04','CST','05','VND','06','APR','07','QTA','08','QTR','09','RFA','10','RFR','11','RFC','12','RCF','13','RCP','14','CNC','15','PKA','17','ASN','18') AS OLD_ORDER_STATUS," & vbCrLf
 
 
         strSQLstring += " (SELECT E.XLATLONGNAME" & vbCrLf &
@@ -1746,6 +1746,7 @@ Module Module1
         dsEmail.Columns.Add("Last Name")
         dsEmail.Columns.Add("IsPriority")
         dsEmail.Columns.Add("Ship To")
+        dsEmail.Columns.Add("Delivery Date")
         Try
             strSQLstring = "SELECT DESCR,SHIPTO_ID FROM PS_SHIPTO_TBL"
             dsShipTo = ORDBAccess.GetAdapter(strSQLstring, connectOR)
@@ -1801,6 +1802,7 @@ Module Module1
                     End Try
 
                     dr1 = dsEmail.NewRow()
+                    Dim Dtformat As String = "MM/dd/yyyy"
                     Dim stroderno As String = OrderDetailDT.Rows(I).Item("ORDER_NO")
                     Dim strlineno As String = OrderDetailDT.Rows(I).Item("LINE_NBR")
                     dr1.Item(0) = OrderDetailDT.Rows(I).Item("ORDER_NO")
@@ -1826,7 +1828,7 @@ Module Module1
                     Try
                         trackingNo = OrderDetailDT.Rows(I).Item("ISA_ASN_TRACK_NO")
                     Catch ex As Exception
-                        trackingNo = "-"
+                        trackingNo = ""
                     End Try
 
                     If Not String.IsNullOrEmpty(trackingNo) Then
@@ -1840,7 +1842,7 @@ Module Module1
                             dr1.Item(11) = m_cURL1
                         End If
                     Else
-                        dr1.Item(11) = ""
+                        dr1.Item(11) = "-"
                     End If
                     Try
                         dr1.Item(12) = OrderDetailDT.Rows(I).Item("QTY_REQUESTED")
@@ -1895,6 +1897,12 @@ Module Module1
                         End Try
 
                     End If
+
+                    Try
+                        dr1.Item(20) = Convert.ToDateTime(OrderDetailDT.Rows(I).Item("ISA_REQUIRED_BY_DT")).ToString(Dtformat)
+                    Catch ex As Exception
+                        dr1.Item(20) = "-"
+                    End Try
 
 
                     dsEmail.Rows.Add(dr1)
@@ -2346,7 +2354,7 @@ Module Module1
         Mailer1.From = "SDIExchange@SDI.com"  '  "Insiteonline@SDI.com"
         Mailer1.Cc = ""
         Mailer1.Bcc = strccfirst1 & "@" & strcclast1
-        strbodyhead1 = "<table width='100%'><tbody><tr><td><img src='http://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='82px' vspace='0' hspace='0' /></td><td width='100%'><br /><br /><br /><br /><br /><br /><center><span style='font-family: Arial; font-size: x-large; text-align: center;'>SDI Marketplace</span></center><center><span style='text-align: center; margin: 0px auto;'>SDiExchange - Order Status</span></center></td></tr></tbody></table>"
+        strbodyhead1 = "<table width='100%'><tbody><tr><td><img src='http://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='82px' vspace='0' hspace='0' /></td><td width='100%'><br /><br /><br /><br /><br /><br /><center><span style='font-family: Calibri; font-size: x-large; text-align: center;'>SDI Marketplace</span></center><center><span style='text-align: center; margin: 0px auto; font-family:Calibri;'>SDiExchange - Order Status</span></center></td></tr></tbody></table>"
         strbodyhead1 = strbodyhead1 & "<HR width='100%' SIZE='1'>"
         strbodyhead1 = strbodyhead1 & "&nbsp;" & vbCrLf
 
@@ -2356,7 +2364,7 @@ Module Module1
 
         strbodydet1 = "&nbsp;" & vbCrLf
         strbodydet1 = strbodydet1 & "<div>"
-        strbodydet1 = strbodydet1 & "<p >Hello " & strPurchaserName & ",</p>"
+        strbodydet1 = strbodydet1 & "<p style='font-family:Calibri;'>Hello " & strPurchaserName & ",</p>"
 
         Dim dtgEmail1 As WebControls.DataGrid
         dtgEmail1 = New WebControls.DataGrid
@@ -2398,9 +2406,9 @@ Module Module1
             End If
 
             If IsPrioAvail Then
-                strbodydet1 = strbodydet1 & "<span ><B>**PRIORITY ORDER**</B></span>"
+                strbodydet1 = strbodydet1 & "<span style='font-family:Calibri;'><B>**PRIORITY ORDER**</B></span>"
             ElseIf IsNonPrioAvail Then
-                strbodydet1 = strbodydet1 & "<span ><B>**REGULAR ORDER**</B></span>"
+                strbodydet1 = strbodydet1 & "<span style='font-family:Calibri;'><B>**REGULAR ORDER**</B></span>"
             End If
 
             Dim dateAsString As String = DateTime.Now.ToString("dd/MM/yyyy")
@@ -2428,7 +2436,7 @@ Module Module1
                 objStreamWriter.WriteLine("Reading order details of Store Num:" + StoreNum)
 
                 If Not (String.IsNullOrEmpty(StoreNum.Trim())) Then
-                    strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;'> Install Store:</span> <span>&nbsp;" & StoreNum & "</span></p> "
+                    strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;font-family:Calibri;'> Install Store:</span> <span style='font-family:Calibri;'>&nbsp;" & StoreNum & "</span></p> "
                 End If
 
                 Dim WOArr As String() = NewStoreNumDT.AsEnumerable().[Select](Function(r) r.Field(Of String)("Work Order Number")).Distinct().ToArray()
@@ -2437,7 +2445,7 @@ Module Module1
                     Dim WONumDetails As New DataTable
                     WONumDetails = (From C In NewStoreNumDT.AsEnumerable Where C.Field(Of String)("Work Order Number") = WONum).CopyToDataTable()
 
-                    strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;'> Work Order Num:</span> <span>&nbsp;" & WONum & "</span></p> "
+                    strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;font-family:Calibri;'> Work Order Num:</span> <span style='font-family:Calibri;'>&nbsp;" & WONum & "</span></p> "
 
                     Dim Ordernum As String() = WONumDetails.AsEnumerable().[Select](Function(r) r.Field(Of String)("Order No.")).Distinct().ToArray()
 
@@ -2495,13 +2503,14 @@ Module Module1
 
                             OrderDetails = (From C In WONumDetails.AsEnumerable Where C.Field(Of String)("Order No.") = orderno).CopyToDataTable()
 
-                            strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;font-family:Calibri;'> Order Number:</span> <span>&nbsp;" & orderno & "</span></p> "
+                            strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;font-family:Calibri;'> Order Number:</span> <span style='font-family:Calibri;'>&nbsp;" & orderno & "</span></p> "
                             strbodydet1 = strbodydet1 & "<div><span><img src =" & statusImg & " alt='SDI' width='50%' height='5%' vspace='0' hspace='0' /></span>&nbsp;&nbsp;&nbsp;<span style='font-Size:18px; background-color:" & bgColor & ";color: " & Color & ";font-family:Calibri;border-radius:50px; text-align:center;padding:5px 10px 5px 5px;'>&nbsp; " & OrdStatusArr(1) & "</span></div>"
 
+                            Try
+                                OrderDetails = OrderDetails.AsEnumerable().GroupBy(Function(row) row.Field(Of String)("Line Number")).Select(Function(group) group.First()).CopyToDataTable()
+                            Catch ex As Exception
 
-                            strQuery = "SELECT DUE_DT, LS.LINE_NBR FROM PS_PO_LINE_SHIP LS, SYSADM8.PS_PO_LINE_DISTRIB AB  WHERE AB.REQ_ID = '" & orderno & "' AND AB.PO_ID=LS.PO_ID"
-                            Dim dsDeliverDt As DataSet = ORDBAccess.GetAdapter(strQuery, connectOR)
-
+                            End Try
 
                             For K = 0 To OrderDetails.Rows.Count - 1
 
@@ -2511,14 +2520,8 @@ Module Module1
                                 End If
                                 strbodydet1 = strbodydet1 & "<p><span style='font-family:Calibri;'> &nbsp;&nbsp;&nbsp; Qty-</span> <span style='font-family:Calibri;'>" & OrderDetails.Rows(K).Item("Qty Ordered") & "</span><span style='font-family:Calibri;'>,&nbsp; " & OrderDetails.Rows(K).Item("Non-Stock Item Description") & "</span></p> "
 
-                                Dim Due_Dt As String = "-"
-
-                                Dim DeliveryDate As DateTime = dsDeliverDt.Tables(0).AsEnumerable().
-     Where(Function(r) Convert.ToString(r.Field(Of Decimal)("LINE_NBR")) = OrderDetails.Rows(K).Item("Line Number").ToString).
-     Select(Function(r) Convert.ToString(r.Field(Of DateTime)("DUE_DT"))).FirstOrDefault()
-
                                 strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;font-family:Calibri;'>&nbsp;&nbsp;&nbsp; Tracking Number:</span> <span style='font-family:Calibri;'>&nbsp;" & OrderDetails.Rows(K).Item("Tracking No") & "</span></p> "
-                                strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;font-family:Calibri;'> &nbsp;&nbsp;&nbsp; Delivery Date:</span> <span style='font-family:Calibri;'>&nbsp;" & Due_Dt & "</span></p> "
+                                strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;font-family:Calibri;'> &nbsp;&nbsp;&nbsp; Delivery Date:</span> <span style='font-family:Calibri;'>&nbsp;" & OrderDetails.Rows(K).Item("Delivery Date") & "</span></p> "
 
                             Next
                         Catch ex As Exception
