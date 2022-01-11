@@ -238,6 +238,20 @@ Public Class PODueDateUpdate_SC
                         httpClient.DefaultRequestHeaders.Authorization = New AuthenticationHeaderValue("Bearer", objValidateUserResponseBO.access_token)
                         Dim objInserWorOrdeParts As New InsertWorkOrderPartsBO
                         objInserWorOrdeParts.AddItems = New List(Of AddItem)
+                        'calling SC API to get store data and sending Scheduled date as Use Date
+                        Dim useDate = DateTime.Now.ToString()
+                        Dim objWorkOrderDetails As WorkOrderDetails
+                        Dim apiURL1 = ConfigurationManager.AppSettings("ServiceChannelBaseAddress") + "/workorders/" + workOrder
+                        Dim httpClient1 As HttpClient = New HttpClient()
+                        httpClient1.DefaultRequestHeaders.Authorization = New AuthenticationHeaderValue("Bearer", objValidateUserResponseBO.access_token)
+                        Dim response1 = httpClient1.GetAsync(apiURL1).Result
+                        If response1.IsSuccessStatusCode Then
+                            Dim workorderAPIResponse As String = response1.Content.ReadAsStringAsync().Result
+                            If workorderAPIResponse <> "[]" And Not String.IsNullOrEmpty(workorderAPIResponse) And Not String.IsNullOrWhiteSpace(workorderAPIResponse) Then
+                                objWorkOrderDetails = JsonConvert.DeserializeObject(Of WorkOrderDetails)(workorderAPIResponse)
+                                useDate = objWorkOrderDetails.ScheduledDate
+                            End If
+                        End If
                         For Each item As DataRow In cartDt.Rows
                             Dim dueDate As String = String.Empty
                             Try
@@ -250,6 +264,7 @@ Public Class PODueDateUpdate_SC
 
                             objInserWorOrdeParts.AddItems.Add(New AddItem() With {
                                 .RecId = workOrder,
+                                .UseDate = useDate,
                              .Description = item("ItemDescription") + " " + dueDate,
                              .Quantity = item("Quantity"),
                              .PartNumber = item("OrderNo")
@@ -348,4 +363,28 @@ Public Class WorkOrderParts
     Public Property Description As String = String.Empty
     Public Property Price As Double
     Public Property SupplierPartId As String = String.Empty
+End Class
+
+Public Class WorkOrderDetails
+    Public Property Notes As Notes
+    Public Property Location As Location
+    Public Property Asset As Asset
+    Public Property PurchaseNumber As String = String.Empty
+    Public Property ScheduledDate As String
+
+End Class
+
+Public Class Asset
+    Public Property Tag As String = String.Empty
+End Class
+Public Class Location
+    Public Property StoreId As String = String.Empty
+End Class
+
+Public Class Notes
+    Public Property Last As Last
+End Class
+
+Public Class Last
+    Public Property NoteData As String = String.Empty
 End Class
