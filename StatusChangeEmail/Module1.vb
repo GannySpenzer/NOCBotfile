@@ -2354,7 +2354,7 @@ Module Module1
         Mailer1.From = "SDIExchange@SDI.com"  '  "Insiteonline@SDI.com"
         Mailer1.Cc = ""
         Mailer1.Bcc = strccfirst1 & "@" & strcclast1
-        strbodyhead1 = "<table width='100%'><tbody><tr><td><img src='http://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='82px' vspace='0' hspace='0' /></td><td width='100%'><br /><br /><br /><br /><br /><br /><center><span style='font-family: Calibri; font-size: x-large; text-align: center;'>SDI Marketplace</span></center><center><span style='text-align: center; margin: 0px auto; font-family:Calibri;'>SDiExchange - Order Status</span></center></td></tr></tbody></table>"
+        strbodyhead1 = "<table width='100%'><tbody><tr><td><img src='http://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='82px' vspace='0' hspace='0' /></td><td width='100%'><br /><br /><br /><br /><br /><br /><center><span style='font-family: Calibri; font-size: 32px; text-align: center;font-weight:bold'>SDI Marketplace</span></center><center style='font-size:18px'><span style='text-align: center; margin: 0px auto; font-family:Calibri;'>SDiExchange - Order Status</span></center></td></tr></tbody></table>"
         strbodyhead1 = strbodyhead1 & "<HR width='100%' SIZE='1'>"
         strbodyhead1 = strbodyhead1 & "&nbsp;" & vbCrLf
 
@@ -2364,7 +2364,7 @@ Module Module1
 
         strbodydet1 = "&nbsp;" & vbCrLf
         strbodydet1 = strbodydet1 & "<div>"
-        strbodydet1 = strbodydet1 & "<p style='font-family:Calibri;'>Hello " & strPurchaserName & ",</p>"
+        strbodydet1 = strbodydet1 & "<p style='font-family:Calibri;font-size:18px'>Hello " & strPurchaserName & ",</p>"
 
         Dim dtgEmail1 As WebControls.DataGrid
         dtgEmail1 = New WebControls.DataGrid
@@ -2406,9 +2406,9 @@ Module Module1
             End If
 
             If IsPrioAvail Then
-                strbodydet1 = strbodydet1 & "<span style='font-family:Calibri;'><B>**PRIORITY ORDER**</B></span>"
+                strbodydet1 = strbodydet1 & "<span style='font-family:Calibri;font-size: 21px;margin-bottom:10px;width:100%;float:left'><B>PRIORITY ORDER</B></span>"
             ElseIf IsNonPrioAvail Then
-                strbodydet1 = strbodydet1 & "<span style='font-family:Calibri;'><B>**REGULAR ORDER**</B></span>"
+                strbodydet1 = strbodydet1 & "<span style='font-family:Calibri;font-size: 21px;margin-bottom:10px;width:100%;float:left'><B>REGULAR ORDER</B></span>"
             End If
 
             Dim dateAsString As String = DateTime.Now.ToString("dd/MM/yyyy")
@@ -2435,8 +2435,9 @@ Module Module1
                 objGenerallLogStreamWriter.WriteLine("Reading order details of Store Num:" + StoreNum)
                 objStreamWriter.WriteLine("Reading order details of Store Num:" + StoreNum)
 
+                strbodydet1 = strbodydet1 & "<div style='float:left;width:100%;margin-bottom:30px'>"
                 If Not (String.IsNullOrEmpty(StoreNum.Trim())) Then
-                    strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;font-family:Calibri;'> Install Store:</span> <span style='font-family:Calibri;'>&nbsp;" & StoreNum & "</span></p> "
+                    strbodydet1 = strbodydet1 & "<p><span style='background-color:#dbf4f7;padding:10px 15px;border-radius:36px;float:Left();font-size:16.5px;margin-bottom:5px;float:left'><span style='font-weight:bold;font-family:Calibri;color: #0505af;'> Install Store:</span> <span style='font-family:Calibri;color: #0505af;'>&nbsp;" & StoreNum & "</span></span></p>"
                 End If
 
                 Dim WOArr As String() = NewStoreNumDT.AsEnumerable().[Select](Function(r) r.Field(Of String)("Work Order Number")).Distinct().ToArray()
@@ -2444,8 +2445,8 @@ Module Module1
                 For Each WONum As String In WOArr
                     Dim WONumDetails As New DataTable
                     WONumDetails = (From C In NewStoreNumDT.AsEnumerable Where C.Field(Of String)("Work Order Number") = WONum).CopyToDataTable()
-
-                    strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;font-family:Calibri;'> Work Order Num:</span> <span style='font-family:Calibri;'>&nbsp;" & WONum & "</span></p> "
+                    strbodydet1 = strbodydet1 & "<div style='float:Left()'>"
+                    strbodydet1 = strbodydet1 & "<p style='width: 100%;font-size:16.5px;font-weight: bold;float:left;margin-bottom:5px'><span style='font-weight:bold; font-family:Calibri'> Work Order Num:</span> <span style='font-family:Calibri;'>&nbsp;" & WONum & "</span></p>"
 
                     Dim Ordernum As String() = WONumDetails.AsEnumerable().[Select](Function(r) r.Field(Of String)("Order No.")).Distinct().ToArray()
 
@@ -2502,10 +2503,11 @@ Module Module1
                             End If
 
                             OrderDetails = (From C In WONumDetails.AsEnumerable Where C.Field(Of String)("Order No.") = orderno).CopyToDataTable()
+                            strbodydet1 = strbodydet1 & "<div style='float:left;width:100%'>"
 
-                            strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;font-family:Calibri;'> Order Number:</span> <span style='font-family:Calibri;'>&nbsp;" & orderno & "</span></p> "
-                            strbodydet1 = strbodydet1 & "<div><span><img src =" & statusImg & " alt='SDI' width='50%' height='5%' vspace='0' hspace='0' /></span>&nbsp;&nbsp;&nbsp;</div><br>"
-                            strbodydet1 = strbodydet1 & "<span style='font-Size:16px; background-color:" & bgColor & ";color: " & Color & ";font-family:Calibri;border-radius:50px; text-align:center;padding:2px 8px 2px 2px;'>&nbsp; " & OrdStatusArr(1) & "</span>"
+                            strbodydet1 = strbodydet1 & "<p style='float: left;width: 100%;padding-left: 17px;margin-bottom:9px !important;'><span style='font-weight:bold;font-family:Calibri;'> Order Number:</span> <span style='font-family:Calibri;'>&nbsp;" & orderno & "</span></p> "
+                            strbodydet1 = strbodydet1 & "<div style='float: left;width: 100%;padding-left: 17px;margin-bottom:9px !important;'><span><img src =" & statusImg & " alt='SDI' width='50%' height='5%' vspace='0' hspace='0' style='width:280px' /></span>&nbsp;&nbsp;&nbsp;</div><br>"
+                            strbodydet1 = strbodydet1 & "<p style='float: left;width: 100%;padding-left: 17px;margin-bottom:9px !important;margin-top:0px'><span style='font-Size:16px; background-color:" & bgColor & ";color: " & Color & ";font-family:Calibri;border-radius:50px; text-align:center;padding:2px 8px 2px 2px;'>&nbsp; " & OrdStatusArr(1) & "</span></p>"
 
                             Try
                                 OrderDetails = OrderDetails.AsEnumerable().GroupBy(Function(row) row.Field(Of String)("Line Number")).Select(Function(group) group.First()).CopyToDataTable()
@@ -2516,21 +2518,28 @@ Module Module1
                             For K = 0 To OrderDetails.Rows.Count - 1
 
                                 If K = 0 Then
-                                    strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;font-family:Calibri;'> Ship-to Store:</span> <span style='font-family:Calibri;'>&nbsp;" & OrderDetails.Rows(K).Item("Ship To") & "</span></p> "
-                                    strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;font-family:Calibri;'> Items Ordered:</span></p> "
+                                    strbodydet1 = strbodydet1 & "<p style='float: left;width: 100%;padding-left: 17px;margin-bottom:9px !important;margin-top:0px'><span style='font-weight:bold;font-family:Calibri;'> Ship-to Store:</span> <span style='font-family:Calibri;'>&nbsp;" & OrderDetails.Rows(K).Item("Ship To") & "</span></p> "
+                                    strbodydet1 = strbodydet1 & "<p style='float: left;width: 100%;padding-left: 17px;margin-bottom:9px !important;margin-top:0px'><span style='font-weight:bold;font-family:Calibri;'> Items Ordered:</span></p> "
                                 End If
-                                strbodydet1 = strbodydet1 & "<p><span style='font-family:Calibri;font-weight:bold;'> &nbsp;&nbsp;&nbsp; Qty:</span> <span style='font-family:Calibri;'>" & OrderDetails.Rows(K).Item("Qty Ordered") & "</span><span style='font-family:Calibri;'>,&nbsp; " & OrderDetails.Rows(K).Item("Non-Stock Item Description") & "</span></p> "
+                                strbodydet1 = strbodydet1 & "<p style='float: left;width: 100%;padding-left: 17px;margin-bottom:1px;margin-top:0px'><span style='font-family:Calibri;font-weight:bold;'> &nbsp;&nbsp; Qty:</span> <span style='font-family:Calibri;'>" & OrderDetails.Rows(K).Item("Qty Ordered") & "</span><span style='font-family:Calibri;'>,&nbsp; " & OrderDetails.Rows(K).Item("Non-Stock Item Description") & "</span></p> "
 
-                                strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;font-family:Calibri;'>&nbsp;&nbsp;&nbsp; Tracking Number:</span> <span style='font-family:Calibri;'>&nbsp;" & OrderDetails.Rows(K).Item("Tracking No") & "</span></p> "
-                                strbodydet1 = strbodydet1 & "<p><span style='font-weight:bold;font-family:Calibri;'> &nbsp;&nbsp;&nbsp; Delivery Date:</span> <span style='font-family:Calibri;'>&nbsp;" & OrderDetails.Rows(K).Item("Delivery Date") & "</span></p> "
+                                strbodydet1 = strbodydet1 & "<p style='float: left;width: 100%;padding-left: 17px;margin:1px !important;'><span style='font-weight:bold;font-family:Calibri;'> &nbsp;&nbsp; Tracking Number:</span> <span style='font-family:Calibri;'>&nbsp;" & OrderDetails.Rows(K).Item("Tracking No") & "</span></p> "
+                                strbodydet1 = strbodydet1 & "<p style='float: left;width: 100%;padding-left: 17px;margin-top:1px !important;margin-bottom:20px'><span style='font-weight:bold;font-family:Calibri;'> &nbsp;&nbsp; Delivery Date:</span> <span style='font-family:Calibri;'>&nbsp;" & OrderDetails.Rows(K).Item("Delivery Date") & "</span></p> "
+
 
                             Next
                         Catch ex As Exception
 
+
                         End Try
+                        strbodydet1 = strbodydet1 & "</div>"
                     Next
 
+                    strbodydet1 = strbodydet1 & "</div>"
+
                 Next
+
+                strbodydet1 = strbodydet1 & "</div>"
             Next
             If (IsPrioAvail = True) Then
                 IsPrioAvail = False
