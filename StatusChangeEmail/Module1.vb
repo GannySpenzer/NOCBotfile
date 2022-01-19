@@ -1630,7 +1630,7 @@ Module Module1
         strSQLstring = "SELECT H.ISA_IOL_OP_NAME as STATUS_CODE, TBL.* FROM (SELECT distinct G.BUSINESS_UNIT_OM, G.BUSINESS_UNIT_OM AS G_BUS_UNIT, D.BUSINESS_UNIT, D.ISA_EMPLOYEE_ID, A.ORDER_NO,B.ISA_WORK_ORDER_NO As WORK_ORDER_NO, B.ISA_INTFC_LN AS line_nbr," & vbCrLf &
                  " B.ISA_EMPLOYEE_ID AS EMPLID, B.ISA_LINE_STATUS as ORDER_TYPE,B.OPRID_ENTERED_BY, B.SHIPTO_ID as SHIPTO,B.ISA_USER2 as STORE," & vbCrLf &
                  " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, B.ISA_PRIORITY_FLAG As IsPriority, B.ISA_REQUIRED_BY_DT," & vbCrLf &
-                 "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','01','QTW','02','QTC','03','QTS','04','CST','05','VND','06','APR','07','QTA','08','QTR','09','RFA','10','RFR','11','RFC','12','RCF','13','RCP','14','CNC','15','PKA','17','ASN','18') AS OLD_ORDER_STATUS," & vbCrLf
+                 "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'QTW','02','QTS','04','QTA','08','DLF','16') AS OLD_ORDER_STATUS," & vbCrLf
 
 
         strSQLstring += " (SELECT E.XLATLONGNAME" & vbCrLf &
@@ -2406,22 +2406,22 @@ Module Module1
             End If
 
             If IsPrioAvail Then
-                strbodydet1 = strbodydet1 & "<span style='font-family:Calibri;font-size: 21px;margin-bottom:10px;width:100%;float:left'><B>PRIORITY ORDER</B></span>"
+                strbodydet1 = strbodydet1 & "<span style='font-family:Calibri;font-size: 21px;margin-bottom:10px;width:100%;float:left'><B>PRIORITY ORDERS</B></span>"
             ElseIf IsNonPrioAvail Then
-                strbodydet1 = strbodydet1 & "<span style='font-family:Calibri;font-size: 21px;margin-bottom:10px;width:100%;float:left'><B>REGULAR ORDER</B></span>"
+                strbodydet1 = strbodydet1 & "<span style='font-family:Calibri;font-size: 21px;margin-bottom:10px;width:100%;float:left'><B>STANDARD ORDERS</B></span>"
             End If
 
             Dim dateAsString As String = DateTime.Now.ToString("dd/MM/yyyy")
             Dim IsProdDB As Boolean = False
 
-            If Not getDBName() Then
-                Mailer1.To = "webdev@sdi.com"
-                Mailer1.Subject = "<<TEST SITE>>Order Status Summary Email - " & dateAsString & ""
-            Else
-                Mailer1.To = EmailTo
-                Mailer1.Subject = "Order Status Summary Email - " & dateAsString & ""
-                IsProdDB = True
-            End If
+            'If Not getDBName() Then
+            Mailer1.To = "webdev@sdi.com"
+            Mailer1.Subject = "<<TEST>>Order Status Summary Email - " & dateAsString & ""
+            'Else
+            '    Mailer1.To = EmailTo
+            '    Mailer1.Subject = "Order Status Summary Email - " & dateAsString & ""
+            '    IsProdDB = True
+            'End If
 
             Dim K As Integer = 0
             Dim StoreNumArr As String() = StoreNumDT.AsEnumerable().[Select](Function(r) r.Field(Of String)("STORE")).Distinct().ToArray()
@@ -2550,9 +2550,9 @@ Module Module1
         Next
 
         strbodydet1 = strbodydet1 & "&nbsp;<br>"
-        strbodydet1 = strbodydet1 & "<span style='font-family:Calibri;'>Sincerely,</span><br>"
+        strbodydet1 = strbodydet1 & "<span style='font-family:Calibri;font-size:18px'>Sincerely,</span><br>"
         strbodydet1 = strbodydet1 & "&nbsp;<br>"
-        strbodydet1 = strbodydet1 & "<span style='font-family:Calibri;'>SDI Customer Care</span><br>"
+        strbodydet1 = strbodydet1 & "<span style='font-family:Calibri;font-size:18px'>SDI Customer Care</span><br>"
         strbodydet1 = strbodydet1 & "&nbsp;<br>"
         strbodydet1 = strbodydet1 & "</p>"
         strbodydet1 = strbodydet1 & "</div>"
