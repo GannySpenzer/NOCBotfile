@@ -202,7 +202,7 @@ Module Module1
             '' To get teh list of BU if the privilage was set to any site
             Dim getBuQuery As String = "SELECT DISTINCT(E.ISA_BUSINESS_UNIT) AS BUSINESS_UNIT from PS_ISA_USERS_PRIVS P,PS_ISA_ENTERPRISE E  where E.ISA_BUSINESS_UNIT = P.BUSINESS_UNIT AND " & vbCrLf &
                 "P.ISA_IOL_OP_NAME in ('EMAILCRE01','EMAILQTW02','EMAILQTC03','EMAILQTS04','EMAILCST05','EMAILVND06','EMAILAPR07','EMAILQTA08'," & vbCrLf &
-                "'EMAILQTR09','EMAILRFA10','EMAILRFR11','EMAILRFC12','EMAILRCF13','EMAILRCP14','EMAILCNC15','EMAILDLF16','EMAILPKA17')"
+                "'EMAILQTR09','EMAILRFA10','EMAILRFR11','EMAILRFC12','EMAILRCF13','EMAILRCP14','EMAILCNC15','EMAILDLF16','EMAILPKA17','EMAILASN18')"
 
             Dim Command As OleDbCommand = New OleDbCommand(getBuQuery, connectOR)
             If connectOR.State = ConnectionState.Open Then
@@ -1955,6 +1955,7 @@ Module Module1
 
                 If dr.Read Then
                     dteEndDate = (dr.Item("MAXDATE"))
+                    dteEndDate = dteEndDate.AddMinutes(+1)
                 Else
                     dteEndDate = Now.ToString
                 End If
@@ -1985,9 +1986,9 @@ Module Module1
         Dim dteSTKREQEmail As String = objEnterprise.STKREQEmail
         Dim dteNONSKREQEmail As String = objEnterprise.NONSKREQEmail
 
-        'If strBU = "I0W01" Then
-        'dteStartDate = dteStartDate.AddMinutes(+1)
-        'dteStartDate = dteStartDate.AddHours(-36)          
+        'If strBU = "I0970" Then
+        '    dteEndDate = dteEndDate.AddMinutes(+1)
+        '    'dteStartDate = dteStartDate.AddHours(-36)          
         'End If
 
         Try
@@ -2048,8 +2049,8 @@ Module Module1
                  " PS_ISA_USERS_TBL D," & vbCrLf &
                  " PS_ISAORDSTATUSLOG G, PS_ISA_ASN_SHIPPED SH, PS_PO_LINE_DISTRIB LD" & vbCrLf &
                  " where G.BUSINESS_UNIT_OM = '" & strBU & "' " & vbCrLf &
-                 " AND G.BUSINESS_UNIT_OM = A.BUSINESS_UNIT_OM " & vbCrLf &
-                 " AND G.BUSINESS_UNIT_OM = D.BUSINESS_UNIT " & vbCrLf     '   & _
+                 " AND G.BUSINESS_UNIT_OM = A.BUSINESS_UNIT_OM " & vbCrLf
+
 
         strSQLstring += "  and A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf &
                  " and A.ORDER_NO = B.ORDER_NO" & vbCrLf &
@@ -2057,13 +2058,11 @@ Module Module1
                  " and C.INV_ITEM_ID(+) = B.INV_ITEM_ID " & vbCrLf &
                  " AND G.ORDER_NO = A.ORDER_NO " & vbCrLf &
                  " AND B.ISA_INTFC_LN = G.ISA_INTFC_LN" & vbCrLf &
-                 " AND A.BUSINESS_UNIT_OM = D.BUSINESS_UNIT" & vbCrLf &
                  " AND SH.PO_ID (+) = LD.PO_ID And SH.LINE_NBR (+) = LD.LINE_NBR And SH.SCHED_NBR (+) = LD.SCHED_NBR And LD.Req_id (+) = B.order_no AND LD.REQ_LINE_NBR (+) = B.ISA_INTFC_LN" & vbCrLf &
                  " AND G.DTTM_STAMP > TO_DATE('" & dteStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf &
                  " AND G.DTTM_STAMP <= TO_DATE('" & dteEndDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf &
                  " AND UPPER(B.ISA_EMPLOYEE_ID) = UPPER(D.ISA_EMPLOYEE_ID)) TBL, PS_ISA_USERS_PRIVS H " & vbCrLf &
-                 " WHERE H.BUSINESS_UNIT = TBL.BUSINESS_UNIT " & vbCrLf &
-                 " AND TBL.EMPLID = H.ISA_EMPLOYEE_ID " & vbCrLf &
+                 " WHERE TBL.EMPLID = H.ISA_EMPLOYEE_ID " & vbCrLf &
                  " AND SUBSTR(H.ISA_IOL_OP_NAME,9) = TBL.OLD_ORDER_STATUS " & vbCrLf &
                  " AND H.ISA_IOL_OP_VALUE = 'Y' " & vbCrLf &
                   " ORDER BY ORDER_NO, LINE_NBR, DTTM_STAMP"
