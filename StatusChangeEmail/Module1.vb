@@ -2413,14 +2413,14 @@ Module Module1
             Dim dateAsString As String = DateTime.Now.ToString("dd/MM/yyyy")
             Dim IsProdDB As Boolean = False
 
-            'If Not getDBName() Then
-            Mailer1.To = "webdev@sdi.com"
-            Mailer1.Subject = "<<TEST>>Order Status Summary Email - " & dateAsString & ""
-            'Else
-            '    Mailer1.To = EmailTo
-            '    Mailer1.Subject = "Order Status Summary Email - " & dateAsString & ""
-            '    IsProdDB = True
-            'End If
+            If Not getDBName() Then
+                Mailer1.To = "webdev@sdi.com"
+                Mailer1.Subject = "<<TEST SITE>>Order Status Summary Email - " & dateAsString & ""
+            Else
+                Mailer1.To = EmailTo
+                Mailer1.Subject = "Order Status Summary Email - " & dateAsString & ""
+                IsProdDB = True
+            End If
 
             Dim K As Integer = 0
             Dim StoreNumArr As String() = StoreNumDT.AsEnumerable().[Select](Function(r) r.Field(Of String)("STORE")).Distinct().ToArray()
