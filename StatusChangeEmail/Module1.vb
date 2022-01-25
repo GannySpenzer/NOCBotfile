@@ -2660,11 +2660,21 @@ Module Module1
                                             OrderStatusDetail.message = "Success"
                                             objWalmartSC.WriteLine("Order No: " + Convert.ToString(OrderNo) + "Status" + Convert.ToString(OrderStatusDetail.statusDesc))
                                             If OrderStatusDetail.message = "Success" Then
-                                                If OrderStatusDetail.statusDesc = "Delivered" Or OrderStatusDetail.statusDesc = "En Route from Vendor" Then
+                                                'WAL-622: SC Updates for Canceled Orders And Partial Deliveries
+                                                If OrderStatusDetail.statusDesc = "Delivered" Or OrderStatusDetail.statusDesc = "En Route from Vendor" Or OrderStatusDetail.statusDesc = "Partiall Delivered" Or OrderStatusDetail.statusDesc = "Cancelled" Then
                                                     Dim CheckWOStatus As String = CheckWorkOrderStatus(WorkOrder, THIRDPARTY_COMP_ID)
                                                     objWalmartSC.WriteLine("CheckWOStatus: " + Convert.ToString(CheckWOStatus))
                                                     If CheckWOStatus.ToUpper() <> "COMPLETED" And CheckWOStatus <> "Failed" Then
-                                                        Dim WOStatus As String = If(OrderStatusDetail.statusDesc = "Delivered", "PARTS DELIVERED", "PARTS SHIPPED")
+                                                        Dim WOStatus As String = String.Empty
+                                                        If OrderStatusDetail.statusDesc = "Delivered" Then
+                                                            WOStatus = "PARTS DELIVERED"
+                                                        ElseIf OrderStatusDetail.statusDesc = "En Route from Vendor" Then
+                                                            WOStatus = "PARTS SHIPPED"
+                                                        ElseIf OrderStatusDetail.statusDesc = "Partiall Delivered" Then
+                                                            WOStatus = "PARTIAL PARTS DELIVERED"
+                                                        ElseIf OrderStatusDetail.statusDesc = "Cancelled" Then
+                                                            WOStatus = "INCOMPLETE"
+                                                        End If
                                                         If CheckWOStatus <> WOStatus Then
                                                             Dim PurchaseNo As String = PurchaseOrderNo(WorkOrder, THIRDPARTY_COMP_ID)
                                                             If PurchaseNo <> "Failed" Then
