@@ -989,7 +989,12 @@ Module Module1
         Dim Mailer As MailMessage = New MailMessage
         Dim strccfirst As String = "erwin.bautista"   '  "pete.doyle"
         Dim strcclast As String = "sdi.com"
-        Mailer.From = "SDIExchange@SDI.com"  '  "Insiteonline@SDI.com"
+        'SDI-40628 Changing Mail id as walmartpurchasing@sdi.com from sdiexchange@sdi.com for Walmart BU.
+        If strbu = "I0W01" Then
+            Mailer.From = "WalmartPurchasing@sdi.com"
+        Else
+            Mailer.From = "SDIExchange@SDI.com"  '  "Insiteonline@SDI.com"
+        End If
         Mailer.Cc = ""
         Mailer.Bcc = strccfirst & "@" & strcclast
         'strbodyhead = "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI Marketplace</span></center>" & vbCrLf
@@ -2350,7 +2355,12 @@ Module Module1
         Dim Mailer1 As MailMessage = New MailMessage
         Dim strccfirst1 As String = "erwin.bautista"  '  "pete.doyle"
         Dim strcclast1 As String = "sdi.com"
-        Mailer1.From = "SDIExchange@SDI.com"  '  "Insiteonline@SDI.com"
+        'SDI-40628 Changing Mail id as walmartpurchasing@sdi.com from sdiexchange@sdi.com for Walmart BU.
+        If strBU = "I0W01" Then
+            Mailer1.From = "WalmartPurchasing@sdi.com"
+        Else
+            Mailer1.From = "SDIExchange@SDI.com"  '  "Insiteonline@SDI.com"
+        End If
         Mailer1.Cc = ""
         Mailer1.Bcc = strccfirst1 & "@" & strcclast1
         strbodyhead1 = "<table width='100%' bgcolor='black'><tbody><tr><td><img data-imagetype='External' src='https://www.sdizeus.com/images/SDNewLogo_Email.png' alt='SDI' vspace='0' hspace='0'></td><td width='100%'><center><span style='font-family:Calibri; font-size:x-large; text-align: center; color:White' > SDI Marketplace</span></center><center><span style='text-align: center; margin:0px auto; color:White'>SDiExchange - Order Status</span></center></td></tr></tbody></table>"
@@ -3000,7 +3010,12 @@ Module Module1
             Dim Mailer1 As MailMessage = New MailMessage
             Dim strccfirst1 As String = "erwin.bautista"  '  "pete.doyle"
             Dim strcclast1 As String = "sdi.com"
-            Mailer1.From = "SDIExchange@SDI.com"  '  "Insiteonline@SDI.com"
+            'SDI-40628 Changing Mail id as walmartpurchasing@sdi.com from sdiexchange@sdi.com for Walmart BU.
+            If strBU = "I0W01" Then
+                Mailer1.From = "WalmartPurchasing@sdi.com"
+            Else
+                Mailer1.From = "SDIExchange@SDI.com"  '  "Insiteonline@SDI.com"
+            End If
             Mailer1.Cc = ""
             Mailer1.Bcc = strccfirst1 & "@" & strcclast1
             strbodyhead1 = "<table width='100%'><tbody><tr><td><img src='http://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='82px' vspace='0' hspace='0' /></td><td width='100%'><br /><br /><br /><br /><br /><br /><center><span style='font-family: Arial; font-size: x-large; text-align: center;'>SDI Marketplace</span></center><center><span style='text-align: center; margin: 0px auto;'>SDiExchange - Order Status</span></center></td></tr></tbody></table>"
