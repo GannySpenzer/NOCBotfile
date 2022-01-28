@@ -2353,7 +2353,8 @@ Module Module1
         Mailer1.From = "SDIExchange@SDI.com"  '  "Insiteonline@SDI.com"
         Mailer1.Cc = ""
         Mailer1.Bcc = strccfirst1 & "@" & strcclast1
-        strbodyhead1 = "<table width='100%'><tbody><tr><td><img src='http://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='82px' vspace='0' hspace='0' /></td><td width='100%'><br /><br /><br /><br /><br /><br /><center><span style='font-family: Calibri; font-size: 32px; text-align: center;font-weight:bold'>SDI Marketplace</span></center><center style='font-size:18px'><span style='text-align: center; margin: 0px auto; font-family:Calibri;'>SDiExchange - Order Status</span></center></td></tr></tbody></table>"
+        strbodyhead1 = "<table width='100%' bgcolor='black'><tbody><tr><td><img data-imagetype='External' src='https://www.sdizeus.com/images/SDNewLogo_Email.png' alt='SDI' vspace='0' hspace='0'></td><td width='100%'><center><span style='font-family:Calibri; font-size:x-large; text-align: center; color:White' > SDI Marketplace</span></center><center><span style='text-align: center; margin:0px auto; color:White'>SDiExchange - Order Status</span></center></td></tr></tbody></table>"
+        'strbodyhead1 = "<table width='100%'><tbody><tr><td><img src='http://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='82px' vspace='0' hspace='0' /></td><td width='100%'><br /><br /><br /><br /><br /><br /><center><span style='font-family: Calibri; font-size: 32px; text-align: center;font-weight:bold'>SDI Marketplace</span></center><center style='font-size:18px'><span style='text-align: center; margin: 0px auto; font-family:Calibri;'>SDiExchange - Order Status</span></center></td></tr></tbody></table>"
         strbodyhead1 = strbodyhead1 & "<HR width='100%' SIZE='1'>"
         strbodyhead1 = strbodyhead1 & "&nbsp;" & vbCrLf
 
@@ -2410,15 +2411,15 @@ Module Module1
                 strbodydet1 = strbodydet1 & "<span style='font-family:Calibri;font-size: 21px;margin-bottom:10px;width:100%;float:left'><B>STANDARD ORDERS</B></span>"
             End If
 
-            Dim dateAsString As String = DateTime.Now.ToString("dd/MM/yyyy")
+            Dim dateAsString As String = DateTime.Now.ToString("MM/dd/yyyy")
             Dim IsProdDB As Boolean = False
 
             If Not getDBName() Then
                 Mailer1.To = "webdev@sdi.com"
-                Mailer1.Subject = "<<TEST SITE>>Order Status Summary Email - " & dateAsString & ""
+                Mailer1.Subject = "<<TEST SITE>>Order Status Summary - " & dateAsString & ""
             Else
                 Mailer1.To = EmailTo
-                Mailer1.Subject = "Order Status Summary Email - " & dateAsString & ""
+                Mailer1.Subject = "Order Status Summary - " & dateAsString & ""
                 IsProdDB = True
             End If
 
