@@ -596,7 +596,7 @@ Public Class QuoteNonStockProcessor
                         If itmQuoted.PriceBlockFlag = "N" Then
                             If itmQuoted.ApprovalLimit > 0 Then
                                 If TtlPrice > itmQuoted.ApprovalLimit Then
-                                    SendMessages(itmQuoted)
+                                    SendMessages(itmQuoted, itmQuoted.BusinessUnitOM)
                                 Else
                                     ' set line status to QTC or QTA (itmQuoted.LineStatus) and add Audit record
                                     Dim strUpdateLineStatusFinal As String = ""
@@ -624,7 +624,7 @@ Public Class QuoteNonStockProcessor
                                     'End If
                                 End If
                             Else
-                                SendMessages(itmQuoted)
+                                SendMessages(itmQuoted, itmQuoted.BusinessUnitOM)
                             End If
 
                         Else
@@ -638,7 +638,7 @@ Public Class QuoteNonStockProcessor
                                 PriceUpdate(itmQuoted.OrderID, "QTW")
                             End If
 
-                            UpdateReqEmailLog(itmQuoted)
+                            UpdateReqEmailLog(itmQuoted, itmQuoted.BusinessUnitOM)
                             buildNotifyApprover(itmQuoted)
                         End If
                     Next
@@ -1632,7 +1632,7 @@ Public Class QuoteNonStockProcessor
         Return sList
     End Function
 
-    Public Sub SendMessages(ByVal itmQuoted As QuotedNStkItem)
+    Public Sub SendMessages(ByVal itmQuoted As QuotedNStkItem, Optional ByVal sBU As String = "")
         Dim cHdr As String = "QuoteNonStockProcessor.SendMessages: "
         Try
             If m_colMsgs.Count > 0 Then
@@ -1649,7 +1649,12 @@ Public Class QuoteNonStockProcessor
                 eml = New System.Web.Mail.MailMessage
 
                 ' init properties of the mail message
-                eml.From = "SDIExchange@SDI.com"
+                'SDI-40628 Changing Mail id as walmartpurchasing@sdi.com from sdiexchange@sdi.com for Walmart BU.
+                If sBU = "I0W01" Or sBU = "WAL00" Then
+                    eml.From = "WalmartPurchasing@sdi.com"
+                Else
+                    eml.From = "SDIExchange@SDI.com"
+                End If
                 eml.To = ""
                 eml.Cc = ""
                 eml.Bcc = ""
@@ -2579,7 +2584,7 @@ Public Class QuoteNonStockProcessor
         End Try
     End Sub
 
-    Public Sub UpdateReqEmailLog(ByVal itmQuoted As QuotedNStkItem)
+    Public Sub UpdateReqEmailLog(ByVal itmQuoted As QuotedNStkItem, Optional ByVal sBU As String = "")
 
         Dim strInsertQuery As String = String.Empty
         Dim rowsaffected As Integer = 0
@@ -2591,7 +2596,12 @@ Public Class QuoteNonStockProcessor
             Dim eml = New System.Web.Mail.MailMessage
 
             ' init properties of the mail message
-            eml.From = "SDIExchange@SDI.com"
+            'SDI-40628 Changing Mail id as walmartpurchasing@sdi.com from sdiexchange@sdi.com for Walmart BU.
+            If sBU = "I0W01" Or sBU = "WAL00" Then
+                eml.From = "WalmartPurchasing@sdi.com"
+            Else
+                eml.From = "SDIExchange@SDI.com"
+            End If
             eml.To = ""
             eml.Cc = ""
             eml.Bcc = ""
@@ -2964,7 +2974,13 @@ Public Class QuoteNonStockProcessor
         Dim strbodydetl As String
 
         Dim MailTo As String = String.Empty
-        Dim MailFrom As String = "SDIExchange@SDI.com"
+        'SDI-40628 Changing Mail id as walmartpurchasing@sdi.com from sdiexchange@sdi.com for Walmart BU.
+        Dim MailFrom As String
+        If BU = "I0W01" Then
+            MailFrom = "WalmartPurchasing@sdi.com"
+        Else
+            MailFrom = "SDIExchange@SDI.com"
+        End If
         Dim MailSub As String = String.Empty
         Dim MailBody As String = String.Empty
 
@@ -3813,7 +3829,12 @@ Public Class OrderApprovals
         'Mailer.From = "SDIExchange@SDI.com"
         'Mailer.Cc = ""
         'Mailer.Bcc = ""
-        MailFrom = "SDIExchange@SDI.com"
+        'SDI-40628 Changing Mail id as walmartpurchasing@sdi.com from sdiexchange@sdi.com for Walmart BU.
+        If strBU = "I0W01" Or strBU = "WAL00" Then
+            MailFrom = "WalmartPurchasing@sdi.com"
+        Else
+            MailFrom = "SDIExchange@SDI.com"
+        End If
         'strbodyhead = "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI Marketplace</span></center>" & vbCrLf
         'strbodyhead = strbodyhead & "<center><span >SDiExchange - Request for Approval</span></center>"
         'strbodyhead = strbodyhead & "&nbsp;" & vbCrLf
@@ -4132,7 +4153,12 @@ Public Class OrderApprovals
         Dim StrResult As String = String.Empty
 
         Dim Mailer As MailMessage = New MailMessage
-        Mailer.From = "SDIExchange@SDI.com"
+        'SDI-40628 Changing Mail id as walmartpurchasing@sdi.com from sdiexchange@sdi.com for Walmart BU.
+        If strBU = "I0W01" Or strBU = " WAL00" Then
+            Mailer.From = "WalmartPurchasing@sdi.comw"
+        Else
+            Mailer.From = "SDIExchange@SDI.com"
+        End If
         Mailer.Cc = ""
         Mailer.Bcc = "webdev@sdi.com"  '  ;Tony.Smith@sdi.com"
 
