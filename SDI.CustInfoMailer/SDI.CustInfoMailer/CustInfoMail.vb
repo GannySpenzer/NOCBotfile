@@ -66,15 +66,15 @@ Module CustInfoMail
         log.WriteLine("------------------------------------------------------------------------------------------")
         log.WriteLine("Start to fetch the orders that is need customer infromation, by using ISA_LINE_STATUS='CST' IN order line table")
 
-        strSQLString = "select oln.BUSINESS_UNIT_OM, oln.ORDER_NO,oln.isa_intfc_ln, oln.ISA_WORK_ORDER_NO " & vbCrLf & _
-                        " , usr.ISA_EMPLOYEE_EMAIL , usr.PHONE_NUM, oln.OPRID_ENTERED_BY " & vbCrLf & _
-                        "  , oln.ISA_REQUIRED_BY_DT, usr.ISA_EMPLOYEE_NAME,ohd.order_date ,RLN.buyer_id " & vbCrLf & _
-                        "from PS_ISA_ORD_INTF_LN oln " & vbCrLf & _
-                        "join sdix_users_tbl usr on usr.ISA_EMPLOYEE_ID = oln.ISA_EMPLOYEE_ID join PS_ISA_ORD_INTF_HD ohd on ohd.ORDER_NO = oln.ORDER_NO join PS_REQ_LINE RLN ON RLN.REQ_ID = oln.ORDER_NO AND RLN.LINE_NBR = oln.isa_intfc_ln " & vbCrLf & _
-                        "where oln.isa_LINE_STATUS='CST'" & vbCrLf & _
-                        " group by oln.BUSINESS_UNIT_OM, oln.ORDER_NO, oln.ISA_WORK_ORDER_NO " & vbCrLf & _
-                        " , usr.ISA_EMPLOYEE_EMAIL , usr.PHONE_NUM, oln.OPRID_ENTERED_BY " & vbCrLf & _
-                        " , oln.ISA_REQUIRED_BY_DT, usr.ISA_EMPLOYEE_NAME, ohd.order_date,oln.isa_intfc_ln,RLN.buyer_id"
+        strSQLString = "select oln.BUSINESS_UNIT_OM, oln.ORDER_NO,oln.isa_intfc_ln, oln.ISA_WORK_ORDER_NO " & vbCrLf &
+                        " , usr.ISA_EMPLOYEE_EMAIL , usr.PHONE_NUM, oln.OPRID_ENTERED_BY " & vbCrLf &
+                        "  , oln.ISA_REQUIRED_BY_DT, usr.ISA_EMPLOYEE_NAME,usr.ISA_EMPLOYEE_ID,ohd.order_date ,RLN.buyer_id " & vbCrLf &
+                        "from PS_ISA_ORD_INTF_LN oln " & vbCrLf &
+                        "join sdix_users_tbl usr on usr.ISA_EMPLOYEE_ID = oln.ISA_EMPLOYEE_ID join PS_ISA_ORD_INTF_HD ohd on ohd.ORDER_NO = oln.ORDER_NO join PS_REQ_LINE RLN ON RLN.REQ_ID = oln.ORDER_NO AND RLN.LINE_NBR = oln.isa_intfc_ln " & vbCrLf &
+                        "where oln.isa_LINE_STATUS='CST'" & vbCrLf &
+                        " group by oln.BUSINESS_UNIT_OM, oln.ORDER_NO, oln.ISA_WORK_ORDER_NO " & vbCrLf &
+                        " , usr.ISA_EMPLOYEE_EMAIL , usr.PHONE_NUM, oln.OPRID_ENTERED_BY " & vbCrLf &
+                        " , oln.ISA_REQUIRED_BY_DT, usr.ISA_EMPLOYEE_NAME, usr.ISA_EMPLOYEE_ID, ohd.order_date,oln.isa_intfc_ln,RLN.buyer_id"
 
         Dim dtrAppReader As OleDbDataReader = GetReader(strSQLString)
         If dtrAppReader.HasRows() = True Then
@@ -88,44 +88,68 @@ Module CustInfoMail
                 Dim strWorkONo As String = ""
                 Dim strOrdDate As String = ""
                 Dim strBuyer As String = ""
+                Dim strUserId As String = ""
 
                 Dim ORDER_NO As String = Convert.ToString(dtrAppReader.Item("ORDER_NO"))
 
+
                 If Not OrderNo.Contains(Convert.ToString(ORDER_NO)) Then
-                    OrderNo.Add(Convert.ToString(ORDER_NO))
+                        OrderNo.Add(Convert.ToString(ORDER_NO))
 
-                    If Not IsDBNull(dtrAppReader.Item("ISA_EMPLOYEE_NAME")) Then
-                        strEmpName = Convert.ToString(dtrAppReader.Item("ISA_EMPLOYEE_NAME"))
-                    End If
+                        If Not IsDBNull(dtrAppReader.Item("ISA_EMPLOYEE_NAME")) Then
+                            strEmpName = Convert.ToString(dtrAppReader.Item("ISA_EMPLOYEE_NAME"))
+                        End If
 
-                    If Not IsDBNull(dtrAppReader.Item("ORDER_NO")) Then
-                        strORderNo = Convert.ToString(dtrAppReader.Item("ORDER_NO"))
-                    End If
-
-                    If Not IsDBNull(dtrAppReader.Item("ISA_EMPLOYEE_EMAIL")) Then
-                        strEmail = Convert.ToString(dtrAppReader.Item("ISA_EMPLOYEE_EMAIL"))
-                    End If
-
-                    If Not IsDBNull(dtrAppReader.Item("ISA_REQUIRED_BY_DT")) Then
-                        Required_By_Dttm = CDate(dtrAppReader.Item("ISA_REQUIRED_BY_DT")).ToString("MM-dd-yyyy")
-                    End If
-
-                    If Not IsDBNull(dtrAppReader.Item("ISA_WORK_ORDER_NO")) Then
-                        strWorkONo = Convert.ToString(dtrAppReader.Item("ISA_WORK_ORDER_NO"))
-                    End If
-
-                    If Not IsDBNull(dtrAppReader.Item("order_date")) Then
-                        strOrdDate = CDate(dtrAppReader.Item("order_date")).ToString("MM-dd-yyyy")
-                    End If
-
-                    If Not IsDBNull(dtrAppReader.Item("buyer_id")) Then
-                        strBuyer = Convert.ToString(dtrAppReader.Item("buyer_id"))
-                    End If
+                        If Not IsDBNull(dtrAppReader.Item("ISA_EMPLOYEE_ID")) Then
+                            strUserId = Convert.ToString(dtrAppReader.Item("ISA_EMPLOYEE_ID"))
+                        End If
 
 
-                    log.WriteLine("OrderNo {0} is need more information from customer {1}", strORderNo, strEmpName)
+                        If Not IsDBNull(dtrAppReader.Item("ORDER_NO")) Then
+                            strORderNo = Convert.ToString(dtrAppReader.Item("ORDER_NO"))
+                        End If
 
-                    buildNotifyApprover(strORderNo, strEmail, strEmpName, Required_By_Dttm, strWorkONo, strOrdDate, strBuyer)
+                        If Not IsDBNull(dtrAppReader.Item("ISA_EMPLOYEE_EMAIL")) Then
+                            strEmail = Convert.ToString(dtrAppReader.Item("ISA_EMPLOYEE_EMAIL"))
+                        End If
+
+
+                        If Not IsDBNull(dtrAppReader.Item("ISA_REQUIRED_BY_DT")) Then
+                            Required_By_Dttm = CDate(dtrAppReader.Item("ISA_REQUIRED_BY_DT")).ToString("MM-dd-yyyy")
+                        End If
+
+                        If Not IsDBNull(dtrAppReader.Item("ISA_WORK_ORDER_NO")) Then
+                            strWorkONo = Convert.ToString(dtrAppReader.Item("ISA_WORK_ORDER_NO"))
+                        End If
+
+                        If Not IsDBNull(dtrAppReader.Item("order_date")) Then
+                            strOrdDate = CDate(dtrAppReader.Item("order_date")).ToString("MM-dd-yyyy")
+                        End If
+
+                        If Not IsDBNull(dtrAppReader.Item("buyer_id")) Then
+                            strBuyer = Convert.ToString(dtrAppReader.Item("buyer_id"))
+                        End If
+
+
+                        log.WriteLine("OrderNo {0} is need more information from customer {1}", strORderNo, strEmpName)
+                        'SDI-41322 Email Notification turn off for user LOWE,ASHLEY
+                        Try
+                            Dim EmpId As String = ""
+                            Dim IsDontNotifierCustomer As Boolean = False
+
+                            EmpId = Convert.ToString(ConfigurationManager.AppSettings("DoNotNotifyCustomer"))
+
+                            IsDontNotifierCustomer = (EmpId.IndexOf(strUserId.Trim.ToUpper) > -1)
+
+                            If IsDontNotifierCustomer = "True" Then
+                                'Don't Send notification
+                            Else
+                                buildNotifyApprover(strORderNo, strEmail, strEmpName, Required_By_Dttm, strWorkONo, strOrdDate, strBuyer)
+                            End If
+                        Catch ex As Exception
+                            buildNotifyApprover(strORderNo, strEmail, strEmpName, Required_By_Dttm, strWorkONo, strOrdDate, strBuyer)
+                        End Try
+
                 End If
             End While
             dtrAppReader.Close()
@@ -232,9 +256,10 @@ Module CustInfoMail
         Mailer.Body = Mailer.Body & "<img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & vbCrLf
 
 
-        If DbUrl.Substring(DbUrl.Length - 4).ToUpper = "PLGR" Or _
-                   DbUrl.Substring(DbUrl.Length - 4).ToUpper = "STAR" Or _
-                   DbUrl.Substring(DbUrl.Length - 4).ToUpper = "DEVL" Or _
+        If DbUrl.Substring(DbUrl.Length - 4).ToUpper = "PLGR" Or
+                   DbUrl.Substring(DbUrl.Length - 4).ToUpper = "STAR" Or
+                   DbUrl.Substring(DbUrl.Length - 4).ToUpper = "DEVL" Or
+                   DbUrl.Substring(DbUrl.Length - 4).ToUpper = "STST" Or
                DbUrl.Substring(DbUrl.Length - 4).ToUpper = "RPTG" Then
             Mailer.To = "WebDev@sdi.com;avacorp@sdi.com"
             Mailer.Subject = "<<TEST SITE>> SDiExchange - Customer Information Required For Order - " & orderNum
