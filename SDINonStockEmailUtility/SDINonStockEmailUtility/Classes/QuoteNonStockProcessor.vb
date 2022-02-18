@@ -813,7 +813,7 @@ Public Class QuoteNonStockProcessor
         End Try
     End Sub
 
-    Public Shared Sub SendLogger(ByVal subject As String, ByVal body As String, ByVal messageType As String, ByVal MailType As String, ByVal EmailTo As String, ByVal EmailCc As String, ByVal EmailBcc As String)
+    Public Shared Sub SendLogger(ByVal subject As String, ByVal body As String, ByVal messageType As String, ByVal MailType As String, ByVal EmailTo As String, ByVal EmailCc As String, ByVal EmailBcc As String, Optional ByVal sBU As String = "")
         Try
             Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
             Dim MailAttachmentName As String()
@@ -822,15 +822,21 @@ Public Class QuoteNonStockProcessor
             If Not getDBName() Then
                 EmailTo = "webdev@sdi.com;avacorp@sdi.com"
             End If
-
-            SDIEmailService.EmailUtilityServices(MailType, "SDIExchADMIN@sdi.com", EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
+            'SDI-40628 Changing email
+            Dim From As String = String.Empty
+            If sBU = "I0W01" Or sBU = "WAL00" Then
+                From = "WalmartPurchasing@sdi.com"
+            Else
+                From = "SDIExchADMIN@sdi.com"
+            End If
+            SDIEmailService.EmailUtilityServices(MailType, From, EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
 
         Catch ex As Exception
 
         End Try
     End Sub
 
-    Public Shared Sub SendLogger(ByVal subject As String, ByVal exception As Exception, ByVal messageType As String, Optional ByVal Query As String = "", Optional ByVal ConString As String = "")
+    Public Shared Sub SendLogger(ByVal subject As String, ByVal exception As Exception, ByVal messageType As String, Optional ByVal Query As String = "", Optional ByVal ConString As String = "", Optional ByVal sBU As String = "")
         Try
             Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
             Dim MailAttachmentName As String()
@@ -846,8 +852,16 @@ Public Class QuoteNonStockProcessor
                 ConStr = "<b> Database Connection string </b> - " & ConString & "<br/>"
             Catch ex As Exception
             End Try
+            'SDI-40628 Changing email
+            Dim From As String = String.Empty
+            If sBU = "I0W01" Or sBU = "WAL00" Then
+                From = "WalmartPurchasing@sdi.com"
+            Else
+                From = "SDIExchADMIN@sdi.com"
+            End If
 
-            SDIEmailService.EmailUtilityServices("Mail", "SDIExchADMIN@sdi.com", "WebDev@sdi.com", subject, String.Empty, String.Empty, objException & objExceptionTrace & Query & ConStr, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
+            SDIEmailService.EmailUtilityServices("Mail", From, "WebDev@sdi.com", subject, String.Empty, String.Empty, objException & objExceptionTrace & Query & ConStr, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
+
 
             'Dim strBody As String = objException & objExceptionTrace & Query & ConStr
 
@@ -1994,7 +2008,7 @@ Public Class QuoteNonStockProcessor
                 ' send this email
                 Try
 
-                    SendLogger(eml.Subject, eml.Body, "QUOTEAPPROVAL", "Mail", eml.To, eml.Cc, eml.Bcc)
+                    SendLogger(eml.Subject, eml.Body, "QUOTEAPPROVAL", "Mail", eml.To, eml.Cc, eml.Bcc, itmQuoted.BusinessUnitID)
                     SendNotification(itmQuoted.EmployeeID, eml.Subject, itmQuoted.OrderID, itmQuoted.BusinessUnitOM)
                     'Dim Title As String = "Order Number: " + itmQuoted.OrderID + " Requested For Quote Approval"
                     sendWebNotification(itmQuoted.EmployeeID, eml.Subject)
@@ -2072,7 +2086,7 @@ Public Class QuoteNonStockProcessor
                         eml.Subject &= " (copy)"
                         ''System.Web.Mail.SmtpMail.Send(message:=eml)
                         ''SDIEmailService.EmailUtilityServices("MailandStore", "madhuvanthy.u@avasoft.biz", "madhuvanthy.u@avasoft.biz", eml.Subject, String.Empty, String.Empty, eml.Body, "SDIERR", MailAttachmentName, MailAttachmentbytes.ToArray())
-                        SendLogger(eml.Subject, eml.Body, "QUOTEAPPROVAL", "Mail", eml.To, eml.Cc, eml.Bcc)
+                        SendLogger(eml.Subject, eml.Body, "QUOTEAPPROVAL", "Mail", eml.To, eml.Cc, eml.Bcc, itmQuoted.BusinessUnitID)
 
                     End If
                 Catch ex As Exception
