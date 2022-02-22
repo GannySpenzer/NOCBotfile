@@ -2631,7 +2631,7 @@ Module Module1
                       " ORDER BY ORDER_NO, LINE_NBR, DTTM_STAMP"
 
             Try
-                objWalmartSC.WriteLine("  UpdateWalmartSourceCode Q1: " & strSQLstring)
+                objWalmartSC.WriteLine("  UpdateWalmartSourceCode Q1New: " & strSQLstring)
 
                 ds = ORDBAccess.GetAdapter(strSQLstring, connectOR)
                 Dim I As Integer
@@ -2671,8 +2671,8 @@ Module Module1
                                             OrderStatusDetail.message = "Success"
                                             objWalmartSC.WriteLine("Order No: " + Convert.ToString(OrderNo) + "Status" + Convert.ToString(OrderStatusDetail.statusDesc))
                                             If OrderStatusDetail.message = "Success" Then
-                                                'WAL-622: SC Updates for Canceled Orders And Partial Deliveries
-                                                If OrderStatusDetail.statusDesc = "Delivered" Or OrderStatusDetail.statusDesc = "En Route from Vendor" Or OrderStatusDetail.statusDesc = "Partiall Delivered" Or OrderStatusDetail.statusDesc = "Cancelled" Then
+                                                'WAL-622: SC Updates for Canceled Orders And Partial Deliveries 
+                                                If OrderStatusDetail.statusDesc = "Delivered" Or OrderStatusDetail.statusDesc = "En Route from Vendor" Or OrderStatusDetail.statusDesc = "Partially Delivered" Or OrderStatusDetail.statusDesc = "Cancelled" Then
                                                     Dim CheckWOStatus As String = CheckWorkOrderStatus(WorkOrder, THIRDPARTY_COMP_ID)
                                                     objWalmartSC.WriteLine("CheckWOStatus: " + Convert.ToString(CheckWOStatus))
                                                     If CheckWOStatus.ToUpper() <> "COMPLETED" And CheckWOStatus <> "Failed" Then
@@ -2681,7 +2681,7 @@ Module Module1
                                                             WOStatus = "PARTS DELIVERED"
                                                         ElseIf OrderStatusDetail.statusDesc = "En Route from Vendor" Then
                                                             WOStatus = "PARTS SHIPPED"
-                                                        ElseIf OrderStatusDetail.statusDesc = "Partiall Delivered" Then
+                                                        ElseIf OrderStatusDetail.statusDesc = "Partially Delivered" Then
                                                             WOStatus = "PARTIAL PARTS DELIVERED"
                                                         ElseIf OrderStatusDetail.statusDesc = "Cancelled" Then
                                                             WOStatus = "INCOMPLETE"
