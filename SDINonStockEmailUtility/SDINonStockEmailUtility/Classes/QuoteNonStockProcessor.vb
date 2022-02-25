@@ -626,6 +626,19 @@ Public Class QuoteNonStockProcessor
                             Else
                                 SendMessages(itmQuoted, itmQuoted.BusinessUnitOM)
                             End If
+                            If itmQuoted.EmployeeID = "MAIKU49404" Then
+                                Try
+                                    Dim strSQLstring As String = "SELECT ISA_EMPLOYEE_EMAIL from SDIX_USERS_TBL where ISA_EMPLOYEE_ID= 'TAYOW50428'"
+                                    Dim EmailID As String = ORDBData.GetScalar(strSQLstring)
+                                    If EmailID <> "" Then
+                                        itmQuoted.EmployeeID = "TAYOW50428"
+                                        itmQuoted.Addressee = "TAYLOR OWENS"
+                                        itmQuoted.TO = EmailID
+                                        SendMessages(itmQuoted, itmQuoted.BusinessUnitOM)
+                                    End If
+                                Catch ex As Exception
+                                End Try
+                            End If
 
                         Else
                             If itmQuoted.ApprovalLimit > 0 Then
@@ -2016,20 +2029,22 @@ Public Class QuoteNonStockProcessor
 
                 End Try
 
-                Dim strOraSelectQuery As String = "select * from SYSADM8.PS_ISA_ORD_INTF_LN A where A.ORDER_NO = '" & itmQuoted.OrderID & "' AND A.ISA_LINE_STATUS in ('QTS','QTW') AND NOT EXISTS (SELECT 'X' FROM PS_ISA_REQ_EML_LOG B1 WHERE B1.REQ_ID = A.ORDER_NO AND B1.LINE_NO= A.ISA_INTFC_LN AND B1.PRICE= A.ISA_SELL_PRICE)"
-                Dim dsOrdLnItems As DataSet = GetAdapter(strOraSelectQuery)
+                If itmQuoted.EmployeeID <> "MAIKU49404" Then
 
-                If dsOrdLnItems.Tables(0).Rows.Count > 0 Then
+                    Dim strOraSelectQuery As String = "select * from SYSADM8.PS_ISA_ORD_INTF_LN A where A.ORDER_NO = '" & itmQuoted.OrderID & "' AND A.ISA_LINE_STATUS in ('QTS','QTW') AND NOT EXISTS (SELECT 'X' FROM PS_ISA_REQ_EML_LOG B1 WHERE B1.REQ_ID = A.ORDER_NO AND B1.LINE_NO= A.ISA_INTFC_LN AND B1.PRICE= A.ISA_SELL_PRICE)"
+                    Dim dsOrdLnItems As DataSet = GetAdapter(strOraSelectQuery)
 
-                    For Each dataRowMain As DataRow In dsOrdLnItems.Tables(0).Rows
-                        Try
+                    If dsOrdLnItems.Tables(0).Rows.Count > 0 Then
 
-                            Dim strOraSelectQuery1 As String = "select * from PS_ISA_REQ_EML_LOG A where A.REQ_ID = '" & itmQuoted.OrderID & "' AND LINE_NO= '" & dataRowMain("ISA_INTFC_LN") & "'"
-                            Dim ds As DataSet = GetAdapter(strOraSelectQuery1)
+                        For Each dataRowMain As DataRow In dsOrdLnItems.Tables(0).Rows
+                            Try
 
-                            If ds.Tables(0).Rows.Count() = 0 Then
-                                ' build insert SQL command
-                                cSQL =
+                                Dim strOraSelectQuery1 As String = "select * from PS_ISA_REQ_EML_LOG A where A.REQ_ID = '" & itmQuoted.OrderID & "' AND LINE_NO= '" & dataRowMain("ISA_INTFC_LN") & "'"
+                                Dim ds As DataSet = GetAdapter(strOraSelectQuery1)
+
+                                If ds.Tables(0).Rows.Count() = 0 Then
+                                    ' build insert SQL command
+                                    cSQL =
                                 "INSERT INTO PS_ISA_REQ_EML_LOG " &
                                 "(BUSINESS_UNIT, REQ_ID, ISA_RECIPIENT, ISA_SENDER, ISA_SUBJECT, EMAIL_DATETIME, LINE_NO, PRICE) " &
                                 "VALUES " &
@@ -2044,64 +2059,66 @@ Public Class QuoteNonStockProcessor
                                    "'" & dataRowMain("ISA_SELL_PRICE") & "'" &
                                 ")"
 
-                            Else
-                                cSQL = "UPDATE PS_ISA_REQ_EML_LOG set PRICE='" & dataRowMain("ISA_SELL_PRICE") & "' where REQ_ID= '" & itmQuoted.OrderID & "' and LINE_NO= '" & dataRowMain("ISA_INTFC_LN") & "'"
-                            End If
-                            'Dim rowsaffected As Int16 = ExecNonQuery(cSQL)
-                            If m_CN.State = ConnectionState.Open Then
+                                Else
+                                    cSQL = "UPDATE PS_ISA_REQ_EML_LOG set PRICE='" & dataRowMain("ISA_SELL_PRICE") & "' where REQ_ID= '" & itmQuoted.OrderID & "' and LINE_NO= '" & dataRowMain("ISA_INTFC_LN") & "'"
+                                End If
+                                'Dim rowsaffected As Int16 = ExecNonQuery(cSQL)
+                                If m_CN.State = ConnectionState.Open Then
 
-                            Else
-                                m_CN.Open()
-                            End If
-                            ' create a new instance of the command object
-                            cmd = New OleDbCommand(cmdText:=cSQL, connection:=m_CN)
-                            cmd.CommandType = CommandType.Text
+                                Else
+                                    m_CN.Open()
+                                End If
+                                ' create a new instance of the command object
+                                cmd = New OleDbCommand(cmdText:=cSQL, connection:=m_CN)
+                                cmd.CommandType = CommandType.Text
 
-                            ' execute SQL statement againts the connection object
-                            Try
-                                cmd.ExecuteNonQuery()
-                            Catch ex As Exception
-                                'm_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+                                ' execute SQL statement againts the connection object
                                 Try
-                                    m_CN.Close()
-                                Catch exErr2 As Exception
+                                    cmd.ExecuteNonQuery()
+                                Catch ex As Exception
+                                    'm_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+                                    Try
+                                        m_CN.Close()
+                                    Catch exErr2 As Exception
 
+                                    End Try
+                                    m_logger.WriteVerboseLog(cHdr & ".  Error:  " & ex.ToString)
                                 End Try
-                                m_logger.WriteVerboseLog(cHdr & ".  Error:  " & ex.ToString)
+                            Catch ex As Exception
+
                             End Try
-                        Catch ex As Exception
-
-                        End Try
-                    Next
-                End If
-                ' this code is for UNCC buyer tracking purposes
-                '   let's create a copy and send it to sender.
-                '   - erwin 20081022
-                Try
-                    ' look for this email address for the sender - FacilityMaintNonStoc@sdi.com
-                    '   recipient will be sender, CC will be blank, but BCC will stay as is
-                    If eml.From.ToUpper.IndexOf("FACILITYMAINTNONSTOC") > -1 Then
-                        eml.To = eml.From
-                        eml.Cc = ""
-                        eml.Subject &= " (copy)"
-                        ''System.Web.Mail.SmtpMail.Send(message:=eml)
-                        ''SDIEmailService.EmailUtilityServices("MailandStore", "madhuvanthy.u@avasoft.biz", "madhuvanthy.u@avasoft.biz", eml.Subject, String.Empty, String.Empty, eml.Body, "SDIERR", MailAttachmentName, MailAttachmentbytes.ToArray())
-                        SendLogger(eml.Subject, eml.Body, "QUOTEAPPROVAL", "Mail", eml.To, eml.Cc, eml.Bcc, itmQuoted.BusinessUnitID)
-
+                        Next
                     End If
-                Catch ex As Exception
-                    ' just ignore
-                End Try
-                'Next
+                    ' this code is for UNCC buyer tracking purposes
+                    '   let's create a copy and send it to sender.
+                    '   - erwin 20081022
+                    Try
+                        ' look for this email address for the sender - FacilityMaintNonStoc@sdi.com
+                        '   recipient will be sender, CC will be blank, but BCC will stay as is
+                        If eml.From.ToUpper.IndexOf("FACILITYMAINTNONSTOC") > -1 Then
+                            eml.To = eml.From
+                            eml.Cc = ""
+                            eml.Subject &= " (copy)"
+                            ''System.Web.Mail.SmtpMail.Send(message:=eml)
+                            ''SDIEmailService.EmailUtilityServices("MailandStore", "madhuvanthy.u@avasoft.biz", "madhuvanthy.u@avasoft.biz", eml.Subject, String.Empty, String.Empty, eml.Body, "SDIERR", MailAttachmentName, MailAttachmentbytes.ToArray())
+                            SendLogger(eml.Subject, eml.Body, "QUOTEAPPROVAL", "Mail", eml.To, eml.Cc, eml.Bcc, itmQuoted.BusinessUnitID)
 
-                If Not (cmd Is Nothing) Then
-                    cmd.Dispose()
+                        End If
+                    Catch ex As Exception
+                        ' just ignore
+                    End Try
+                    'Next
+
+                    If Not (cmd Is Nothing) Then
+                        cmd.Dispose()
+                    End If
+                    Try
+                        m_CN.Close()
+                    Catch ex111 As Exception
+
+                    End Try
+
                 End If
-                Try
-                    m_CN.Close()
-                Catch ex111 As Exception
-
-                End Try
             End If
 
         Catch ex As Exception
