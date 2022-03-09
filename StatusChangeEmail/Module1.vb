@@ -1088,15 +1088,24 @@ Module Module1
                 End If
 
             End If
-            SDIEmailService.EmailUtilityServices("MailandStore", Mailer.From, Mailer.To, Mailer.Subject, String.Empty, "webdev@sdi.com", Mailer.Body, "StatusChangeEmail0", MailAttachmentName, MailAttachmentbytes.ToArray())
+            Try
+                SDIEmailService.EmailUtilityServices("MailandStore", Mailer.From, Mailer.To, Mailer.Subject, String.Empty, "webdev@sdi.com", Mailer.Body, "StatusChangeEmail0", MailAttachmentName, MailAttachmentbytes.ToArray())
+            Catch ex As Exception
+
+            End Try
+
         Else
             If Not getDBName() Then
                 Mailer.Subject = "<<TEST SITE>>SDiExchange - Order Status " & strOrderNo & " is Ready for Pickup"
             Else
                 Mailer.Subject = "SDiExchange - Order Status " & strOrderNo & " is Ready for Pickup"
             End If
+            Try
+                SDIEmailService.EmailUtilityServices("MailandStore", Mailer.From, Mailer.To, Mailer.Subject, String.Empty, "webdev@sdi.com", Mailer.Body, "StatusChangeEmail0", MailAttachmentName, MailAttachmentbytes.ToArray())
+            Catch ex As Exception
 
-            SDIEmailService.EmailUtilityServices("MailandStore", Mailer.From, Mailer.To, Mailer.Subject, String.Empty, "webdev@sdi.com", Mailer.Body, "StatusChangeEmail0", MailAttachmentName, MailAttachmentbytes.ToArray())
+            End Try
+
         End If
     End Sub
 
@@ -1635,7 +1644,7 @@ Module Module1
         strSQLstring = "SELECT H.ISA_IOL_OP_NAME as STATUS_CODE, TBL.* FROM (SELECT distinct G.BUSINESS_UNIT_OM, G.BUSINESS_UNIT_OM AS G_BUS_UNIT, D.BUSINESS_UNIT, D.ISA_EMPLOYEE_ID, A.ORDER_NO,B.ISA_WORK_ORDER_NO As WORK_ORDER_NO, B.ISA_INTFC_LN AS line_nbr," & vbCrLf &
                  " B.ISA_EMPLOYEE_ID AS EMPLID, B.ISA_LINE_STATUS as ORDER_TYPE,B.OPRID_ENTERED_BY, B.SHIPTO_ID as SHIPTO,B.ISA_USER2 as STORE," & vbCrLf &
                  " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, B.ISA_PRIORITY_FLAG As IsPriority, B.ISA_REQUIRED_BY_DT," & vbCrLf &
-                 "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'QTW','02','QTS','04','QTA','08','DLF','16') AS OLD_ORDER_STATUS," & vbCrLf
+                 "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','01','QTW','02','QTC','03','QTS','04','CST','05','VND','06','APR','07','QTA','08','RCF','13','RCP','14','DLF','16','PKA','17','ASN','18') AS OLD_ORDER_STATUS," & vbCrLf
 
 
         strSQLstring += " (SELECT E.XLATLONGNAME" & vbCrLf &
@@ -3101,10 +3110,15 @@ Module Module1
                     Mailer1.Subject = "SDiExchange - Order Status records for Order Number: " & strOrderNo
                 End If
             End If
+            Try
+                Mailer1.BodyFormat = System.Web.Mail.MailFormat.Html
 
-            Mailer1.BodyFormat = System.Web.Mail.MailFormat.Html
+                SDIEmailService.EmailUtilityServices("MailandStore", Mailer1.From, Mailer1.To, Mailer1.Subject, String.Empty, "webdev@sdi.com", Mailer1.Body, "StatusChangeEmail1", MailAttachmentName, MailAttachmentbytes.ToArray())
+            Catch ex As Exception
 
-            SDIEmailService.EmailUtilityServices("MailandStore", Mailer1.From, Mailer1.To, Mailer1.Subject, String.Empty, "webdev@sdi.com", Mailer1.Body, "StatusChangeEmail1", MailAttachmentName, MailAttachmentbytes.ToArray())
+            End Try
+
+
         End If
 
         'Push & Web notifications will be sent for all orders of all BUs lively- WAL-632&WW-287 Poornima S
