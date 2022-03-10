@@ -578,7 +578,8 @@ Module Module1
         End If
 
         'The email address of the recipient. 
-        strEmailTo = "vitaly.rovensky@sdi.com"
+        'Removing vitaly.rovensky@sdi.com
+        strEmailTo = "webdev@sdi.com"
         If strEmail.Contains(";") Then
             'several emails
             Dim arrEmails() As String = Split(strEmail, ";")
