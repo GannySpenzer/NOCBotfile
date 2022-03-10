@@ -54,9 +54,10 @@ Module Module1
         Dim strEmailCc As String = ""
         Dim strEmailBcc As String = ""
         Dim strEmailTo As String = ""
-        strEmailTo = "vitaly.rovensky@sdi.com"
+        'Removing vitaly.rovensky@sdi.com
+        strEmailTo = "webdev@sdi.com"
         strEmailCc = " "
-        strEmailBcc = "webdev@sdi.com"
+        'strEmailBcc = "webdev@sdi.com"
 
         ''The subject of the email
         Dim strEmailSubject As String = ""
