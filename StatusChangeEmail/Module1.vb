@@ -172,7 +172,7 @@ Module Module1
                     buildstatchgout = checkAllStatusNew(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
                 End If
 
-                If buildstatchgout = True Then
+                    If buildstatchgout = True Then
                     bolErrorSomeWhere = True
                 End If
             Next
@@ -2998,13 +2998,9 @@ Module Module1
         Dim sendEmailAlert As Boolean
         Dim IsProdDB As Boolean = False
 
-        'Only for "DLF" status email will be sent for WAL users - WAL-632&WW-287 Poornima S
+        'Email notifications won't be sent for Walmart Orders only Web & Push notifications will be sent for all status changes
         If strBU = "I0W01" Then
-            If strOrderStatus.Trim() = "DLF" Then
-                sendEmailAlert = True
-            Else
-                sendEmailAlert = False
-            End If
+            sendEmailAlert = False
         Else
             sendEmailAlert = True
         End If
