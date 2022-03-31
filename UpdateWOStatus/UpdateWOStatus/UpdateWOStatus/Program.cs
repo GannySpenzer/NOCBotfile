@@ -255,7 +255,10 @@ namespace UpdateWOStatus
                 {
                     username = "SDIAPI";
                     password = "WalmartUser!123";
-                    clientKey = "U0IuMjAwMDA1MTI1OS5GNjg2RENCNi0yNDMzLTQ3QjgtOEVCNi0zMDg3QkZERkREM0U6NDkzMTlENDAtRUEzQS00NjY0LUE2MTctRjY2NkQ0QUVBNzA4";
+                    if (ConfigurationSettings.AppSettings["OLEProdDB"] == ConfigurationSettings.AppSettings["OLECurrentDB"])
+                        clientKey = "U0IuMjAwMDA1MTI1OS5DQkREOEY3Qy0xRjVBLTREMEItODFBNy0zRjlDNUVEODlBQjA6RkYyRUQ4MDItQ0Y4OS00RTNDLTgzRUYtNUU4ODZDOTBFNjQw";//Prod
+                    else
+                    clientKey = "U0IuMjAwMDA1MTI1OS5GNjg2RENCNi0yNDMzLTQ3QjgtOEVCNi0zMDg3QkZERkREM0U6NDkzMTlENDAtRUEzQS00NjY0LUE2MTctRjY2NkQ0QUVBNzA4";//Test
                 }
                 //else
                 //{
