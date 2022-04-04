@@ -92,14 +92,21 @@ namespace UpdateWOStatus
                 string APIresponse = string.Empty;
                 if (!string.IsNullOrEmpty(workOrder) & !string.IsNullOrWhiteSpace(workOrder))
                 {
-                    if (!string.IsNullOrEmpty(THIRDPARTY_COMP_ID))
+                    /* Updating Work order for CBRE*/
+                    string strquery = "SELECT DISTINCT LN.ISA_EMPLOYEE_ID AS ISA_EMPLOYEE_ID,LN.LASTUPDDTTM  from PS_ISA_ORD_INTF_LN LN,ps_isa_wo_status WO where LN.ISA_WORK_ORDER_NO = '" + workOrder + "' AND LN.ISA_WORK_ORDER_NO = WO.ISA_WORK_ORDER_NO AND WO.BUSINESS_UNIT_OM = LN.BUSINESS_UNIT_OM  order by ISA_EMPLOYEE_ID,LN.LASTUPDDTTM desc";
+                    DataSet WOdataset = GetAdapterSpc(strquery);
+                    string employeeId = Convert.ToString(WOdataset.Tables[0].Rows[0]["ISA_EMPLOYEE_ID"]);
+                    string sqlquery = "select THIRDPARTY_COMP_ID from SDIX_USERS_TBL where ISA_EMPLOYEE_ID='" + employeeId + "'";
+                    string THIRDPARTYID = GetScalar(sqlquery, false);
+
+                    if (!string.IsNullOrEmpty(THIRDPARTYID))
                     {
-                        //if (THIRDPARTY_COMP_ID == ConfigurationManager.AppSettings("CBRECompanyID").ToString())
-                        //    APIresponse = AuthenticateService1("CBRE");
-                        //else
-                        //    APIresponse = AuthenticateService1("Walmart");
+                        if (THIRDPARTYID == ConfigurationSettings.AppSettings["CBRECompanyID"].ToString())
+                            APIresponse = AuthenticateService("CBRE");
+                        else
+                            APIresponse = AuthenticateService("Walmart");
                     }
-                    APIresponse = AuthenticateService("Walmart");
+                    //APIresponse = AuthenticateService("Walmart");
                     if ((APIresponse != "Server Error" & APIresponse != "Internet Error" & APIresponse != "Error"))
                     {
                         if ((!APIresponse.Contains("error_description")))
@@ -241,6 +248,65 @@ namespace UpdateWOStatus
             }
             return rowsAffected;
         }
+        public static string GetScalar(string p_strQuery, bool bGoToErrPage = true)
+        {
+            // Gives us a reference to the current asp.net 
+            // application executing the method.
+            //HttpApplication currentApp = HttpContext.Current.ApplicationInstance;
+            string strReturn = "";
+            OleDbConnection connection = new OleDbConnection(DbUrl);
+            try
+            {
+                OleDbCommand Command = new OleDbCommand(p_strQuery, connection);
+                Command.CommandTimeout = 120;
+                connection.Open();
+                try
+                {
+                    strReturn = System.Convert.ToString(Command.ExecuteScalar());
+                }
+                catch (Exception ex32)
+                {
+                    strReturn = "";
+                }
+                if (strReturn == null)
+                    strReturn = "";
+                try
+                {
+                    Command.Dispose();
+                }
+                catch (Exception ex1)
+                {
+                }
+                try
+                {
+                    connection.Close();
+                    connection.Dispose();
+                }
+                catch (Exception ex2)
+                {
+                }
+            }
+            // connection.close()
+            catch (Exception objException)
+            {
+                strReturn = "";
+
+                try
+                {
+                    connection.Close();
+                    connection.Dispose();
+                }
+                catch (Exception ex)
+                {
+
+                    // connection.close()
+                   
+                }
+            }
+
+            return strReturn;
+        }
+
 
         public static string AuthenticateService(string credType)
         {
@@ -260,12 +326,15 @@ namespace UpdateWOStatus
                     else
                     clientKey = "U0IuMjAwMDA1MTI1OS5GNjg2RENCNi0yNDMzLTQ3QjgtOEVCNi0zMDg3QkZERkREM0U6NDkzMTlENDAtRUEzQS00NjY0LUE2MTctRjY2NkQ0QUVBNzA4";//Test
                 }
-                //else
-                //{
-                //    username = ConfigurationManager.AppSettings("CBREUName");
-                //    password = ConfigurationManager.AppSettings("CBREPassword");
-                //    clientKey = ConfigurationManager.AppSettings("CBREClientKey");
-                //}
+                else
+                {
+                    username = ConfigurationSettings.AppSettings["CBREUName"];
+                    password = ConfigurationSettings.AppSettings["CBREPassword"];
+                    if (ConfigurationSettings.AppSettings["OLEProdDB"] == ConfigurationSettings.AppSettings["OLECurrentDB"])
+                        clientKey = "U0IuMjAxNDkxNzQzMC4wNjU5RjkwQS00RUJCLTQ5MjItOUY5MS02NUZGNjFFRDBCMEQ6NzhBOTFBNTEtMkJGMS00MzJFLUIwNEMtRjgzRjJEOTk5OTVB -CBREclientkey";
+                    else
+                        clientKey = ConfigurationSettings.AppSettings["CBREClientKey"];
+                }
                 string apiurl = "";
                 if (ConfigurationSettings.AppSettings["OLEProdDB"] == ConfigurationSettings.AppSettings["OLECurrentDB"])
                     apiurl = "https://login.servicechannel.com/oauth/token";
