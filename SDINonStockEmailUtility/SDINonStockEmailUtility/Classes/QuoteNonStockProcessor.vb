@@ -396,12 +396,20 @@ Public Class QuoteNonStockProcessor
             If dsOrdLnItems.Tables(0).Rows.Count > 0 Then
                 Dim intMy21 As Integer = 0
                 Dim BaseCurrency As String = String.Empty
+                Dim vendorName As String = String.Empty
                 For Each dataRowMain As DataRow In dsOrdLnItems.Tables(0).Rows
                     Try
                         BaseCurrency = currencyds.Tables(0).AsEnumerable().
    Where(Function(r) Convert.ToString(r.Field(Of Decimal)("ISA_INTFC_LN")) = Convert.ToString(dataRowMain("ISA_INTFC_LN"))).
    Select(Function(r) Convert.ToString(r.Field(Of String)("BASECURRENCY"))).
    FirstOrDefault()
+                    Catch ex As Exception
+
+                    End Try
+                    Try
+                        Dim vendor As String = CType(dataRowMain("VENDOR_ID"), String).Trim()
+                        SQLSTRINGQuery = "Select NAME1 from PS_Vendor where VENDOR_ID= '" & vendor & "'"
+                        vendorName = ORDBData.GetScalar(SQLSTRINGQuery)
                     Catch ex As Exception
 
                     End Try
@@ -523,7 +531,7 @@ Public Class QuoteNonStockProcessor
                     'Added Supplier & Supplier part num in approval email for WAL orders - WW-287 & WAL-632 Poornima S
                     If BU = "I0W01" Then
                         Try
-                            dr("Supplier") = CType(dataRowMain("VENDOR_ID"), String).Trim()
+                            dr("Supplier") = CType(dataRowMain("VENDOR_ID"), String).Trim() + "- " + vendorName
                         Catch ex As Exception
                         End Try
 
@@ -601,8 +609,8 @@ Public Class QuoteNonStockProcessor
                                     ' set line status to QTC or QTA (itmQuoted.LineStatus) and add Audit record
                                     Dim strUpdateLineStatusFinal As String = ""
                                     strUpdateLineStatusFinal = "UPDATE SYSADM8.PS_ISA_ORD_INTF_LN SET ISA_LINE_STATUS = '" & itmQuoted.LineStatus & "', OPRID_APPROVED_BY = 'SDIX', APPROVAL_DTTM = SYSDATE " & vbCrLf &
-                                            "WHERE BUSINESS_UNIT_OM = '" & itmQuoted.BusinessUnitOM & "' AND ORDER_NO = '" & itmQuoted.OrderID & "' " & vbCrLf &
-                                            "AND ISA_LINE_STATUS = 'QTS'"
+                                        "WHERE BUSINESS_UNIT_OM = '" & itmQuoted.BusinessUnitOM & "' AND ORDER_NO = '" & itmQuoted.OrderID & "' " & vbCrLf &
+                                        "AND ISA_LINE_STATUS = 'QTS'"
 
                                     Dim iRowsAffctd As Integer = 0
                                     Try
