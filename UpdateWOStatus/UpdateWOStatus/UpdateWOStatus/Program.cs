@@ -331,7 +331,7 @@ namespace UpdateWOStatus
                     username = ConfigurationSettings.AppSettings["CBREUName"];
                     password = ConfigurationSettings.AppSettings["CBREPassword"];
                     if (ConfigurationSettings.AppSettings["OLEProdDB"] == ConfigurationSettings.AppSettings["OLECurrentDB"])
-                        clientKey = "U0IuMjAxNDkxNzQzMC4wNjU5RjkwQS00RUJCLTQ5MjItOUY5MS02NUZGNjFFRDBCMEQ6NzhBOTFBNTEtMkJGMS00MzJFLUIwNEMtRjgzRjJEOTk5OTVB -CBREclientkey";
+                        clientKey = "U0IuMjAxNDkxNzQzMC4wNjU5RjkwQS00RUJCLTQ5MjItOUY5MS02NUZGNjFFRDBCMEQ6NzhBOTFBNTEtMkJGMS00MzJFLUIwNEMtRjgzRjJEOTk5OTVB";
                     else
                         clientKey = ConfigurationSettings.AppSettings["CBREClientKey"];
                 }
