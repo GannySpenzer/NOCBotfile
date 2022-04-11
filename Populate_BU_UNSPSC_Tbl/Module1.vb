@@ -1,4 +1,5 @@
 ﻿Imports System.Data.OleDb
+Imports System.Configuration
 
 Module Module1
 
@@ -22,11 +23,12 @@ Module Module1
     End Sub
 
     Private Sub InitializeLogger()
-        Dim sLogPath As String = Environment.CurrentDirectory
-        If Not sLogPath.EndsWith("\") Then
-            sLogPath &= "\"
-        End If
-        sLogPath &= "Logs"
+        Dim sLogPath As String = String.Empty
+        'If Not sLogPath.EndsWith("\") Then
+        '    sLogPath &= "\"
+        'End If
+        'sLogPath &= "Logs"
+        sLogPath = ConfigurationManager.AppSettings("LogPath")
         m_oLogger = New Logger(sLogPath, "Populate_BU_UNSPSC_Tbl")
     End Sub
 
