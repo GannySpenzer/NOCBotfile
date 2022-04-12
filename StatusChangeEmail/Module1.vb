@@ -172,7 +172,7 @@ Module Module1
                     buildstatchgout = checkAllStatusNew(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
                 End If
 
-                    If buildstatchgout = True Then
+                If buildstatchgout = True Then
                     bolErrorSomeWhere = True
                 End If
             Next
@@ -2799,7 +2799,7 @@ Module Module1
                         End Try
 
                         Dim CredType As String = ""
-                        If Third_party_comp_id = "0" Then
+                        If Third_party_comp_id <> "100" Then 'Mythili -- Status change Email utility -- expedite comment issue
                             CredType = "Walmart"
                         End If
                         UpdateNotes(WorkOrder, CredType, strComments, PO_num, OrderNum)
@@ -2842,10 +2842,10 @@ Module Module1
                         Dim response = httpClient.PostAsync(apiURL, New StringContent(serializedparameter, Encoding.UTF8, "application/json")).Result
                         If response.IsSuccessStatusCode Then
                             Dim workorderAPIResponse As String = response.Content.ReadAsStringAsync().result
-                            objWalSCComments.WriteLine("Result - Success " + Convert.ToString(workorderAPIResponse) + " Work Order-" + workOrder + " PO ID-" + Ponum + " Order No-" + Ordernum)
+                            objWalSCComments.WriteLine("Result - Success " + Convert.ToString(workorderAPIResponse) + " Work Order-" + workOrder + " PO ID-" + Ponum + " Order No-" + Ordernum + " CredType-" + credType)
                             Return "Success"
                         Else
-                            objWalSCComments.WriteLine("Result- Failed in API response Work Order-" + workOrder + " PO ID-" + Ponum + " Order No-" + Ordernum)
+                            objWalSCComments.WriteLine("Result- Failed in API response Work Order-" + workOrder + " PO ID-" + Ponum + " Order No-" + Ordernum + " CredType-" + credType)
                             Return "Failed"
                         End If
                     End If
