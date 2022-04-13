@@ -78,6 +78,10 @@ namespace UpdateWOStatus
                             {
                                 log.WriteLine("Work order number with invoiced as status:" + workorder["ISA_WORK_ORDER_NO"].ToString());
                             }
+                            else if (status.ToLower() == "failed")
+                            {
+                                log.WriteLine("Work order number with failed response:" + workorder["ISA_WORK_ORDER_NO"].ToString());
+                            }
                             else 
                             {
                                 log.WriteLine("Work order numbers with status other than completed and invoiced:" + workorder["ISA_WORK_ORDER_NO"].ToString());
