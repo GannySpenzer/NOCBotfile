@@ -130,10 +130,10 @@ namespace UpdateWOStatus
                         {
                             ValidateUserResponseBO objValidateUserResponseBO = JsonConvert.DeserializeObject<ValidateUserResponseBO>(APIresponse);
                             string apiURL = "";
-                            //if (ConfigurationSettings.AppSettings["OLEProdDB"] == ConfigurationSettings.AppSettings["OLECurrentDB"])
+                            if (ConfigurationSettings.AppSettings["OLEProdDB"] == ConfigurationSettings.AppSettings["OLECurrentDB"])
                                 apiURL = "https://api.servicechannel.com/v3/odata/" + "workorders(" + workOrder + ")?$select=Status";
-                            //else
-                             // apiURL = "https://sb2api.servicechannel.com/v3/odata/" + "workorders(" + workOrder + ")?$select=Status";
+                            else
+                                apiURL = "https://sb2api.servicechannel.com/v3/odata/" + "workorders(" + workOrder + ")?$select=Status";
                             HttpClient httpClient = new HttpClient();
                             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", objValidateUserResponseBO.access_token);
@@ -338,25 +338,25 @@ namespace UpdateWOStatus
                 {
                     username = "SDIAPI";
                     password = "WalmartUser!123";
-                   // if (ConfigurationSettings.AppSettings["OLEProdDB"] == ConfigurationSettings.AppSettings["OLECurrentDB"])
+                    if (ConfigurationSettings.AppSettings["OLEProdDB"] == ConfigurationSettings.AppSettings["OLECurrentDB"])
                         clientKey = "U0IuMjAwMDA1MTI1OS5DQkREOEY3Qy0xRjVBLTREMEItODFBNy0zRjlDNUVEODlBQjA6RkYyRUQ4MDItQ0Y4OS00RTNDLTgzRUYtNUU4ODZDOTBFNjQw";//Prod
-                  // else
-                  // clientKey = "U0IuMjAwMDA1MTI1OS5GNjg2RENCNi0yNDMzLTQ3QjgtOEVCNi0zMDg3QkZERkREM0U6NDkzMTlENDAtRUEzQS00NjY0LUE2MTctRjY2NkQ0QUVBNzA4";//Test
+                    else
+                        clientKey = "U0IuMjAwMDA1MTI1OS5GNjg2RENCNi0yNDMzLTQ3QjgtOEVCNi0zMDg3QkZERkREM0U6NDkzMTlENDAtRUEzQS00NjY0LUE2MTctRjY2NkQ0QUVBNzA4";//Test
                 }
                 else
                 {
                     username = ConfigurationSettings.AppSettings["CBREUName"];
                     password = ConfigurationSettings.AppSettings["CBREPassword"];
-                   // if (ConfigurationSettings.AppSettings["OLEProdDB"] == ConfigurationSettings.AppSettings["OLECurrentDB"])
+                    if (ConfigurationSettings.AppSettings["OLEProdDB"] == ConfigurationSettings.AppSettings["OLECurrentDB"])
                         clientKey = "U0IuMjAxNDkxNzQzMC4wNjU5RjkwQS00RUJCLTQ5MjItOUY5MS02NUZGNjFFRDBCMEQ6NzhBOTFBNTEtMkJGMS00MzJFLUIwNEMtRjgzRjJEOTk5OTVB";
-                   // else
-                      // clientKey = ConfigurationSettings.AppSettings["CBREClientKey"];
+                    else
+                        clientKey = ConfigurationSettings.AppSettings["CBREClientKey"];
                 }
                 string apiurl = "";
-              // if (ConfigurationSettings.AppSettings["OLEProdDB"] == ConfigurationSettings.AppSettings["OLECurrentDB"])
+                if (ConfigurationSettings.AppSettings["OLEProdDB"] == ConfigurationSettings.AppSettings["OLECurrentDB"])
                     apiurl = "https://login.servicechannel.com/oauth/token";
-               // else
-                   // apiurl = "https://sb2login.servicechannel.com/oauth/token";
+                else
+                    apiurl = "https://sb2login.servicechannel.com/oauth/token";
                 var formContent = new FormUrlEncodedContent(new[] { new KeyValuePair<string, string>("username", username), new KeyValuePair<string, string>("password", password), new KeyValuePair<string, string>("grant_type", "password") });
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", clientKey); // Add("Authorization", "Basic " + clientKey)
                 var response = httpClient.PostAsync(apiurl, formContent).Result;
