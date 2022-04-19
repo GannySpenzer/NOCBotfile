@@ -22,11 +22,11 @@ Module Module1
     Dim objGenerallLogStreamWriter As StreamWriter
     Dim objWalmartSC As StreamWriter
     Dim objWalSCComments As StreamWriter
-    Dim rootDir As String = "C:\StatChg"
-    Dim logpath As String = "C:\StatChg\LOGS\StatChgEmailOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim Generallogpath As String = "C:\StatChg\LOGS\GeneralStatChgEmailOutLog" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim WalmartSC As String = "C:\StatChg\LOGS\WalmartSC" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
-    Dim WalmartSCComments As String = "C:\StatChg\LOGS\WalmartComments" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+    Dim rootDir As String = ConfigurationManager.AppSettings("rootDir")
+    Dim logpath As String = ConfigurationManager.AppSettings("logpath") & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+    Dim Generallogpath As String = ConfigurationManager.AppSettings("Generallogpath") & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+    Dim WalmartSC As String = ConfigurationManager.AppSettings("WalmartSC") & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
+    Dim WalmartSCComments As String = ConfigurationManager.AppSettings("WalmartSCComments") & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
     Dim connectOR As New OleDbConnection(Convert.ToString(ConfigurationManager.AppSettings("OLEDBconString")))
     'Added timings for order status summary email--  WW-287 & WAL-632 Poornima S
     Dim SumryStartLngTime As String = ConfigurationManager.AppSettings("SummaryStartLongTime")
@@ -164,13 +164,12 @@ Module Module1
                     objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
                     objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
                     buildstatchgout = checkAllStatusWAL(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
-                Else
-                    Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                    objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
+                End If
+                Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
+                objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
                     objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
                     objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
                     buildstatchgout = checkAllStatusNew(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
-                End If
 
                 If buildstatchgout = True Then
                     bolErrorSomeWhere = True
@@ -1563,77 +1562,83 @@ Module Module1
     'Below Method is to get order details of Walmart users for order status summary email--WW-287 & WAL-632 Poornima S
     Private Function checkAllStatusWAL(ByVal strBU As String) As Boolean
         Dim strSQLstring As String
-        Dim dteEndDate As DateTime = Now
-
-        Dim format As New System.Globalization.CultureInfo("en-US", True)
-        strSQLstring = "SELECT" & vbCrLf &
-            " to_char(MAX( A.DTTM_STAMP), 'MM/DD/YY HH24:MI:SS') as MAXDATE" & vbCrLf &
-            " FROM PS_ISAORDSTATUSLOG A" & vbCrLf &
-             " WHERE A.BUSINESS_UNIT_OM = '" & strBU & "' "
-
-        Dim dr As OleDbDataReader = Nothing
-
-        Try
-            objStreamWriter.WriteLine("  checkAllStatusWAL (1): " & strSQLstring)
-
-            Dim command As OleDbCommand
-            command = New OleDbCommand(strSQLstring, connectOR)
-            If connectOR.State = ConnectionState.Open Then
-                'do nothing
-            Else
-                connectOR.Open()
-            End If
-            dr = command.ExecuteReader
-            Try
-
-                If dr.Read Then
-                    dteEndDate = (dr.Item("MAXDATE"))
-                Else
-                    dteEndDate = Now.ToString
-                End If
-            Catch ex As Exception
-                dteEndDate = Now.ToString
-            End Try
-
-            dr.Close()
-            connectOR.Close()
-
-        Catch OleDBExp As OleDbException
-            Try
-                dr.Close()
-                connectOR.Close()
-            Catch exOR As Exception
-
-            End Try
-            objStreamWriter.WriteLine("     Error - error reading end date FROM PS_ISAORDSTATUSLOG A")
-            Return True
-        End Try
-
-        connectOR.Open()
-        Dim objEnterprise As New clsEnterprise(strBU, connectOR)
-        Dim dteCustID As String = objEnterprise.CustID
-        Dim dteCompanyID As String = objEnterprise.CompanyID
-        Dim dteStartDate As DateTime = objEnterprise.SendStartDate
-        Dim dteSiteEmail As String = objEnterprise.SiteEmail
-        Dim dteSTKREQEmail As String = objEnterprise.STKREQEmail
-        Dim dteNONSKREQEmail As String = objEnterprise.NONSKREQEmail
-
-        Try
-            connectOR.Close()
-        Catch ex As Exception
-
-        End Try
-
         Dim ds As New DataSet
+
+
+        '********Commenting UpdateWalmartSourceCode() method since the same method will be called order wise in checkAllStatusNew() for I0W01 BU*******
+
+        'Dim dteEndDate As DateTime = Now
+
+        'Dim format As New System.Globalization.CultureInfo("en-US", True)
+        'strSQLstring = "SELECT" & vbCrLf &
+        '    " to_char(MAX( A.DTTM_STAMP), 'MM/DD/YY HH24:MI:SS') as MAXDATE" & vbCrLf &
+        '    " FROM PS_ISAORDSTATUSLOG A" & vbCrLf &
+        '     " WHERE A.BUSINESS_UNIT_OM = '" & strBU & "' "
+
+        'Dim dr As OleDbDataReader = Nothing
+
+        'Try
+        '    objStreamWriter.WriteLine("  checkAllStatusWAL (1): " & strSQLstring)
+
+        '    Dim command As OleDbCommand
+        '    command = New OleDbCommand(strSQLstring, connectOR)
+        '    If connectOR.State = ConnectionState.Open Then
+        '        'do nothing
+        '    Else
+        '        connectOR.Open()
+        '    End If
+        '    dr = command.ExecuteReader
+        '    Try
+
+        '        If dr.Read Then
+        '            dteEndDate = (dr.Item("MAXDATE"))
+        '        Else
+        '            dteEndDate = Now.ToString
+        '        End If
+        '    Catch ex As Exception
+        '        dteEndDate = Now.ToString
+        '    End Try
+
+        '    dr.Close()
+        '    connectOR.Close()
+
+        'Catch OleDBExp As OleDbException
+        '    Try
+        '        dr.Close()
+        '        connectOR.Close()
+        '    Catch exOR As Exception
+
+        '    End Try
+        '    objStreamWriter.WriteLine("     Error - error reading end date FROM PS_ISAORDSTATUSLOG A")
+        '    Return True
+        'End Try
+
+        'connectOR.Open()
+        'Dim objEnterprise As New clsEnterprise(strBU, connectOR)
+        'Dim dteCustID As String = objEnterprise.CustID
+        'Dim dteCompanyID As String = objEnterprise.CompanyID
+        'Dim dteStartDate As DateTime = objEnterprise.SendStartDate
+        'Dim dteSiteEmail As String = objEnterprise.SiteEmail
+        'Dim dteSTKREQEmail As String = objEnterprise.STKREQEmail
+        'Dim dteNONSKREQEmail As String = objEnterprise.NONSKREQEmail
+
+        'Try
+        '    connectOR.Close()
+        'Catch ex As Exception
+
+        'End Try
+
         ' check is processed order is ASCEND order
 
-        dteEndDate.AddSeconds(1)
+        'dteEndDate.AddSeconds(1)
 
-        Try
-            UpdateWalmartSourceCode(dteStartDate, dteEndDate, strBU)
-        Catch
+        'Try
+        '    UpdateWalmartSourceCode(dteStartDate, dteEndDate, strBU)
+        'Catch
 
-        End Try
+        'End Try
+
+        '********End of Commenting UpdateWalmartSourceCode()*********
 
         ' stock items will get item id from the ps_isa_ord_intfc_l table  but description from the PS_MASTER_ITEM_TB
         ' non-stock items  has no item-id num and gets description from the ps_isa_ord_intfc_l
@@ -1643,8 +1648,8 @@ Module Module1
 
         strSQLstring = "SELECT H.ISA_IOL_OP_NAME as STATUS_CODE, TBL.* FROM (SELECT distinct G.BUSINESS_UNIT_OM, G.BUSINESS_UNIT_OM AS G_BUS_UNIT, D.BUSINESS_UNIT, D.ISA_EMPLOYEE_ID, A.ORDER_NO,B.ISA_WORK_ORDER_NO As WORK_ORDER_NO, B.ISA_INTFC_LN AS line_nbr," & vbCrLf &
                  " B.ISA_EMPLOYEE_ID AS EMPLID, B.ISA_LINE_STATUS as ORDER_TYPE,B.OPRID_ENTERED_BY, B.SHIPTO_ID as SHIPTO,B.ISA_USER2 as STORE," & vbCrLf &
-                 " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, B.ISA_PRIORITY_FLAG As IsPriority, B.ISA_REQUIRED_BY_DT," & vbCrLf &
-                 "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','01','QTW','02','QTC','03','QTS','04','CST','05','VND','06','APR','07','QTA','08','RCF','13','RCP','14','DLF','16','PKA','17','ASN','18') AS OLD_ORDER_STATUS," & vbCrLf
+                 " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, B.ISA_PRIORITY_FLAG As IsPriority, B.ISA_REQUIRED_BY_DT,B.VENDOR_ID," & vbCrLf &
+                 "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS,DECODE(G.ISA_LINE_STATUS,'CRE','01','QTW','02','QTC','03','QTS','04','CST','05','VND','06','APR','07','QTA','08','RCF','13','RCP','14','DLF','16','PKA','17','ASN','18') AS OLD_ORDER_STATUS," & vbCrLf
 
 
         strSQLstring += " (SELECT E.XLATLONGNAME" & vbCrLf &
@@ -1682,6 +1687,11 @@ Module Module1
 
         strSQLstring += " AND G.DTTM_STAMP > (TRUNC(sysdate -1) + '" & SumryMailTime & "'/24)" & vbCrLf &
              " AND G.DTTM_STAMP <= (TRUNC(sysdate) + '" & SumryMailTime & "'/24)" & vbCrLf
+
+        strSQLstring += "AND EXISTS (SELECT 'X' FROM PS_ISA_WO_STATUS I " & vbCrLf &
+                  "WHERE B.BUSINESS_UNIT_OM = I.BUSINESS_UNIT_OM " & vbCrLf &
+                  "AND   B.ISA_WORK_ORDER_NO = I.ISA_WORK_ORDER_NO " & vbCrLf &
+                  "AND   I.ISA_WO_STATUS <> 'COMPLETED')" & vbCrLf
 
         strSQLstring += " AND UPPER(B.ISA_EMPLOYEE_ID) = UPPER(D.ISA_EMPLOYEE_ID)) TBL, PS_ISA_USERS_PRIVS H " & vbCrLf &
                  " WHERE H.BUSINESS_UNIT = TBL.BUSINESS_UNIT " & vbCrLf &
@@ -1724,17 +1734,17 @@ Module Module1
             objGenerallLogStreamWriter.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()))
         End If
 
-        Dim rowsaffected As Integer
-        Dim tmpOrderNo As String
+        'Dim rowsaffected As Integer
+        'Dim tmpOrderNo As String
 
         If connectOR.State = ConnectionState.Open Then
             'do nothing
         Else
             connectOR.Open()
         End If
-        Dim strPreOrderno As String
+        'Dim strPreOrderno As String
         Dim I As Integer
-        Dim X As Integer
+        'Dim X As Integer
         Dim dsEmail As New DataTable
         Dim dr1 As DataRow
         Dim dsShipTo As DataSet
@@ -1761,6 +1771,7 @@ Module Module1
         dsEmail.Columns.Add("IsPriority")
         dsEmail.Columns.Add("Ship To")
         dsEmail.Columns.Add("Delivery Date")
+        dsEmail.Columns.Add("Supplier Name")
         Try
             strSQLstring = "SELECT DESCR,SHIPTO_ID FROM PS_SHIPTO_TBL"
             dsShipTo = ORDBAccess.GetAdapter(strSQLstring, connectOR)
@@ -1918,6 +1929,25 @@ Module Module1
                         dr1.Item(20) = "-"
                     End Try
 
+                    Dim vendor As String = OrderDetailDT.Rows(I).Item("VENDOR_ID")
+                    Dim Cmd As OleDbCommand
+                    Dim vendorName As String
+
+                        strSQLstring = "Select NAME1 from PS_Vendor where VENDOR_ID= '" & vendor & "'"
+
+                        objStreamWriter.WriteLine("  CheckAllStatusWAL (4): " & strSQLstring)
+
+                    Cmd = New OleDbCommand(strSQLstring, connectOR)
+                    connectOR.Open()
+                    Try
+                        vendorName = Cmd.ExecuteScalar
+                        dr1.Item(21) = OrderDetailDT.Rows(I).Item("VENDOR_ID") + "- " + vendorName
+                        connectOR.Close()
+                    Catch ex As Exception
+                        objStreamWriter.WriteLine()
+                        connectOR.Close()
+                        dr1.Item(21) = ""
+                    End Try
 
                     dsEmail.Rows.Add(dr1)
                     ' "R" nonstock
@@ -2040,9 +2070,13 @@ Module Module1
                  " B.ISA_EMPLOYEE_ID AS EMPLID, B.ISA_LINE_STATUS as ORDER_TYPE,B.OPRID_ENTERED_BY, B.SHIPTO_ID as SHIPTO,B.ISA_USER2 as STORE," & vbCrLf &
                  " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, " & vbCrLf   '  & _
 
+        If strBU = "I0W01" Then
+            strSQLstring += "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS,DECODE(G.ISA_LINE_STATUS,'CRE','01','QTW','02','QTC','03','QTS','04','CST','05','VND','06','APR','07','QTA','08','RCF','13','RCP','14','DLF','16','PKA','17','ASN','18') AS OLD_ORDER_STATUS," & vbCrLf
+        Else
+            strSQLstring += "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','01','QTW','02','QTC','03','QTS','04','CST','05','VND','06','APR','07','QTA','08','QTR','09','RFA','10','RFR','11','RFC','12','RCF','13','RCP','14','CNC','15','DLF','16','PKA','17','ASN','18') AS OLD_ORDER_STATUS," & vbCrLf
+        End If
 
-        strSQLstring += "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','01','QTW','02','QTC','03','QTS','04','CST','05','VND','06','APR','07','QTA','08','QTR','09','RFA','10','RFR','11','RFC','12','RCF','13','RCP','14','CNC','15','DLF','16','PKA','17','ASN','18') AS OLD_ORDER_STATUS," & vbCrLf &
-                " (SELECT E.XLATLONGNAME" & vbCrLf &
+        strSQLstring += " (SELECT E.XLATLONGNAME" & vbCrLf &
                                 " FROM XLATTABLE E" & vbCrLf &
                                 " WHERE E.EFFDT =" & vbCrLf &
                                 " (SELECT MAX(E_ED.EFFDT) FROM XLATTABLE E_ED" & vbCrLf &
@@ -2074,8 +2108,16 @@ Module Module1
                  " AND B.ISA_INTFC_LN = G.ISA_INTFC_LN" & vbCrLf &
                  " AND SH.PO_ID (+) = LD.PO_ID And SH.LINE_NBR (+) = LD.LINE_NBR And SH.SCHED_NBR (+) = LD.SCHED_NBR And LD.Req_id (+) = B.order_no AND LD.REQ_LINE_NBR (+) = B.ISA_INTFC_LN" & vbCrLf &
                  " AND G.DTTM_STAMP > TO_DATE('" & dteStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf &
-                 " AND G.DTTM_STAMP <= TO_DATE('" & dteEndDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf &
-                 " AND UPPER(B.ISA_EMPLOYEE_ID) = UPPER(D.ISA_EMPLOYEE_ID)) TBL, PS_ISA_USERS_PRIVS H " & vbCrLf &
+                 " AND G.DTTM_STAMP <= TO_DATE('" & dteEndDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf
+
+        If strBU = "I0W01" Then
+            strSQLstring += " AND EXISTS (SELECT 'X' FROM PS_ISA_WO_STATUS I " & vbCrLf &
+                 " WHERE B.BUSINESS_UNIT_OM = I.BUSINESS_UNIT_OM " & vbCrLf &
+                 " AND B.ISA_WORK_ORDER_NO = I.ISA_WORK_ORDER_NO " & vbCrLf &
+                 " AND I.ISA_WO_STATUS <> 'COMPLETED')" & vbCrLf
+        End If
+
+        strSQLstring += " AND UPPER(B.ISA_EMPLOYEE_ID) = UPPER(D.ISA_EMPLOYEE_ID)) TBL, PS_ISA_USERS_PRIVS H " & vbCrLf &
                  " WHERE TBL.EMPLID = H.ISA_EMPLOYEE_ID " & vbCrLf &
                  " AND SUBSTR(H.ISA_IOL_OP_NAME,9) = TBL.OLD_ORDER_STATUS " & vbCrLf &
                  " AND H.ISA_IOL_OP_VALUE = 'Y' " & vbCrLf &
@@ -2544,7 +2586,7 @@ Module Module1
 
                                 strbodydet1 = strbodydet1 & "<p style='float: left;width: 100%;padding-left: 17px;margin:1px !important;'><span style='font-weight:bold;font-family:Calibri;'> &nbsp;&nbsp; Tracking Number:</span> <span style='font-family:Calibri;'>&nbsp;" & OrderDetails.Rows(K).Item("Tracking No") & "</span></p> "
                                 strbodydet1 = strbodydet1 & "<p style='float: left;width: 100%;padding-left: 17px;margin-top:1px !important;margin-bottom:20px'><span style='font-weight:bold;font-family:Calibri;'> &nbsp;&nbsp; Delivery Date:</span> <span style='font-family:Calibri;'>&nbsp;" & OrderDetails.Rows(K).Item("Delivery Date") & "</span></p> "
-
+                                strbodydet1 = strbodydet1 & "<p style='float: left;width: 100%;padding-left: 17px;margin:1px !important;'><span style='font-weight:bold;font-family:Calibri;'> &nbsp;&nbsp; Supplier Name:</span> <span style='font-family:Calibri;'>&nbsp;" & OrderDetails.Rows(K).Item("Supplier Name") & "</span></p> "
 
                             Next
                         Catch ex As Exception
@@ -2999,11 +3041,11 @@ Module Module1
         Dim IsProdDB As Boolean = False
 
         'Email notifications won't be sent for Walmart Orders only Web & Push notifications will be sent for all status changes
-        If strBU = "I0W01" Then
-            sendEmailAlert = False
-        Else
-            sendEmailAlert = True
-        End If
+        'If strBU = "I0W01" Then
+        '    sendEmailAlert = False
+        'Else
+        '    sendEmailAlert = True
+        'End If
 
         If Not getDBName() Then
             IsProdDB = False
@@ -3011,17 +3053,17 @@ Module Module1
             IsProdDB = True
         End If
 
-        If sendEmailAlert Then
-            Dim Mailer1 As MailMessage = New MailMessage
+        'If sendEmailAlert Then
+        Dim Mailer1 As MailMessage = New MailMessage
             Dim strccfirst1 As String = "erwin.bautista"  '  "pete.doyle"
             Dim strcclast1 As String = "sdi.com"
-            'SDI-40628 Changing Mail id as walmartpurchasing@sdi.com from sdiexchange@sdi.com for Walmart BU.
-            If strBU = "I0W01" Then
-                Mailer1.From = "WalmartPurchasing@sdi.com"
-            Else
-                Mailer1.From = "SDIExchange@SDI.com"  '  "Insiteonline@SDI.com"
-            End If
-            Mailer1.Cc = ""
+        'SDI-40628 Changing Mail id as walmartpurchasing@sdi.com from sdiexchange@sdi.com for Walmart BU.
+        If strBU = "I0W01" Then
+            Mailer1.From = "WalmartPurchasing@sdi.com"
+        Else
+            Mailer1.From = "SDIExchange@SDI.com"  '  "Insiteonline@SDI.com"
+        End If
+        Mailer1.Cc = ""
             Mailer1.Bcc = strccfirst1 & "@" & strcclast1
             strbodyhead1 = "<table width='100%'><tbody><tr><td><img src='http://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='82px' vspace='0' hspace='0' /></td><td width='100%'><br /><br /><br /><br /><br /><br /><center><span style='font-family: Arial; font-size: x-large; text-align: center;'>SDI Marketplace</span></center><center><span style='text-align: center; margin: 0px auto;'>SDiExchange - Order Status</span></center></td></tr></tbody></table>"
             strbodyhead1 = strbodyhead1 & "<HR width='100%' SIZE='1'>"
@@ -3091,19 +3133,20 @@ Module Module1
 
             Mailer1.Body = strbodyhead1 & strbodydet1
 
-            If Not IsProdDB Then
+        If Not IsProdDB Then
+            Mailer1.To = "webdev@sdi.com"
+            If strBU = "I0W01" Then
+                Mailer1.Subject = "<<TEST SITE>>Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
+            Else
+                Mailer1.Subject = "<<TEST SITE>>SDiExchange - Order Status records for Order Number: " & strOrderNo
+            End If
+        Else
+            If strBU = "I0W01" Then
                 Mailer1.To = "webdev@sdi.com"
-                If strBU = "I0W01" Then
-                    Mailer1.Subject = "<<TEST SITE>>Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
-                Else
-                    Mailer1.Subject = "<<TEST SITE>>SDiExchange - Order Status records for Order Number: " & strOrderNo
-                End If
+                Mailer1.Subject = "Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
             Else
                 Mailer1.To = strPurchaserEmail
-                If strBU = "I0W01" Then
-                    Mailer1.Subject = "Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
-                Else
-                    Mailer1.Subject = "SDiExchange - Order Status records for Order Number: " & strOrderNo
+                Mailer1.Subject = "SDiExchange - Order Status records for Order Number: " & strOrderNo
                 End If
             End If
             Try
@@ -3115,7 +3158,7 @@ Module Module1
             End Try
 
 
-        End If
+        'End If
 
         'Push & Web notifications will be sent for all orders of all BUs lively- WAL-632&WW-287 Poornima S
         Dim strPushNoti As String = ""
