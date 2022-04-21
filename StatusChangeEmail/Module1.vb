@@ -3309,6 +3309,7 @@ Module Module1
 
         Try
             Dim Command = New OleDbCommand(strSQLstring, connectOR)
+            objStreamWriter.WriteLine("  updateEnterprise (1): " & strSQLstring)
             connectOR.Open()
             rowsaffected = Command.ExecuteNonQuery()
             connectOR.Close()
