@@ -3134,7 +3134,7 @@ Module Module1
             Mailer1.Body = strbodyhead1 & strbodydet1
 
         If Not IsProdDB Then
-            Mailer1.To = "webdev@sdi.com"
+            Mailer1.To = "webdev@sdi.com;WalmartPurchasing@sdi.com"
             If strBU = "I0W01" Then
                 Mailer1.Subject = "<<TEST SITE>>Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
             Else
@@ -3142,7 +3142,7 @@ Module Module1
             End If
         Else
             If strBU = "I0W01" Then
-                Mailer1.To = "webdev@sdi.com"
+                Mailer1.To = "webdev@sdi.com;WalmartPurchasing@sdi.com"
                 Mailer1.Subject = "Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
             Else
                 Mailer1.To = strPurchaserEmail
