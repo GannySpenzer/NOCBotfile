@@ -117,17 +117,17 @@ Module Module1
         strPlantListForSql = "('" & strPlantListForSql & "')"
 
         Dim strSqlForWOInsert As String = ""
-        strSqlForWOInsert = " INSERT INTO SYSADM8.PS_NLNK2_OBJCT_VAL(CUST_ID,ISA_OBJ_KEY,ISA_OBJECTID,DT_TIMESTAMP,ISA_ATTRLBL1,ISA_ATTRVAL1,ISA_ATTRLBL2, " & vbCrLf & _
-            " ISA_ATTRVAL2,ISA_ATTRLBL3,ISA_ATTRVAL3,ISA_ATTRLBL4,ISA_ATTRVAL4) " & vbCrLf & _
-            " SELECT DISTINCT 'NBTY' AS CUST_ID,'WORKORDER' AS ISA_OBJ_KEY,A.ISA_WORK_ORDER_NO AS ISA_OBJECTID," & vbCrLf & _
-            " TO_TIMESTAMP('" & Now.ToString("MM/dd/yyyy hh:mm:ss:ff5 tt") & "', 'MM/DD/YYYY HH:MI:SS:ff5 AM') AS DT_TIMESTAMP,'PLANT' AS ISA_ATTRLBL1," & vbCrLf & _
-            " A.PLANT AS ISA_ATTRVAL1, ' ' AS ISA_ATTRLBL2, ' ' AS ISA_ATTRVAL2, " & vbCrLf & _
-            " ' ' AS ISA_ATTRLBL3, ' ' AS ISA_ATTRVAL3, ' ' AS ISA_ATTRLBL4, ' ' AS ISA_ATTRVAL4 " & vbCrLf & _
-            " FROM SYSADM8.PS_ISA_NB_WOVAL A WHERE A.PLANT IN " & strPlantListForSql & " AND " & vbCrLf & _
-            " NOT EXISTS (  SELECT 'X' " & vbCrLf & _
-            " FROM SYSADM8.PS_NLNK2_OBJCT_VAL B " & vbCrLf & _
-            " WHERE B.CUST_ID = 'NBTY' AND B.ISA_OBJ_KEY = 'WORKORDER' AND B.ISA_ATTRLBL1 = 'PLANT' " & vbCrLf & _
-            " AND B.ISA_OBJECTID = A.ISA_WORK_ORDER_NO AND B.ISA_ATTRVAL1 = A.PLANT  )" & vbCrLf & _
+        strSqlForWOInsert = " INSERT INTO SYSADM8.PS_NLNK2_OBJCT_VAL(CUST_ID,ISA_OBJ_KEY,ISA_OBJECTID,DT_TIMESTAMP,ISA_ATTRLBL1,ISA_ATTRVAL1,ISA_ATTRLBL2, " & vbCrLf &
+            " ISA_ATTRVAL2,ISA_ATTRLBL3,ISA_ATTRVAL3,ISA_ATTRLBL4,ISA_ATTRVAL4,ISA_ATTRLBL5,ISA_ATTRVAL5) " & vbCrLf &
+            " SELECT DISTINCT 'NBTY' AS CUST_ID,'WORKORDER' AS ISA_OBJ_KEY,A.ISA_WORK_ORDER_NO AS ISA_OBJECTID," & vbCrLf &
+            " TO_TIMESTAMP('" & Now.ToString("MM/dd/yyyy hh:mm:ss:ff5 tt") & "', 'MM/DD/YYYY HH:MI:SS:ff5 AM') AS DT_TIMESTAMP,'PLANT' AS ISA_ATTRLBL1," & vbCrLf &
+            " A.PLANT AS ISA_ATTRVAL1, ' ' AS ISA_ATTRLBL2, ' ' AS ISA_ATTRVAL2, " & vbCrLf &
+            " ' ' AS ISA_ATTRLBL3, ' ' AS ISA_ATTRVAL3, ' ' AS ISA_ATTRLBL4, ' ' AS ISA_ATTRVAL4,' ' AS ISA_ATTRLBL5, ' ' AS ISA_ATTRVAL5" & vbCrLf &
+            " FROM SYSADM8.PS_ISA_NB_WOVAL A WHERE A.PLANT IN " & strPlantListForSql & " AND " & vbCrLf &
+            " NOT EXISTS (  SELECT 'X' " & vbCrLf &
+            " FROM SYSADM8.PS_NLNK2_OBJCT_VAL B " & vbCrLf &
+            " WHERE B.CUST_ID = 'NBTY' AND B.ISA_OBJ_KEY = 'WORKORDER' AND B.ISA_ATTRLBL1 = 'PLANT' " & vbCrLf &
+            " AND B.ISA_OBJECTID = A.ISA_WORK_ORDER_NO AND B.ISA_ATTRVAL1 = A.PLANT  )" & vbCrLf &
             " "
 
         If Not connectOR.State = ConnectionState.Open Then
