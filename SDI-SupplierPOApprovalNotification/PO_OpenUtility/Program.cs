@@ -326,6 +326,8 @@ and a.business_unit = '" + strPOBU + "' and a.po_id='" + strPO + "'";
 
             String DbUrl = Convert.ToString(ConfigurationSettings.AppSettings["OLEDBconString"]);
             DbUrl = DbUrl.Substring(DbUrl.Length - 4).ToUpper();
+            //SDI - 50231 Spanish Transalation for Mexican Suppliers[Change by Vishalini]
+            String Vendor = VendorID.Substring(0, 1);
 
             try
             {
@@ -337,17 +339,41 @@ and a.business_unit = '" + strPOBU + "' and a.po_id='" + strPO + "'";
 
                 strbodyhead = "<table bgcolor='black' Width='100%'><tbody><tr><td style='width:1%;'><img src='http://www.sdizeus.com/images/SDNewLogo_Email.png' alt='SDI' style='padding: 10px 0;' vspace='0' hspace='0' /></td>";
                 strbodyhead = strbodyhead + "<td style='width:50% ;'><center><span style='font-weight:bold;color:white;font-size:24px;'>SDI Marketplace</span></center>";
-                strbodyhead = strbodyhead + "<center><span style='color:white;'>SDIZEUS - Purchase Order Notification</span></center></td></tr></tbody></table>";
+                //SDI - 50231 Spanish Transalation for Mexican Suppliers[Change by Vishalini]
+                if (Vendor == "M")
+                {
+                    strbodyhead = strbodyhead + "<center><span style='color:white;'>SDIZEUS – Notificación de Orden de Compra</span></center></td></tr></tbody></table>";
+                }
+                else
+                {
+                    strbodyhead = strbodyhead + "<center><span style='color:white;'>SDIZEUS - Purchase Order Notification</span></center></td></tr></tbody></table>";
+                }
                 strbodyhead = strbodyhead + "<HR width='100%' SIZE='1'>";
                 strbodydetl = "<div>";
 
                 strbodydetl = "&nbsp;";
                 strbodydetl = strbodydetl + "<div>";
-                strbodydetl = strbodydetl + "<p>Dear <span>" + VendorUN + "</span><br>";
+                //SDI - 50231 Spanish Transalation for Mexican Suppliers[Change by Vishalini]
+                if (Vendor == "M")
+                {
+                    strbodydetl = strbodydetl + "<p>Estimado <span>" + VendorUN + "</span><br>";
+                }
+                else
+                {
+                    strbodydetl = strbodydetl + "<p>Dear <span>" + VendorUN + "</span><br>";
+                }
                 strbodydetl = strbodydetl + "&nbsp;<br>";
                 //   strbodydetl = strbodydetl + "<p>Need approval for PO ID: " + POID + ". Please click on this following  <a href=" + strURL + ">Link</a> to go through the approval process.</p>";
                 //strbodydetl = strbodydetl + "<p>Purchase Order " + POID + " has been created for " + VendorUN + ". Please select the <a href=" + strURL + ">Link</a> to review and confirm this purchase order, <span style='color: red;'>price and anticipated delivery date</span>.</p>";
-                strbodydetl = strbodydetl + "<p>Purchase Order " + POID + " has been created for " + VendorUN + ". Please select the <a href=" + strURL + ">Link</a> to review and confirm<span style='color: red;'> pricing </span>and<span style='color: red;'> anticipated delivery date</span> for this purchase order.</p>";
+                //SDI - 50231 Spanish Transalation for Mexican Suppliers[Change by Vishalini]
+                if (Vendor == "M")
+                {
+                    strbodydetl = strbodydetl + "<p>Orden de Compra " + POID + " ha sido creada para " + VendorUN + ". Por favor seleccione la <a href=" + strURL + ">Liga</a> para revisar, confirmar<span style='color: red;'> el precio </span>and<span style='color: red;'> la cantidad y la fecha de entrega</span> para esta Orden de Compra.</p>";
+                }
+                else
+                {
+                    strbodydetl = strbodydetl + "<p>Purchase Order " + POID + " has been created for " + VendorUN + ". Please select the <a href=" + strURL + ">Link</a> to review and confirm<span style='color: red;'> pricing </span>and<span style='color: red;'> anticipated delivery date</span> for this purchase order.</p>";
+                }
                 // strbodydetl = strbodydetl + "<br>";
                 if (Notes != string.Empty)
                 {
@@ -356,7 +382,15 @@ and a.business_unit = '" + strPOBU + "' and a.po_id='" + strPO + "'";
 
                 if (strBuyerEmail != "")
                 {
-                    strbodydetl = strbodydetl + "<p style='font-weight: bold;'>If you have any questions, please e-mail: " + strBuyerEmail + "  </p>";
+                    //SDI - 50231 Spanish Transalation for Mexican Suppliers[Change by Vishalini]
+                    if (Vendor == "M")
+                    {
+                        strbodydetl = strbodydetl + "<p style='font-weight: bold;'>Si tiene cualquier duda, favor de enviar correo a: " + strBuyerEmail + "  </p>";
+                    }
+                    else
+                    {
+                        strbodydetl = strbodydetl + "<p style='font-weight: bold;'>If you have any questions, please e-mail: " + strBuyerEmail + "  </p>";
+                    }
                 }
                 if (techPhno != "" && techEmail != "")
                 {
@@ -377,9 +411,25 @@ and a.business_unit = '" + strPOBU + "' and a.po_id='" + strPO + "'";
                 }
 
                 strbodydetl = strbodydetl + "&nbsp;<br>";
-                strbodydetl = strbodydetl + "Sincerely,<br>";
+                //SDI - 50231 Spanish Transalation for Mexican Suppliers[Change by Vishalini]
+                if (Vendor == "M")
+                {
+                    strbodydetl = strbodydetl + "Sinceramente,<br>";
+                }
+                else
+                {
+                    strbodydetl = strbodydetl + "Sincerely,<br>";
+                }
                 strbodydetl = strbodydetl + "&nbsp;<br>";
-                strbodydetl = strbodydetl + "SDI Customer Care<br>";
+                //SDI - 50231 Spanish Transalation for Mexican Suppliers[Change by Vishalini]
+                if (Vendor == "M")
+                {
+                    strbodydetl = strbodydetl + "SDM Servicio al Cliente<br>";
+                }
+                else
+                {
+                    strbodydetl = strbodydetl + "SDI Customer Care<br>";
+                }
                 strbodydetl = strbodydetl + "&nbsp;<br>";
                 strbodydetl = strbodydetl + "</p>";
                 strbodydetl = strbodydetl + "</div>";
