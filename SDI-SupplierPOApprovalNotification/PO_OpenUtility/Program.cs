@@ -368,7 +368,7 @@ and a.business_unit = '" + strPOBU + "' and a.po_id='" + strPO + "'";
                 //SDI - 50231 Spanish Transalation for Mexican Suppliers[Change by Vishalini]
                 if (Vendor == "M")
                 {
-                    strbodydetl = strbodydetl + "<p>Orden de Compra " + POID + " ha sido creada para " + VendorUN + ". Por favor seleccione la <a href=" + strURL + ">Liga</a> para revisar, confirmar<span style='color: red;'> el precio </span>and<span style='color: red;'> la cantidad y la fecha de entrega</span> para esta Orden de Compra.</p>";
+                    strbodydetl = strbodydetl + "<p>Orden de Compra " + POID + " ha sido creada para " + VendorUN + ". Por favor seleccione la <a href=" + strURL + ">Liga</a> para revisar, confirmar<span style='color: red;'> el precio</span>,<span style='color: red;'> la cantidad y la fecha de entrega</span> para esta Orden de Compra.</p>";
                 }
                 else
                 {
