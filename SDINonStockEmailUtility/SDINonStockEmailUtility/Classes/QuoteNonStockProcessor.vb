@@ -2992,12 +2992,10 @@ Public Class QuoteNonStockProcessor
         Dim streAppTyp As String = boEncrypt.Encrypt("W", m_cEncryptionKey)
         Dim strhref As String
         Dim strhrefAlt As String
+        'Madhu-WW-453-Passing Business unit for  Price Block Flag scenario - [If WAL- Redirect to Walmart Testsite else Zeus]
 
-        'strhref = "http://" & ConfigurationManager.AppSettings("WebAppName") & "approveorder.aspx?fer=" & streOrdnum & "&op=" & streApper & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
-        'strhrefAlt = "http://" & ConfigurationManager.AppSettings("WebAppName") & "approveorder.aspx?fer=" & streOrdnum & "&op=" & streApperAlt & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
-
-        strhref = GetURL() & "NeedApprove.aspx?fer=" & streOrdnum & "&op=" & streApper & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
-        strhrefAlt = GetURL() & "NeedApprove.aspx?fer=" & streOrdnum & "&op=" & streApperAlt & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
+        strhref = GetURL(itmQuoted.BusinessUnitOM) & "NeedApprove.aspx?fer=" & streOrdnum & "&op=" & streApper & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
+        strhrefAlt = GetURL(itmQuoted.BusinessUnitOM) & "NeedApprove.aspx?fer=" & streOrdnum & "&op=" & streApperAlt & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
 
         If String.Equals(strAppAltUserid.Trim(), strAppUserid.Trim()) Then
             NotifyApprover(strAppUserid, strappName, strreqID, itmQuoted.WorkOrderNumber, stritemid, dataGridHTML, strhref, strHldSts, itmQuoted.BusinessUnitOM)
