@@ -57,9 +57,22 @@ namespace PO_OpenUtility
                         string PO_BU = Convert.ToString(rw["BUSINESS_UNIT"]);
                         string Email = Convert.ToString(rw["ISA_VENDOR_EMAIL"]);
                         string strEncrypt_POID = Encrypt(POID, "bautista");
-                        string strEncrypt_VendorID = Encrypt(VendorID, "bautista");
+                        //SP-282 Replacing Plus with %2b to pass in query string[Change By vishalini]
+                        if (strEncrypt_POID.Contains("+")){
+                            strEncrypt_POID = strEncrypt_POID.Replace("+", "%2b"); 
+                        }
+                       string strEncrypt_VendorID = Encrypt(VendorID, "bautista");
+                        //SP-282 Replacing Plus with %2b to pass in query string[Change By vishalini]
+                        if (strEncrypt_VendorID.Contains("+"))
+                        {
+                            strEncrypt_VendorID = strEncrypt_VendorID.Replace("+", "%2b");
+                        }
                         string strEncrypt_PO_BU = Encrypt(PO_BU, "bautista");
-
+                        //SP-282 Replacing Plus with %2b to pass in query string[Change By vishalini]
+                        if (strEncrypt_PO_BU.Contains("+"))
+                        {
+                            strEncrypt_PO_BU = strEncrypt_PO_BU.Replace("+", "%2b");
+                        }
                         string UsrTblQuery = "SELECT * FROM SDIX_USERS_TBL WHERE ISA_EMPLOYEE_ID = '" + VendorID + "'";
                         DataSet ds_UserDetail = GetAdapter(UsrTblQuery);
                         if (ds_UserDetail.Tables[0].Rows.Count != 0)
@@ -88,6 +101,11 @@ namespace PO_OpenUtility
                             string Vendr_Email = Convert.ToString(ds_UserDetail.Tables[0].Rows[0]["ISA_EMPLOYEE_EMAIL"]);
                             string Vendr_OprID = Convert.ToString(ds_UserDetail.Tables[0].Rows[0]["ISA_USER_ID"]);
                             Vendr_OprID = Encrypt(Vendr_OprID, "bautista");
+                            //SP-282 Replacing Plus with %2b to pass in query string[Change By vishalini]
+                            if (Vendr_OprID.Contains("+"))
+                            {
+                                Vendr_OprID = Vendr_OprID.Replace("+", "%2b");
+                            }
                             try
                             {
                                 string CTblQuery = "select A.BUSINESS_UNIT, A.PO_ID, A.LINE_NBR, B.COMMENTS_2000 from sysadm8.ps_po_comments A, ps_comments_tbl B where A.business_unit = 'WAL00' AND A.OPRID = B.OPRID AND A.COMMENT_ID = B.COMMENT_ID AND A.RANDOM_CMMT_NBR = B.RANDOM_CMMT_NBR AND A.LINE_NBR <> 0 AND B.SHARED_FLG = 'Y' AND A.PO_ID= '" + POID + "'";
