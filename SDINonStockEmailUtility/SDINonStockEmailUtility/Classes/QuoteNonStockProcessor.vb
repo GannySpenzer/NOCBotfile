@@ -600,70 +600,68 @@ Public Class QuoteNonStockProcessor
                 If m_colMsgs.Count > 0 Then
                     '  iCnt = 0
                     For Each itmQuoted As QuotedNStkItem In m_colMsgs
-                        If itmQuoted.OrderID = "WM00780879" Then
-                            SBord.Append(itmQuoted.OrderID + ",")
-                            Dim TtlPrice As Decimal = GetPrice(itmQuoted.OrderID)
-                            If itmQuoted.PriceBlockFlag = "N" Then
-                                If itmQuoted.ApprovalLimit > 0 Then
-                                    If TtlPrice > itmQuoted.ApprovalLimit Then
-                                        SendMessages(itmQuoted, itmQuoted.BusinessUnitOM)
-                                    Else
-                                        ' set line status to QTC or QTA (itmQuoted.LineStatus) and add Audit record
-                                        Dim strUpdateLineStatusFinal As String = ""
-                                        strUpdateLineStatusFinal = "UPDATE SYSADM8.PS_ISA_ORD_INTF_LN SET ISA_LINE_STATUS = '" & itmQuoted.LineStatus & "', OPRID_APPROVED_BY = 'SDIX', APPROVAL_DTTM = SYSDATE " & vbCrLf &
-                                            "WHERE BUSINESS_UNIT_OM = '" & itmQuoted.BusinessUnitOM & "' AND ORDER_NO = '" & itmQuoted.OrderID & "' " & vbCrLf &
-                                            "AND ISA_LINE_STATUS = 'QTS'"
-
-                                        Dim iRowsAffctd As Integer = 0
-                                        Try
-                                            iRowsAffctd = ORDBData.ExecNonQuery(strUpdateLineStatusFinal, False)
-
-                                            If iRowsAffctd > 0 Then
-                                                SDIAuditInsert("PS_ISA_ORD_INTF_LN", itmQuoted.OrderID, "ISA_LINE_STATUS", itmQuoted.LineStatus, itmQuoted.BusinessUnitOM)
-
-                                            End If
-
-                                        Catch ex As Exception
-
-                                        End Try
-
-                                        'Dim oApprovalDetails As ApprovalDetails = New ApprovalDetails(itmQuoted.BusinessUnitOM, itmQuoted.EmployeeID, itmQuoted.EmployeeID, itmQuoted.OrderID)
-                                        'Dim strAppMessage() As String
-                                        'If OrderApprovals.ApproveQuote(oApprovalDetails, strAppMessage, itmQuoted.LineStatus) Then
-
-                                        'End If
-                                    End If
-                                Else
+                        SBord.Append(itmQuoted.OrderID + ",")
+                        Dim TtlPrice As Decimal = GetPrice(itmQuoted.OrderID)
+                        If itmQuoted.PriceBlockFlag = "N" Then
+                            If itmQuoted.ApprovalLimit > 0 Then
+                                If TtlPrice > itmQuoted.ApprovalLimit Then
                                     SendMessages(itmQuoted, itmQuoted.BusinessUnitOM)
-                                End If
-                                If itmQuoted.EmployeeID = "MAIKU49404" Then
-                                    Try
-                                        Dim strSQLstring As String = "SELECT ISA_EMPLOYEE_EMAIL from SDIX_USERS_TBL where ISA_EMPLOYEE_ID= 'TAYOW50428'"
-                                        Dim EmailID As String = ORDBData.GetScalar(strSQLstring)
-                                        If EmailID <> "" Then
-                                            itmQuoted.EmployeeID = "TAYOW50428"
-                                            itmQuoted.Addressee = "TAYLOR OWENS"
-                                            itmQuoted.TO = EmailID
-                                            SendMessages(itmQuoted, itmQuoted.BusinessUnitOM)
-                                        End If
-                                    Catch ex As Exception
-                                    End Try
-                                End If
-
-                            Else
-                                If itmQuoted.ApprovalLimit > 0 Then
-                                    If TtlPrice > itmQuoted.ApprovalLimit Then
-                                        PriceUpdate(itmQuoted.OrderID, "QTW")
-                                    Else
-                                        PriceUpdate(itmQuoted.OrderID, itmQuoted.LineStatus) ' set to 'QTC' or 'QTA'
-                                    End If
                                 Else
-                                    PriceUpdate(itmQuoted.OrderID, "QTW")
-                                End If
+                                    ' set line status to QTC or QTA (itmQuoted.LineStatus) and add Audit record
+                                    Dim strUpdateLineStatusFinal As String = ""
+                                    strUpdateLineStatusFinal = "UPDATE SYSADM8.PS_ISA_ORD_INTF_LN SET ISA_LINE_STATUS = '" & itmQuoted.LineStatus & "', OPRID_APPROVED_BY = 'SDIX', APPROVAL_DTTM = SYSDATE " & vbCrLf &
+                                        "WHERE BUSINESS_UNIT_OM = '" & itmQuoted.BusinessUnitOM & "' AND ORDER_NO = '" & itmQuoted.OrderID & "' " & vbCrLf &
+                                        "AND ISA_LINE_STATUS = 'QTS'"
 
-                                UpdateReqEmailLog(itmQuoted, itmQuoted.BusinessUnitOM)
-                                buildNotifyApprover(itmQuoted)
+                                    Dim iRowsAffctd As Integer = 0
+                                    Try
+                                        iRowsAffctd = ORDBData.ExecNonQuery(strUpdateLineStatusFinal, False)
+
+                                        If iRowsAffctd > 0 Then
+                                            SDIAuditInsert("PS_ISA_ORD_INTF_LN", itmQuoted.OrderID, "ISA_LINE_STATUS", itmQuoted.LineStatus, itmQuoted.BusinessUnitOM)
+
+                                        End If
+
+                                    Catch ex As Exception
+
+                                    End Try
+
+                                    'Dim oApprovalDetails As ApprovalDetails = New ApprovalDetails(itmQuoted.BusinessUnitOM, itmQuoted.EmployeeID, itmQuoted.EmployeeID, itmQuoted.OrderID)
+                                    'Dim strAppMessage() As String
+                                    'If OrderApprovals.ApproveQuote(oApprovalDetails, strAppMessage, itmQuoted.LineStatus) Then
+
+                                    'End If
+                                End If
+                            Else
+                                SendMessages(itmQuoted, itmQuoted.BusinessUnitOM)
                             End If
+                            If itmQuoted.EmployeeID = "MAIKU49404" Then
+                                Try
+                                    Dim strSQLstring As String = "SELECT ISA_EMPLOYEE_EMAIL from SDIX_USERS_TBL where ISA_EMPLOYEE_ID= 'TAYOW50428'"
+                                    Dim EmailID As String = ORDBData.GetScalar(strSQLstring)
+                                    If EmailID <> "" Then
+                                        itmQuoted.EmployeeID = "TAYOW50428"
+                                        itmQuoted.Addressee = "TAYLOR OWENS"
+                                        itmQuoted.TO = EmailID
+                                        SendMessages(itmQuoted, itmQuoted.BusinessUnitOM)
+                                    End If
+                                Catch ex As Exception
+                                End Try
+                            End If
+
+                        Else
+                            If itmQuoted.ApprovalLimit > 0 Then
+                                If TtlPrice > itmQuoted.ApprovalLimit Then
+                                    PriceUpdate(itmQuoted.OrderID, "QTW")
+                                Else
+                                    PriceUpdate(itmQuoted.OrderID, itmQuoted.LineStatus) ' set to 'QTC' or 'QTA'
+                                End If
+                            Else
+                                PriceUpdate(itmQuoted.OrderID, "QTW")
+                            End If
+
+                            UpdateReqEmailLog(itmQuoted, itmQuoted.BusinessUnitOM)
+                            buildNotifyApprover(itmQuoted)
                         End If
                     Next
                 End If
@@ -2209,7 +2207,8 @@ Public Class QuoteNonStockProcessor
             Dim _notificationResult As New DataSet
             Dim notificationSQLStr = "select max(NOTIFY_ID) As NOTIFY_ID from SDIX_NOTIFY_QUEUE where USER_ID='" + Session_UserID + "'"
             _notificationResult = ORDBData.GetAdapter(notificationSQLStr)
-            Dim NotifyID As Int16 = 1
+            'A1QA-235 Change for Notification Id[Change By vishalini]
+            Dim NotifyID As Int64 = 1
             If _notificationResult.Tables.Count > 0 Then
                 Try
                     NotifyID = _notificationResult.Tables(0).Rows(0).Item("NOTIFY_ID")
