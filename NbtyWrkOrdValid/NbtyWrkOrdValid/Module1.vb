@@ -116,6 +116,26 @@ Module Module1
         strPlantListForSql = Replace(strPlantListForSql, ",", "','")
         strPlantListForSql = "('" & strPlantListForSql & "')"
 
+        'SDI-52594 Deleting NBTY WO in SYSADM8.PS_NLNK2_OBJCT_VAL[Change by Vishalini]
+        Dim rowsaffected1 As Integer = 0
+        Dim strDeleteString As String = "Delete SYSADM8.PS_NLNK2_OBJCT_VAL where CUST_ID = 'NBTY' AND ISA_OBJ_KEY = 'WORKORDER' AND ISA_ATTRVAL1 IN " & strPlantListForSql & ""
+        Try
+
+            Dim Command = New OleDbCommand(strDeleteString, connectOR)
+
+            If Not connectOR.State = ConnectionState.Open Then
+                connectOR.Open()
+            End If
+            rowsaffected1 = Command.ExecuteNonQuery()
+
+            m_logger.WriteErrorLog(rtn & " ::  ")
+            m_logger.WriteErrorLog(rtn & " :: Number of Work Orders deleted: " & rowsaffected1.ToString())
+            myLoggr1.WriteErrorLog(rtn & " ::  ")
+            myLoggr1.WriteErrorLog(rtn & " :: Number of Work Orders deleted: " & rowsaffected1.ToString())
+            myLoggr1.WriteInformationLog(rtn & " :: SQL String: " & strDeleteString)
+        Catch ex As Exception
+            myLoggr1.WriteErrorLog(rtn & " :: Error while trying to DELETE INTO SYSADM8.PS_NLNK2_OBJCT_VAL: " & ex.ToString())
+        End Try
         Dim strSqlForWOInsert As String = ""
         strSqlForWOInsert = " INSERT INTO SYSADM8.PS_NLNK2_OBJCT_VAL(CUST_ID,ISA_OBJ_KEY,ISA_OBJECTID,DT_TIMESTAMP,ISA_ATTRLBL1,ISA_ATTRVAL1,ISA_ATTRLBL2, " & vbCrLf &
             " ISA_ATTRVAL2,ISA_ATTRLBL3,ISA_ATTRVAL3,ISA_ATTRLBL4,ISA_ATTRVAL4,ISA_ATTRLBL5,ISA_ATTRVAL5) " & vbCrLf &
