@@ -415,7 +415,7 @@ namespace EmailToReceipt
                 MailMessage Mailer = new MailMessage();
                 string FromAddress = "SDIExchADMIN@SDI.com";
                 string Mailcc = "";
-                string MailBcc = "webdev@sdi.com;";
+                string MailBcc = "webdev@sdi.com;yury.arkadin@sdi.com";
 
                 StackTrace trace = new StackTrace(exception, true);
                 string fileName = trace.GetFrame(0).GetFileName();
@@ -454,7 +454,7 @@ namespace EmailToReceipt
                 List<byte[]> MailAttachmentbytes = new List<byte[]>();
                 try
                 {
-                    SDIEmailService.EmailUtilityServices("MailandStore", "SDIExchange@SDI.com", Mailer.To.ToString(), Mailer.Subject, string.Empty, string.Empty, Mailer.Body, "SDIERRMAIL", MailAttachmentName, MailAttachmentbytes.ToArray());
+                    SDIEmailService.EmailUtilityServices("MailandStore", "SDIExchange@SDI.com", Mailer.To.ToString(), Mailer.Subject, string.Empty, MailBcc, Mailer.Body, "SDIERRMAIL", MailAttachmentName, MailAttachmentbytes.ToArray());
                 }
                 catch (Exception ex)
                 {
