@@ -133,6 +133,7 @@ Module RFQEmailReminder
                         If Expiredate = "" Or Sourcedate = "" Then
 
                         Else
+                            ''INC0013167-Madhu-Cancel status additional changes
                             expiredt = Date.Parse(Expiredate)
                             If Expiredate < todayDate Then
                                 Dim strOraSelectQuery As String = "SELECT S.DTTM_STAMP, A.* FROM ps_isa_ord_intf_ln A, PS_ISAORDSTATUSLOG S,PS_ISA_NSTK_QUOTE Q" & vbCrLf &
@@ -148,7 +149,7 @@ Module RFQEmailReminder
                                         Dim trnsactSession As OleDbTransaction = Nothing
                                         Dim connection As OleDbConnection = New OleDbConnection(ConfigurationManager.AppSettings("OLEDBconString"))
                                         Dim rowsAffected As Integer = 0
-                                        strSQLstringUpt = "UPDATE PS_ISA_ORD_INTF_LN SET ISA_LINE_STATUS = 'CNC' WHERE ISA_LINE_STATUS = 'QTS' AND ORDER_NO= '" & OrderNo & "' AND ISA_INTFC_LN= '" & LineNo & "' "
+                                        strSQLstringUpt = "UPDATE PS_ISA_ORD_INTF_LN SET ISA_LINE_STATUS = 'CNC',CHANGE_FLAG = 'Y',PROCESS_INSTANCE = 0,LASTUPDDTTM = TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM'),OPRID_MODIFIED_BY = 'AVACORP'  WHERE ISA_LINE_STATUS = 'QTS' AND ORDER_NO= '" & OrderNo & "' AND ISA_INTFC_LN= '" & LineNo & "' "
                                         Try
                                             connection.Open()
                                             trnsactSession = connection.BeginTransaction
@@ -287,6 +288,7 @@ Module RFQEmailReminder
                         If Expiredate = "" Or Sourcedate = "" Then
 
                         Else
+                            'INC0013167-Madhu-Cancel status additional changes
                             expiredt = Date.Parse(Expiredate)
                             If Expiredate < todayDate Then
                                 Dim strOraSelectQuery As String = "SELECT S.DTTM_STAMP, A.* FROM ps_isa_ord_intf_ln A, PS_ISAORDSTATUSLOG S,PS_ISA_NSTK_QUOTE Q" & vbCrLf &
@@ -301,7 +303,7 @@ Module RFQEmailReminder
                                         Dim trnsactSession As OleDbTransaction = Nothing
                                         Dim connection As OleDbConnection = New OleDbConnection(ConfigurationManager.AppSettings("OLEDBconString"))
                                         Dim rowsAffected As Integer = 0
-                                        strSQLstringUpt = "UPDATE PS_ISA_ORD_INTF_LN SET ISA_LINE_STATUS = 'CNC' WHERE ISA_LINE_STATUS = 'QTW' AND ORDER_NO= '" & OrderNo & "' AND ISA_INTFC_LN= '" & LineNo & "'"
+                                        strSQLstringUpt = "UPDATE PS_ISA_ORD_INTF_LN SET ISA_LINE_STATUS = 'CNC',CHANGE_FLAG = 'Y',PROCESS_INSTANCE = 0,LASTUPDDTTM = TO_DATE('" & Now() & "', 'MM/DD/YYYY HH:MI:SS AM'),OPRID_MODIFIED_BY = 'AVACORP'  WHERE ISA_LINE_STATUS = 'QTW' AND ORDER_NO= '" & OrderNo & "' AND ISA_INTFC_LN= '" & LineNo & "'"
                                         Try
                                             connection.Open()
                                             trnsactSession = connection.BeginTransaction
