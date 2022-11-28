@@ -1667,13 +1667,13 @@ Module Module1
                  " B.INV_ITEM_ID as INV_ITEM_ID," & vbCrLf &
                  " B.QTY_REQUESTED,B.QTY_RECEIVED,B.UNIT_OF_MEASURE," & vbCrLf &
         " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH" & vbCrLf &
-                 " ,A.origin, LD.PO_ID, SH.ISA_ASN_TRACK_NO" & vbCrLf &
+                 " ,A.origin, LD.PO_ID, (select Tracking_Number(B.ORDER_NO,B.ISA_INTFC_LN,B.BUSINESS_UNIT_OM) from dual) as ISA_ASN_TRACK_NO" & vbCrLf &
                  " FROM ps_isa_ord_intf_HD A," & vbCrLf  '   & _
-
+        '[11-28-2022]WW-554 Changed the query to get tracking num from Tracking_Number function since the inventory orders are not available in PS_ISA_ASN_SHIPPED table -- Poornima S
         strSQLstring += " ps_isa_ord_intf_LN B," & vbCrLf &
                  " PS_MASTER_ITEM_TBL C," & vbCrLf &
                  " PS_ISA_USERS_TBL D," & vbCrLf &
-                 " PS_ISAORDSTATUSLOG G, PS_ISA_ASN_SHIPPED SH, PS_PO_LINE_DISTRIB LD" & vbCrLf &
+                 " PS_ISAORDSTATUSLOG G, PS_PO_LINE_DISTRIB LD" & vbCrLf &
                  " where G.BUSINESS_UNIT_OM = '" & strBU & "' " & vbCrLf &
                  " AND G.BUSINESS_UNIT_OM = A.BUSINESS_UNIT_OM " & vbCrLf &
                  " AND G.BUSINESS_UNIT_OM = D.BUSINESS_UNIT " & vbCrLf     '   & _
@@ -1685,7 +1685,7 @@ Module Module1
                  " AND G.ORDER_NO = A.ORDER_NO " & vbCrLf &
                  " AND B.ISA_INTFC_LN = G.ISA_INTFC_LN" & vbCrLf &
                  " AND A.BUSINESS_UNIT_OM = D.BUSINESS_UNIT" & vbCrLf &
-                 " AND SH.PO_ID (+) = LD.PO_ID And SH.LINE_NBR (+) = LD.LINE_NBR And SH.SCHED_NBR (+) = LD.SCHED_NBR And LD.Req_id (+) = B.order_no AND LD.REQ_LINE_NBR (+) = B.ISA_INTFC_LN" & vbCrLf
+                 " And LD.Req_id (+) = B.order_no AND LD.REQ_LINE_NBR (+) = B.ISA_INTFC_LN" & vbCrLf
 
         strSQLstring += " AND G.DTTM_STAMP > (TRUNC(sysdate -1) + '" & SumryMailTime & "'/24)" & vbCrLf &
              " AND G.DTTM_STAMP <= (TRUNC(sysdate) + '" & SumryMailTime & "'/24)" & vbCrLf
@@ -2092,14 +2092,21 @@ Module Module1
                  " B.DESCR254 As NONSTOCK_DESCRIPTION, C.DESCR60 as STOCK_DESCRIPTION, D.ISA_EMPLOYEE_EMAIL," & vbCrLf &
                  " B.INV_ITEM_ID as INV_ITEM_ID," & vbCrLf &
                  " B.QTY_REQUESTED,B.QTY_RECEIVED,B.UNIT_OF_MEASURE," & vbCrLf &
-        " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH" & vbCrLf &
-                 " ,A.origin, LD.PO_ID, SH.ISA_ASN_TRACK_NO" & vbCrLf &
-                 " FROM ps_isa_ord_intf_HD A," & vbCrLf  '   & _
+                 " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH" & vbCrLf &
+                 " ,A.origin, LD.PO_ID," & vbCrLf
+        If strBU = "I0W01" Then
+            '[11-28-2022]WW-554 Changed the query to get tracking num from Tracking_Number function since the inventory orders are not available in PS_ISA_ASN_SHIPPED table -- Poornima S
+            strSQLstring += "(select Tracking_Number(B.ORDER_NO,B.ISA_INTFC_LN,B.BUSINESS_UNIT_OM) from dual) as ISA_ASN_TRACK_NO FROM" & vbCrLf
+        Else
+            strSQLstring += "SH.ISA_ASN_TRACK_NO" & vbCrLf &
+                " FROM PS_ISA_ASN_SHIPPED SH," & vbCrLf
+        End If
 
-        strSQLstring += " ps_isa_ord_intf_LN B," & vbCrLf &
+        strSQLstring += " ps_isa_ord_intf_HD A," & vbCrLf &
+                 " ps_isa_ord_intf_LN B," & vbCrLf &
                  " PS_MASTER_ITEM_TBL C," & vbCrLf &
                  " PS_ISA_USERS_TBL D," & vbCrLf &
-                 " PS_ISAORDSTATUSLOG G, PS_ISA_ASN_SHIPPED SH, PS_PO_LINE_DISTRIB LD" & vbCrLf &
+                 " PS_ISAORDSTATUSLOG G, PS_PO_LINE_DISTRIB LD" & vbCrLf &
                  " where G.BUSINESS_UNIT_OM = '" & strBU & "' " & vbCrLf &
                  " AND G.BUSINESS_UNIT_OM = A.BUSINESS_UNIT_OM " & vbCrLf
 
