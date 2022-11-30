@@ -2116,8 +2116,13 @@ Module Module1
                  " and C.SETID (+) = 'MAIN1'" & vbCrLf &
                  " and C.INV_ITEM_ID(+) = B.INV_ITEM_ID " & vbCrLf &
                  " AND G.ORDER_NO = A.ORDER_NO " & vbCrLf &
-                 " AND B.ISA_INTFC_LN = G.ISA_INTFC_LN" & vbCrLf &
-                 " AND SH.PO_ID (+) = LD.PO_ID And SH.LINE_NBR (+) = LD.LINE_NBR And SH.SCHED_NBR (+) = LD.SCHED_NBR And LD.Req_id (+) = B.order_no AND LD.REQ_LINE_NBR (+) = B.ISA_INTFC_LN" & vbCrLf &
+                 " AND B.ISA_INTFC_LN = G.ISA_INTFC_LN" & vbCrLf
+
+        If strBU <> "I0W01" Then
+            strSQLstring += " AND SH.PO_ID (+) = LD.PO_ID And SH.LINE_NBR (+) = LD.LINE_NBR And SH.SCHED_NBR (+) = LD.SCHED_NBR" & vbCrLf
+        End If
+
+        strSQLstring += " And LD.Req_id (+) = B.order_no AND LD.REQ_LINE_NBR (+) = B.ISA_INTFC_LN" & vbCrLf &
                  " AND G.DTTM_STAMP > TO_DATE('" & dteStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf &
                  " AND G.DTTM_STAMP <= TO_DATE('" & dteEndDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf
 
