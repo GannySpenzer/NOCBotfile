@@ -167,9 +167,9 @@ Module Module1
                 End If
                 Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
                 objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                    objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
-                    objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
-                    buildstatchgout = checkAllStatusNew(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
+                objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                buildstatchgout = checkAllStatusNew(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
 
                 If buildstatchgout = True Then
                     bolErrorSomeWhere = True
@@ -1932,9 +1932,9 @@ Module Module1
                     Dim Cmd As OleDbCommand
                     Dim vendorName As String
 
-                        strSQLstring = "Select NAME1 from PS_Vendor where VENDOR_ID= '" & vendor & "'"
+                    strSQLstring = "Select NAME1 from PS_Vendor where VENDOR_ID= '" & vendor & "'"
 
-                        objStreamWriter.WriteLine("  CheckAllStatusWAL (4): " & strSQLstring)
+                    objStreamWriter.WriteLine("  CheckAllStatusWAL (4): " & strSQLstring)
 
                     Cmd = New OleDbCommand(strSQLstring, connectOR)
                     connectOR.Open()
@@ -2821,6 +2821,7 @@ Module Module1
             Dim StartDate As DateTime = Now().AddMinutes(addminutes)
             Dim EndDate As DateTime = Now()
             Dim sqlstring As String = ""
+            'INC0013889 Excluding the problem code WS - Site Wait  from the push to Service Channel Notes
             sqlstring = "select A.ORDER_NO, A.ISA_INTFC_LN, A.ISA_WORK_ORDER_NO,B.PO_ID,A.ISA_LINE_STATUS," & vbCrLf &
                 "C.NOTES_1000,A.ISA_EMPLOYEE_ID from PS_ISA_ORD_INTF_LN A,PS_PO_LINE_DISTRIB B,ps_isa_xpd_comment C" & vbCrLf &
                 "where A.business_unit_OM = 'I0W01' AND   A.ISA_LINE_STATUS IN ('DSP','ASN')" & vbCrLf &
@@ -2830,7 +2831,7 @@ Module Module1
                 "AND B.BUSINESS_UNIT = C.BUSINESS_UNIT" & vbCrLf &
                 "AND B.PO_ID = C.PO_ID" & vbCrLf &
                 "AND B.LINE_NBR= C.LINE_NBR" & vbCrLf &
-                "AND C.ISA_PROBLEM_CODE <> 'AK'" & vbCrLf &
+                "AND C.ISA_PROBLEM_CODE NOT IN ('AK','WS')" & vbCrLf &
                 "AND C.DTTM_STAMP > TO_DATE('" & StartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf &
                 "AND C.DTTM_STAMP <= TO_DATE('" & EndDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf
 
@@ -3075,8 +3076,8 @@ Module Module1
 
         'If sendEmailAlert Then
         Dim Mailer1 As MailMessage = New MailMessage
-            Dim strccfirst1 As String = "erwin.bautista"  '  "pete.doyle"
-            Dim strcclast1 As String = "sdi.com"
+        Dim strccfirst1 As String = "erwin.bautista"  '  "pete.doyle"
+        Dim strcclast1 As String = "sdi.com"
         'SDI-40628 Changing Mail id as walmartpurchasing@sdi.com from sdiexchange@sdi.com for Walmart BU.
         If strBU = "I0W01" Then
             Mailer1.From = "WalmartPurchasing@sdi.com"
@@ -3084,74 +3085,74 @@ Module Module1
             Mailer1.From = "SDIExchange@SDI.com"  '  "Insiteonline@SDI.com"
         End If
         Mailer1.Cc = ""
-            Mailer1.Bcc = strccfirst1 & "@" & strcclast1
-            strbodyhead1 = "<table width='100%'><tbody><tr><td><img src='http://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='82px' vspace='0' hspace='0' /></td><td width='100%'><br /><br /><br /><br /><br /><br /><center><span style='font-family: Arial; font-size: x-large; text-align: center;'>SDI Marketplace</span></center><center><span style='text-align: center; margin: 0px auto;'>SDiExchange - Order Status</span></center></td></tr></tbody></table>"
-            strbodyhead1 = strbodyhead1 & "<HR width='100%' SIZE='1'>"
-            strbodyhead1 = strbodyhead1 & "&nbsp;" & vbCrLf
+        Mailer1.Bcc = strccfirst1 & "@" & strcclast1
+        strbodyhead1 = "<table width='100%'><tbody><tr><td><img src='http://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='82px' vspace='0' hspace='0' /></td><td width='100%'><br /><br /><br /><br /><br /><br /><center><span style='font-family: Arial; font-size: x-large; text-align: center;'>SDI Marketplace</span></center><center><span style='text-align: center; margin: 0px auto;'>SDiExchange - Order Status</span></center></td></tr></tbody></table>"
+        strbodyhead1 = strbodyhead1 & "<HR width='100%' SIZE='1'>"
+        strbodyhead1 = strbodyhead1 & "&nbsp;" & vbCrLf
 
-            Dim dtgEmail1 As WebControls.DataGrid
-            dtgEmail1 = New WebControls.DataGrid
+        Dim dtgEmail1 As WebControls.DataGrid
+        dtgEmail1 = New WebControls.DataGrid
 
-            dsEmail = DuplicateRemoval(dsEmail)
+        dsEmail = DuplicateRemoval(dsEmail)
 
-            dtgEmail1.DataSource = dsEmail
-            dtgEmail1.DataBind()
-            dtgEmail1.BorderColor = Gray
-            dtgEmail1.HeaderStyle.BackColor = System.Drawing.Color.LightGray
-            dtgEmail1.HeaderStyle.Font.Bold = True
-            dtgEmail1.HeaderStyle.ForeColor = Black
-            WebControls.Unit.Percentage(90)
-            dtgEmail1.CellPadding = 3
-            'dtgEmail1.Width.Percentage(90)
+        dtgEmail1.DataSource = dsEmail
+        dtgEmail1.DataBind()
+        dtgEmail1.BorderColor = Gray
+        dtgEmail1.HeaderStyle.BackColor = System.Drawing.Color.LightGray
+        dtgEmail1.HeaderStyle.Font.Bold = True
+        dtgEmail1.HeaderStyle.ForeColor = Black
+        WebControls.Unit.Percentage(90)
+        dtgEmail1.CellPadding = 3
+        'dtgEmail1.Width.Percentage(90)
 
-            'dtgPO.Columns(9).ItemStyle.HorizontalAlign = HorizontalAlign.Center
-            dtgEmail1.RenderControl(htmlTWnstk1)
-            dataGridHTML1 = SBnstk1.ToString()
+        'dtgPO.Columns(9).ItemStyle.HorizontalAlign = HorizontalAlign.Center
+        dtgEmail1.RenderControl(htmlTWnstk1)
+        dataGridHTML1 = SBnstk1.ToString()
 
-            ''Get Order Notes here
-            Dim Ord_notes As String = ""
-            Ord_notes = GetOrderNotes(strOrderNo, strBU)
+        ''Get Order Notes here
+        Dim Ord_notes As String = ""
+        Ord_notes = GetOrderNotes(strOrderNo, strBU)
 
-            'Dim strPurchaserName As String = strCustID
-            Dim strPurchaserName As String = strFirstName &
+        'Dim strPurchaserName As String = strCustID
+        Dim strPurchaserName As String = strFirstName &
                " " & strLastName
-            'Dim ted As String = ";erwin.bautista@sdi.com"
-            Dim strPurchaserEmail As String = strEmail
-            'Dim strPurchaserEmail As String = strEmail
-            strbodydet1 = "&nbsp;" & vbCrLf
-            strbodydet1 = strbodydet1 & "<div>"
-            strbodydet1 = strbodydet1 & "<p >Hello " & strPurchaserName & ",</p>"
-            'strbodydet1 = strbodydet1 & "&nbsp;<BR>" 
-            strbodydet1 = strbodydet1 & "<p style='font-weight:bold;'>Order Number: " & strOrderNo & " </p> "
+        'Dim ted As String = ";erwin.bautista@sdi.com"
+        Dim strPurchaserEmail As String = strEmail
+        'Dim strPurchaserEmail As String = strEmail
+        strbodydet1 = "&nbsp;" & vbCrLf
+        strbodydet1 = strbodydet1 & "<div>"
+        strbodydet1 = strbodydet1 & "<p >Hello " & strPurchaserName & ",</p>"
+        'strbodydet1 = strbodydet1 & "&nbsp;<BR>" 
+        strbodydet1 = strbodydet1 & "<p style='font-weight:bold;'>Order Number: " & strOrderNo & " </p> "
 
-            If Not Ord_notes Is Nothing Then
-                If Not (String.IsNullOrEmpty(Ord_notes.Trim())) Then
-                    strbodydet1 = strbodydet1 & "<p style='font-weight:bold;'>Customer Notes: " & Ord_notes & " </p> "
-                End If
+        If Not Ord_notes Is Nothing Then
+            If Not (String.IsNullOrEmpty(Ord_notes.Trim())) Then
+                strbodydet1 = strbodydet1 & "<p style='font-weight:bold;'>Customer Notes: " & Ord_notes & " </p> "
             End If
+        End If
 
-            strbodydet1 = strbodydet1 & "<p style='font-weight:bold;'>Order contents: </p>"
-            'strbodydet1 = strbodydet1 & "&nbsp;<BR>"
-            ' strbodydet1 = strbodydet1 & "Order Status:  " & strOrderStatDesc & " <br>"
-            'strbodydet1 = strbodydet1 & "Order Number:  " & strOrderNo & " <br>"
-            ' strbodydet1 = strbodydet1 & "Line Number:  " & strLineNbr & " <br>"
-            strbodydet1 = strbodydet1 & "&nbsp;"
-            strbodydet1 = strbodydet1 & "<TABLE cellSpacing='1' cellPadding='1' width='100%' border='0'>" & vbCrLf
-            strbodydet1 = strbodydet1 + "<TR><TD Class='DetailRow' width='100%'>" & dataGridHTML1 & "</TD></TR>"
-            strbodydet1 = strbodydet1 + "<TR><TD Class='DetailRow'>&nbsp;</TD></TR>"
-            strbodydet1 = strbodydet1 & "</TABLE>" & vbCrLf
+        strbodydet1 = strbodydet1 & "<p style='font-weight:bold;'>Order contents: </p>"
+        'strbodydet1 = strbodydet1 & "&nbsp;<BR>"
+        ' strbodydet1 = strbodydet1 & "Order Status:  " & strOrderStatDesc & " <br>"
+        'strbodydet1 = strbodydet1 & "Order Number:  " & strOrderNo & " <br>"
+        ' strbodydet1 = strbodydet1 & "Line Number:  " & strLineNbr & " <br>"
+        strbodydet1 = strbodydet1 & "&nbsp;"
+        strbodydet1 = strbodydet1 & "<TABLE cellSpacing='1' cellPadding='1' width='100%' border='0'>" & vbCrLf
+        strbodydet1 = strbodydet1 + "<TR><TD Class='DetailRow' width='100%'>" & dataGridHTML1 & "</TD></TR>"
+        strbodydet1 = strbodydet1 + "<TR><TD Class='DetailRow'>&nbsp;</TD></TR>"
+        strbodydet1 = strbodydet1 & "</TABLE>" & vbCrLf
 
-            strbodydet1 = strbodydet1 & "&nbsp;<br>"
-            strbodydet1 = strbodydet1 & "Sincerely,<br>"
-            strbodydet1 = strbodydet1 & "&nbsp;<br>"
-            strbodydet1 = strbodydet1 & "SDI Customer Care<br>"
-            strbodydet1 = strbodydet1 & "&nbsp;<br>"
-            strbodydet1 = strbodydet1 & "</p>"
-            strbodydet1 = strbodydet1 & "</div>"
-            strbodydet1 = strbodydet1 & "<HR width='100%' SIZE='1'>" & vbCrLf
-            strbodydet1 = strbodydet1 & "<img src='http://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & vbCrLf
+        strbodydet1 = strbodydet1 & "&nbsp;<br>"
+        strbodydet1 = strbodydet1 & "Sincerely,<br>"
+        strbodydet1 = strbodydet1 & "&nbsp;<br>"
+        strbodydet1 = strbodydet1 & "SDI Customer Care<br>"
+        strbodydet1 = strbodydet1 & "&nbsp;<br>"
+        strbodydet1 = strbodydet1 & "</p>"
+        strbodydet1 = strbodydet1 & "</div>"
+        strbodydet1 = strbodydet1 & "<HR width='100%' SIZE='1'>" & vbCrLf
+        strbodydet1 = strbodydet1 & "<img src='http://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & vbCrLf
 
-            Mailer1.Body = strbodyhead1 & strbodydet1
+        Mailer1.Body = strbodyhead1 & strbodydet1
 
         If Not IsProdDB Then
             Mailer1.To = "webdev@sdi.com"
@@ -3167,15 +3168,15 @@ Module Module1
             Else
                 Mailer1.To = strPurchaserEmail
                 Mailer1.Subject = "SDiExchange - Order Status records for Order Number: " & strOrderNo
-                End If
             End If
-            Try
-                Mailer1.BodyFormat = System.Web.Mail.MailFormat.Html
+        End If
+        Try
+            Mailer1.BodyFormat = System.Web.Mail.MailFormat.Html
 
-                SDIEmailService.EmailUtilityServices("MailandStore", Mailer1.From, Mailer1.To, Mailer1.Subject, String.Empty, "webdev@sdi.com", Mailer1.Body, "StatusChangeEmail1", MailAttachmentName, MailAttachmentbytes.ToArray())
-            Catch ex As Exception
+            SDIEmailService.EmailUtilityServices("MailandStore", Mailer1.From, Mailer1.To, Mailer1.Subject, String.Empty, "webdev@sdi.com", Mailer1.Body, "StatusChangeEmail1", MailAttachmentName, MailAttachmentbytes.ToArray())
+        Catch ex As Exception
 
-            End Try
+        End Try
 
 
         'End If
