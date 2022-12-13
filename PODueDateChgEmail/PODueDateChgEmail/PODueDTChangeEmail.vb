@@ -667,9 +667,12 @@ Public Class PODueDTChangeEmail
                             fromAddress = New System.Net.Mail.MailAddress("service.notification@sdi.com")
                         End Try
                         'WAL-533: Email subject lines changes for Walmart BU -->Change done by- Venkat
+                        Dim From As String = String.Empty
                         If myReq.BusinessUnit = "I0W01" OrElse myReq.POBusinessUnit = "WAL00" Then
+                            From = "WalmartPurchasing@sdi.com"
                             eml.Subject = "Status Update - Due Date Change - Store #" & store & " - WO #" & wordOrder & ""
                         Else
+                            From = "SDIExchange@SDI.com"
                             eml.Subject = "Order Due Date has Changed. Order Number: " & myReq.ReqId.ToString & ". PO_ID: " & myReq.POID.ToString & ""
                         End If
 
@@ -695,7 +698,7 @@ Public Class PODueDTChangeEmail
                         eml.Body = sEmailBody
 
                         Try
-                            SendLogger(eml.Subject, sEmailBody, "PODUEDATECHGEMAIL", "Mail", sEmailTo, " ", "webdev@sdi.com")
+                            SendLogger(eml.Subject, From, sEmailBody, "PODUEDATECHGEMAIL", "Mail", sEmailTo, " ", "webdev@sdi.com")
                             logger.WriteVerboseLog("Order Due Date has Changed. Order Number: " & myReq.ReqId.ToString & ". PO_ID: " & myReq.POID.ToString & "")
                             bIsSuccessful = True
 
@@ -1216,7 +1219,7 @@ Public Class PODueDTChangeEmail
     End Function
 
 
-    Public Shared Sub SendLogger(ByVal subject As String, ByVal body As String, ByVal messageType As String, ByVal MailType As String, ByVal EmailTo As String, ByVal EmailCc As String, ByVal EmailBcc As String)
+    Public Shared Sub SendLogger(ByVal subject As String, ByVal from As String, ByVal body As String, ByVal messageType As String, ByVal MailType As String, ByVal EmailTo As String, ByVal EmailCc As String, ByVal EmailBcc As String)
         Try
             Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
             Dim MailAttachmentName As String()
@@ -1224,7 +1227,7 @@ Public Class PODueDTChangeEmail
             Dim objException As String
             Dim objExceptionTrace As String
 
-            SDIEmailService.EmailUtilityServices(MailType, "SDIExchange@sdi.com", EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
+            SDIEmailService.EmailUtilityServices(MailType, from, EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
 
         Catch ex As Exception
 
