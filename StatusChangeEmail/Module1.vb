@@ -2123,8 +2123,8 @@ Module Module1
         End If
 
         strSQLstring += " And LD.Req_id (+) = B.order_no AND LD.REQ_LINE_NBR (+) = B.ISA_INTFC_LN" & vbCrLf &
-                 " AND G.DTTM_STAMP > TO_DATE('" & dteStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf &
-                 " AND G.DTTM_STAMP <= TO_DATE('" & dteEndDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf
+        " AND G.DTTM_STAMP > TO_DATE('" & dteStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf &
+        " AND G.DTTM_STAMP <= TO_DATE('" & dteEndDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf
 
         If strBU = "I0W01" Then
             strSQLstring += " AND EXISTS (SELECT 'X' FROM PS_ISA_WO_STATUS I " & vbCrLf &
@@ -3211,7 +3211,7 @@ Module Module1
             Dim _notificationResult As New DataSet
             Dim notificationSQLStr = "select max(NOTIFY_ID) As NOTIFY_ID from SDIX_NOTIFY_QUEUE where USER_ID='" + Session_UserID + "'"
             _notificationResult = ORDBAccess.GetAdapter(notificationSQLStr, connectOR)
-            Dim NotifyID As Int16 = 1
+            Dim NotifyID As Int64 = 1
             If _notificationResult.Tables.Count > 0 Then
                 Try
                     NotifyID = _notificationResult.Tables(0).Rows(0).Item("NOTIFY_ID")
@@ -3429,6 +3429,23 @@ Module Module1
                         .notification.body = subject
                         .notification.sound = "Enabled"
                         .data.orderid = orderNo
+                        'Madhu-IPM-18-Modifying the title as IPM For Push notifications(For Non-Walmart)
+                        Try
+                            If strbu = "I0W01" Then
+                                Try
+                                    .notification.title = "ZEUS"
+                                Catch ex As Exception
+                                End Try
+                            Else
+                                Try
+                                    .notification.title = "IPM"
+                                Catch ex As Exception
+                                End Try
+
+                            End If
+                        Catch ex As Exception
+                        End Try
+
                     End With
                     Dim serializer = New JavaScriptSerializer()
                     Dim json = serializer.Serialize(webObject)
