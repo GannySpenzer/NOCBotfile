@@ -4,6 +4,12 @@ Imports System.Collections.Specialized
 Imports SDI.ApplicationLogger
 Imports System.Net.Mail
 Imports System.Text
+Imports System.Net
+Imports System.Configuration
+Imports System.IO
+Imports System.Web
+Imports System.Collections.Generic
+Imports System.Web.Script.Serialization
 
 Public Class PODueDTChangeEmail
 
@@ -11,6 +17,23 @@ Public Class PODueDTChangeEmail
         [List] = 0
         [All] = 1
     End Enum
+    Public Class WebRequestFcmData
+        Public Property registration_ids As String()
+        Public Property notification As New NotificationData
+        Public Property data As New dataBO
+    End Class
+
+    Public Class dataBO
+        Public Property orderid As String
+    End Class
+
+    Public Class NotificationData
+        Public Property body As String
+        Public Property title As String = "ZEUS"
+        Public Property sound As String
+    End Class
+
+    Dim connectOR As New OleDbConnection(Convert.ToString(ConfigurationManager.AppSettings("OLEDBconString")))
 
     Private Const oraCN_default_provider As String = "Provider=OraOLEDB.Oracle.1;"
     Private Const oraCN_default_creden As String = "User ID=sdiexchange;Password=sd1exchange;"
@@ -253,12 +276,11 @@ Public Class PODueDTChangeEmail
                             logger.WriteErrorLog(("rdr employee ID error: " & ex.Message))
                         End Try
                         cmdEmpl = Nothing
-
                         If currPO.PurchasingBusinessUnit.Length > 0 And
-                           currPO.POId.Length > 0 And
-                           currPOLn.PurchaseOrderLineNo > 0 And
-                           currPOLnSched.PurchaseOrderLineScheduleNo > 0 And
-                           IsDate(currPOLnSched.PurchaseOrderDueDate) Then
+                       currPO.POId.Length > 0 And
+                       currPOLn.PurchaseOrderLineNo > 0 And
+                       currPOLnSched.PurchaseOrderLineScheduleNo > 0 And
+                       IsDate(currPOLnSched.PurchaseOrderDueDate) Then
                             Dim bIsFound As Boolean = False
                             For Each o As po In arr
                                 If o.Id = currPO.Id Then
@@ -701,7 +723,16 @@ Public Class PODueDTChangeEmail
                             SendLogger(eml.Subject, From, sEmailBody, "PODUEDATECHGEMAIL", "Mail", sEmailTo, " ", "webdev@sdi.com")
                             logger.WriteVerboseLog("Order Due Date has Changed. Order Number: " & myReq.ReqId.ToString & ". PO_ID: " & myReq.POID.ToString & "")
                             bIsSuccessful = True
+                            'Madhu-IPM-18-Due datenotificatioms for Non-walmart
+                            Try
+                                If myReq.BusinessUnit = "I0W01" Or myReq.POBusinessUnit = "WAL00" Then
 
+                                Else
+                                    sendNotification(myReq.EmployeeId, eml.Subject, myReq.POID, myReq.POBusinessUnit)
+                                    sendWebNotification(myReq.EmployeeId, eml.Subject)
+                                End If
+                            Catch ex As Exception
+                            End Try
                         Catch ex As Exception
                             bIsSuccessful = False
                             logger.WriteVerboseLog("Error Sending Email to: " & myReq.ReqId.ToString & ". PO_ID: " & myReq.POID.ToString & "")
@@ -721,6 +752,125 @@ Public Class PODueDTChangeEmail
         Return (bIsSuccessful)
 
     End Function
+    Public Sub sendNotification(ByVal Session_UserID As String, ByVal subject As String, ByVal orderNo As String, Optional ByVal strbu As String = Nothing)
+        Dim response As String
+        Dim objnotifications As New NotificationData
+        Try
+            Dim NotificationContent As String = subject
+            Dim _notificationResult As New DataSet
+            Dim notificationSQLStr = "Select distinct(DEVICE_INFO) FROM (SELECT DISTINCT(DEVICE_INFO) FROM SDIX_USER_TOKEN WHERE ISA_EMPLOYEE_ID = '" + Session_UserID + "' AND DEVICE_INFO IS NOT NULL AND LOWER(DEVICE_INFO) <> 'unknown unknown' AND LOWER(DEVICE_INFO)<>'webapp' order by last_update_dttm desc fetch first 1000 rows only)"
+            _notificationResult = ORDBAccess.GetAdapter(notificationSQLStr, connectOR)
+            If _notificationResult.Tables.Count > 0 Then
+                If _notificationResult.Tables(0).Rows.Count > 0 Then
+                    Dim getTokenID As String() = _notificationResult.Tables(0).AsEnumerable().[Select](Function(r) r.Field(Of String)("DEVICE_INFO")).ToArray()
+                    Dim serverKey As String = ConfigurationManager.AppSettings("serverKey")
+                    Dim senderId As String = ConfigurationManager.AppSettings("senderId")
+                    Dim serverKey1 As String = ConfigurationManager.AppSettings("serverKey1")
+                    Dim senderId1 As String = ConfigurationManager.AppSettings("senderId1")
+                    Dim tRequest As WebRequest = WebRequest.Create("https://fcm.googleapis.com/fcm/send")
+                    tRequest.Method = "post"
+                    tRequest.ContentType = "application/json"
+                    Dim webObject As New WebRequestFcmData
+                    With webObject
+                        .registration_ids = getTokenID
+                        .notification.body = subject
+                        .notification.sound = "Enabled"
+                        .data.orderid = orderNo
+                        'Madhu-IPM-18-Modifying the title as IPM For Push notifications(For Non-Walmart)
+                        Try
+                            If strbu = "I0W01" Or strbu = "WAL00" Then
+                                Try
+                                    .notification.title = "ZEUS"
+                                Catch ex As Exception
+                                End Try
+                            Else
+                                Try
+                                    .notification.title = "IPM"
+                                Catch ex As Exception
+                                End Try
+
+                            End If
+                        Catch ex As Exception
+                        End Try
+
+                    End With
+                    Dim serializer = New JavaScriptSerializer()
+                    Dim json = serializer.Serialize(webObject)
+                    Dim byteArray As Byte() = Encoding.UTF8.GetBytes(json)
+                    If strbu = "I0W01" Or strbu = "WAL00" Then
+                        tRequest.Headers.Add(String.Format("Authorization: key={0}", serverKey))
+                        tRequest.Headers.Add(String.Format("Sender: id={0}", senderId))
+                    Else
+                        tRequest.Headers.Add(String.Format("Authorization: key={0}", serverKey1))
+                        tRequest.Headers.Add(String.Format("Sender: id={0}", senderId1))
+
+                    End If
+
+                    tRequest.ContentLength = byteArray.Length
+
+                    Using dataStream As Stream = tRequest.GetRequestStream()
+                        dataStream.Write(byteArray, 0, byteArray.Length)
+
+                        Using tResponse As WebResponse = tRequest.GetResponse()
+
+                            Using dataStreamResponse As Stream = tResponse.GetResponseStream()
+
+                                Using tReader As StreamReader = New StreamReader(dataStreamResponse)
+                                    Dim sResponseFromServer As String = tReader.ReadToEnd()
+                                    response = sResponseFromServer
+                                End Using
+                            End Using
+                        End Using
+                    End Using
+                End If
+            End If
+        Catch ex As Exception
+        End Try
+    End Sub
+    Public Sub sendWebNotification(ByVal Session_UserID As String, ByVal subject As String)
+        Try
+            Dim _notificationResult As New DataSet
+            Dim notificationSQLStr = "select max(NOTIFY_ID) As NOTIFY_ID from SDIX_NOTIFY_QUEUE where USER_ID='" + Session_UserID + "'"
+            _notificationResult = ORDBAccess.GetAdapter(notificationSQLStr, connectOR)
+            Dim NotifyID As Int64 = 1
+            If _notificationResult.Tables.Count > 0 Then
+                Try
+                    NotifyID = _notificationResult.Tables(0).Rows(0).Item("NOTIFY_ID")
+                    NotifyID = NotifyID + 1
+                Catch ex As Exception
+                End Try
+            End If
+            connectOR.Open()
+            Dim strSQLstring As String = "INSERT INTO SDIX_NOTIFY_QUEUE" & vbCrLf &
+        " (NOTIFY_ID, NOTIFY_TYPE, USER_ID,DTTMADDED, STATUS,LINK, HTMLMSG, ATTACHMENTS, TITLE) VALUES ('" & NotifyID & "'," & vbCrLf &
+        " 'ORD'," & vbCrLf &
+        " '" & Session_UserID & "'," & vbCrLf &
+        " sysdate," & vbCrLf &
+        " 'N'," & vbCrLf &
+         " ' ',' ',' '," & vbCrLf &
+        " '" & subject & "')" & vbCrLf
+
+            Dim command1 As OleDbCommand
+            command1 = New OleDbCommand(strSQLstring, connectOR)
+            Try
+                Dim rowsaffected As Integer
+                rowsaffected = command1.ExecuteNonQuery
+                If Not rowsaffected = 1 Then
+
+                End If
+                command1.Dispose()
+            Catch ex As Exception
+
+            End Try
+            Try
+                connectOR.Close()
+            Catch ex As Exception
+
+            End Try
+
+        Catch ex As Exception
+        End Try
+    End Sub
 
     Public Function GetPOExists(ByVal PO_ID As String, ByVal LineNo As String, ByVal SchedNO As String) As String
 
