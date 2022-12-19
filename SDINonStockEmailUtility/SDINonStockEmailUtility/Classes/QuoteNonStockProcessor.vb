@@ -610,8 +610,8 @@ Public Class QuoteNonStockProcessor
                                     ' set line status to QTC or QTA (itmQuoted.LineStatus) and add Audit record
                                     Dim strUpdateLineStatusFinal As String = ""
                                     strUpdateLineStatusFinal = "UPDATE SYSADM8.PS_ISA_ORD_INTF_LN SET ISA_LINE_STATUS = '" & itmQuoted.LineStatus & "', OPRID_APPROVED_BY = 'SDIX', APPROVAL_DTTM = SYSDATE " & vbCrLf &
-                                        "WHERE BUSINESS_UNIT_OM = '" & itmQuoted.BusinessUnitOM & "' AND ORDER_NO = '" & itmQuoted.OrderID & "' " & vbCrLf &
-                                        "AND ISA_LINE_STATUS = 'QTS'"
+                                    "WHERE BUSINESS_UNIT_OM = '" & itmQuoted.BusinessUnitOM & "' AND ORDER_NO = '" & itmQuoted.OrderID & "' " & vbCrLf &
+                                    "AND ISA_LINE_STATUS = 'QTS'"
 
                                     Dim iRowsAffctd As Integer = 0
                                     Try
@@ -2143,7 +2143,7 @@ Public Class QuoteNonStockProcessor
             'SendLogger("Quote Non Stock New Utility - Dev", ex, "ERROR")
         End Try
     End Sub
-
+    'IPM-18-Madhu-Modifyingg the title for IPM
     Public Shared Sub SendNotification(ByVal Session_UserID As String, ByVal subject As String, ByVal orderNo As String, Optional ByVal cBusinessUnitOM As String = "")
         Dim response As String
         Try
@@ -2167,6 +2167,20 @@ Public Class QuoteNonStockProcessor
                         .notification.body = subject
                         .notification.sound = "Enabled"
                         .data.orderid = orderNo
+                        Try
+                            If cBusinessUnitOM = "I0W01" Then
+                                Try
+                                    .notification.title = "ZEUS"
+                                Catch ex As Exception
+                                End Try
+                            Else
+                                Try
+                                    .notification.title = "IPM"
+                                Catch ex As Exception
+                                End Try
+                            End If
+                        Catch ex As Exception
+                        End Try
                     End With
                     Dim serializer = New JavaScriptSerializer()
                     Dim json = serializer.Serialize(webObject)
