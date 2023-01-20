@@ -582,7 +582,7 @@ Public Class QuoteNonStockProcessor
 
         Try
             If Not trackOrderNo Is Nothing And trackOrderNo.ToLower().Equals("true") Then
-                SendLogger("Logging execution of Quote Non Stock Email Utility", "Execution started at " & DateTime.Now.ToShortTimeString(), "LOGGER", "Mail", "WebDev@sdi.com;avacorp@sdi.com", String.Empty, String.Empty)
+                SendLogger("Logging execution of Quote Non Stock Email Utility", "Execution started at " & DateTime.Now.ToShortTimeString(), "LOGGER", "Mail", "WebDev@sdi.com", String.Empty, String.Empty)
             End If
 
             SetConfigXML()
@@ -669,9 +669,9 @@ Public Class QuoteNonStockProcessor
 
             If Not trackOrderNo Is Nothing And trackOrderNo.ToLower().Equals("true") Then
                 If m_colMsgs.Count > 0 Then
-                    SendLogger("Logging execution of Quote Non Stock Utility", "The following Orders were processed: " & SBord.ToString().TrimEnd(",") & " by Quote Non Stock Email Utility. <br/>Execution is ended at " & DateTime.Now.ToShortTimeString(), "LOGGER", "Mail", "WebDev@sdi.com;avacorp@sdi.com", String.Empty, String.Empty)
+                    SendLogger("Logging execution of Quote Non Stock Utility", "The following Orders were processed: " & SBord.ToString().TrimEnd(",") & " by Quote Non Stock Email Utility. <br/>Execution is ended at " & DateTime.Now.ToShortTimeString(), "LOGGER", "Mail", "WebDev@sdi.com", String.Empty, String.Empty)
                 Else
-                    SendLogger("Logging execution of Quote Non Stock Utility", "No Orders were found. Nothing was processed by Quote Non Stock Email Utility. ", "LOGGER", "Mail", "WebDev@sdi.com;avacorp@sdi.com", String.Empty, String.Empty)
+                    SendLogger("Logging execution of Quote Non Stock Utility", "No Orders were found. Nothing was processed by Quote Non Stock Email Utility. ", "LOGGER", "Mail", "WebDev@sdi.com", String.Empty, String.Empty)
                 End If
             End If
             If m_colMsgs.Count > 0 Then
@@ -834,7 +834,7 @@ Public Class QuoteNonStockProcessor
             m_logger.WriteVerboseLog("SetConfigXML.  Error:  " & ex.ToString)
         End Try
     End Sub
-
+    'Madhu-INC0015106-Removed avacorp in Email flow
     Public Shared Sub SendLogger(ByVal subject As String, ByVal body As String, ByVal messageType As String, ByVal MailType As String, ByVal EmailTo As String, ByVal EmailCc As String, ByVal EmailBcc As String, Optional ByVal sBU As String = "")
         Try
             Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
@@ -842,7 +842,7 @@ Public Class QuoteNonStockProcessor
             Dim MailAttachmentbytes As New List(Of Byte())()
 
             If Not getDBName() Then
-                EmailTo = "webdev@sdi.com;avacorp@sdi.com"
+                EmailTo = "webdev@sdi.com"
             End If
             'SDI-40628 Changing email
             Dim From As String = String.Empty
@@ -2015,7 +2015,7 @@ Public Class QuoteNonStockProcessor
                         Else
                             eml.Subject = " TEST ZEUS - " & eml.Subject
                         End If
-                        eml.To = "webdev@sdi.com;avacorp@sdi.com"
+                        eml.To = "webdev@sdi.com"
                         eml.Cc = ""
                         eml.Bcc = ""
                     Else
@@ -3103,7 +3103,7 @@ Public Class QuoteNonStockProcessor
 
         MailTo = AppMail
 
-        SendLogger(MailSub, MailBody, "NotifyApprover", "MailandStore", MailTo, String.Empty, "WebDev@sdi.com;avacorp@sdi.com")
+        SendLogger(MailSub, MailBody, "NotifyApprover", "MailandStore", MailTo, String.Empty, "WebDev@sdi.com")
 
     End Sub
 
@@ -3766,6 +3766,7 @@ Public Class OrderApprovals
         Return strPriority
 
     End Function
+    'Madhu-INC0015106-Removed avacorp in Email flow
 
     Public Shared Sub buildNotifyBuyer(ByVal strreqID As String,
                                 ByVal strwo As String,
@@ -3931,7 +3932,7 @@ Public Class OrderApprovals
         MailBody = strbodyhead & strbodydetl
         If Not getDBName() Then
             ' Mailer.To = "DoNotSendPLGR@sdi.com"
-            MailTo = "WebDev@sdi.com;avacorp@sdi.com"
+            MailTo = "WebDev@sdi.com"
             MailSub = "<<TEST SITE>> SDI ZEUS - Order Number " & strreqID & " has been " & strAction
         Else
             'Mailer.To = strBuyerEmail
@@ -4057,6 +4058,7 @@ Public Class OrderApprovals
 
         Return strOrigApproverID
     End Function
+    'Madhu-INC0015106-Removed avacorp in Email flow
 
     Public Shared Sub buildNotifyApprover(ByVal strreqID As String, ByVal strAgent As String, ByVal strBU As String, ByVal strAppUserid As String, ByVal strHldStatus As String)
         'this is where we will put in the description of the order per S.Roudriquez
@@ -4273,7 +4275,7 @@ Public Class OrderApprovals
 
         Mailer.Body = strbodyhead & strbodydetl
         If Not getDBName() Then
-            Mailer.To = "webdev@sdi.com;avacorp@sdi.com"
+            Mailer.To = "webdev@sdi.com"
         Else
             Mailer.To = strappEmail
         End If
@@ -5867,6 +5869,7 @@ Public Class OrderApprovals
             Return sApproverList
         End Function
     End Class
+    'Madhu-INC0015106-Removed avacorp in Email flow
 
     Public Shared Sub SendSDiExchErrorMail(ByVal strErrorMessage As String, Optional ByVal sSubject As String = "")
 
@@ -5883,7 +5886,6 @@ Public Class OrderApprovals
         Dim mail As New System.Net.Mail.MailMessage()
 
         mail.To.Add("webdev@sdi.com")
-        mail.To.Add("avacorp@sdi.com")
 
         mail.From = New System.Net.Mail.MailAddress("SDIExchADMIN@sdi.com", "SDiExchange Admin")
 
@@ -7949,6 +7951,7 @@ Public Class WebPSharedFunc
 
     'End Sub
 
+    'Madhu-INC0015106-Removed avacorp in Email flow
 
     Public Shared Sub SendSDiExchErrorMail(ByVal strErrorMessage As String, Optional ByVal sSubject As String = "")
 
@@ -7965,7 +7968,6 @@ Public Class WebPSharedFunc
         Dim mail As New System.Net.Mail.MailMessage()
 
         mail.To.Add("webdev@sdi.com")
-        mail.To.Add("avacorp@sdi.com")
 
         mail.From = New System.Net.Mail.MailAddress("SDIExchADMIN@sdi.com", "SDiExchange Admin")
 
