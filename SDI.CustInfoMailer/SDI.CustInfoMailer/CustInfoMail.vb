@@ -92,63 +92,62 @@ Module CustInfoMail
 
                 Dim ORDER_NO As String = Convert.ToString(dtrAppReader.Item("ORDER_NO"))
 
-
                 If Not OrderNo.Contains(Convert.ToString(ORDER_NO)) Then
-                        OrderNo.Add(Convert.ToString(ORDER_NO))
+                    OrderNo.Add(Convert.ToString(ORDER_NO))
 
-                        If Not IsDBNull(dtrAppReader.Item("ISA_EMPLOYEE_NAME")) Then
-                            strEmpName = Convert.ToString(dtrAppReader.Item("ISA_EMPLOYEE_NAME"))
-                        End If
+                    If Not IsDBNull(dtrAppReader.Item("ISA_EMPLOYEE_NAME")) Then
+                        strEmpName = Convert.ToString(dtrAppReader.Item("ISA_EMPLOYEE_NAME"))
+                    End If
 
-                        If Not IsDBNull(dtrAppReader.Item("ISA_EMPLOYEE_ID")) Then
-                            strUserId = Convert.ToString(dtrAppReader.Item("ISA_EMPLOYEE_ID"))
-                        End If
-
-
-                        If Not IsDBNull(dtrAppReader.Item("ORDER_NO")) Then
-                            strORderNo = Convert.ToString(dtrAppReader.Item("ORDER_NO"))
-                        End If
-
-                        If Not IsDBNull(dtrAppReader.Item("ISA_EMPLOYEE_EMAIL")) Then
-                            strEmail = Convert.ToString(dtrAppReader.Item("ISA_EMPLOYEE_EMAIL"))
-                        End If
+                    If Not IsDBNull(dtrAppReader.Item("ISA_EMPLOYEE_ID")) Then
+                        strUserId = Convert.ToString(dtrAppReader.Item("ISA_EMPLOYEE_ID"))
+                    End If
 
 
-                        If Not IsDBNull(dtrAppReader.Item("ISA_REQUIRED_BY_DT")) Then
-                            Required_By_Dttm = CDate(dtrAppReader.Item("ISA_REQUIRED_BY_DT")).ToString("MM-dd-yyyy")
-                        End If
+                    If Not IsDBNull(dtrAppReader.Item("ORDER_NO")) Then
+                        strORderNo = Convert.ToString(dtrAppReader.Item("ORDER_NO"))
+                    End If
 
-                        If Not IsDBNull(dtrAppReader.Item("ISA_WORK_ORDER_NO")) Then
-                            strWorkONo = Convert.ToString(dtrAppReader.Item("ISA_WORK_ORDER_NO"))
-                        End If
-
-                        If Not IsDBNull(dtrAppReader.Item("order_date")) Then
-                            strOrdDate = CDate(dtrAppReader.Item("order_date")).ToString("MM-dd-yyyy")
-                        End If
-
-                        If Not IsDBNull(dtrAppReader.Item("buyer_id")) Then
-                            strBuyer = Convert.ToString(dtrAppReader.Item("buyer_id"))
-                        End If
+                    If Not IsDBNull(dtrAppReader.Item("ISA_EMPLOYEE_EMAIL")) Then
+                        strEmail = Convert.ToString(dtrAppReader.Item("ISA_EMPLOYEE_EMAIL"))
+                    End If
 
 
-                        log.WriteLine("OrderNo {0} is need more information from customer {1}", strORderNo, strEmpName)
-                        'SDI-41322 Email Notification turn off for user LOWE,ASHLEY
-                        Try
-                            Dim EmpId As String = ""
-                            Dim IsDontNotifierCustomer As Boolean = False
+                    If Not IsDBNull(dtrAppReader.Item("ISA_REQUIRED_BY_DT")) Then
+                        Required_By_Dttm = CDate(dtrAppReader.Item("ISA_REQUIRED_BY_DT")).ToString("MM-dd-yyyy")
+                    End If
 
-                            EmpId = Convert.ToString(ConfigurationManager.AppSettings("DoNotNotifyCustomer"))
+                    If Not IsDBNull(dtrAppReader.Item("ISA_WORK_ORDER_NO")) Then
+                        strWorkONo = Convert.ToString(dtrAppReader.Item("ISA_WORK_ORDER_NO"))
+                    End If
 
-                            IsDontNotifierCustomer = (EmpId.IndexOf(strUserId.Trim.ToUpper) > -1)
+                    If Not IsDBNull(dtrAppReader.Item("order_date")) Then
+                        strOrdDate = CDate(dtrAppReader.Item("order_date")).ToString("MM-dd-yyyy")
+                    End If
 
-                            If IsDontNotifierCustomer = "True" Then
-                                'Don't Send notification
-                            Else
-                                buildNotifyApprover(strORderNo, strEmail, strEmpName, Required_By_Dttm, strWorkONo, strOrdDate, strBuyer)
-                            End If
-                        Catch ex As Exception
+                    If Not IsDBNull(dtrAppReader.Item("buyer_id")) Then
+                        strBuyer = Convert.ToString(dtrAppReader.Item("buyer_id"))
+                    End If
+
+
+                    log.WriteLine("OrderNo {0} is need more information from customer {1}", strORderNo, strEmpName)
+                    'SDI-41322 Email Notification turn off for user LOWE,ASHLEY
+                    Try
+                        Dim EmpId As String = ""
+                        Dim IsDontNotifierCustomer As Boolean = False
+
+                        EmpId = Convert.ToString(ConfigurationManager.AppSettings("DoNotNotifyCustomer"))
+
+                        IsDontNotifierCustomer = (EmpId.IndexOf(strUserId.Trim.ToUpper) > -1)
+
+                        If IsDontNotifierCustomer = "True" Then
+                            'Don't Send notification
+                        Else
                             buildNotifyApprover(strORderNo, strEmail, strEmpName, Required_By_Dttm, strWorkONo, strOrdDate, strBuyer)
-                        End Try
+                        End If
+                    Catch ex As Exception
+                        buildNotifyApprover(strORderNo, strEmail, strEmpName, Required_By_Dttm, strWorkONo, strOrdDate, strBuyer)
+                    End Try
 
                 End If
             End While
@@ -166,6 +165,7 @@ Module CustInfoMail
         Return log
 
     End Function
+    'Madhu-INC0015106-Removed avacorp in Email flow
 
     Public Sub buildNotifyApprover(ByVal orderNum As String, ByVal EmpEmail As String, ByVal EmpNme As String, ByVal Required_By_Dttm As String, ByVal strWorkONo As String, ByVal strOrdDate As String, ByVal strBuyer As String)
 
@@ -214,7 +214,7 @@ Module CustInfoMail
         Dim Mailer As MailMessage = New MailMessage
         Dim FromAddress As String = "SDIExchange@SDI.com"
         Dim Mailcc As String = ""
-        Dim MailBcc As String = "webdev@sdi.com;Tony.Smith@sdi.com;avacorp@sdi.com"
+        Dim MailBcc As String = "webdev@sdi.com;Tony.Smith@sdi.com"
 
         '' strbodyhead = "<span><B>**PRIORITY ORDER**</B></span>"
 
@@ -261,11 +261,11 @@ Module CustInfoMail
                    DbUrl.Substring(DbUrl.Length - 4).ToUpper = "DEVL" Or
                    DbUrl.Substring(DbUrl.Length - 4).ToUpper = "STST" Or
                DbUrl.Substring(DbUrl.Length - 4).ToUpper = "RPTG" Then
-            Mailer.To = "WebDev@sdi.com;avacorp@sdi.com"
+            Mailer.To = "WebDev@sdi.com"
             Mailer.Subject = "<<TEST SITE>> SDiExchange - Customer Information Required For Order - " & orderNum
         Else
             Mailer.To = EmpEmail
-            Mailer.Bcc = "WebDev@sdi.com;avacorp@sdi.com"
+            Mailer.Bcc = "WebDev@sdi.com"
             Mailer.Subject = "SDiExchange - Customer Information Required For Order - " & orderNum
         End If
 
