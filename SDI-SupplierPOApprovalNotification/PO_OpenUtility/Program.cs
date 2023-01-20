@@ -335,7 +335,7 @@ and a.business_unit = '" + strPOBU + "' and a.po_id='" + strPO + "'";
 
             return strReturn;
         }
-
+        //Madhu-INC0015106-Removed avacorp in Email flow
         public static Boolean SendEmail(string VendorID, string VendorUN, string VendorEmail, string POID, string PO_BU, string strURL, string strBuyerEmail, string Email, string techPhno, string techEmail, string Notes)
         {
             string strbodyhead;
@@ -460,7 +460,6 @@ and a.business_unit = '" + strPOBU + "' and a.po_id='" + strPO + "'";
                 if (DbUrl == "SNBX" | DbUrl == "STAR" | DbUrl == "DEVL" | DbUrl == "RPTG" | DbUrl == "STST" | DbUrl == "SUAT")
                 {
                     Mailer.To.Add(new MailAddress("WebDev@sdi.com"));
-                    Mailer.To.Add(new MailAddress("avacorp@sdi.com"));
                     Mailer.Subject = "<<TEST SITE>> SDIZEUS - Purchase Order " + POID + "";
                 }
                 else
