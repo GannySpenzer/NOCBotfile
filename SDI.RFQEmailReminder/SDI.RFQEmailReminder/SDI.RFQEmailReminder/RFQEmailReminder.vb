@@ -449,6 +449,7 @@ Module RFQEmailReminder
 
 
     End Sub
+    'Madhu-INC0015106-Removed avacorp in Email flow
     Public Sub buildNotifyApprover(ByVal businessUnit As String, ByVal orderNum As String, ByVal apprvBy As String,
                                     ByVal apprvDate As String, ByVal itmSet As String, ByVal sellPrice As String,
                                     ByVal itmReqDate As String, ByVal itmDescr As String, ByVal mode As String,
@@ -491,7 +492,7 @@ Module RFQEmailReminder
         Dim FromAddress As String = "SDIExchange@SDI.com"
         Dim Mailcc As String = ""
         'Dim MailBcc As String = "webdev@sdi.com;Tony.Smith@sdi.com"
-        Dim MailBcc As String = "avacorp@sdi.com"
+        Dim MailBcc As String = "WebDev@sdi.com"
 
         strbodyhead = "<table bgcolor='black' Width='100%'><tbody><tr><td style='width:1%;'><img src='http://www.sdiexchange.com/images/SDNewLogo_Email.png' alt='SDI' style='padding: 10px 0;' vspace='0' hspace='0' /></td>" & vbCrLf
         strbodyhead = strbodyhead & "<td style='width:50% ;'><center><span style='font-weight:bold;color:white;font-size:24px;'>SDI Marketplace</span></center>" & vbCrLf
