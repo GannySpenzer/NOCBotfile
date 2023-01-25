@@ -1667,7 +1667,8 @@ Module Module1
                  " B.INV_ITEM_ID as INV_ITEM_ID," & vbCrLf &
                  " B.QTY_REQUESTED,B.QTY_RECEIVED,B.UNIT_OF_MEASURE," & vbCrLf &
         " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH" & vbCrLf &
-                 " ,A.origin, LD.PO_ID, (select Tracking_Number(B.ORDER_NO,B.ISA_INTFC_LN,B.BUSINESS_UNIT_OM) from dual) as ISA_ASN_TRACK_NO" & vbCrLf &
+                 " ,A.origin, LD.PO_ID, (select Tracking_Number(B.ORDER_NO,B.ISA_INTFC_LN,B.BUSINESS_UNIT_OM) from dual) as ISA_ASN_TRACK_NO," & vbCrLf &
+                 "(SELECT MAX(FDX.DESCR80) FROM PS_ISA_FEDEX_STG FDX WHERE LD.PO_ID=FDX.PO_ID AND LD.REQ_ID=B.ORDER_NO AND FDX.PROCESS_STATUS='C') AS SHIP_STATUS" & vbCrLf & '[1/25/2023]WAL-781 Added shipment status fetching query with order summary query
                  " FROM ps_isa_ord_intf_HD A," & vbCrLf  '   & _
         '[11-28-2022]WW-554 Changed the query to get tracking num from Tracking_Number function since the inventory orders are not available in PS_ISA_ASN_SHIPPED table -- Poornima S
         strSQLstring += " ps_isa_ord_intf_LN B," & vbCrLf &
@@ -1771,6 +1772,7 @@ Module Module1
         dsEmail.Columns.Add("Ship To")
         dsEmail.Columns.Add("Delivery Date")
         dsEmail.Columns.Add("Supplier Name")
+        dsEmail.Columns.Add("Shipment Status")
         Try
             strSQLstring = "SELECT DESCR,SHIPTO_ID FROM PS_SHIPTO_TBL"
             dsShipTo = ORDBAccess.GetAdapter(strSQLstring, connectOR)
@@ -1946,6 +1948,12 @@ Module Module1
                         objStreamWriter.WriteLine()
                         connectOR.Close()
                         dr1.Item(21) = ""
+                    End Try
+
+                    Try
+                        dr1.Item(22) = OrderDetailDT.Rows(I).Item("SHIP_STATUS")
+                    Catch ex As Exception
+                        dr1.Item(22) = "-"
                     End Try
 
                     dsEmail.Rows.Add(dr1)
@@ -2606,7 +2614,8 @@ Module Module1
 
                                 strbodydet1 = strbodydet1 & "<p style='float: left;width: 100%;padding-left: 17px;margin:1px !important;'><span style='font-weight:bold;font-family:Calibri;'> &nbsp;&nbsp; Tracking Number:</span> <span style='font-family:Calibri;'>&nbsp;" & OrderDetails.Rows(K).Item("Tracking No") & "</span></p> "
                                 strbodydet1 = strbodydet1 & "<p style='float: left;width: 100%;padding-left: 17px;margin:1px !important;'><span style='font-weight:bold;font-family:Calibri;'> &nbsp;&nbsp; Delivery Date:</span> <span style='font-family:Calibri;'>&nbsp;" & OrderDetails.Rows(K).Item("Delivery Date") & "</span></p> "
-                                strbodydet1 = strbodydet1 & "<p style='float: left;width: 100%;padding-left: 17px;margin-top:1px !important;margin-bottom:20px'><span style='font-weight:bold;font-family:Calibri;'> &nbsp;&nbsp; Supplier Name:</span> <span style='font-family:Calibri;'>&nbsp;" & OrderDetails.Rows(K).Item("Supplier Name") & "</span></p> "
+                                strbodydet1 = strbodydet1 & "<p style='float: left;width: 100%;padding-left: 17px;margin:1px !important;'><span style='font-weight:bold;font-family:Calibri;'> &nbsp;&nbsp; Supplier Name:</span> <span style='font-family:Calibri;'>&nbsp;" & OrderDetails.Rows(K).Item("Supplier Name") & "</span></p> "
+                                strbodydet1 = strbodydet1 & "<p style='float: left;width: 100%;padding-left: 17px;margin-top:1px !important;margin-bottom:20px'><span style='font-weight:bold;font-family:Calibri;'> &nbsp;&nbsp; Shipment Status:</span> <span style='font-family:Calibri;'>&nbsp;" & OrderDetails.Rows(K).Item("Shipment Status") & "</span></p> "
 
                             Next
                         Catch ex As Exception
