@@ -2147,6 +2147,8 @@ Module Module1
                  " AND B.ISA_WORK_ORDER_NO = I.ISA_WORK_ORDER_NO " & vbCrLf &
                  " AND I.ISA_WO_STATUS <> 'COMPLETED')" & vbCrLf
 
+            strSQLstring += "AND G.ISA_LINE_STATUS IN ('CRE','QTW','QTC','QTS','CST','VND','APR','QTA','RCF','RCP','DLF','PKA','ASN')" & vbCrLf
+
             strSQLstring += " AND UPPER(B.ISA_EMPLOYEE_ID) = UPPER(D.ISA_EMPLOYEE_ID)" & vbCrLf &
                   " ORDER BY ORDER_NO, LINE_NBR, DTTM_STAMP" & vbCrLf
         Else
