@@ -4,10 +4,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Configuration;
-using System.Web.Http;
-using System.Web;
 using System.Net.Mail;
 using System.Data.OleDb;
 //using Spire.Xls;
@@ -15,301 +12,30 @@ using System.Data.OleDb;
 using System.Data;
 using System.Diagnostics;
 using System.Net;
-
+using Task = System.Threading.Tasks.Task;
+using System.Net.Http;
+using Newtonsoft.Json;
 namespace EmailToReceivingReports
 {
     class Program
     {
         static void Main(string[] args)
         {
-           BackOrderReportProcess();
-           StoreRoomOrderReportProcess();
-    
-        }
+            BackOrderReportProcess().Wait();
 
-        private static void StoreRoomOrderReportProcess()
+        }
+        public partial class ResponseBO
         {
-            string UN = ConfigurationManager.AppSettings["UserName"];
-            string Pwd = ConfigurationManager.AppSettings["Password"];
-            string OutlookURL = ConfigurationManager.AppSettings["OutlookURL"];
-            string ProcessedFolderName = ConfigurationManager.AppSettings["ProcessedFolderName"];
-            string DestinationPath = ConfigurationManager.AppSettings["DestinationPath"];
-            string EmailIDAccount = ConfigurationManager.AppSettings["MailboxEmailID"];
-            //string strBackOrderSubject1 = ConfigurationManager.AppSettings["FilterStoreRoomReport"];
-            //string strBackOrderSubject2 = ConfigurationManager.AppSettings["FilterStoreRoomReport2"];
-
-            string appPath = AppDomain.CurrentDomain.BaseDirectory;
-            appPath = appPath.Substring(0, appPath.LastIndexOf("bin"));
-
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-
-            StreamWriter log;
-            FileStream fileStream = null;
-            DirectoryInfo logDirInfo = null;
-            FileInfo logFileInfo;
-
-            try
-            {
-                ExchangeService service = new ExchangeService(ExchangeVersion.Exchange2007_SP1);
-                service.Credentials = new WebCredentials(UN, Pwd);
-                service.Url = new Uri(OutlookURL);
-
-                FindFoldersResults moveToFolder = null;
-                FolderView fv = new FolderView(999);
-                Mailbox mailBoxToProcess = new Mailbox(EmailIDAccount);
-                FolderId processedFolderID = null;
-
-                FolderId fidProcessedParent = new FolderId(WellKnownFolderName.Inbox, mailBoxToProcess);
-                ItemView view = new ItemView(int.MaxValue);
-
-                string logpath = string.Empty;
-
-                string logFilePath = appPath + @"Logs\StoreRoomOrderReportProcessLog-" + string.Format("{0:yyyy-MM-dd_hh-mm-ss-tt}", DateTime.Now) + "." + "txt";
-                logFileInfo = new FileInfo(logFilePath);
-                logDirInfo = new DirectoryInfo(logFileInfo.DirectoryName);
-
-                if (!logDirInfo.Exists) logDirInfo.Create();
-                if (!logFileInfo.Exists)
-                {
-                    fileStream = logFileInfo.Create();
-                }
-                else
-                {
-                    fileStream = new FileStream(logFilePath, FileMode.Append);
-                }
-                log = new StreamWriter(fileStream);
-                log.WriteLine("*************************************Logs(" + String.Format(DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss")) + ")***********************************");
-
-                //Get the filtered Email With Subject in Inbox
-                FindItemsResults<Item> findResults = service.FindItems(fidProcessedParent, SetFilter("SR"), view);
-                log.WriteLine("Total Emails with filtered subject name is " + findResults.Items.Count() + ".");
-
-                moveToFolder = service.FindFolders(fidProcessedParent, fv);
-                //Get the Processed Folder Id
-                foreach (Folder folder in moveToFolder.Folders)
-                {
-                    if (folder.DisplayName == ProcessedFolderName)
-                    {
-                        processedFolderID = folder.Id;
-                        break;
-                    }
-                }
-
-                int PreventDuplicationoffiles = 0;
-                foreach (Item item in findResults.Items)
-                {
-                    EmailMessage message = EmailMessage.Bind(service, item.Id, new PropertySet(BasePropertySet.FirstClassProperties, EmailMessageSchema.From, ItemSchema.Attachments));
-                    string body = message.Body.Text;
-                    string from_name = message.From.ToString();
-                    string from = message.From.Address.ToString();
-                    string subject = message.Subject.ToString();
-                    int attchcount = item.Attachments.Count();
-                    int attachmentMoved = 0;
-                    Boolean strrslt = false;
-                    foreach (Microsoft.Exchange.WebServices.Data.Attachment attch in message.Attachments)
-                    {
-                        PreventDuplicationoffiles = PreventDuplicationoffiles + 1;
-                        FileAttachment fileAttachment = attch as FileAttachment;
-                        string fileName = "";
-                        fileName = fileAttachment.Name;
-                        int index = fileName.LastIndexOf('.');
-                        string fileExtension = fileName.Substring(index + 1);
-                        string csvfilename = fileAttachment.Name.Substring(0, fileAttachment.Name.LastIndexOf("."));
-
-                        if (fileExtension == "xlsx" || fileExtension == "xls")
-                        {
-                            //stored the Attachment file in the AttachmentFile folder
-                            try
-                            {
-                                csvfilename = "Receipts_" + String.Format("" + DateTime.Now.ToString("MMddyyyy_hhmmss")).ToString() + "" + PreventDuplicationoffiles + ".csv";
-                                log.WriteLine("");
-                                log.WriteLine("Begin Processing the Email from : " + from_name + " for File name " + fileAttachment.Name + "");
-                                fileAttachment.Load(appPath + @"AttachmentFile\" + fileAttachment.Name);
-                                if (System.IO.File.Exists(appPath + @"AttachmentFile\" + fileAttachment.Name))
-                                {
-                                    log.WriteLine("Downloaded the attachment file " + fileAttachment.Name);
-                                }
-                                else
-                                {
-                                    log.WriteLine("Error in Downloading the attachment file " + fileAttachment.Name + " in attachment folder.");
-                                    log.WriteLine("-------------------------------------------------------------");
-                                    break;
-                                }
-
-                                //Inserting into the Tables
-                                DataTable dt = new DataTable();
-                                dt = ReadExcel(appPath + @"AttachmentFile\" + fileAttachment.Name, log);
-                                if (dt != null)
-                                {
-                                    if (dt.Rows.Count > 0)
-                                    {
-                                        //Converting into CSV file
-                                        //StreamWriter CSV_log;
-                                        //FileStream CSV_fileStream = null;
-                                        //DirectoryInfo CSV_logDirInfo = null;
-                                        //FileInfo CSV_logFileInfo;
-
-                                        //string CSV_FilePath = appPath + @"ConvertedFile\" + csvfilename;
-                                        //CSV_logFileInfo = new FileInfo(CSV_FilePath);
-                                        //CSV_logDirInfo = new DirectoryInfo(CSV_logFileInfo.DirectoryName);
-
-                                        //if (!CSV_logDirInfo.Exists) CSV_logDirInfo.Create();
-                                        //if (!CSV_logDirInfo.Exists)
-                                        //{
-                                        //    CSV_fileStream = CSV_logFileInfo.Create();
-                                        //}
-                                        //else
-                                        //{
-                                        //    CSV_fileStream = new FileStream(CSV_FilePath, FileMode.Append);
-                                        //}
-                                        //CSV_log = new StreamWriter(CSV_fileStream);
-
-                                        //string strContents = string.Empty;
-                                        //strContents = DataTableToCSV(dt, '^');
-
-                                        //CSV_log.WriteLine(strContents);
-                                        //CSV_log.Close();
-
-                                        //if (System.IO.File.Exists(appPath + @"ConvertedFile\" + csvfilename))
-                                        //{
-                                        //    log.WriteLine("Converted the attachment file into " + csvfilename);
-                                        //}
-                                        //else
-                                        //{
-                                        //    log.WriteLine("Error in Converting the attachment file into " + csvfilename);
-                                        //    log.WriteLine("-------------------------------------------------------------");
-                                        //    break;
-                                        //}
-
-                                        //Inserting into DB
-                                        
-                                        strrslt = InsertStoreRoomOrderReport(dt);
-                                        if (strrslt)
-                                        {
-                                            log.WriteLine("Store room order report records inserted into the receipt log table.");
-                                        }
-                                        else
-                                        {
-                                            log.WriteLine("Error while inserting the records into the store room order report log table.");
-                                        }
-                                    }
-                                    else
-                                    {
-                                        log.WriteLine("No records are availiable in the Attachment file. So we are moving this email to " + ProcessedFolderName + " folder.");
-                                        attachmentMoved = attachmentMoved + 1;
-                                        //Delete the Attachment file in AttachmentFile folder
-                                        System.IO.DirectoryInfo Attchments_Folder = new DirectoryInfo(appPath + @"AttachmentFile");
-                                        foreach (FileInfo file in Attchments_Folder.GetFiles())
-                                        {
-                                            file.Delete();
-                                        }
-                                        //System.IO.File.Delete(appPath + @"AttachmentFile\" + fileAttachment.Name);
-                                        log.WriteLine("Deleted the Attachment file from the AttachmentFile folder even when the attachment has no datas.");
-                                        break;
-                                    }
-                                }
-                                else
-                                {
-                                    log.WriteLine("Error in reading the attachment file records.");
-                                    break;
-                                }
-
-                                //Move to the destination VM 
-                                //System.IO.File.Copy(appPath + @"ConvertedFile\" + csvfilename, DestinationPath + csvfilename);
-                                //if (System.IO.File.Exists(DestinationPath + csvfilename))
-                                //{
-                                //    log.WriteLine("Moved the " + csvfilename + " file to destination VM");
-                                //}
-                                //else
-                                //{
-                                //    log.WriteLine("Error in the Moving the " + csvfilename + " file to destination VM");
-                                //    log.WriteLine("-------------------------------------------------------------");
-                                //    break;
-                                //}
-
-                                //Delete the Attachment file in AttachmentFile folder
-                                System.IO.DirectoryInfo Attchment_Folder = new DirectoryInfo(appPath + @"AttachmentFile");
-                                foreach (FileInfo file in Attchment_Folder.GetFiles())
-                                {
-                                    file.Delete();
-                                }
-                                //System.IO.File.Delete(appPath + @"AttachmentFile\" + fileAttachment.Name);
-                                log.WriteLine("Deleted the Attachment file from the AttachmentFile folder");
-
-                                //Delete the Attachment file in ConvertedFile folder
-                                System.IO.DirectoryInfo Converted_Folder = new DirectoryInfo(appPath + @"ConvertedFile");
-                                foreach (FileInfo files in Converted_Folder.GetFiles())
-                                {
-                                    files.Delete();
-                                }
-                                //System.IO.File.Delete(appPath + @"ConvertedFile\" + csvfilename);
-                                log.WriteLine("Deleted the Converted file from the ConvertedFile folder");
-                                log.WriteLine("Email and attachments processed succeffully");
-                                log.WriteLine("");
-                                attachmentMoved = attachmentMoved + 1;
-                            }
-                            catch (Exception ex)
-                            {
-                                SendErrorEmail(ex, ex.Message, Convert.ToString(ex.InnerException), "Main Method");
-                                log.WriteLine("ERROR: " + ex.Message + ". Inner Exception : " + Convert.ToString(ex.InnerException));
-                                log.WriteLine("-------------------------------------------------------------");
-                                continue;
-                            }
-                        }
-                    }
-
-                    String DbUrl = ConfigurationManager.ConnectionStrings["ConString"].ConnectionString;
-                    DbUrl = DbUrl.Substring(DbUrl.Length - 4).ToUpper();
-                    //Email moved to Processed folder
-                    if (attachmentMoved > 0)
-                    {
-                        if (strrslt)
-                        {
-
-                            if (DbUrl == "PROD" | DbUrl == "SPRD" )
-                            {
-                                item.Move(processedFolderID);
-                                log.WriteLine("Moved the email to " + ProcessedFolderName + " folder.");
-                                log.WriteLine("-------------------------------------------------------------");
-                            }
-                            else
-                            {
-                                log.WriteLine("Test DB Email not moved Processd folder.");
-                                log.WriteLine("-------------------------------------------------------------");
-                            }
-                                
-                        }
-                        else {
-                            log.WriteLine("Error in email process.");
-                            log.WriteLine("-------------------------------------------------------------");
-                        }
-                       
-                    }
-                    else
-                    {
-                        log.WriteLine("");
-                        log.WriteLine("Email not moved to " + ProcessedFolderName + " folder since there is no attahments availible or attahcments not moved to destination.");
-                        log.WriteLine("-------------------------------------------------------------");
-                    }
-                }
-                log.WriteLine("-------------------------------------------------------------");
-                log.Close();
-            }
-            catch (Exception ex)
-            {
-                SendErrorEmail(ex, ex.Message, Convert.ToString(ex.InnerException), "Main");
-            }
+            public string access_token { get; set; }
         }
-
-        private static void BackOrderReportProcess() {
-            string UN = ConfigurationManager.AppSettings["UserName"];
-            string Pwd = ConfigurationManager.AppSettings["Password"];
+        //Per Ben-Commenting the StoreRoomOrderReport process only backorder is been used now
+        //Madhu-INC0015039-OAUTH Change for Abbvie EmailToReceivingReports utility
+        public async static Task BackOrderReportProcess()
+        { 
             string OutlookURL = ConfigurationManager.AppSettings["OutlookURL"];
             string ProcessedFolderName = ConfigurationManager.AppSettings["ProcessedFolderName"];
             string DestinationPath = ConfigurationManager.AppSettings["DestinationPath"];
             string EmailIDAccount = ConfigurationManager.AppSettings["MailboxEmailID"];
-            //string strBackOrderSubject = ConfigurationManager.AppSettings["FilterBackOrderReport"];
-            //string strBackOrderSubject2 = ConfigurationManager.AppSettings["FilterBackOrderReport2"];
 
             string appPath = AppDomain.CurrentDomain.BaseDirectory;
             appPath = appPath.Substring(0, appPath.LastIndexOf("bin"));
@@ -323,17 +49,6 @@ namespace EmailToReceivingReports
 
             try
             {
-                ExchangeService service = new ExchangeService(ExchangeVersion.Exchange2007_SP1);
-                service.Credentials = new WebCredentials(UN, Pwd);
-                service.Url = new Uri(OutlookURL);
-
-                FindFoldersResults moveToFolder = null;
-                FolderView fv = new FolderView(999);
-                Mailbox mailBoxToProcess = new Mailbox(EmailIDAccount);
-                FolderId processedFolderID = null;
-
-                FolderId fidProcessedParent = new FolderId(WellKnownFolderName.Inbox, mailBoxToProcess);
-                ItemView view = new ItemView(int.MaxValue);
 
                 string logpath = string.Empty;
 
@@ -352,9 +67,52 @@ namespace EmailToReceivingReports
                 }
                 log = new StreamWriter(fileStream);
                 log.WriteLine("*************************************Logs(" + String.Format(DateTime.Now.ToString("MM/dd/yyyy hh:mm:ss")) + ")***********************************");
+                var ewsScopes = new string[] { "https://outlook.office365.com/.default" };
+                string tenentID = ConfigurationManager.AppSettings["tenantId"];
+                var token_url = $"https://login.microsoftonline.com/" + tenentID + "/oauth2/v2.0/token";
+                var data = new Dictionary<string, string>
+                {
+                    { "grant_type", "client_credentials" },
+                    {"scope", ewsScopes[0] },
+                    {"client_id", ConfigurationManager.AppSettings["appId"] },
+                    {"client_secret", ConfigurationManager.AppSettings["clientSecret"] }
+
+
+
+                };
+
+
+
+                HttpClient client = new HttpClient();
+                var authResult = await client.PostAsync(token_url, new FormUrlEncodedContent(data));
+                string accestoken = await authResult.Content.ReadAsStringAsync();
+                ResponseBO objResponseBO = JsonConvert.DeserializeObject<ResponseBO>(accestoken);
+                ExchangeService service = new ExchangeService();
+                service.Url = new Uri(OutlookURL);
+
+
+
+                log.WriteLine("Access token has been fetched. Token: " + objResponseBO.access_token);
+
+
+
+                service.Credentials = new OAuthCredentials(objResponseBO.access_token);
+                service.ImpersonatedUserId =
+                    new ImpersonatedUserId(ConnectingIdType.SmtpAddress, EmailIDAccount);
+                service.HttpHeaders.Add("X-AnchorMailbox", EmailIDAccount);
+
+
+
+                FindFoldersResults moveToFolder = null;
+                FolderView fv = new FolderView(999);
+                Mailbox mailBoxToProcess = new Mailbox(EmailIDAccount);
+                FolderId processedFolderID = null;
+
+                FolderId fidProcessedParent = new FolderId(WellKnownFolderName.Inbox, mailBoxToProcess);
+                ItemView view = new ItemView(int.MaxValue);
 
                 //Get the filtered Email With Subject in Inbox
-                FindItemsResults<Item> findResults = service.FindItems(fidProcessedParent, SetFilter("BO"), view);
+                FindItemsResults<Item> findResults = service.FindItems(fidProcessedParent, SetFilter(), view);
                 log.WriteLine("Total Emails with filtered subject name is " + findResults.Items.Count() + ".");
 
                 moveToFolder = service.FindFolders(fidProcessedParent, fv);
@@ -416,44 +174,6 @@ namespace EmailToReceivingReports
                                 {
                                     if (dt.Rows.Count > 0)
                                     {
-                                        //Converting into CSV file
-                                        //StreamWriter CSV_log;
-                                        //FileStream CSV_fileStream = null;
-                                        //DirectoryInfo CSV_logDirInfo = null;
-                                        //FileInfo CSV_logFileInfo;
-
-                                        //string CSV_FilePath = appPath + @"ConvertedFile\" + csvfilename;
-                                        //CSV_logFileInfo = new FileInfo(CSV_FilePath);
-                                        //CSV_logDirInfo = new DirectoryInfo(CSV_logFileInfo.DirectoryName);
-
-                                        //if (!CSV_logDirInfo.Exists) CSV_logDirInfo.Create();
-                                        //if (!CSV_logDirInfo.Exists)
-                                        //{
-                                        //    CSV_fileStream = CSV_logFileInfo.Create();
-                                        //}
-                                        //else
-                                        //{
-                                        //    CSV_fileStream = new FileStream(CSV_FilePath, FileMode.Append);
-                                        //}
-                                        //CSV_log = new StreamWriter(CSV_fileStream);
-
-                                        //string strContents = string.Empty;
-                                        //strContents = DataTableToCSV(dt, '^');
-
-                                        //CSV_log.WriteLine(strContents);
-                                        //CSV_log.Close();
-
-                                        //if (System.IO.File.Exists(appPath + @"ConvertedFile\" + csvfilename))
-                                        //{
-                                        //    log.WriteLine("Converted the attachment file into " + csvfilename);
-                                        //}
-                                        //else
-                                        //{
-                                        //    log.WriteLine("Error in Converting the attachment file into " + csvfilename);
-                                        //    log.WriteLine("-------------------------------------------------------------");
-                                        //    break;
-                                        //}
-
                                         //Inserting into DB
                                        
                                         strrslt = InsertBackOrderReport(dt);
@@ -547,7 +267,8 @@ namespace EmailToReceivingReports
                             }
                             else
                             {
-                                log.WriteLine("Test DB Email not moved Processd folder.");
+                                item.Move(processedFolderID);
+                                log.WriteLine("Test DB Email  moved Processd folder.");
                                 log.WriteLine("-------------------------------------------------------------");
                             }
 
@@ -574,40 +295,14 @@ namespace EmailToReceivingReports
             }
         }
 
-        private static SearchFilter SetFilter(string strSujType)
+
+
+
+        private static SearchFilter SetFilter()
         {
+            string FilterEmailWithSubject = ConfigurationManager.AppSettings["EmailSubject"];
             List<SearchFilter> searchFilterCollection = new List<SearchFilter>();
-            //SR - Store Room Subject Type
-            if (strSujType == "SR")
-            {
-                searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, "Report: STOREROOM ORDER RECOMMENDATIONS TO BE PROCESSED"));
-                searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, "Report: STOREROOM RECOMMENDATIONS TO BE PROCESSED"));
-                searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, "FW: Report: STOREROOM ORDER RECOMMENDATIONS TO BE PROCESSED"));
-                searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, "FW: Report: STOREROOM RECOMMENDATIONS TO BE PROCESSED"));
-            } else if (strSujType == "BO") {
-                //BO - Back Order Subject Type
-                searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, "Report: Items Backordered by Storeroom - SDI"));
-                searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, "Report: Items Backordered by Storeroom-SDI"));
-                searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, "FW: Report: Items Backordered by Storeroom - SDI"));
-                searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, "FW: Report: Items Backordered by Storeroom-SDI"));
-                searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, "Items Backordered by AbbVie Storeroom"));
-                searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, "FW: Items Backordered by AbbVie Storeroom"));
-                searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, "Report: Items Backordered by Storeroom"));
-                searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, "FW: Report: Items Backordered by Storeroom"));
-                //searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.ConversationTopic , "FW: Report: Items Backordered by Storeroom"));
-            }
-            ////string FilterEmailWithSubject = strSubject1;[WARNING: UNSCANNABLE EXTRACTION FAILED]Report: Items Backordered by Storeroom - SDI
-
-
-
-            //searchFilterCollection.Add(new SearchFilter.SearchFilterCollection(LogicalOperator.Or, new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, strSubject1)));
-            //searchFilterCollection.Add(new SearchFilter.SearchFilterCollection(LogicalOperator.Or, new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, strSubject2)));
-            //searchFilterCollection.Add(new SearchFilter.Exists(strSubject2));
-            //searchFilterCollection.Add(new SearchFilter.SearchFilterCollection(LogicalOperator.And, new SearchFilter.IsEqualTo(EmailMessageSchema.HasAttachments, true)));
-
-            //searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.HasAttachments, true));
-            //searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.IsRead , false));
-            //searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, FilterEmailWithSubject.ToLower()));         
+            searchFilterCollection.Add(new SearchFilter.IsEqualTo(EmailMessageSchema.Subject, FilterEmailWithSubject));
             SearchFilter searchfiltr = new SearchFilter.SearchFilterCollection(LogicalOperator.Or, searchFilterCollection.ToArray());
             return searchfiltr;
         }
@@ -676,138 +371,7 @@ namespace EmailToReceivingReports
             return sb.ToString();
         }
 
-        private static Boolean InsertStoreRoomOrderReport(DataTable dt)
-        {
-            Boolean reslt = false;
-            try
-            {
-                string PO = string.Empty;
-                string POLine = string.Empty;
-                string RequestedBy = string.Empty;
-                string Item = string.Empty;
-                string Description = string.Empty;
-                string Manufacturer = string.Empty;
-                string Model = string.Empty;
-                string UnitCost = string.Empty;
-                string PODescription = string.Empty;
-                string POType = string.Empty;
-                string Status = string.Empty;
-                string StatusDate = string.Empty;
-                string company = string.Empty;
-              
-              
-
-                int rowsaffected;
-                string connectionString = ConfigurationManager.ConnectionStrings["ConString"].ConnectionString;
-                OleDbConnection cn = new OleDbConnection(connectionString);
-                OleDbCommand com = new OleDbCommand();
-                cn.Open();
-
-                //deleting unwanted rows
-                dt.Rows[0].Delete();
-                dt.Rows[1].Delete();
-                dt.Rows[2].Delete();
-                //dt.Columns[0].Delete();
-                dt.Columns.RemoveAt(0); 
-               // dt.Rows[3].Delet();
-                dt.AcceptChanges();
-
-                string ParentOrder = "";
-
-                Boolean isExit = false;
-
-                foreach (DataRow rw in dt.Rows)
-                {
-                    string currentOrder = "";
-                    string ReqBy = "";
-                    string DlieryPoint = "";
-                    string DlieryPointEnd = "";
-                    if (!isExit)
-                    {
-
-                        if (rw["F2"] != System.DBNull.Value)
-                        {
-                            //DlieryPoint = rw["STOREROOM ORDER LINE ITEM QUEUE"].ToString().Trim();
-                            //currentOrder = rw["F2"].ToString().Trim();
-                            ReqBy = rw["F3"].ToString().Trim();
-                            PO =  rw["F2"].ToString().Trim();
-                            //if (ReqBy == "Summary")
-                            //{
-                            //    isExit = true;
-                            //    currentOrder = "";
-                            //    PO = "";
-                            //}
-                            //else if (currentOrder == "")
-                            //{
-                            //    currentOrder = ParentOrder;
-                            //    PO = currentOrder;
-                            //}
-                            //else if (currentOrder == ParentOrder)
-                            //{
-                            //    PO = "";
-                            //}
-                            //else
-                            //{
-                            //    ParentOrder = currentOrder;
-                            //    PO = currentOrder;
-                            //}
-                        }
-                        else
-                        {
-                            //PO = ParentOrder;
-                        }
-
-
-                        if (PO != "" && PO.Length == 8)
-                        {
-                            // StoreRoom = rw["Stockroom Backorder Report"].ToString();
-                            POLine = rw["F4"].ToString();
-                            Item = rw["F5"].ToString();
-                            Description = rw["F12"].ToString();
-
-                            if (Description.Contains("'"))
-                            {
-                                Description = Description.Replace("'", "''");
-                            }
-                            RequestedBy = rw["F3"].ToString();                        
-                            Manufacturer = rw["F9"].ToString();
-                            Model = rw["F10"].ToString();
-                            UnitCost = rw["F11"].ToString();
-                            PODescription = rw["F13"].ToString();
-
-                            if (PODescription.Contains("'"))
-                            {
-                                PODescription = PODescription.Replace("'", "''");
-                            }
-
-                            POType = rw["F14"].ToString();
-                            Status = rw["F15"].ToString(); // Convert.ToDateTime(rw["Ordered Date"]).ToString("MM/dd/yyyy");
-                            StatusDate = Convert.ToDateTime(rw["F16"]).ToString("MM/dd/yyyy"); ;
-                            company = rw["F17"].ToString();
-
-
-                            string strSQLstring = "INSERT INTO SDIX_STORROOM_ORD_REPORT_LOG (PO_ID,PO_LINE, REQUESTED_BY , ITEM_ID,ITEM_DESC ,MFG_ID ,ITEM_MODEL ,UNIT_COST,PO_DESC ,PO_TYPE,STATUS,STATUS_DATE , COMPANY_ID,LASTUPDDTTM ) " + System.Environment.NewLine +
-                                              "VALUES('" + PO + "', " + POLine + ", '" + RequestedBy + "', '" + Item + "', '" + Description + "','" + Manufacturer + "', '" + Model + "', '" + UnitCost + "', '" + PODescription + "', '" + POType + "','" + Status + "',TO_DATE('" + StatusDate + "', 'mm/dd/yyyy'),'" + company + "',SYSDATE)";
-
-                            com = new OleDbCommand(strSQLstring, cn);
-                            rowsaffected = com.ExecuteNonQuery();
-                        }
-
-                    }
-
-
-                }
-                cn.Close();
-                cn.Dispose();
-                reslt = true;
-
-                return reslt;
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
-        }
+        //Madhu-INC0015039-OAUTH Change for Abbvie EmailToReceivingReports utility
 
         private static Boolean InsertBackOrderReport(DataTable dt)
         {
@@ -817,18 +381,12 @@ namespace EmailToReceivingReports
                 string StoreRoom = string.Empty;
                 string StockCatagory = string.Empty;
                 string Item = string.Empty;
+                string LastIssueDate = String.Empty;
                 string ItemDescription = string.Empty;
                 string IssueUnit = string.Empty;
                 string CurrentBalance = string.Empty;
                 string HardReservedQuantity = string.Empty;
-                string Model = string.Empty;
-                string PackSize = string.Empty;
-                string PrimaryVendor = string.Empty;
-                string Buyer = string.Empty;
-                //
-               // string Transac_Type = string.Empty;
-
-
+                string strSQLstring = string.Empty;
                 int rowsaffected;
                 string connectionString = ConfigurationManager.ConnectionStrings["ConString"].ConnectionString;
                 OleDbConnection cn = new OleDbConnection(connectionString);
@@ -840,10 +398,10 @@ namespace EmailToReceivingReports
                    dt.Rows[1].Delete();
                    dt.Rows[2].Delete();
                    dt.Rows[3].Delete();
-                   dt.AcceptChanges();
+                   dt.Rows[4].Delete();
+                  dt.AcceptChanges();
 
                    string ParentOrder = "";
-                  
                    Boolean isExit = false;
 
                 foreach (DataRow rw in dt.Rows)
@@ -852,9 +410,9 @@ namespace EmailToReceivingReports
                     if (!isExit)
                     {
 
-                        if (rw["Stockroom Backorder Report"] != System.DBNull.Value)
+                        if (rw["Stockroom Backorder Report (RPA)"] != System.DBNull.Value)
                         {
-                            currentOrder = rw["Stockroom Backorder Report"].ToString().Trim();
+                            currentOrder = rw["Stockroom Backorder Report (RPA)"].ToString().Trim();
                             if (currentOrder == "Summary") {
                                 isExit = true;
                                 currentOrder = "";
@@ -882,24 +440,138 @@ namespace EmailToReceivingReports
 
                         if (StoreRoom != "")
                         {
-                           // StoreRoom = rw["Stockroom Backorder Report"].ToString();
-                            StockCatagory = rw["F2"].ToString();
-                            Item = rw["F3"].ToString();
-                            ItemDescription = rw["F5"].ToString();
-
-                            if (ItemDescription.Contains("'")) {
-                                ItemDescription = ItemDescription.Replace("'", "''");
+                            //Validate the stock category
+                            try
+                            {
+                                if (rw["F2"] != System.DBNull.Value)
+                                {
+                                    StockCatagory = rw["F2"].ToString();
+                                }
+                                else
+                                {
+                                    StockCatagory = " ";
+                                }
                             }
-                            IssueUnit = rw["F6"].ToString();
-                            CurrentBalance = rw["F7"].ToString();
-                            HardReservedQuantity = rw["F8"].ToString();
-                            Model = rw["F9"].ToString();
-                            PackSize = rw["F10"].ToString();
-                            PrimaryVendor = rw["F11"].ToString();
-                            Buyer = rw["F12"].ToString();
+                            catch (Exception ex)
+                            {
 
-                            string strSQLstring = "INSERT INTO SDIX_BACKORDER_REPORT_LOG (STORE_ROOM,STOCK_TYPE,ITEM_ID,ITEM_DESC,ISSUE_UNIT,QUTY_BAL,QUTY_RESERV,ITEM_MODEL,PACK_SIZE,PRIMARY_VENDR,BUYER,LASTUPDDTTM ) " + System.Environment.NewLine +
-                                              "VALUES('" + StoreRoom + "', '" + StockCatagory + "', " + Item + ", '" + ItemDescription + "', '" + IssueUnit + "','" + CurrentBalance + "', " + HardReservedQuantity + ", '" + Model + "', '" + PackSize + "', '" + PrimaryVendor + "','" + Buyer + "',SYSDATE)";
+                            }
+                            //Validate the Item
+                            try
+                            {
+                                if (rw["F3"] != System.DBNull.Value)
+                                {
+                                    Item = rw["F3"].ToString();
+                                }
+                                else
+                                {
+                                    Item = " ";
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+
+                            }
+                            //Validate the Last Issuedate
+                            try
+                            {
+                                if (rw["F4"] != System.DBNull.Value)
+                                {
+                                    LastIssueDate = rw["F4"].ToString();
+                                }
+                                else
+                                {
+                                    LastIssueDate = "";
+                                }
+
+                            }
+                            catch (Exception ex)
+                            {
+
+                            }
+                            //Validate the Item description
+                            try
+                            {
+                                if (rw["F5"] != System.DBNull.Value)
+                                {
+                                    ItemDescription = rw["F5"].ToString();
+                                    if (ItemDescription.Contains("'"))
+                                    {
+                                        ItemDescription = ItemDescription.Replace("'", "''");
+                                    }
+                                }
+                                else
+                                {
+                                    ItemDescription = " ";
+                                }
+
+
+                            }
+                            catch (Exception ex)
+                            {
+
+                            }
+                            //Validate the Issue unit
+                            try
+                            {
+                                if (rw["F6"] != System.DBNull.Value)
+                                {
+                                    IssueUnit = rw["F6"].ToString();
+                                }
+                                else
+                                {
+                                    IssueUnit = " ";
+                                }
+
+                            }
+                            catch (Exception ex)
+                            {
+
+                            }
+                            //Validate the Hardreserved quantity
+
+                            try
+                            {
+                                if (rw["F7"] != System.DBNull.Value)
+                                {
+                                    HardReservedQuantity = rw["F7"].ToString();
+                                }
+                                else
+                                {
+                                    HardReservedQuantity = " ";
+                                }
+
+                            }
+                            catch (Exception ex)
+                            {
+
+                            }
+                            //Inserting into DB
+
+
+                            strSQLstring = "INSERT INTO SDIX_BACKORDER_REPORT_LOG (STORE_ROOM,STOCK_TYPE,ITEM_ID,ITEM_DESC,ISSUE_UNIT,QUTY_RESERV,LASTUPDDTTM"; 
+                              if (LastIssueDate != "")
+                            {
+                                strSQLstring = strSQLstring + ",LASTISSUE_DATE ) " + System.Environment.NewLine; 
+
+                            }
+                            else
+                            {
+                                strSQLstring = strSQLstring + ") " + System.Environment.NewLine;
+
+                            }
+                            if (LastIssueDate != "")
+                            {
+                                strSQLstring= strSQLstring +   "VALUES('" + StoreRoom + "', '" + StockCatagory + "', '" + Item + "', '" + ItemDescription + "', '" + IssueUnit + "','" + HardReservedQuantity + "',SYSDATE,TO_DATE('" + LastIssueDate + "', 'MM/DD/YYYY HH:MI:SS AM'))";
+
+                            }
+                            else
+                            {
+                                strSQLstring = strSQLstring + "VALUES('" + StoreRoom + "', '" + StockCatagory + "', '" + Item + "', '" + ItemDescription + "', '" + IssueUnit + "','" + HardReservedQuantity + "',SYSDATE)";
+
+                            }
+
+
 
                             com = new OleDbCommand(strSQLstring, cn);
                             rowsaffected = com.ExecuteNonQuery();
