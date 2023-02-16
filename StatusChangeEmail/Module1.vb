@@ -166,10 +166,10 @@ Module Module1
                     buildstatchgout = checkAllStatusWAL(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
                 End If
                 Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
-                objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
-                buildstatchgout = checkAllStatusNew(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                    objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
+                    objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
+                    objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                    buildstatchgout = checkAllStatusNew(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
 
                 If buildstatchgout = True Then
                     bolErrorSomeWhere = True
@@ -2682,8 +2682,8 @@ Module Module1
                 " B.ISA_EMPLOYEE_ID AS EMPLID, B.ISA_LINE_STATUS as ORDER_TYPE,B.OPRID_ENTERED_BY," & vbCrLf &
                 " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, " & vbCrLf   '  & _
 
-
-            strSQLstring += "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','01','QTW','02','QTC','03','QTS','04','CST','05','VND','06','APR','07','QTA','08','QTR','09','RFA','10','RFR','11','RFC','12','RCF','13','RCP','14','CNC','15','DLF','16') AS OLD_ORDER_STATUS," & vbCrLf &
+            'Mythili - WAL-824 Need Service Channel API change to map PUR (Ready for Pickup) from In Progress / Parts on Order to new Service Channel Extended Status “In Progress / Parts Ready for Pickup
+            strSQLstring += "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','01','QTW','02','QTC','03','QTS','04','CST','05','VND','06','APR','07','QTA','08','QTR','09','RFA','10','RFR','11','RFC','12','RCF','13','RCP','14','CNC','15','DLF','16','PUR','17') AS OLD_ORDER_STATUS," & vbCrLf &
                      " (SELECT E.XLATLONGNAME" & vbCrLf &
                                     " FROM XLATTABLE E" & vbCrLf &
                                     " WHERE E.EFFDT =" & vbCrLf &
@@ -2762,7 +2762,8 @@ Module Module1
                                             objWalmartSC.WriteLine("Order No: " + Convert.ToString(OrderNo) + "Status" + Convert.ToString(OrderStatusDetail.statusDesc))
                                             If OrderStatusDetail.message = "Success" Then
                                                 'WAL-622: SC Updates for Canceled Orders And Partial Deliveries 
-                                                If OrderStatusDetail.statusDesc = "Delivered" Or OrderStatusDetail.statusDesc = "En Route from Vendor" Or OrderStatusDetail.statusDesc = "Partially Delivered" Or OrderStatusDetail.statusDesc = "Cancelled" Then
+                                                'Mythili - WAL-824 Need Service Channel API change to map PUR (Ready for Pickup) from In Progress / Parts on Order to new Service Channel Extended Status “In Progress / Parts Ready for Pickup
+                                                If OrderStatusDetail.statusDesc = "Delivered" Or OrderStatusDetail.statusDesc = "En Route from Vendor" Or OrderStatusDetail.statusDesc = "Partially Delivered" Or OrderStatusDetail.statusDesc = "Cancelled" Or OrderStatusDetail.statusDesc = "Ready for Pickup" Then
                                                     Dim CheckWOStatus As String = CheckWorkOrderStatus(WorkOrder, THIRDPARTY_COMP_ID)
                                                     objWalmartSC.WriteLine("CheckWOStatus: " + Convert.ToString(CheckWOStatus))
                                                     If CheckWOStatus.ToUpper() <> "COMPLETED" And CheckWOStatus <> "Failed" Then
@@ -2775,6 +2776,8 @@ Module Module1
                                                             WOStatus = "PARTIAL PARTS DELIVERED"
                                                         ElseIf OrderStatusDetail.statusDesc = "Cancelled" Then
                                                             WOStatus = "INCOMPLETE"
+                                                        ElseIf OrderStatusDetail.statusDesc = "Ready for Pickup" Then
+                                                            WOStatus = "PARTS READY FOR PICKUP"
                                                         End If
                                                         If CheckWOStatus <> WOStatus Then
                                                             Dim PurchaseNo As String = PurchaseOrderNo(WorkOrder, THIRDPARTY_COMP_ID)
