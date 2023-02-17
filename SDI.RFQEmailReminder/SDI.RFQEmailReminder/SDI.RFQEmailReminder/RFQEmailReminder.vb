@@ -542,8 +542,9 @@ Module RFQEmailReminder
             Mailer.Subject = "<<TEST SITE>> SDiExchange - Customer Approval Required For Order " & orderNum
         Else
             Mailer.To = empEmail1
+            'INC0015228 Send email for requestor along with budgetory approver[Change By vishalini]
             If apprEmail <> " " Then
-                Mailer.To = apprEmail
+                Mailer.To = empEmail1 + ";" + apprEmail
             End If
 
             Mailer.Bcc = "WebDev@sdi.com"
