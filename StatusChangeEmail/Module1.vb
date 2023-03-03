@@ -166,10 +166,10 @@ Module Module1
                     buildstatchgout = checkAllStatusWAL(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
                 End If
                 Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                    objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                    objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
-                    objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
-                    buildstatchgout = checkAllStatusNew(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
+                objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
+                objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                buildstatchgout = checkAllStatusNew(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
 
                 If buildstatchgout = True Then
                     bolErrorSomeWhere = True
@@ -1648,7 +1648,7 @@ Module Module1
 
         '4/26/2022 Walmart order's status change emails alone won't be sent based on selected email privileges in user profile, removed that condition from below query - Poornima S
 
-        strSQLstring = "SELECT distinct G.BUSINESS_UNIT_OM, G.BUSINESS_UNIT_OM AS G_BUS_UNIT, D.BUSINESS_UNIT, D.ISA_EMPLOYEE_ID, A.ORDER_NO,B.ISA_WORK_ORDER_NO As WORK_ORDER_NO, B.ISA_INTFC_LN AS line_nbr," & vbCrLf &
+        strSQLstring = "( SELECT distinct G.BUSINESS_UNIT_OM, G.BUSINESS_UNIT_OM AS G_BUS_UNIT, D.BUSINESS_UNIT, D.ISA_EMPLOYEE_ID, A.ORDER_NO,B.ISA_WORK_ORDER_NO As WORK_ORDER_NO, B.ISA_INTFC_LN AS line_nbr," & vbCrLf &
                  " B.ISA_EMPLOYEE_ID AS EMPLID, B.ISA_LINE_STATUS as ORDER_TYPE,B.OPRID_ENTERED_BY, B.SHIPTO_ID as SHIPTO,B.ISA_USER2 as STORE," & vbCrLf &
                  " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, B.ISA_PRIORITY_FLAG As IsPriority, B.ISA_REQUIRED_BY_DT,B.VENDOR_ID," & vbCrLf &
                  "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS," & vbCrLf
@@ -1696,11 +1696,64 @@ Module Module1
                   "AND   B.ISA_WORK_ORDER_NO = I.ISA_WORK_ORDER_NO " & vbCrLf &
                   "AND   I.ISA_WO_STATUS <> 'COMPLETED')" & vbCrLf
 
-        strSQLstring += "AND G.ISA_LINE_STATUS IN ('CRE','QTW','QTC','QTS','CST','VND','APR','QTA','RCF','RCP','DLF','PKA','ASN')" & vbCrLf
+        strSQLstring += " AND B.ISA_LINE_STATUS IN ('CRE','QTW','QTC','QTS','CST','VND','APR','QTA','RCF','RCP','DLF','PKA','ASN')" & vbCrLf 'WW-644_PC_SUMMARYMAIL_02 (it should send mail for this status so changed  'G' to 'B'-> from PS_ISA_ORD_INTF_LN table ) (3/3/2023)-Aparna
 
-        strSQLstring += " AND UPPER(B.ISA_EMPLOYEE_ID) = UPPER(D.ISA_EMPLOYEE_ID)" & vbCrLf &
+        strSQLstring += " AND UPPER(B.ISA_EMPLOYEE_ID) = UPPER(D.ISA_EMPLOYEE_ID)" & vbCrLf
+
+
+        'WW-644_PC_SUMMARYMAIL_01 (to get the mail daily for 'ready for pickup' orders until the status get changed) (3/3/2023)-Aparna
+        'reusing the query to union the table which will get the 'PUR' status without date limit
+        strSQLstring = " UNION SELECT distinct G.BUSINESS_UNIT_OM, G.BUSINESS_UNIT_OM AS G_BUS_UNIT, D.BUSINESS_UNIT, D.ISA_EMPLOYEE_ID, A.ORDER_NO,B.ISA_WORK_ORDER_NO As WORK_ORDER_NO, B.ISA_INTFC_LN AS line_nbr," & vbCrLf &
+                 " B.ISA_EMPLOYEE_ID AS EMPLID, B.ISA_LINE_STATUS as ORDER_TYPE,B.OPRID_ENTERED_BY, B.SHIPTO_ID as SHIPTO,B.ISA_USER2 as STORE," & vbCrLf &
+                 " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, B.ISA_PRIORITY_FLAG As IsPriority, B.ISA_REQUIRED_BY_DT,B.VENDOR_ID," & vbCrLf &
+                 "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS," & vbCrLf
+
+
+        strSQLstring += " (SELECT E.XLATLONGNAME" & vbCrLf &
+                                " FROM XLATTABLE E" & vbCrLf &
+                                " WHERE E.EFFDT =" & vbCrLf &
+                                " (SELECT MAX(E_ED.EFFDT) FROM XLATTABLE E_ED" & vbCrLf &
+                                " WHERE(E.FIELDNAME = E_ED.FIELDNAME)" & vbCrLf &
+                                " AND E.FIELDVALUE = E_ED.FIELDVALUE" & vbCrLf &
+                                " AND E_ED.EFFDT <= SYSDATE)" & vbCrLf &
+                                " AND E.FIELDNAME = 'ISA_LINE_STATUS'" & vbCrLf &
+                                " AND E.FIELDVALUE = G.ISA_LINE_STATUS) as ORDER_STATUS_DESC, " & vbCrLf &
+                 " B.DESCR254 As NONSTOCK_DESCRIPTION, C.DESCR60 as STOCK_DESCRIPTION, D.ISA_EMPLOYEE_EMAIL," & vbCrLf &
+                 " B.INV_ITEM_ID as INV_ITEM_ID," & vbCrLf &
+                 " B.QTY_REQUESTED,B.QTY_RECEIVED,B.UNIT_OF_MEASURE," & vbCrLf &
+        " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH" & vbCrLf &
+                 " ,A.origin, LD.PO_ID, (select Tracking_Number(B.ORDER_NO,B.ISA_INTFC_LN,B.BUSINESS_UNIT_OM) from dual) as ISA_ASN_TRACK_NO," & vbCrLf &
+                 "(SELECT MAX(FDX.DESCR80) FROM PS_ISA_FEDEX_STG FDX WHERE LD.PO_ID=FDX.PO_ID AND LD.REQ_ID=B.ORDER_NO AND FDX.PROCESS_STATUS='C') AS SHIP_STATUS" & vbCrLf & '[1/25/2023]WAL-781 Added shipment status fetching query with order summary query
+                 " FROM ps_isa_ord_intf_HD A," & vbCrLf  '   & _
+        strSQLstring += " ps_isa_ord_intf_LN B," & vbCrLf &
+                 " PS_MASTER_ITEM_TBL C," & vbCrLf &
+                 " PS_ISA_USERS_TBL D," & vbCrLf &
+                 " PS_ISAORDSTATUSLOG G, PS_PO_LINE_DISTRIB LD" & vbCrLf &
+                 " where G.BUSINESS_UNIT_OM = '" & strBU & "' " & vbCrLf &
+                 " AND G.BUSINESS_UNIT_OM = A.BUSINESS_UNIT_OM " & vbCrLf &
+                 " AND G.BUSINESS_UNIT_OM = D.BUSINESS_UNIT " & vbCrLf     '   & _
+
+        strSQLstring += "  and A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf &
+                 " and A.ORDER_NO = B.ORDER_NO" & vbCrLf &
+                 " and C.SETID (+) = 'MAIN1'" & vbCrLf &
+                 " and C.INV_ITEM_ID(+) = B.INV_ITEM_ID " & vbCrLf &
+                 " AND G.ORDER_NO = A.ORDER_NO " & vbCrLf &
+                 " AND B.ISA_INTFC_LN = G.ISA_INTFC_LN" & vbCrLf &
+                 " AND A.BUSINESS_UNIT_OM = D.BUSINESS_UNIT" & vbCrLf &
+                 " And LD.Req_id (+) = B.order_no AND LD.REQ_LINE_NBR (+) = B.ISA_INTFC_LN" & vbCrLf
+        'reusing the query to union the table which will get the 'PUR' status without date limit
+        'strSQLstring += " AND G.DTTM_STAMP > (TRUNC(sysdate -1) + '" & SumryMailTime & "'/24)" & vbCrLf &
+        '     " AND G.DTTM_STAMP <= (TRUNC(sysdate) + '" & SumryMailTime & "'/24)" & vbCrLf
+
+        strSQLstring += " AND EXISTS (SELECT 'X' FROM PS_ISA_WO_STATUS I " & vbCrLf &
+                  "WHERE B.BUSINESS_UNIT_OM = I.BUSINESS_UNIT_OM " & vbCrLf &
+                  "AND   B.ISA_WORK_ORDER_NO = I.ISA_WORK_ORDER_NO " & vbCrLf &
+                  "AND   I.ISA_WO_STATUS <> 'COMPLETED')" & vbCrLf
+
+        strSQLstring += "AND B.ISA_LINE_STATUS ='PUR'" & vbCrLf 'to get the 'PUR' orders
+
+        strSQLstring += " AND UPPER(B.ISA_EMPLOYEE_ID) = UPPER(D.ISA_EMPLOYEE_ID) )" & vbCrLf &
                   " ORDER BY ORDER_NO, LINE_NBR, DTTM_STAMP" & vbCrLf
-
         ' this is set up in the user priveleges when giving out the status code priveleges in ISOL under Add/Change User
         ' matches the orserstatus emails set up for with the order status in PS_ISAORDSTATUSLOG
         ' the tenth byte of isa_iol_op_name has the one character g.isa_order_status code
