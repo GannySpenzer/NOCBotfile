@@ -1750,7 +1750,7 @@ Module Module1
                   "AND   B.ISA_WORK_ORDER_NO = I.ISA_WORK_ORDER_NO " & vbCrLf &
                   "AND   I.ISA_WO_STATUS <> 'COMPLETED')" & vbCrLf
 
-        strSQLstring += "AND B.ISA_LINE_STATUS ='PUR'" & vbCrLf 'to get the 'PUR' orders
+        strSQLstring += " AND ( ((B.ISA_LINE_STATUS IN ('ASN','DSP')) AND (B.USER1='P' OR B.USER_CHAR2='PU') OR B.ISA_LINE_STATUS IN ('PUR','RPU')))" & vbCrLf 'to get the 'PUR' orders
 
         strSQLstring += " AND UPPER(B.ISA_EMPLOYEE_ID) = UPPER(D.ISA_EMPLOYEE_ID) )" & vbCrLf &
                   " ORDER BY ORDER_NO, LINE_NBR, DTTM_STAMP" & vbCrLf
