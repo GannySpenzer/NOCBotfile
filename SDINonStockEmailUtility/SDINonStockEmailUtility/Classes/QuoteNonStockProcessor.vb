@@ -330,11 +330,16 @@ Public Class QuoteNonStockProcessor
         'dstcart.Columns.Add("Ext. Price")
         'dstcart.Columns.Add("Base Price")
         'dstcart.Columns.Add("Ext Base Price")
-
         dstcart.Columns.Add("Item USD Price")
         dstcart.Columns.Add("Ext. USD Price")
-        dstcart.Columns.Add("Item PO Price")
-        dstcart.Columns.Add("Item PO Ext. Price")
+        'Madhu-16592-Display columns for ECI BU 
+        Try
+            If IsECI(BU) Then
+                dstcart.Columns.Add("Item PO Price")
+                dstcart.Columns.Add("Item PO Ext. Price")
+            End If
+        Catch ex As Exception
+        End Try
         'Added Supplier & Supplier part num in approval email for WAL orders - WW-287 & WAL-632 Poornima S
         If BU = "I0W01" Then
             dstcart.Columns.Add("Supplier")
@@ -514,18 +519,22 @@ Public Class QuoteNonStockProcessor
                         dr("Ext. USD Price") = itemExtPrice.ToString("####,###,##0.00")
                     Catch ex As Exception
                     End Try
-
+                    'Madhu-16592-Display columns for ECI BU 
                     Try
-                        dr("Item PO Price") = FormatNumber(CDec(ExtBasePrice).ToString("f"), 4) & " " & ExtBaseCurrency.ToString()
+                        If IsECI(BU) Then
+                            Try
+                                dr("Item PO Price") = FormatNumber(CDec(ExtBasePrice).ToString("f"), 4) & " " & ExtBaseCurrency.ToString()
+                            Catch ex As Exception
+
+                            End Try
+                            Try
+                                dr("Item PO Ext. Price") = FormatNumber(CType(Convert.ToDecimal(strQty) * Convert.ToDecimal(ExtBasePrice), String), 2) & " " & ExtBaseCurrency.ToString()
+                            Catch ex As Exception
+
+                            End Try
+                        End If
                     Catch ex As Exception
-
                     End Try
-                    Try
-                        dr("Item PO Ext. Price") = FormatNumber(CType(Convert.ToDecimal(strQty) * Convert.ToDecimal(ExtBasePrice), String), 2) & " " & ExtBaseCurrency.ToString()
-                    Catch ex As Exception
-
-                    End Try
-
                     dr("LN") = CType(dataRowMain("ISA_INTFC_LN"), String).Trim()
 
                     'Added Supplier & Supplier part num in approval email for WAL orders - WW-287 & WAL-632 Poornima S
@@ -3119,6 +3128,24 @@ Public Class QuoteNonStockProcessor
         Return bIsAscend
 
     End Function
+    'Madhu-16592-Display columns for ECI BU 
+    Public Shared Function IsECI(ByVal sBU As String) As Boolean
+        Dim bIsECI As Boolean = False
+        Dim sECIBUList As String = ""
+
+        Try
+            sECIBUList = UCase(ConfigurationSettings.AppSettings("ECIList").ToString)
+        Catch ex As Exception
+        End Try
+
+        Try
+            bIsECI = (sECIBUList.IndexOf(sBU.Trim.ToUpper) > -1)
+        Catch ex As Exception
+            bIsECI = False
+        End Try
+        Return bIsECI
+    End Function
+
 
     Public Function GetPrice(ByVal OrderID As String) As Decimal
         Dim StrQry As String = "SELECT L.ISA_SELL_PRICE,L.BUSINESS_UNIT_OM,L.QTY_REQUESTED FROM " & vbCrLf &
