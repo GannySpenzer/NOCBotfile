@@ -309,7 +309,7 @@ Public Class QuoteNonStockProcessor
     End Function
 
     Private Shared Function buildCartforemail(ByVal m_colMsgs As QuotedNStkItemCollection, ByVal ordNumber As String,
-                        ByRef strWrkOrder As String, ByVal BU As String) As DataTable
+                        ByRef strWrkOrder As String, ByVal BU As String, Optional ByVal EmployeeID As String = "") As DataTable
 
         Dim dr As DataRow
         Dim I As Integer
@@ -549,6 +549,21 @@ Public Class QuoteNonStockProcessor
                         Catch ex As Exception
                         End Try
                     End If
+                    'WAL-1044 making price 0 for third party[change by Vishalini]
+                    If BU = "I0W01" Then
+                        Try
+                            Dim SqlStringThirdPartCompid As String = "select THIRDPARTY_COMP_ID from sdix_users_tbl where THIRDPARTY_COMP_ID <> '0' and THIRDPARTY_COMP_ID is not null and ISA_EMPLOYEE_ID = '" & EmployeeID & "'"
+                            Dim THIRDPARTY_COMP_ID As String = ORDBData.GetScalar(SqlStringThirdPartCompid)
+                            If THIRDPARTY_COMP_ID <> "" Then
+                                dr("Item USD Price") = "0"
+                                dr("Ext. USD Price") = "0"
+                            End If
+                        Catch ex As Exception
+
+                        End Try
+
+                    End If
+
 
                     dstcart.Rows.Add(dr)
                 Next
@@ -1810,7 +1825,7 @@ Public Class QuoteNonStockProcessor
                 Dim dstcartSTK As New DataTable
                 Dim StrWO1 As String = " "
                 Dim BU As String = itmQuoted.BusinessUnitOM
-                dstcartSTK = buildCartforemail(m_colMsgs, itmQuoted.OrderID, StrWO1, BU)
+                dstcartSTK = buildCartforemail(m_colMsgs, itmQuoted.OrderID, StrWO1, BU, itmQuoted.EmployeeID)
                 If Trim(StrWO1) = "" Then
                     StrWO1 = " "
                 End If
@@ -2989,7 +3004,7 @@ Public Class QuoteNonStockProcessor
         Dim dataGridHTML As String = String.Empty
         Dim dstcartSTK As New DataTable
         Dim StrWO1 As String = " "
-        dstcartSTK = buildCartforemail(m_colMsgs, itmQuoted.OrderID, StrWO1, itmQuoted.BusinessUnitOM)
+        dstcartSTK = buildCartforemail(m_colMsgs, itmQuoted.OrderID, StrWO1, itmQuoted.BusinessUnitOM, itmQuoted.EmployeeID)
         If Trim(StrWO1) = "" Then
             StrWO1 = " "
         End If
@@ -4193,10 +4208,11 @@ Public Class OrderApprovals
         Dim dtOrder As DataTable = New DataTable()
 
         dtOrder = dsOrder.Tables(0)
+        Dim Employeeid As String = dtOrder.Rows(0).Item("ISA_EMPLOYEE_ID")
 
         Dim dstcartSTK As New DataTable()
 
-        dstcartSTK = buildCartforemail(dtOrder, strreqID)
+        dstcartSTK = buildCartforemail(dtOrder, strreqID, Employeeid)
 
 
 
@@ -4359,7 +4375,8 @@ Public Class OrderApprovals
         Return sReturn
     End Function
 
-    Private Shared Function buildCartforemail(ByVal dstcart1 As DataTable, ByVal ordNumber As String) As DataTable
+    Private Shared Function buildCartforemail(ByVal dstcart1 As DataTable, ByVal ordNumber As String, ByVal EmployeeId As String) As DataTable
+
 
         Dim dr As DataRow
         Dim I As Integer
@@ -4512,7 +4529,20 @@ Public Class OrderApprovals
                     dr("LN") = CType(dataRowMain("ISA_INTFC_LN"), String).Trim()
 
 
+                    'WAL-1044 making price 0 for third party[change by Vishalini]
+                    If ordBU = "I0W01" Then
+                        Try
+                            Dim SqlStringThirdPartCompid As String = "select THIRDPARTY_COMP_ID from sdix_users_tbl where THIRDPARTY_COMP_ID <> '0' and THIRDPARTY_COMP_ID is not null and ISA_EMPLOYEE_ID = '" & EmployeeId & "'"
+                            Dim THIRDPARTY_COMP_ID As String = ORDBData.GetScalar(SqlStringThirdPartCompid)
+                            If THIRDPARTY_COMP_ID <> "" Then
+                                dr("Item USD Price") = "0"
+                                dr("Ext. USD Price") = "0"
+                            End If
+                        Catch ex As Exception
 
+                        End Try
+
+                    End If
                     dstcart.Rows.Add(dr)
                 Next
             End If
