@@ -666,7 +666,13 @@ Public Class QuoteNonStockProcessor
                                     If EmailID <> "" Then
                                         itmQuoted.EmployeeID = "TAYOW50428"
                                         itmQuoted.Addressee = "TAYLOR OWENS"
-                                        itmQuoted.TO = EmailID
+                                        'WAL-1054 Changing InsourceAssets@walmart.com from Taylor.Owens@walmart.com[Change By vishalini]
+                                        If Not getDBName() Then
+                                            itmQuoted.TO = EmailID
+                                        Else
+                                            Dim Email_To As String = ConfigurationManager.AppSettings("InsourceAssetsEmailId")
+                                            itmQuoted.TO = Email_To
+                                        End If
                                         SendMessages(itmQuoted, itmQuoted.BusinessUnitOM)
                                     End If
                                 Catch ex As Exception
