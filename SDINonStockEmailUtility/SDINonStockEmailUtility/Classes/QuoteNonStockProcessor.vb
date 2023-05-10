@@ -629,7 +629,7 @@ Public Class QuoteNonStockProcessor
                         If itmQuoted.PriceBlockFlag = "N" Then
                             If itmQuoted.ApprovalLimit > 0 Then
                                 If TtlPrice > itmQuoted.ApprovalLimit Then
-                                    SendMessages(itmQuoted, itmQuoted.BusinessUnitOM)
+                                    SendMessages(itmQuoted, itmQuoted.BusinessUnitID)
                                 Else
                                     ' set line status to QTC or QTA (itmQuoted.LineStatus) and add Audit record
                                     Dim strUpdateLineStatusFinal As String = ""
@@ -657,7 +657,7 @@ Public Class QuoteNonStockProcessor
                                     'End If
                                 End If
                             Else
-                                SendMessages(itmQuoted, itmQuoted.BusinessUnitOM)
+                                SendMessages(itmQuoted, itmQuoted.BusinessUnitID)
                             End If
                             If itmQuoted.EmployeeID = "MAIKU49404" Then
                                 Try
@@ -673,7 +673,7 @@ Public Class QuoteNonStockProcessor
                                             Dim Email_To As String = ConfigurationManager.AppSettings("InsourceAssetsEmailId")
                                             itmQuoted.TO = Email_To
                                         End If
-                                        SendMessages(itmQuoted, itmQuoted.BusinessUnitOM)
+                                        SendMessages(itmQuoted, itmQuoted.BusinessUnitID)
                                     End If
                                 Catch ex As Exception
                                 End Try
@@ -870,23 +870,32 @@ Public Class QuoteNonStockProcessor
             Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
             Dim MailAttachmentName As String()
             Dim MailAttachmentbytes As New List(Of Byte())()
-
+            Dim From As String = String.Empty
             If Not getDBName() Then
                 EmailTo = "webdev@sdi.com"
             End If
             'SDI-40628 Changing email
-            Dim From As String = String.Empty
-            If sBU = "I0W01" Or sBU = "WAL00" Then
-                From = "WalmartPurchasing@sdi.com"
-            Else
-                From = "SDIExchADMIN@sdi.com"
-            End If
+            'SP-316 Purchasing Email from address change[By Vishalini]
+            From = getpurchasingEmailFrom(sBU)
             SDIEmailService.EmailUtilityServices(MailType, From, EmailTo, subject, EmailCc, EmailBcc, body, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
 
         Catch ex As Exception
 
         End Try
     End Sub
+
+    'SP-316 Purchasing Email from address change[By Vishalini]
+    Public Shared Function getpurchasingEmailFrom(ByVal sBU As String) As String
+        Dim sqlStringEmailFrom As String = ""
+        Dim PurchasingEmailFrom As String = ""
+        Try
+            sqlStringEmailFrom = "Select ISA_PURCH_EML_FROM from PS_ISA_BUS_UNIT_PM where BUSINESS_UNIT_PO ='" & sBU & "'"
+            PurchasingEmailFrom = ORDBData.GetScalar(sqlStringEmailFrom)
+        Catch ex As Exception
+
+        End Try
+        Return PurchasingEmailFrom
+    End Function
 
     Public Shared Sub SendLogger(ByVal subject As String, ByVal exception As Exception, ByVal messageType As String, Optional ByVal Query As String = "", Optional ByVal ConString As String = "", Optional ByVal sBU As String = "")
         Try
@@ -906,11 +915,8 @@ Public Class QuoteNonStockProcessor
             End Try
             'SDI-40628 Changing email
             Dim From As String = String.Empty
-            If sBU = "I0W01" Or sBU = "WAL00" Then
-                From = "WalmartPurchasing@sdi.com"
-            Else
-                From = "SDIExchADMIN@sdi.com"
-            End If
+            'SP-316 Purchasing Email from address change[By Vishalini]
+            From = getpurchasingEmailFrom(sBU)
 
             SDIEmailService.EmailUtilityServices("Mail", From, "WebDev@sdi.com", subject, String.Empty, String.Empty, objException & objExceptionTrace & Query & ConStr, messageType, MailAttachmentName, MailAttachmentbytes.ToArray())
 
@@ -1716,11 +1722,8 @@ Public Class QuoteNonStockProcessor
 
                 ' init properties of the mail message
                 'SDI-40628 Changing Mail id as walmartpurchasing@sdi.com from sdiexchange@sdi.com for Walmart BU.
-                If sBU = "I0W01" Or sBU = "WAL00" Then
-                    eml.From = "WalmartPurchasing@sdi.com"
-                Else
-                    eml.From = "SDIExchange@SDI.com"
-                End If
+                'SP-316 Purchasing Email from address change[By Vishalini]
+                eml.From = getpurchasingEmailFrom(sBU)
                 eml.To = ""
                 eml.Cc = ""
                 eml.Bcc = ""
@@ -2682,11 +2685,8 @@ Public Class QuoteNonStockProcessor
 
             ' init properties of the mail message
             'SDI-40628 Changing Mail id as walmartpurchasing@sdi.com from sdiexchange@sdi.com for Walmart BU.
-            If sBU = "I0W01" Or sBU = "WAL00" Then
-                eml.From = "WalmartPurchasing@sdi.com"
-            Else
-                eml.From = "SDIExchange@SDI.com"
-            End If
+            'SP-316 Purchasing Email from address change[By Vishalini]
+            eml.From = getpurchasingEmailFrom(sBU)
             eml.To = ""
             eml.Cc = ""
             eml.Bcc = ""
@@ -3059,11 +3059,8 @@ Public Class QuoteNonStockProcessor
         Dim MailTo As String = String.Empty
         'SDI-40628 Changing Mail id as walmartpurchasing@sdi.com from sdiexchange@sdi.com for Walmart BU.
         Dim MailFrom As String
-        If BU = "I0W01" Then
-            MailFrom = "WalmartPurchasing@sdi.com"
-        Else
-            MailFrom = "SDIExchange@SDI.com"
-        End If
+        'SP-316 Purchasing Email from address change[By Vishalini]
+        MailFrom = getpurchasingEmailFrom(BU)
         Dim MailSub As String = String.Empty
         Dim MailBody As String = String.Empty
 
@@ -3932,11 +3929,10 @@ Public Class OrderApprovals
         'Mailer.Cc = ""
         'Mailer.Bcc = ""
         'SDI-40628 Changing Mail id as walmartpurchasing@sdi.com from sdiexchange@sdi.com for Walmart BU.
-        If strBU = "I0W01" Or strBU = "WAL00" Then
-            MailFrom = "WalmartPurchasing@sdi.com"
-        Else
-            MailFrom = "SDIExchange@SDI.com"
-        End If
+        'SP-316 Purchasing Email from address change
+        Dim sqlStringEmailFrom As String = ""
+        sqlStringEmailFrom = "Select ISA_PURCH_EML_FROM from PS_ISA_BUS_UNIT_PM where BUSINESS_UNIT_PO ='" & strBU & "'"
+        MailFrom = ORDBData.GetScalar(sqlStringEmailFrom)
         'strbodyhead = "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI Marketplace</span></center>" & vbCrLf
         'strbodyhead = strbodyhead & "<center><span >SDiExchange - Request for Approval</span></center>"
         'strbodyhead = strbodyhead & "&nbsp;" & vbCrLf
@@ -4258,11 +4254,10 @@ Public Class OrderApprovals
 
         Dim Mailer As MailMessage = New MailMessage
         'SDI-40628 Changing Mail id as walmartpurchasing@sdi.com from sdiexchange@sdi.com for Walmart BU.
-        If strBU = "I0W01" Or strBU = " WAL00" Then
-            Mailer.From = "WalmartPurchasing@sdi.comw"
-        Else
-            Mailer.From = "SDIExchange@SDI.com"
-        End If
+        'SP-316 Purchasing Email from address change
+        Dim sqlStringEmailFrom As String = ""
+        sqlStringEmailFrom = "Select ISA_PURCH_EML_FROM from PS_ISA_BUS_UNIT_PM where BUSINESS_UNIT_PO ='" & strBU & "'"
+        Mailer.From = ORDBData.GetScalar(sqlStringEmailFrom)
         Mailer.Cc = ""
         Mailer.Bcc = "webdev@sdi.com"  '  ;Tony.Smith@sdi.com"
 
