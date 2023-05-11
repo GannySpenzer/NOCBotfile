@@ -158,12 +158,18 @@ Module Module1
                 Dim TimeNow As String = time.ToString(format)
 
                 'Added checkAllStatusWAL() by checking I0W01 BU, Email time for order status summary email--  WW-287 & WAL-632 Poornima S
-                If (dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") = "I0W01") And ((TimeNow > SumryStartLngTime) And (TimeNow < SumryEndLngTime)) Then
-                    Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                    objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                    objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
-                    objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
-                    buildstatchgout = checkAllStatusWAL(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                'SP-316 EMCOR order status summary- Dhamotharan
+                If (dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") = "I0W01" Or dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") = "I0631") And ((TimeNow > SumryStartLngTime) And (TimeNow < SumryEndLngTime)) Then
+                    Try
+                        Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
+                        objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
+                        objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
+                        objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                        buildstatchgout = checkAllStatusWAL(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                    Catch ex As Exception
+
+                    End Try
+
                 End If
                 Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
                 objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
@@ -988,12 +994,31 @@ Module Module1
         Dim Mailer As MailMessage = New MailMessage
         Dim strccfirst As String = "erwin.bautista"   '  "pete.doyle"
         Dim strcclast As String = "sdi.com"
+        'SP-316 get from email from table - Dhamotharan
+        Dim fromMail As String = ""
         'SDI-40628 Changing Mail id as walmartpurchasing@sdi.com from sdiexchange@sdi.com for Walmart BU.
-        If strbu = "I0W01" Then
-            Mailer.From = "WalmartPurchasing@sdi.com"
-        Else
-            Mailer.From = "SDIExchange@SDI.com"  '  "Insiteonline@SDI.com"
-        End If
+        'If strbu = "I0W01" Then
+        '    Mailer.From = "WalmartPurchasing@sdi.com"
+        'Else
+        '    Mailer.From = "SDIExchange@SDI.com"  '  "Insiteonline@SDI.com"
+        'End If
+        Try
+            Dim BU As String = ""
+            If strbu = "I0W01" Then
+                BU = "WAL00"
+                fromMail = getFromMail(BU, connectOR)
+            ElseIf strbu = "I0631" Then
+                BU = "EMC00"
+                fromMail = getFromMail(BU, connectOR)
+            Else
+                fromMail = ConfigurationManager.AppSettings("OtherBUMailKey")
+            End If
+        Catch ex As Exception
+
+        End Try
+
+
+        Mailer.From = fromMail
         Mailer.Cc = ""
         Mailer.Bcc = strccfirst & "@" & strcclast
         'strbodyhead = "<center><span style='font-family:Arial;font-size:X-Large;width:256px;'>SDI Marketplace</span></center>" & vbCrLf
@@ -2207,6 +2232,7 @@ Module Module1
         Else
             strSQLstring += " AND UPPER(B.ISA_EMPLOYEE_ID) = UPPER(D.ISA_EMPLOYEE_ID)) TBL, PS_ISA_USERS_PRIVS H " & vbCrLf &
                  " WHERE TBL.EMPLID = H.ISA_EMPLOYEE_ID " & vbCrLf &
+                 "AND TBL.G_BUS_UNIT = H.BUSINESS_UNIT" & vbCrLf &
                  " AND SUBSTR(H.ISA_IOL_OP_NAME,9) = TBL.OLD_ORDER_STATUS " & vbCrLf &
                  " AND H.ISA_IOL_OP_VALUE = 'Y' " & vbCrLf &
                   " ORDER BY ORDER_NO, LINE_NBR, DTTM_STAMP"
@@ -2496,12 +2522,28 @@ Module Module1
         Dim Mailer1 As MailMessage = New MailMessage
         Dim strccfirst1 As String = "erwin.bautista"  '  "pete.doyle"
         Dim strcclast1 As String = "sdi.com"
+        'SP-316 get from email from table - Dhamotharan
         'SDI-40628 Changing Mail id as walmartpurchasing@sdi.com from sdiexchange@sdi.com for Walmart BU.
-        If strBU = "I0W01" Then
-            Mailer1.From = "WalmartPurchasing@sdi.com"
-        Else
-            Mailer1.From = "SDIExchange@SDI.com"  '  "Insiteonline@SDI.com"
-        End If
+        'If strBU = "I0W01" Then
+        '    Mailer1.From = "WalmartPurchasing@sdi.com"
+        'Else
+        '    Mailer1.From = "SDIExchange@SDI.com"  '  "Insiteonline@SDI.com"
+        'End If
+        Try
+            Dim BU As String = ""
+            If strBU = "I0W01" Then
+                BU = "WAL00"
+                Mailer1.From = getFromMail(BU, connectOR)
+            ElseIf strBU = "I0631" Then
+                BU = "EMC00"
+                Mailer1.From = getFromMail(BU, connectOR)
+            Else
+                Mailer1.From = ConfigurationManager.AppSettings("OtherBUMailKey")
+            End If
+        Catch ex As Exception
+
+        End Try
+
         Mailer1.Cc = ""
         Mailer1.Bcc = strccfirst1 & "@" & strcclast1
         strbodyhead1 = "<table width='100%' bgcolor='black'><tbody><tr><td><img data-imagetype='External' src='https://www.sdizeus.com/images/SDNewLogo_Email.png' alt='SDI' vspace='0' hspace='0'></td><td width='100%'><center><span style='font-family:Calibri; font-size:x-large; text-align: center; color:White' > SDI Marketplace</span></center><center><span style='text-align: center; margin:0px auto; color:White'>SDiExchange - Order Status</span></center></td></tr></tbody></table>"
@@ -2580,16 +2622,25 @@ Module Module1
 
             For Each StoreNum As String In StoreNumArr
 
+                'SP-316 No store number for EMCOR - Dhamotharan
                 Dim NewStoreNumDT As New DataTable
-                NewStoreNumDT = (From C In StoreNumDT.AsEnumerable Where C.Field(Of String)("STORE") = StoreNum).CopyToDataTable()
+                Try
 
-                objGenerallLogStreamWriter.WriteLine("Reading order details of Store Num:" + StoreNum)
-                objStreamWriter.WriteLine("Reading order details of Store Num:" + StoreNum)
+                    NewStoreNumDT = (From C In StoreNumDT.AsEnumerable Where C.Field(Of String)("STORE") = StoreNum).CopyToDataTable()
+                    If strBU <> "I0631" Then
+                        objGenerallLogStreamWriter.WriteLine("Reading order details of Store Num:" + StoreNum)
+                        objStreamWriter.WriteLine("Reading order details of Store Num:" + StoreNum)
 
-                strbodydet1 = strbodydet1 & "<div style='float:left;width:100%;margin-bottom:30px'>"
-                If Not (String.IsNullOrEmpty(StoreNum.Trim())) Then
-                    strbodydet1 = strbodydet1 & "<p><span style='background-color:#dbf4f7;padding:10px 15px;border-radius:36px;float:Left();font-size:16.5px;margin-bottom:5px;float:left'><span style='font-weight:bold;font-family:Calibri;color: #0505af;'> Install Store:</span> <span style='font-family:Calibri;color: #0505af;'>&nbsp;" & StoreNum & "</span></span></p>"
-                End If
+                        strbodydet1 = strbodydet1 & "<div style='float:left;width:100%;margin-bottom:30px'>"
+                        If Not (String.IsNullOrEmpty(StoreNum.Trim())) Then
+                            strbodydet1 = strbodydet1 & "<p><span style='background-color:#dbf4f7;padding:10px 15px;border-radius:36px;float:Left();font-size:16.5px;margin-bottom:5px;float:left'><span style='font-weight:bold;font-family:Calibri;color: #0505af;'> Install Store:</span> <span style='font-family:Calibri;color: #0505af;'>&nbsp;" & StoreNum & "</span></span></p>"
+                        End If
+                    End If
+                Catch ex As Exception
+
+                End Try
+
+
 
                 Dim WOArr As String() = NewStoreNumDT.AsEnumerable().[Select](Function(r) r.Field(Of String)("Work Order Number")).Distinct().ToArray()
 
@@ -2619,18 +2670,18 @@ Module Module1
                             Dim statusImg As String
                             OrdStatusArr = OrderStatus.Split("^")
                             If OrdStatusArr(3) = 1 Then
-                                statusImg = "'https://walmarttest.sdi.com/images/chain0.png'"
-                            ElseIf OrdStatusArr(3) = 2 Then
-                                statusImg = "'https://walmarttest.sdi.com/images/chain1.png'"
-                            ElseIf OrdStatusArr(3) = 3 Then
-                                statusImg = "'https://walmarttest.sdi.com/images/chain2.png'"
-                            ElseIf OrdStatusArr(3) = 4 Then
-                                statusImg = "'https://walmarttest.sdi.com/images/chain3.png'"
-                            ElseIf OrdStatusArr(3) = 5 Then
-                                statusImg = "'https://walmarttest.sdi.com/images/chain4.png'"
-                            Else
-                                statusImg = "'https://walmarttest.sdi.com/images/chain6.png'"
-                            End If
+                                    statusImg = "'https://walmarttest.sdi.com/images/chain0.png'"
+                                ElseIf OrdStatusArr(3) = 2 Then
+                                    statusImg = "'https://walmarttest.sdi.com/images/chain1.png'"
+                                ElseIf OrdStatusArr(3) = 3 Then
+                                    statusImg = "'https://walmarttest.sdi.com/images/chain2.png'"
+                                ElseIf OrdStatusArr(3) = 4 Then
+                                    statusImg = "'https://walmarttest.sdi.com/images/chain3.png'"
+                                ElseIf OrdStatusArr(3) = 5 Then
+                                    statusImg = "'https://walmarttest.sdi.com/images/chain4.png'"
+                                Else
+                                    statusImg = "'https://walmarttest.sdi.com/images/chain6.png'"
+                                End If
 
                             Dim bgColor As String = ""
                             Dim Color As String = ""
@@ -2670,10 +2721,12 @@ Module Module1
                             For K = 0 To OrderDetails.Rows.Count - 1
 
                                 If K = 0 Then
-                                    strbodydet1 = strbodydet1 & "<p style='float: left;width: 100%;padding-left: 17px;margin-bottom:9px !important;margin-top:0px'><span style='font-weight:bold;font-family:Calibri;'> Ship-to Store:</span> <span style='font-family:Calibri;'>&nbsp;" & OrderDetails.Rows(K).Item("Ship To") & "</span></p> "
+                                    If strBU <> "I0631" Then
+                                        strbodydet1 = strbodydet1 & "<p style='float: left;width: 100%;padding-left: 17px;margin-bottom:9px !important;margin-top:0px'><span style='font-weight:bold;font-family:Calibri;'> Ship-to Store:</span> <span style='font-family:Calibri;'>&nbsp;" & OrderDetails.Rows(K).Item("Ship To") & "</span></p> "
+                                    End If
                                     strbodydet1 = strbodydet1 & "<p style='float: left;width: 100%;padding-left: 17px;margin-bottom:9px !important;margin-top:0px'><span style='font-weight:bold;font-family:Calibri;'> Items Ordered:</span></p> "
-                                End If
-                                strbodydet1 = strbodydet1 & "<p style='float: left;width: 100%;padding-left: 17px;margin-bottom:1px;margin-top:0px'><span style='font-family:Calibri;font-weight:bold;'> &nbsp;&nbsp; Qty:</span> <span style='font-family:Calibri;'>" & OrderDetails.Rows(K).Item("Qty Ordered") & "</span><span style='font-family:Calibri;'>,&nbsp; " & OrderDetails.Rows(K).Item("Non-Stock Item Description") & "</span></p> "
+                                    End If
+                                    strbodydet1 = strbodydet1 & "<p style='float: left;width: 100%;padding-left: 17px;margin-bottom:1px;margin-top:0px'><span style='font-family:Calibri;font-weight:bold;'> &nbsp;&nbsp; Qty:</span> <span style='font-family:Calibri;'>" & OrderDetails.Rows(K).Item("Qty Ordered") & "</span><span style='font-family:Calibri;'>,&nbsp; " & OrderDetails.Rows(K).Item("Non-Stock Item Description") & "</span></p> "
 
                                 strbodydet1 = strbodydet1 & "<p style='float: left;width: 100%;padding-left: 17px;margin:1px !important;'><span style='font-weight:bold;font-family:Calibri;'> &nbsp;&nbsp; Tracking Number:</span> <span style='font-family:Calibri;'>&nbsp;" & OrderDetails.Rows(K).Item("Tracking No") & "</span></p> "
                                 strbodydet1 = strbodydet1 & "<p style='float: left;width: 100%;padding-left: 17px;margin:1px !important;'><span style='font-weight:bold;font-family:Calibri;'> &nbsp;&nbsp; Delivery Date:</span> <span style='font-family:Calibri;'>&nbsp;" & OrderDetails.Rows(K).Item("Delivery Date") & "</span></p> "
@@ -3153,12 +3206,31 @@ Module Module1
         Dim Mailer1 As MailMessage = New MailMessage
         Dim strccfirst1 As String = "erwin.bautista"  '  "pete.doyle"
         Dim strcclast1 As String = "sdi.com"
+        'SP-316 get from email from table - Dhamotharan
+        Dim fromMail As String = ""
         'SDI-40628 Changing Mail id as walmartpurchasing@sdi.com from sdiexchange@sdi.com for Walmart BU.
-        If strBU = "I0W01" Then
-            Mailer1.From = "WalmartPurchasing@sdi.com"
-        Else
-            Mailer1.From = "SDIExchange@SDI.com"  '  "Insiteonline@SDI.com"
-        End If
+        'If strBU = "I0W01" Then
+        '    Mailer1.From = "WalmartPurchasing@sdi.com"
+        'Else
+        '    Mailer1.From = "SDIExchange@SDI.com"  '  "Insiteonline@SDI.com"
+        'End If
+        Try
+            Dim BU As String = ""
+            If strBU = "I0W01" Then
+                BU = "WAL00"
+                fromMail = getFromMail(BU, connectOR)
+            ElseIf strBU = "I0631" Then
+                BU = "EMC00"
+                fromMail = getFromMail(BU, connectOR)
+            Else
+                fromMail = ConfigurationManager.AppSettings("OtherBUMailKey")
+            End If
+        Catch ex As Exception
+
+        End Try
+
+
+        Mailer1.From = fromMail
         Mailer1.Cc = ""
         Mailer1.Bcc = strccfirst1 & "@" & strcclast1
         strbodyhead1 = "<table width='100%'><tbody><tr><td><img src='http://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='82px' vspace='0' hspace='0' /></td><td width='100%'><br /><br /><br /><br /><br /><br /><center><span style='font-family: Arial; font-size: x-large; text-align: center;'>SDI Marketplace</span></center><center><span style='text-align: center; margin: 0px auto;'>SDiExchange - Order Status</span></center></td></tr></tbody></table>"
@@ -3228,23 +3300,35 @@ Module Module1
         strbodydet1 = strbodydet1 & "<img src='http://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & vbCrLf
 
         Mailer1.Body = strbodyhead1 & strbodydet1
+        'SP-316 get to emails and Changed subject for EMCOR  - Dhamotharan
+        Try
+            Dim toMail As String = ""
+            toMail = getToMail(strBU, connectOR)
+            If Not IsProdDB Then
+                Mailer1.To = "webdev@sdi.com"
+                If strBU = "I0W01" Then
+                    Mailer1.Subject = "<<TEST SITE>>Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
+                ElseIf strBU = "I0631" Then
+                    Mailer1.Subject = "<<TEST SITE>>Status Update - " + strOrderStatDesc + " - WO # " & strWOno
+                Else
+                    Mailer1.Subject = "<<TEST SITE>>SDiExchange - Order Status records for Order Number: " & strOrderNo
+                End If
+            Else
+                If strBU = "I0W01" Then
+                    Mailer1.To = "webdev@sdi.com;" + toMail
+                    Mailer1.Subject = "Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
+                ElseIf strBU = "I0631" Then
+                    Mailer1.To = "webdev@sdi.com;" + toMail
+                    Mailer1.Subject = "Status Update - " + strOrderStatDesc + " - WO # " & strWOno
+                Else
+                    Mailer1.To = strPurchaserEmail
+                    Mailer1.Subject = "SDiExchange - Order Status records for Order Number: " & strOrderNo
+                End If
+            End If
+        Catch ex As Exception
 
-        If Not IsProdDB Then
-            Mailer1.To = "webdev@sdi.com"
-            If strBU = "I0W01" Then
-                Mailer1.Subject = "<<TEST SITE>>Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
-            Else
-                Mailer1.Subject = "<<TEST SITE>>SDiExchange - Order Status records for Order Number: " & strOrderNo
-            End If
-        Else
-            If strBU = "I0W01" Then
-                Mailer1.To = "webdev@sdi.com;WalmartPurchasing@sdi.com"
-                Mailer1.Subject = "Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
-            Else
-                Mailer1.To = strPurchaserEmail
-                Mailer1.Subject = "SDiExchange - Order Status records for Order Number: " & strOrderNo
-            End If
-        End If
+        End Try
+
         Try
             Mailer1.BodyFormat = System.Web.Mail.MailFormat.Html
 
@@ -3258,20 +3342,29 @@ Module Module1
 
         'Push & Web notifications will be sent for all orders of all BUs lively- WAL-632&WW-287 Poornima S
         Dim strPushNoti As String = ""
+        'SP-316 changed subject for EMCOR- Dhamotharan
+        Try
+            If Not IsProdDB Then
+                If strBU = "I0W01" Then
+                    strPushNoti = "<<TEST SITE>>Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
+                ElseIf strBU = "I0631" Then
+                    strPushNoti = "<<TEST SITE>>Status Update - " + strOrderStatDesc + " - WO # " & strWOno
+                Else
+                    strPushNoti = "<<TEST SITE>>Order Number: " + strOrderNo + " - Status Modified To  " + strOrderStatDesc + " . Please check the details in order status menu."
+                End If
+            Else
+                If strBU = "I0W01" Then
+                    strPushNoti = "Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
+                ElseIf strBU = "I0631" Then
+                    strPushNoti = "Status Update - " + strOrderStatDesc + " - WO # " & strWOno
+                Else
+                    strPushNoti = "Order Number: " + strOrderNo + " - Status Modified To " + strOrderStatDesc + ". Please check the details in order status menu."
+                End If
+            End If
+        Catch ex As Exception
 
-        If Not IsProdDB Then
-            If strBU = "I0W01" Then
-                strPushNoti = "<<TEST SITE>>Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
-            Else
-                strPushNoti = "<<TEST SITE>>Order Number: " + strOrderNo + " - Status Modified To  " + strOrderStatDesc + " . Please check the details in order status menu."
-            End If
-        Else
-            If strBU = "I0W01" Then
-                strPushNoti = "Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
-            Else
-                strPushNoti = "Order Number: " + strOrderNo + " - Status Modified To " + strOrderStatDesc + ". Please check the details in order status menu."
-            End If
-        End If
+        End Try
+
 
         If Not strEmpID.Trim = "" Then
             sendNotification(strEmpID, strPushNoti, strOrderNo, strBU)
@@ -3845,6 +3938,57 @@ Module Module1
             Throw ex
         End Try
     End Sub
+
+    'SP-316 get from and to mails from the table- Dhamotharan 
+    Public Function getFromMail(ByVal strBU As String, ByVal connectOR As OleDb.OleDbConnection)
+        Dim sqlStringEmailFrom As String = ""
+        Dim fromMail As String = ""
+        If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
+            connectOR.Close()
+        End If
+        Try
+            connectOR.Open()
+            sqlStringEmailFrom = "Select ISA_PURCH_EML_FROM from PS_ISA_BUS_UNIT_PM where BUSINESS_UNIT_PO = '" & strBU & "'"
+            fromMail = ORDBAccess.GetScalar(sqlStringEmailFrom, connectOR)
+        Catch ex As Exception
+            If (strBU = "I0W01" Or strBU = "WAL00") Then
+                fromMail = "WalmartPurchasing@sdi.com"
+            ElseIf (strBU = "EMC00" Or strBU = "I0631") Then
+                fromMail = "Emcorpurchasing@sdi.com"
+            Else
+                fromMail = "SDIExchange@SDI.com"
+            End If
+        End Try
+        Try
+            connectOR.Close()
+        Catch ex As Exception
+
+        End Try
+        Return fromMail
+    End Function
+    Public Function getToMail(ByVal StrBu As String, ByVal connectOR As OleDb.OleDbConnection)
+        Dim sqlStringEmailFrom As String = ""
+        Dim toMail As String = ""
+        If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
+            connectOR.Close()
+        End If
+        Try
+            sqlStringEmailFrom = "Select ISA_PURCH_EML_TO from PS_ISA_BUS_UNIT_PM where BUSINESS_UNIT_PO = '" & StrBu & "'"
+            toMail = ORDBAccess.GetScalar(sqlStringEmailFrom, connectOR)
+        Catch ex As Exception
+            If (StrBu = "I0W01" Or StrBu = "WAL00") Then
+                toMail = "WalmartPurchasing@sdi.com"
+            ElseIf (StrBu = "EMC00" Or StrBu = "I0631") Then
+                toMail = "Emcorpurchasing@sdi.com"
+            End If
+        End Try
+        Try
+            connectOR.Close()
+        Catch ex As Exception
+
+        End Try
+        Return toMail
+    End Function
 End Module
 
 Public Class AddItem
