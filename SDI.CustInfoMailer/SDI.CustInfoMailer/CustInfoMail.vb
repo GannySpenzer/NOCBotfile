@@ -218,7 +218,7 @@ Module CustInfoMail
 
         '' strbodyhead = "<span><B>**PRIORITY ORDER**</B></span>"
 
-        strbodyhead = "<table width='100%' bgcolor='black'><tbody><tr><td><img src='https://www.sdiexchange.com/images/SDNewLogo_Email.png' alt='SDI' vspace='0' hspace='0' /></td><td width='100%'><center><span style='font-family: Arial; font-size: x-large; text-align: center; Color:White;'>SDI Marketplace</span></center><center><span style='text-align: center; margin: 0px auto;  Color:White;'>SDiExchange - Customer Info Notification</span></center></td></tr></tbody></table>" & vbCrLf
+        strbodyhead = "<table width='100%' bgcolor='black'><tbody><tr><td><img src='https://www.sdizeus.com/images/SDNewLogo_Email.png' alt='SDI' vspace='0' hspace='0' /></td><td width='100%'><center><span style='font-family: Arial; font-size: x-large; text-align: center; Color:White;'>SDI Marketplace</span></center><center><span style='text-align: center; margin: 0px auto;  Color:White;'>SDiExchange - Customer Info Notification</span></center></td></tr></tbody></table>" & vbCrLf
         strbodyhead = strbodyhead & "<HR width='100%' SIZE='1'>" & vbCrLf
         strbodyhead = strbodyhead & "&nbsp;" & vbCrLf
         strbodyhead = strbodyhead & "<TABLE class='Email_Table' cellSpacing='1' cellPadding='1' width='100%' border='0'>" & vbCrLf
@@ -253,13 +253,14 @@ Module CustInfoMail
         'Mailer.body = Mailer.body + "<TR><TD Class='DetailRow' align='right'>Order Total&nbsp;&nbsp;&nbsp;" & decOrderTot & "&nbsp;&nbsp;&nbsp;</TD></TR>"
         Mailer.Body = Mailer.Body & "</TABLE>" & vbCrLf
         Mailer.Body = Mailer.Body & "<HR width='100%' SIZE='1'>" & vbCrLf
-        Mailer.Body = Mailer.Body & "<img src='https://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & vbCrLf
+        Mailer.Body = Mailer.Body & "<img src='https://www.sdizeus.com/Images/SDIFooter_Email.png' />" & vbCrLf
 
 
         If DbUrl.Substring(DbUrl.Length - 4).ToUpper = "PLGR" Or
                    DbUrl.Substring(DbUrl.Length - 4).ToUpper = "STAR" Or
                    DbUrl.Substring(DbUrl.Length - 4).ToUpper = "DEVL" Or
                    DbUrl.Substring(DbUrl.Length - 4).ToUpper = "STST" Or
+                   DbUrl.Substring(DbUrl.Length - 4).ToUpper = "SUAT" Or
                DbUrl.Substring(DbUrl.Length - 4).ToUpper = "RPTG" Then
             Mailer.To = "WebDev@sdi.com"
             Mailer.Subject = "<<TEST SITE>> SDiExchange - Customer Information Required For Order - " & orderNum
