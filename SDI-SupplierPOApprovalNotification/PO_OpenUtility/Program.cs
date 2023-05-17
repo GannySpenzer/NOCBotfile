@@ -335,12 +335,34 @@ and a.business_unit = '" + strPOBU + "' and a.po_id='" + strPO + "'";
 
             return strReturn;
         }
+        //SP-391 Purchasing Email from address change[By Vishalini]
+        public static string getpurchasingEmailFrom(string sBU)
+        {
+            string sqlStringEmailFrom = "";
+            string PurchasingEmailFrom = "";
+            try
+            {
+                sqlStringEmailFrom = "Select ISA_PURCH_EML_FROM from PS_ISA_BUS_UNIT_PM where BUSINESS_UNIT_PO ='" + sBU + "'";
+                PurchasingEmailFrom = GetScalar(sqlStringEmailFrom);
+            }
+            catch (Exception ex)
+            {
+                if (sBU == "I0W01" || sBU == "WAL00")
+                    PurchasingEmailFrom = "WalmartPurchasing@sdi.com";
+                else if (sBU == "EMC00" || sBU == "I0631")
+                    PurchasingEmailFrom = "Emcorpurchasing@sdi.com";
+                else
+                    PurchasingEmailFrom = "SDIExchange@SDI.com";
+            }
+            return PurchasingEmailFrom;
+        }
         //Madhu-INC0015106-Removed avacorp in Email flow
         public static Boolean SendEmail(string VendorID, string VendorUN, string VendorEmail, string POID, string PO_BU, string strURL, string strBuyerEmail, string Email, string techPhno, string techEmail, string Notes)
         {
             string strbodyhead;
             string strbodydetl = "";
             Boolean isEmailSent = false;
+            string MailerFrom = "";
 
             String DbUrl = Convert.ToString(ConfigurationSettings.AppSettings["OLEDBconString"]);
             DbUrl = DbUrl.Substring(DbUrl.Length - 4).ToUpper();
@@ -350,8 +372,12 @@ and a.business_unit = '" + strPOBU + "' and a.po_id='" + strPO + "'";
             try
             {
                 //SP-136: Change the email address from sdiexchange@sdi.com to sdizeus@sdi.com. Change made by Venkat
+                //SP-391: Change the email address from sdiexchange@sdi.com to respective email id[ Change made by Vishalini]
                 MailMessage Mailer = new MailMessage();
-                string FromAddress = "SDIZEUS@SDI.COM";
+                MailerFrom = getpurchasingEmailFrom(PO_BU);
+                MailAddress From = new MailAddress(MailerFrom);
+                Mailer.From = From;                
+                //string FromAddress = "SDIZEUS@SDI.COM";
                 string Mailcc = "";
                 string MailBcc = "webdev@sdi.com;Tony.Smith@sdi.com";
 
@@ -421,7 +447,7 @@ and a.business_unit = '" + strPOBU + "' and a.po_id='" + strPO + "'";
                     {
                         PhNo = techPhno;
                     }
-                    if (PO_BU == "WAL00")
+                    if (PO_BU == "WAL00" || PO_BU == "EMC00")
                     {
                         strbodydetl = strbodydetl + "<p style='font-weight: bold;'>Tech e-mail: " + techEmail + " </p>";
                         strbodydetl = strbodydetl + "<p style='font-weight: bold;'>Tech Phone No: " + PhNo + "  </p>";
@@ -527,7 +553,7 @@ and a.business_unit = '" + strPOBU + "' and a.po_id='" + strPO + "'";
 
             try
             {
-                SDIEmailService.EmailUtilityServices("MailandStore", "SDIZEUS@SDI.com", mailer.To.ToString(), mailer.Subject, string.Empty, string.Empty, mailer.Body, "SDIERRMAIL", null, null);
+                SDIEmailService.EmailUtilityServices("MailandStore", mailer.From.ToString(), mailer.To.ToString(), mailer.Subject, string.Empty, string.Empty, mailer.Body, "SDIERRMAIL", null, null);
             }
             catch (Exception ex)
             {
