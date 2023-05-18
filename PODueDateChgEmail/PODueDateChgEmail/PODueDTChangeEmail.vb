@@ -384,7 +384,6 @@ Public Class PODueDTChangeEmail
                         sPODueDate = ""
                         sBusUnitIN = ""
                         myReq = colEmailedPOs.Item(iCollectionIndex)
-
                         If Not myReq.EmployeeId Is Nothing Then
 
                             If myReq.EmployeeId.Trim() <> "" Then
@@ -690,11 +689,18 @@ Public Class PODueDTChangeEmail
                         End Try
                         'WAL-533: Email subject lines changes for Walmart BU -->Change done by- Venkat
                         Dim From As String = String.Empty
+                        'SP-392 EMCOR Modifications for Due Date Update Email - Dhamotharan P
+                        Dim BU As String = ""
                         If myReq.BusinessUnit = "I0W01" OrElse myReq.POBusinessUnit = "WAL00" Then
-                            From = "WalmartPurchasing@sdi.com"
+                            BU = "WAL00"
+                            From = getFromMail(BU, connectOR)
                             eml.Subject = "Status Update - Due Date Change - Store #" & store & " - WO #" & wordOrder & ""
+                        ElseIf myReq.BusinessUnit = "I0631" OrElse myReq.POBusinessUnit = "EMC00" Then
+                            BU = "EMC00"
+                            From = getFromMail(BU, connectOR)
+                            eml.Subject = "Status Update - Due Date Change - WO #" & wordOrder & ""
                         Else
-                            From = "SDIExchange@SDI.com"
+                            From = ConfigurationManager.AppSettings("OtherBUMailKey")
                             eml.Subject = "Order Due Date has Changed. Order Number: " & myReq.ReqId.ToString & ". PO_ID: " & myReq.POID.ToString & ""
                         End If
 
@@ -1384,5 +1390,31 @@ Public Class PODueDTChangeEmail
         End Try
     End Sub
 
+    'SP-392 EMCOR Modifications for Due Date Update Email - Dhamotharan P
+    Public Function getFromMail(ByVal strBU As String, ByVal connectOR As OleDb.OleDbConnection)
+        Dim sqlStringEmailFrom As String = ""
+        Dim fromMail As String = ""
+        If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
+            connectOR.Close()
+        End If
+        Try
+            connectOR.Open()
+            sqlStringEmailFrom = "Select ISA_PURCH_EML_FROM from PS_ISA_BUS_UNIT_PM where BUSINESS_UNIT_PO = '" & strBU & "'"
+            fromMail = ORDBAccess.GetScalar(sqlStringEmailFrom, connectOR)
+        Catch ex As Exception
+            If (strBU = "I0W01" Or strBU = "WAL00") Then
+                fromMail = "WalmartPurchasing@sdi.com"
+            ElseIf (strBU = "EMC00" Or strBU = "I0631") Then
+                fromMail = "Emcorpurchasing@sdi.com"
+            Else
+                fromMail = "SDIExchange@SDI.com"
+            End If
+        End Try
+        Try
+            connectOR.Close()
+        Catch ex As Exception
 
+        End Try
+        Return fromMail
+    End Function
 End Class
