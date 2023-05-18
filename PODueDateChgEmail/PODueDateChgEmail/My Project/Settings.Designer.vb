@@ -57,19 +57,19 @@ Namespace My
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.SpecialSettingAttribute(Global.System.Configuration.SpecialSetting.WebServiceUrl),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("http://sdixaws2016test:8083/SDIEmailSvc/EmailServices.asmx")>  _
         Public ReadOnly Property PODueDateChgEmail_SDiEmailUtilityService_EmailServices() As String
             Get
                 Return CType(Me("PODueDateChgEmail_SDiEmailUtilityService_EmailServices"),String)
             End Get
         End Property
-
-        <Global.System.Configuration.ApplicationScopedSettingAttribute(),
-         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
-         Global.System.Configuration.DefaultSettingValueAttribute("Data Source=FSTST")>
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("Data Source=FSUAT")>  _
         Public ReadOnly Property default_DB() As String
             Get
-                Return CType(Me("default_DB"), String)
+                Return CType(Me("default_DB"),String)
             End Get
         End Property
     End Class
