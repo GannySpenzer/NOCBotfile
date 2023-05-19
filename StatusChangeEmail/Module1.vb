@@ -1011,7 +1011,8 @@ Module Module1
                 BU = "EMC00"
                 fromMail = getFromMail(BU, connectOR)
             Else
-                fromMail = ConfigurationManager.AppSettings("OtherBUMailKey")
+                BU = "ISA00"
+                fromMail = getFromMail(BU, connectOR)
             End If
         Catch ex As Exception
 
@@ -1312,47 +1313,47 @@ Module Module1
                  " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, " & vbCrLf   '  & _
 
 
-        strSQLstring += "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','1','NEW','2','DSP','3','ORD','3','RSV','3','PKA','4','PKP','4','DLP','5','RCP','5','RCF','6','PKQ','5','DLO','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','1') AS OLD_ORDER_STATUS," & vbCrLf &
-                 " (SELECT E.XLATLONGNAME" & vbCrLf &
-                                " FROM XLATTABLE E" & vbCrLf &
-                                " WHERE E.EFFDT =" & vbCrLf &
-                                " (SELECT MAX(E_ED.EFFDT) FROM XLATTABLE E_ED" & vbCrLf &
-                                " WHERE(E.FIELDNAME = E_ED.FIELDNAME)" & vbCrLf &
-                                " AND E.FIELDVALUE = E_ED.FIELDVALUE" & vbCrLf &
-                                " AND E_ED.EFFDT <= SYSDATE)" & vbCrLf &
-                                " AND E.FIELDNAME = 'ISA_LINE_STATUS'" & vbCrLf &
-                                " AND E.FIELDVALUE = G.ISA_LINE_STATUS) as ORDER_STATUS_DESC, " & vbCrLf &
-                 " B.DESCR254 As NONSTOCK_DESCRIPTION, C.DESCR60 as STOCK_DESCRIPTION, D.ISA_EMPLOYEE_EMAIL," & vbCrLf &
-                 " B.INV_ITEM_ID as INV_ITEM_ID," & vbCrLf &
-                 " B.QTY_REQUESTED,B.QTY_RECEIVED,B.UNIT_OF_MEASURE," & vbCrLf &
-                 " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH" & vbCrLf &
-                 " ,A.origin, LD.PO_ID, SH.ISA_ASN_TRACK_NO" & vbCrLf &
-                 " FROM ps_isa_ord_intf_HD A," & vbCrLf  '   & _
+            strSQLstring += "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','1','NEW','2','DSP','3','ORD','3','RSV','3','PKA','4','PKP','4','DLP','5','RCP','5','RCF','6','PKQ','5','DLO','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','1') AS OLD_ORDER_STATUS," & vbCrLf &
+                     " (SELECT E.XLATLONGNAME" & vbCrLf &
+                                    " FROM XLATTABLE E" & vbCrLf &
+                                    " WHERE E.EFFDT =" & vbCrLf &
+                                    " (SELECT MAX(E_ED.EFFDT) FROM XLATTABLE E_ED" & vbCrLf &
+                                    " WHERE(E.FIELDNAME = E_ED.FIELDNAME)" & vbCrLf &
+                                    " AND E.FIELDVALUE = E_ED.FIELDVALUE" & vbCrLf &
+                                    " AND E_ED.EFFDT <= SYSDATE)" & vbCrLf &
+                                    " AND E.FIELDNAME = 'ISA_LINE_STATUS'" & vbCrLf &
+                                    " AND E.FIELDVALUE = G.ISA_LINE_STATUS) as ORDER_STATUS_DESC, " & vbCrLf &
+                     " B.DESCR254 As NONSTOCK_DESCRIPTION, C.DESCR60 as STOCK_DESCRIPTION, D.ISA_EMPLOYEE_EMAIL," & vbCrLf &
+                     " B.INV_ITEM_ID as INV_ITEM_ID," & vbCrLf &
+                     " B.QTY_REQUESTED,B.QTY_RECEIVED,B.UNIT_OF_MEASURE," & vbCrLf &
+                     " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH" & vbCrLf &
+                     " ,A.origin, LD.PO_ID, SH.ISA_ASN_TRACK_NO" & vbCrLf &
+                     " FROM ps_isa_ord_intf_HD A," & vbCrLf  '   & _
 
-        strSQLstring += " ps_isa_ord_intf_LN B," & vbCrLf &
-                 " PS_MASTER_ITEM_TBL C," & vbCrLf &
-                 " PS_ISA_USERS_TBL D," & vbCrLf &
-                 " PS_ISAORDSTATUSLOG G, PS_ISA_ASN_SHIPPED SH, PS_PO_LINE_DISTRIB LD" & vbCrLf &
-                 " where G.BUSINESS_UNIT_OM = '" & strBU & "' " & vbCrLf &
-                 " AND G.BUSINESS_UNIT_OM = A.BUSINESS_UNIT_OM " & vbCrLf &
-                 " AND G.BUSINESS_UNIT_OM = D.BUSINESS_UNIT " & vbCrLf     '   & _
+            strSQLstring += " ps_isa_ord_intf_LN B," & vbCrLf &
+                     " PS_MASTER_ITEM_TBL C," & vbCrLf &
+                     " PS_ISA_USERS_TBL D," & vbCrLf &
+                     " PS_ISAORDSTATUSLOG G, PS_ISA_ASN_SHIPPED SH, PS_PO_LINE_DISTRIB LD" & vbCrLf &
+                     " where G.BUSINESS_UNIT_OM = '" & strBU & "' " & vbCrLf &
+                     " AND G.BUSINESS_UNIT_OM = A.BUSINESS_UNIT_OM " & vbCrLf &
+                     " AND G.BUSINESS_UNIT_OM = D.BUSINESS_UNIT " & vbCrLf     '   & _
 
         strSQLstring += "  and A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf &
-                 " and A.ORDER_NO = B.ORDER_NO" & vbCrLf &
-                 " and C.SETID (+) = 'MAIN1'" & vbCrLf &
-                 " and C.INV_ITEM_ID(+) = B.INV_ITEM_ID " & vbCrLf &
-                 " AND G.ORDER_NO = A.ORDER_NO " & vbCrLf &
-                 " AND B.ISA_INTFC_LN = G.ISA_INTFC_LN" & vbCrLf &
-                 " AND A.BUSINESS_UNIT_OM = D.BUSINESS_UNIT" & vbCrLf &
-                 " AND SH.PO_ID (+) = LD.PO_ID And SH.LINE_NBR (+) = LD.LINE_NBR And SH.SCHED_NBR (+) = LD.SCHED_NBR And LD.Req_id (+) = B.order_no AND LD.REQ_LINE_NBR (+) = B.ISA_INTFC_LN" & vbCrLf &
-                 " AND G.DTTM_STAMP > TO_DATE('" & dteStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf &
-                 " AND G.DTTM_STAMP <= TO_DATE('" & dteEndDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf &
-                 " AND UPPER(B.ISA_EMPLOYEE_ID) = UPPER(D.ISA_EMPLOYEE_ID)) TBL, PS_ISA_USERS_PRIVS H " & vbCrLf &
-                 " WHERE H.BUSINESS_UNIT = TBL.BUSINESS_UNIT " & vbCrLf &
-                 " AND TBL.EMPLID = H.ISA_EMPLOYEE_ID " & vbCrLf &
-                 " AND SUBSTR(H.ISA_IOL_OP_NAME,10) = TBL.OLD_ORDER_STATUS " & vbCrLf &
-                 " AND H.ISA_IOL_OP_VALUE = 'Y' " & vbCrLf &
-                  " ORDER BY ORDER_NO, LINE_NBR, DTTM_STAMP"
+                     " and A.ORDER_NO = B.ORDER_NO" & vbCrLf &
+                     " and C.SETID (+) = 'MAIN1'" & vbCrLf &
+                     " and C.INV_ITEM_ID(+) = B.INV_ITEM_ID " & vbCrLf &
+                     " AND G.ORDER_NO = A.ORDER_NO " & vbCrLf &
+                     " AND B.ISA_INTFC_LN = G.ISA_INTFC_LN" & vbCrLf &
+                     " AND A.BUSINESS_UNIT_OM = D.BUSINESS_UNIT" & vbCrLf &
+                     " AND SH.PO_ID (+) = LD.PO_ID And SH.LINE_NBR (+) = LD.LINE_NBR And SH.SCHED_NBR (+) = LD.SCHED_NBR And LD.Req_id (+) = B.order_no AND LD.REQ_LINE_NBR (+) = B.ISA_INTFC_LN" & vbCrLf &
+                     " AND G.DTTM_STAMP > TO_DATE('" & dteStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf &
+                     " AND G.DTTM_STAMP <= TO_DATE('" & dteEndDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf &
+                     " AND UPPER(B.ISA_EMPLOYEE_ID) = UPPER(D.ISA_EMPLOYEE_ID)) TBL, PS_ISA_USERS_PRIVS H " & vbCrLf &
+                     " WHERE H.BUSINESS_UNIT = TBL.BUSINESS_UNIT " & vbCrLf &
+                     " AND TBL.EMPLID = H.ISA_EMPLOYEE_ID " & vbCrLf &
+                     " AND SUBSTR(H.ISA_IOL_OP_NAME,10) = TBL.OLD_ORDER_STATUS " & vbCrLf &
+                     " AND H.ISA_IOL_OP_VALUE = 'Y' " & vbCrLf &
+                      " ORDER BY ORDER_NO, LINE_NBR, DTTM_STAMP"
         ' this is set up in the user priveleges when giving out the status code priveleges in ISOL under Add/Change User
         ' matches the orserstatus emails set up for with the order status in PS_ISAORDSTATUSLOG
         ' the tenth byte of isa_iol_op_name has the one character g.isa_order_status code
@@ -1360,18 +1361,18 @@ Module Module1
         ' We are going to check for priveleges in the upd_email_out program that sends the emails out.
 
         Try
-            objStreamWriter.WriteLine("  CheckAllStatus_7 (2) Q1: " & strSQLstring)
+                objStreamWriter.WriteLine("  CheckAllStatus_7 (2) Q1: " & strSQLstring)
 
-            ds = ORDBAccess.GetAdapter(strSQLstring, connectOR)
+                ds = ORDBAccess.GetAdapter(strSQLstring, connectOR)
 
-        Catch OleDBExp As OleDbException
-            Console.WriteLine("")
-            Console.WriteLine("***OLEDB error - " & OleDBExp.ToString)
-            Console.WriteLine("")
-            connectOR.Close()
-            objStreamWriter.WriteLine("     Error - error reading transaction FROM PS_ISAORDSTATUSLOG A")
-            Return True
-        End Try
+            Catch OleDBExp As OleDbException
+                Console.WriteLine("")
+                Console.WriteLine("***OLEDB error - " & OleDBExp.ToString)
+                Console.WriteLine("")
+                connectOR.Close()
+                objStreamWriter.WriteLine("     Error - error reading transaction FROM PS_ISAORDSTATUSLOG A")
+                Return True
+            End Try
 
         If IsDBNull(ds.Tables(0).Rows.Count) Or (ds.Tables(0).Rows.Count) = 0 Then
             Console.WriteLine("Fetched Datas 0")
@@ -2538,7 +2539,8 @@ Module Module1
                 BU = "EMC00"
                 Mailer1.From = getFromMail(BU, connectOR)
             Else
-                Mailer1.From = ConfigurationManager.AppSettings("OtherBUMailKey")
+                BU = "ISA00"
+                Mailer1.From = getFromMail(BU, connectOR)
             End If
         Catch ex As Exception
 
@@ -3223,7 +3225,8 @@ Module Module1
                 BU = "EMC00"
                 fromMail = getFromMail(BU, connectOR)
             Else
-                fromMail = ConfigurationManager.AppSettings("OtherBUMailKey")
+                BU = "ISA00"
+                fromMail = getFromMail(BU, connectOR)
             End If
         Catch ex As Exception
 
