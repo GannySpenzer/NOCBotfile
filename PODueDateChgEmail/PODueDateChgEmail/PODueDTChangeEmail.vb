@@ -700,7 +700,8 @@ Public Class PODueDTChangeEmail
                             From = getFromMail(BU, connectOR)
                             eml.Subject = "Status Update - Due Date Change - WO #" & wordOrder & ""
                         Else
-                            From = ConfigurationManager.AppSettings("OtherBUMailKey")
+                            BU = "ISA00"
+                            From = getFromMail(BU, connectOR)
                             eml.Subject = "Order Due Date has Changed. Order Number: " & myReq.ReqId.ToString & ". PO_ID: " & myReq.POID.ToString & ""
                         End If
 
