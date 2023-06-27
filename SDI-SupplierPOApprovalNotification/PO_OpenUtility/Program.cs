@@ -78,13 +78,13 @@ namespace PO_OpenUtility
                         if (ds_UserDetail.Tables[0].Rows.Count != 0)
                         {
                             string strBuyerEmail = string.Empty;
-                            if (PO_BU== "WAL00")
+                            if (PO_BU == "WAL00" || PO_BU == "EMC00")
                             {
-                                strBuyerEmail = "WalmartPurchasing@sdi.com";
+                                strBuyerEmail = getpurchasingEmailFrom(PO_BU);
                             }
                             else
                             {
-                                 strBuyerEmail = getBuyerEmail(POID, PO_BU);
+                                strBuyerEmail = getBuyerEmail(POID, PO_BU);
                             }
                             
                             DataSet dsTech = getTechDetails(POID, PO_BU);
