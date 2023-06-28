@@ -865,14 +865,16 @@ Public Class QuoteNonStockProcessor
         End Try
     End Sub
     'Madhu-INC0015106-Removed avacorp in Email flow
-    Public Shared Sub SendLogger(ByVal subject As String, ByVal body As String, ByVal messageType As String, ByVal MailType As String, ByVal EmailTo As String, ByVal EmailCc As String, ByVal EmailBcc As String, Optional ByVal sBU As String = "")
+    Public Shared Sub SendLogger(ByVal subject As String, ByVal body As String, ByVal messageType As String, ByVal MailType As String, ByVal EmailTo As String, ByVal EmailCc As String, ByVal EmailBcc As String, Optional ByVal sBU As String = "", Optional ByVal REQBU As String = "")
         Try
             Dim SDIEmailService As SDiEmailUtilityService.EmailServices = New SDiEmailUtilityService.EmailServices()
             Dim MailAttachmentName As String()
             Dim MailAttachmentbytes As New List(Of Byte())()
             Dim From As String = String.Empty
             If Not getDBName() Then
-                EmailTo = "webdev@sdi.com"
+                If REQBU <> "I0635" And EmailTo = "webdev@sdi.com" Then
+                    EmailTo = "webdev@sdi.com"
+                End If
             End If
             'SDI-40628 Changing email
             'SP-316 Purchasing Email from address change[By Vishalini]
@@ -1298,8 +1300,8 @@ Public Class QuoteNonStockProcessor
                                     Next
                                 End If
                                 arr = Nothing
-                            End If
-                        Else
+                                End If
+                            Else
                             Dim strOrigApproverID As String = String.Empty
                             If boItem.BusinessUnitID = "WAL00" Then
                                 strOrigApproverID = rdr("WALMARTAPPROVER").trim
@@ -1519,9 +1521,15 @@ Public Class QuoteNonStockProcessor
 
         Return strOrigApproverID
     End Function
-
-    Public Shared Function GetURL(Optional ByVal cBusinessUnitOM As String = "") As String
+    'Madhu-ZEUS-138-Adding the Zeus 2.0 Link to redirect to if the flag is turned on
+    Public Shared Function GetURL(Optional ByVal cBusinessUnitOM As String = "", Optional ByVal LineStatus As String = "") As String
         Dim sRet As String = ""
+        Dim finalurl As String = ""
+        Dim IsZeus2 As String = ""
+        Dim Zeus2 As Boolean = False
+        Dim strquery As String = ""
+        Dim strquery1 As String = ""
+        Dim dtapprover As DataSet
         Dim sWebAppName As String = "ims.sdi.com:8080/sdiconnect/"
         Dim sCNString As String = m_CN.ConnectionString
         Dim strDBase As String = "STAR"
@@ -1549,19 +1557,58 @@ Public Class QuoteNonStockProcessor
             Case Else
                 sRet = "http://zeustest.sdi.com:8083/ZEUSUAT/"
         End Select
-
-        If cBusinessUnitOM = "I0W01" Then
-            Select Case strDBase
-                Case "PROD", "SPRD"
-                    sRet = "https://walmart.sdi.com/"
-                Case "DEVL"
-                    sRet = "https://walmarttest.sdi.com/"
-                Case Else
-                    sRet = "https://walmarttest.sdi.com/"
-            End Select
+        If LineStatus = "QTW" Then
+            finalurl = sRet & "approveorder.aspx"
+        Else
+            finalurl = sRet & "Approvequote.aspx"
         End If
 
-        Return sRet
+
+        Try
+
+            strquery1 = "SELECT ZEUS_SITE FROM PS_ISA_ENTERPRISE WHERE ISA_BUSINESS_UNIT= '" & cBusinessUnitOM & "'"
+            IsZeus2 = ORDBData.GetScalar(strquery1)
+            If IsZeus2 = "Y" Then
+                Zeus2 = True
+            End If
+        Catch ex As Exception
+        End Try
+
+        If cBusinessUnitOM = "I0W01" Or Zeus2 = True Then
+            Try
+                strquery = "SELECT SITENAME,TEST_SITE,DEMO_SITE,PROD_SITE FROM SDIX_SITE_URL WHERE SITENAME IN ('ZEUS2','WAL')"
+                dtapprover = ORDBData.GetAdapter(strquery)
+            Catch ex As Exception
+            End Try
+
+
+            If Zeus2 Then
+                Select Case strDBase
+                    Case "DEVL"
+                        sRet = dtapprover.Tables(0).Rows(0).Item("TEST_SITE")
+                    Case "PROD", "SPRD"
+                        sRet = dtapprover.Tables(0).Rows(0).Item("PROD_SITE")
+                    Case Else
+                        sRet = dtapprover.Tables(0).Rows(0).Item("DEMO_SITE")
+                End Select
+            Else
+                Select Case strDBase
+                    Case "DEVL"
+                        sRet = dtapprover.Tables(0).Rows(1).Item("TEST_SITE")
+                    Case "PROD", "SPRD"
+                        sRet = dtapprover.Tables(0).Rows(1).Item("PROD_SITE")
+                    Case Else
+                        sRet = dtapprover.Tables(0).Rows(1).Item("DEMO_SITE")
+                End Select
+            End If
+            If LineStatus = "QTW" Then
+                finalurl = sRet & "needapprove"
+            Else
+                finalurl = sRet & "Approvequote"
+            End If
+        End If
+
+        Return finalurl
     End Function
 
     Private Sub CheckSearchPrimaryRecipient()
@@ -1985,7 +2032,7 @@ Public Class QuoteNonStockProcessor
                                             FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority) &
                                             PositionGrid(dataGridHTML) &
                                             Content &
-                                            FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, bShowApproveViaEmailLink) &
+                                            FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, LineStatus, bShowApproveViaEmailLink) &
                                             AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail, LineStatus) &
                                             AddVersionNumber() &
                                             "<HR width='100%' SIZE='1'>" &
@@ -2048,11 +2095,38 @@ Public Class QuoteNonStockProcessor
                         Else
                             eml.Subject = " TEST ZEUS - " & eml.Subject
                         End If
-                        eml.To = "webdev@sdi.com"
+                        If itmQuoted.BusinessUnitOM = "I0635" Then
+                            If Not (eml.To.Trim.Length > 0) Then
+                                eml.To = eml.From
+                            End If
+
+                            ' check if there's no valid recepient still, then we need to send this to 
+                            '   the default "no valid recepient" recepient based off of our config file.
+                            If Not (eml.To.Trim.Length > 0) Then
+                                If m_defaultToRecepient.Count > 0 Then
+                                    If Trim(eml.To) <> "" Then
+                                        If Right(Trim(eml.To), 1) = ";" Then
+                                            ' OK, do nothing
+                                        Else
+                                            eml.To = Trim(eml.To) & ";"
+                                        End If
+                                    End If
+                                    For Each sTo As String In m_defaultToRecepient
+                                        If Utility.IsValidEmailAdd(sTo) Then
+                                            eml.To &= sTo & ";"
+                                        End If
+                                    Next
+                                End If
+                            End If
+                            eml.To = eml.To + ";" + "webdev@sdi.com"
+                        Else
+                            eml.To = "webdev@sdi.com"
+                        End If
+
                         eml.Cc = ""
-                        eml.Bcc = ""
-                    Else
-                    End If
+                            eml.Bcc = ""
+                        Else
+                        End If
                 Catch ex As Exception
                 End Try
                 If Trim(itmQuoted.Priority) <> "" Then
@@ -2063,7 +2137,7 @@ Public Class QuoteNonStockProcessor
                 ' send this email
                 Try
 
-                    SendLogger(eml.Subject, eml.Body, "QUOTEAPPROVAL", "Mail", eml.To, eml.Cc, eml.Bcc, itmQuoted.BusinessUnitID)
+                    SendLogger(eml.Subject, eml.Body, "QUOTEAPPROVAL", "Mail", eml.To, eml.Cc, eml.Bcc, itmQuoted.BusinessUnitID, itmQuoted.BusinessUnitOM)
                     SendNotification(itmQuoted.EmployeeID, eml.Subject, itmQuoted.OrderID, itmQuoted.BusinessUnitOM)
                     'Dim Title As String = "Order Number: " + itmQuoted.OrderID + " Requested For Quote Approval"
                     sendWebNotification(itmQuoted.EmployeeID, eml.Subject)
@@ -2143,7 +2217,7 @@ Public Class QuoteNonStockProcessor
                             eml.Subject &= " (copy)"
                             ''System.Web.Mail.SmtpMail.Send(message:=eml)
                             ''SDIEmailService.EmailUtilityServices("MailandStore", "madhuvanthy.u@avasoft.biz", "madhuvanthy.u@avasoft.biz", eml.Subject, String.Empty, String.Empty, eml.Body, "SDIERR", MailAttachmentName, MailAttachmentbytes.ToArray())
-                            SendLogger(eml.Subject, eml.Body, "QUOTEAPPROVAL", "Mail", eml.To, eml.Cc, eml.Bcc, itmQuoted.BusinessUnitID)
+                            SendLogger(eml.Subject, eml.Body, "QUOTEAPPROVAL", "Mail", eml.To, eml.Cc, eml.Bcc, itmQuoted.BusinessUnitID, itmQuoted.BusinessUnitOM)
 
                         End If
                     Catch ex As Exception
@@ -2335,13 +2409,15 @@ Public Class QuoteNonStockProcessor
         Return ""
     End Function
 
-    Private Function FormHTMLLink(ByVal cOrderID As String, ByVal cEmployeeID As String, ByVal cBusinessUnitOM As String, Optional ByVal bShowLink As Boolean = True) As String
+    Private Function FormHTMLLink(ByVal cOrderID As String, ByVal cEmployeeID As String, ByVal cBusinessUnitOM As String, ByVal LineStatus As String, Optional ByVal bShowLink As Boolean = True) As String
         Dim cLink As String = ""
         Dim cHdr As String = "QuoteNonStockProcessor.FormHTMLLink: "
         If bShowLink Then
             Try
                 'Dim m_cURL1 As String = "http://" & ConfigurationManager.AppSettings("WebAppName") & "Approvequote.aspx"
-                Dim m_cURL1 As String = GetURL() & "Approvequote.aspx"
+                'Dim m_cURL1 As String = GetURL() & "Approvequote.aspx"
+                Dim m_cURL1 As String = GetURL(cBusinessUnitOM, LineStatus)
+
                 Dim boEncrypt As New Encryption64
 
                 Dim cParam As String = "?fer=" & boEncrypt.Encrypt(cOrderID, m_cEncryptionKey) &
@@ -2368,27 +2444,14 @@ Public Class QuoteNonStockProcessor
         End If
         Return (cLink)
     End Function
-
+    'Madhu-Zeus-138-Adding the ZEUS 2.0 LINK If Flag is turned on
     Private Function FormHTMLLinkSDiExchange(ByVal cOrderID As String, ByVal cEmployeeID As String, ByVal cBusinessUnitOM As String, ByVal LineStatus As String, Optional ByVal bShowLink As Boolean = True) As String
         Dim cLink As String = ""
         Dim cHdr As String = "QuoteNonStockProcessor.FormHTMLLink: "
         Dim m_cURL1 As String = ""
         If bShowLink Then
             Try
-                'Dim m_cURL1 As String = "http://" & ConfigurationManager.AppSettings("WebAppName") & "Approvequote.aspx"
-                If cBusinessUnitOM = "I0W01" Then
-                    If LineStatus = "QTW" Then
-                        m_cURL1 = GetURL(cBusinessUnitOM) & "needapprove"
-                    Else
-                        m_cURL1 = GetURL(cBusinessUnitOM) & "Approvequote"
-                    End If
-                Else
-                    If LineStatus = "QTW" Then
-                        m_cURL1 = GetURL(cBusinessUnitOM) & "approveorder.aspx"
-                    Else
-                        m_cURL1 = GetURL(cBusinessUnitOM) & "Approvequote.aspx"
-                    End If
-                End If
+                m_cURL1 = GetURL(cBusinessUnitOM, LineStatus)
 
 
                 Dim boEncrypt As New Encryption64
@@ -2756,7 +2819,11 @@ Public Class QuoteNonStockProcessor
             End If
             Dim strOraSelectQuery As String = "select * from SYSADM8.PS_ISA_ORD_INTF_LN A where A.ORDER_NO = '" & itmQuoted.OrderID & "' AND A.ISA_LINE_STATUS in ('QTS','QTW') AND NOT EXISTS (SELECT 'X' FROM PS_ISA_REQ_EML_LOG B1 WHERE B1.REQ_ID = A.ORDER_NO AND B1.LINE_NO= A.ISA_INTFC_LN AND B1.PRICE= A.ISA_SELL_PRICE)"
             Dim dsOrdLnItems As DataSet = GetAdapter(strOraSelectQuery)
-
+            If Not getDBName() Then
+                If sBU = "I0635" Then
+                    eml.To = eml.To + ";" + "webdev@sdi.com"
+                End If
+            End If
             If dsOrdLnItems.Tables(0).Rows.Count > 0 Then
 
                 For Each dataRowMain As DataRow In dsOrdLnItems.Tables(0).Rows
@@ -3039,20 +3106,21 @@ Public Class QuoteNonStockProcessor
         Dim strhref As String
         Dim strhrefAlt As String
         'Madhu-WW-453-Passing Business unit for  Price Block Flag scenario - [If WAL- Redirect to Walmart Testsite else Zeus]
+        'Madhu-Zeus-138-Adding the ZEUS 2.0 LINK If Flag is turned on
 
-        strhref = GetURL(itmQuoted.BusinessUnitOM) & "NeedApprove.aspx?fer=" & streOrdnum & "&op=" & streApper & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
-        strhrefAlt = GetURL(itmQuoted.BusinessUnitOM) & "NeedApprove.aspx?fer=" & streOrdnum & "&op=" & streApperAlt & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
+        strhref = GetURL(itmQuoted.BusinessUnitOM, itmQuoted.LineStatus) & "?fer=" & streOrdnum & "&op=" & streApper & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
+        strhrefAlt = GetURL(itmQuoted.BusinessUnitOM, itmQuoted.LineStatus) & "?fer=" & streOrdnum & "&op=" & streApperAlt & "&xyz=" & streBU & "&pyt=" & streAppTyp & "&HOME=N"
 
         If String.Equals(strAppAltUserid.Trim(), strAppUserid.Trim()) Then
-            NotifyApprover(strAppUserid, strappName, strreqID, itmQuoted.WorkOrderNumber, stritemid, dataGridHTML, strhref, strHldSts, itmQuoted.BusinessUnitOM)
+            NotifyApprover(strAppUserid, strappName, strreqID, itmQuoted.WorkOrderNumber, stritemid, dataGridHTML, strhref, strHldSts, itmQuoted.BusinessUnitOM, itmQuoted.BusinessUnitID)
         Else
-            NotifyApprover(strAppUserid, strappName, strreqID, itmQuoted.WorkOrderNumber, stritemid, dataGridHTML, strhref, strHldSts, itmQuoted.BusinessUnitOM)
-            NotifyApprover(strAppAltUserid, strappName, strreqID, itmQuoted.WorkOrderNumber, stritemid, dataGridHTML, strhrefAlt, strHldSts, itmQuoted.BusinessUnitOM)
+            NotifyApprover(strAppUserid, strappName, strreqID, itmQuoted.WorkOrderNumber, stritemid, dataGridHTML, strhref, strHldSts, itmQuoted.BusinessUnitOM, itmQuoted.BusinessUnitID)
+            NotifyApprover(strAppAltUserid, strappName, strreqID, itmQuoted.WorkOrderNumber, stritemid, dataGridHTML, strhrefAlt, strHldSts, itmQuoted.BusinessUnitOM, itmQuoted.BusinessUnitID)
         End If
 
     End Sub
 
-    Public Shared Sub NotifyApprover(ByVal strappId As String, ByVal strappName As String, ByVal strreqID As String, ByVal WorkOrderNumber As String, ByVal stritemid As String, ByVal dataGridHTML As String, ByVal strhref As String, ByVal strHldSts As String, ByVal BU As String)
+    Public Shared Sub NotifyApprover(ByVal strappId As String, ByVal strappName As String, ByVal strreqID As String, ByVal WorkOrderNumber As String, ByVal stritemid As String, ByVal dataGridHTML As String, ByVal strhref As String, ByVal strHldSts As String, ByVal BU As String, ByVal PurchasingBU As String)
         Dim strbodyhead As String
         Dim strbodydetl As String
 
@@ -3060,7 +3128,8 @@ Public Class QuoteNonStockProcessor
         'SDI-40628 Changing Mail id as walmartpurchasing@sdi.com from sdiexchange@sdi.com for Walmart BU.
         Dim MailFrom As String
         'SP-316 Purchasing Email from address change[By Vishalini]
-        MailFrom = getpurchasingEmailFrom(BU)
+        'Madhu-ZEUS-138-Pass the correct purchasse BU
+        MailFrom = getpurchasingEmailFrom(PurchasingBU)
         Dim MailSub As String = String.Empty
         Dim MailBody As String = String.Empty
 
@@ -3129,8 +3198,9 @@ Public Class QuoteNonStockProcessor
         MailSub = "SDI ZEUS - Order Number " & strreqID & " needs approval"
 
         MailTo = AppMail
+        'Madhu-ZEUS-138-Pass Purchase BU In Send Logger Method
 
-        SendLogger(MailSub, MailBody, "NotifyApprover", "MailandStore", MailTo, String.Empty, "WebDev@sdi.com")
+        SendLogger(MailSub, MailBody, "NotifyApprover", "MailandStore", MailTo, String.Empty, "WebDev@sdi.com", PurchasingBU)
 
     End Sub
 
