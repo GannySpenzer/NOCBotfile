@@ -898,6 +898,18 @@ Public Class QuoteNonStockProcessor
         End Try
         Return PurchasingEmailFrom
     End Function
+    'Mythili -- INC0023448 Adding CC emails
+    Public Shared Function getpurchasingEmailTo(ByVal sBU As String) As String
+        Dim sqlStringEmailTo As String = ""
+        Dim PurchasingEmailTo As String = ""
+        Try
+            sqlStringEmailTo = "Select ISA_PURCH_EML_TO from PS_ISA_BUS_UNIT_PM where BUSINESS_UNIT_PO ='" & sBU & "'"
+            PurchasingEmailTo = ORDBData.GetScalar(sqlStringEmailTo)
+        Catch ex As Exception
+
+        End Try
+        Return PurchasingEmailTo
+    End Function
 
     Public Shared Sub SendLogger(ByVal subject As String, ByVal exception As Exception, ByVal messageType As String, Optional ByVal Query As String = "", Optional ByVal ConString As String = "", Optional ByVal sBU As String = "")
         Try
@@ -1300,8 +1312,8 @@ Public Class QuoteNonStockProcessor
                                     Next
                                 End If
                                 arr = Nothing
-                                End If
-                            Else
+                            End If
+                        Else
                             Dim strOrigApproverID As String = String.Empty
                             If boItem.BusinessUnitID = "WAL00" Then
                                 strOrigApproverID = rdr("WALMARTAPPROVER").trim
@@ -1808,8 +1820,17 @@ Public Class QuoteNonStockProcessor
                 End If
 
                 ' assign recipient CC email address(es)
-                If itmQuoted.CC.Length > 0 Then
-                    eml.Cc = itmQuoted.CC
+                'Mythili -- INC0023448 Adding CC emails
+                If sBU = "EMC00" Or sBU = "WAL00" Then
+                    If itmQuoted.CC.Length > 0 And getDBName() Then
+                        eml.Cc = itmQuoted.CC + ";" + getpurchasingEmailTo(sBU)
+                        'Else
+                        '    eml.Cc = getpurchasingEmailTo(sBU)
+                    End If
+                Else
+                    If itmQuoted.CC.Length > 0 And getDBName() Then
+                        eml.Cc = itmQuoted.CC
+                    End If
                 End If
 
                 ' assign recipient BCC email address(es)
@@ -2124,9 +2145,9 @@ Public Class QuoteNonStockProcessor
                         End If
 
                         eml.Cc = ""
-                            eml.Bcc = ""
-                        Else
-                        End If
+                        eml.Bcc = ""
+                    Else
+                    End If
                 Catch ex As Exception
                 End Try
                 If Trim(itmQuoted.Priority) <> "" Then
@@ -2785,8 +2806,17 @@ Public Class QuoteNonStockProcessor
             End If
 
             ' assign recipient CC email address(es)
-            If itmQuoted.CC.Length > 0 Then
-                eml.Cc = itmQuoted.CC
+            'Mythili -- INC0023448 Adding CC emails
+            If sBU = "EMC00" Or sBU = "WAL00" Then
+                If itmQuoted.CC.Length > 0 And getDBName() Then
+                    eml.Cc = itmQuoted.CC + ";" + getpurchasingEmailTo(sBU)
+                    'Else
+                    '    eml.Cc = getpurchasingEmailTo(sBU)
+                End If
+            Else
+                If itmQuoted.CC.Length > 0 And getDBName() Then
+                    eml.Cc = itmQuoted.CC
+                End If
             End If
 
             ' assign recipient BCC email address(es)
