@@ -160,22 +160,22 @@ Module Module1
                 'Added checkAllStatusWAL() by checking I0W01 BU, Email time for order status summary email--  WW-287 & WAL-632 Poornima S
                 'SP-316 EMCOR order status summary- Dhamotharan
                 If (dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") = "I0W01" Or dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") = "I0631") And ((TimeNow > SumryStartLngTime) And (TimeNow < SumryEndLngTime)) Then
-                    Try
-                        Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                        objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                        objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
-                        objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
-                        buildstatchgout = checkAllStatusWAL(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
-                    Catch ex As Exception
+                        Try
+                            Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
+                            objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
+                            objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
+                            objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                            buildstatchgout = checkAllStatusWAL(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                        Catch ex As Exception
 
-                    End Try
+                        End Try
 
-                End If
-                Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
-                objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
-                buildstatchgout = checkAllStatusNew(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                    End If
+                    Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
+                    objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
+                    objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
+                    objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                    buildstatchgout = checkAllStatusNew(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
 
                 If buildstatchgout = True Then
                     bolErrorSomeWhere = True
@@ -2542,11 +2542,13 @@ Module Module1
                 BU = "ISA00"
                 Mailer1.From = getFromMail(BU, connectOR)
             End If
+            'Mythili -- INC0023448 Adding CC emails
+            Mailer1.Cc = getToMail(BU, connectOR)
         Catch ex As Exception
 
         End Try
 
-        Mailer1.Cc = ""
+
         Mailer1.Bcc = strccfirst1 & "@" & strcclast1
         strbodyhead1 = "<table width='100%' bgcolor='black'><tbody><tr><td><img data-imagetype='External' src='https://www.sdizeus.com/images/SDNewLogo_Email.png' alt='SDI' vspace='0' hspace='0'></td><td width='100%'><center><span style='font-family:Calibri; font-size:x-large; text-align: center; color:White' > SDI Marketplace</span></center><center><span style='text-align: center; margin:0px auto; color:White'>SDiExchange - Order Status</span></center></td></tr></tbody></table>"
         'strbodyhead1 = "<table width='100%'><tbody><tr><td><img src='http://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='82px' vspace='0' hspace='0' /></td><td width='100%'><br /><br /><br /><br /><br /><br /><center><span style='font-family: Calibri; font-size: 32px; text-align: center;font-weight:bold'>SDI Marketplace</span></center><center style='font-size:18px'><span style='text-align: center; margin: 0px auto; font-family:Calibri;'>SDiExchange - Order Status</span></center></td></tr></tbody></table>"
@@ -2773,8 +2775,8 @@ Module Module1
         Try
             objGenerallLogStreamWriter.WriteLine("Sending order summary email to " + Mailer1.To)
             objStreamWriter.WriteLine("Sending order summary email to " + Mailer1.To)
-
-            SDIEmailService.EmailUtilityServices("MailandStore", Mailer1.From, Mailer1.To, Mailer1.Subject, String.Empty, "webdev@sdi.com", Mailer1.Body, "StatusChangeEmail1", MailAttachmentName, MailAttachmentbytes.ToArray())
+            'Mythili -- INC0023448 Adding CC emails
+            SDIEmailService.EmailUtilityServices("MailandStore", Mailer1.From, Mailer1.To, Mailer1.Subject, Mailer1.Cc, "webdev@sdi.com", Mailer1.Body, "StatusChangeEmail1", MailAttachmentName, MailAttachmentbytes.ToArray())
         Catch ex As Exception
             objGenerallLogStreamWriter.WriteLine("Error in sending order summary email to " + Mailer1.To)
             objStreamWriter.WriteLine("Error in sending order summary email to " + Mailer1.To)
@@ -3304,27 +3306,40 @@ Module Module1
 
         Mailer1.Body = strbodyhead1 & strbodydet1
         'SP-316 get to emails and Changed subject for EMCOR  - Dhamotharan
-        Try
+        Try 'Mythili -- INC0023448 Adding CC emails
             Dim toMail As String = ""
-            toMail = getToMail(strBU, connectOR)
+            Dim BU As String = ""
+            If strBU = "I0W01" Then
+                BU = "WAL00"
+            ElseIf strBU = "I0631" Then
+                BU = "EMC00"
+            Else
+                BU = "ISA00"
+            End If
+            toMail = getToMail(BU, connectOR)
             If Not IsProdDB Then
                 Mailer1.To = "webdev@sdi.com"
                 If strBU = "I0W01" Then
+                    'Mailer1.Cc = toMail
                     Mailer1.Subject = "<<TEST SITE>>Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
                 ElseIf strBU = "I0631" Then
+                    'Mailer1.Cc = toMail
                     Mailer1.Subject = "<<TEST SITE>>Status Update - " + strOrderStatDesc + " - WO # " & strWOno
                 Else
                     Mailer1.Subject = "<<TEST SITE>>SDiExchange - Order Status records for Order Number: " & strOrderNo
                 End If
             Else
                 If strBU = "I0W01" Then
-                    Mailer1.To = "webdev@sdi.com;" + toMail
+                    Mailer1.To = "webdev@sdi.com"
+                    Mailer1.Cc = toMail
                     Mailer1.Subject = "Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
                 ElseIf strBU = "I0631" Then
-                    Mailer1.To = "webdev@sdi.com;" + toMail
+                    Mailer1.To = "webdev@sdi.com"
+                    Mailer1.Cc = toMail
                     Mailer1.Subject = "Status Update - " + strOrderStatDesc + " - WO # " & strWOno
                 Else
                     Mailer1.To = strPurchaserEmail
+                    Mailer1.Cc = ""
                     Mailer1.Subject = "SDiExchange - Order Status records for Order Number: " & strOrderNo
                 End If
             End If
@@ -3335,7 +3350,7 @@ Module Module1
         Try
             Mailer1.BodyFormat = System.Web.Mail.MailFormat.Html
 
-            SDIEmailService.EmailUtilityServices("MailandStore", Mailer1.From, Mailer1.To, Mailer1.Subject, String.Empty, "webdev@sdi.com", Mailer1.Body, "StatusChangeEmail1", MailAttachmentName, MailAttachmentbytes.ToArray())
+            SDIEmailService.EmailUtilityServices("MailandStore", Mailer1.From, Mailer1.To, Mailer1.Subject, Mailer1.Cc, "webdev@sdi.com", Mailer1.Body, "StatusChangeEmail1", MailAttachmentName, MailAttachmentbytes.ToArray())
         Catch ex As Exception
 
         End Try
@@ -3976,6 +3991,7 @@ Module Module1
             connectOR.Close()
         End If
         Try
+            connectOR.Open() 'Mythili -- INC0023448 Adding CC emails
             sqlStringEmailFrom = "Select ISA_PURCH_EML_TO from PS_ISA_BUS_UNIT_PM where BUSINESS_UNIT_PO = '" & StrBu & "'"
             toMail = ORDBAccess.GetScalar(sqlStringEmailFrom, connectOR)
         Catch ex As Exception
