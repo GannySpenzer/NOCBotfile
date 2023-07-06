@@ -1824,8 +1824,8 @@ Public Class QuoteNonStockProcessor
                 If sBU = "EMC00" Or sBU = "WAL00" Then
                     If itmQuoted.CC.Length > 0 And getDBName() Then
                         eml.Cc = itmQuoted.CC + ";" + getpurchasingEmailTo(sBU)
-                        'Else
-                        '    eml.Cc = getpurchasingEmailTo(sBU)
+                    ElseIf itmQuoted.CC.Length = 0 And getDBName() Then
+                        eml.Cc = getpurchasingEmailTo(sBU)
                     End If
                 Else
                     If itmQuoted.CC.Length > 0 And getDBName() Then
@@ -2810,8 +2810,8 @@ Public Class QuoteNonStockProcessor
             If sBU = "EMC00" Or sBU = "WAL00" Then
                 If itmQuoted.CC.Length > 0 And getDBName() Then
                     eml.Cc = itmQuoted.CC + ";" + getpurchasingEmailTo(sBU)
-                    'Else
-                    '    eml.Cc = getpurchasingEmailTo(sBU)
+                ElseIf itmQuoted.CC.Length = 0 And getDBName() Then
+                    eml.Cc = getpurchasingEmailTo(sBU)
                 End If
             Else
                 If itmQuoted.CC.Length > 0 And getDBName() Then
