@@ -607,22 +607,28 @@ Public Class PODueDTChangeEmail
         Dim fromAddress As System.Net.Mail.MailAddress
 
 
-        sEmailBody = "<HTML><HEAD><META name=GENERATOR content=""MSHTML 8.00.6001.18876""><span style=""background-color: black;""><img src='https://www.sdizeus.com/images/SDNewLogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></span></HEAD>" &
+        sEmailBody = "<HTML><HEAD><style>table, th, td {border:1px solid black;}</style><META name=GENERATOR content=""MSHTML 8.00.6001.18876""><span style=""background-color: black;""><img src='https://www.sdizeus.com/images/SDNewLogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></span></HEAD>" &
                              "<BODY><CENTER><SPAN style=""WIDTH: 256px; FONT-FAMILY: Arial; FONT-SIZE: x-large"">SDI Marketplace</SPAN></CENTER>" &
                              "<CENTER><SPAN>SDI ZEUS -<B> Order Due Date Change</B></SPAN></CENTER>&nbsp;" &
                               "&nbsp; <DIV><P>Hello SDI Site Rep,<BR></DIV><BR>There has been a Due Date change for Order Number: <B> " & myReq.ReqId.ToString &
                               "</B><BR><BR><TABLE> <COLGROUP><COL width=""7%"" valign=""top""><COL width=""21%"" valign=""top""><COL width=""11%"" valign=""top""><COL width=""7%"" valign=""top"">" &
-                              "<COL width=""36%"" valign=""top""><COL width=""9%"" valign=""top""><COL width=""9%"" valign=""top"">" &
-                              "<TR><TD><U>LINE <BR>NUMBER</U></TD><TD><U>MFG -<BR> MFG ITEM NO.</U></TD><TD><U>ITEM ID</U></TD><TD><U>PO ID</U></TD><TD><U>PO LINE <BR>NUMBER</U></TD><TD><U>WORK ORDER</U></TD><TD><U>DESCRIPTION</U></TD>" &
-                              "<TD><U>LAST <BR>DUE DATE</U></TD><TD><U>NEW <BR>DUE DATE</U></TD></TR><TR></TR>" & vbCrLf
+                              "<COL width=""36%"" valign=""top""><COL width=""9%"" valign=""top""><COL width=""9%"" valign=""top""><COL width=""9%"" valign=""top"">" &
+                              "<TR><TH><U>LINE <BR>NUMBER</U></TH><TH><U>MFG -<BR> MFG ITEM NO.</U></TH><TH><U>ITEM ID</U></TH><TH><U>PO ID</U></TH><TH><U>PO LINE <BR>NUMBER</U></TH><TH><U>WORK ORDER</U></TH><TH><U>DESCRIPTION</U></TH>" &
+                              "<TH><U>LAST <BR>DUE DATE</U></TH><TH><U>NEW <BR>DUE DATE</U></TH><TH><U>REQUIRED <BR>DUE DATE</U></TH></TR><TR></TR>" & vbCrLf
 
         Dim wordOrder As String = String.Empty
         Dim itemID As String = String.Empty
         Dim store As String = String.Empty
         Dim dataExist As Boolean = False
+        Dim RequiredDueDate As String = String.Empty
+        Dim ReqDateString As String = String.Empty
+
         For Each myLine As ReqLine In myReq.ReqLines
             'WAL-590: Due Date Change on All PO's - Order Date Showing Up as Due Date:Change made by Venkat
             Dim DueDate As String = GetPOExists(myLine.POID, myLine.POLine_NBR, myLine.POLineSched_NBR)
+            'INC0022269	Cascades Customer Request: Please add the Original Requested by Date - Dhamotharan P
+            ReqDateString = getRequiredDueDate(myReq.ReqId.ToString, myLine.ReqLineNo, myReq.POBusinessUnit)
+            RequiredDueDate = ReqDateString.Replace("-", "/")
             If DueDate <> "" Then
                 dataExist = True
                 Try
@@ -635,15 +641,20 @@ Public Class PODueDTChangeEmail
 
                     rdr = cmdEmpl.ExecuteReader
                     If Not (rdr Is Nothing) Then
+                        Try
+                            While rdr.Read
+                                itemID = CStr(rdr("INV_ITEM_ID")).Trim.ToUpper
+                                wordOrder = CStr(rdr("ISA_WORK_ORDER_NO")).Trim.ToUpper
+                                Try
+                                    store = CStr(rdr("STORE")).Split("-").LastOrDefault().Trim()
 
-                        While rdr.Read
-                            itemID = CStr(rdr("INV_ITEM_ID")).Trim.ToUpper
-                            wordOrder = CStr(rdr("ISA_WORK_ORDER_NO")).Trim.ToUpper
-                            Try
-                                store = CStr(rdr("STORE")).Split("-").LastOrDefault().Trim()
-                            Catch ex As Exception
-                            End Try
-                        End While
+                                Catch ex As Exception
+                                End Try
+                            End While
+                        Catch ex As Exception
+
+                        End Try
+
                     End If
                 Catch ex As Exception
                 End Try
@@ -655,7 +666,8 @@ Public Class PODueDTChangeEmail
                               "<TD>&nbsp;" & wordOrder & "</TD>" &
                               "<TD>&nbsp;" & myLine.Desc & "</TD>" &
                               "<TD>&nbsp;" & DueDate & "</TD>" &
-                              "<TD>&nbsp;" & myLine.newDate & "</TD></TR>"
+                              "<TD>&nbsp;" & myLine.newDate & "</TD>" &
+                              "<TD>&nbsp;" & RequiredDueDate & "</TD></TR>"
             End If
         Next
         If dataExist = True Then
@@ -759,6 +771,51 @@ Public Class PODueDTChangeEmail
         Return (bIsSuccessful)
 
     End Function
+    'INC0022269	Cascades Customer Request: Please add the Original Requested by Date - Dhamotharan P
+    Private Function getRequiredDueDate(ReqId As String, ReqLineNo As String, POBusinessUnit As String) As String
+        Dim connection As New OleDbConnection(m_oraCNstring)
+        Dim p_strQuery As String = ""
+        Dim oleCommand As New OleDbCommand()
+        Dim RequiredDueDate As String = ""
+        Try
+            p_strQuery = "SELECT MAX(TO_CHAR(AC.ORIG_PROM_DT,'MM-DD-YYYY'))" & vbCrLf &
+                                         " FROM SYSADM8.PS_REQ_LINE AA," & vbCrLf &
+                                        "SYSADM8.PS_PO_LINE_DISTRIB AB, " & vbCrLf &
+                                            "SYSADM8.PS_PO_LINE_SHIP AC" & vbCrLf &
+                                           " WHERE AA.BUSINESS_UNIT IN ('" & POBusinessUnit & "')" & vbCrLf &
+                                           " AND  AA.REQ_ID = '" & ReqId.ToString & "'" & vbCrLf &
+                                           " AND AA.LINE_NBR = " & ReqLineNo & "" & vbCrLf &
+                                           " AND AA.BUSINESS_UNIT = AB.BUSINESS_UNIT" & vbCrLf &
+                                            "AND AA.REQ_ID = AB.REQ_ID" & vbCrLf &
+                                           " AND AA.LINE_NBR = AB.REQ_LINE_NBR" & vbCrLf &
+                                            "AND AB.BUSINESS_UNIT = AC.BUSINESS_UNIT(+) " & vbCrLf &
+                                           " AND AB.PO_ID = AC.PO_ID(+) " & vbCrLf &
+                                            "AND AB.LINE_NBR = AC.LINE_NBR(+)" & vbCrLf &
+                                            "AND AB.SCHED_NBR = AC.SCHED_NBR(+) " & vbCrLf &
+                                            "AND AC.CANCEL_STATUS <> 'X' "
+            oleCommand = New OleDbCommand(p_strQuery, connection)
+            oleCommand.CommandTimeout = 120
+            connection.Open()
+            Try
+                RequiredDueDate = CType(oleCommand.ExecuteScalar(), String)
+            Catch ex32 As Exception
+                RequiredDueDate = ""
+            End Try
+            Try
+                connection.Close()
+            Catch ex1 As Exception
+
+            End Try
+        Catch objException As Exception
+            RequiredDueDate = ""
+            If connection.State = ConnectionState.Open Then
+                connection.Close()
+            End If
+        End Try
+
+        Return RequiredDueDate
+    End Function
+
     Public Sub sendNotification(ByVal Session_UserID As String, ByVal subject As String, ByVal orderNo As String, Optional ByVal strbu As String = Nothing)
         Dim response As String
         Dim objnotifications As New NotificationData
