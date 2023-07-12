@@ -2408,7 +2408,7 @@ Public Class QuoteNonStockProcessor
             If bIsShowWorkOrderNo Then
                 cInfoHTML &= "  <TR>" &
                                "<TD style=""WIDTH: 110px;Font-Weight:Bold"">Work Order:</TD>" &
-                               "<TD style=""COLOR: purple"">" & cWorkOrderNo & "</TD>" &
+                               "<TD style=""overflow-wrap: anywhere;COLOR: purple"">" & cWorkOrderNo & "</TD>" &
                                "</TR>"
             End If
             If strOrderPriorty = "PRIORITY" Then
