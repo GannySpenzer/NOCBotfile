@@ -440,7 +440,7 @@ Module CustInfoMail
             Dim Command As OleDbCommand = New OleDbCommand(p_strQuery, connection)
             Command.CommandTimeout = 120
             connection.Open()
-            Dim dataAdapter As OleDbDataAdapter = _
+            Dim dataAdapter As OleDbDataAdapter =
                     New OleDbDataAdapter(Command)
 
             Dim UserdataSet As System.Data.DataSet = New System.Data.DataSet()
@@ -559,6 +559,7 @@ Module CustInfoMail
         'dstcart.Columns.Add("PO")
         dstcart.Columns.Add("LN")
         'dstcart.Columns.Add("SerialID")
+        dstcart.Columns.Add("Notes")
 
         Dim strOraSelectQuery As String = String.Empty
         Dim ordIdentifier As String = String.Empty
@@ -661,7 +662,10 @@ Module CustInfoMail
                     End If
 
                     dr("LN") = CType(dataRowMain("ISA_INTFC_LN"), String).Trim()
+                    Dim Order_No As String = CType(dataRowMain("ORDER_NO"), String).Trim()
+                    Dim Line_nbr As String = CType(dataRowMain("ISA_INTFC_LN"), String).Trim()
 
+                    dr("Notes") = GetLineNotes(Order_No, Line_nbr)
                     dstcart.Rows.Add(dr)
                 Next
             End If
@@ -671,5 +675,28 @@ Module CustInfoMail
         Return dstcart
 
     End Function
+    Private Function GetLineNotes(ByVal strordNumber As String,
+                     ByRef strlinenbr As String) As String
+        Dim StrNotes As String = ""
+        Dim StrSql As String = ""
 
+        StrSql = "Select X.COMMENTS" & vbCrLf &
+            "From PS_PV_REQ_AW W, PS_EOAW_COMMENTS X" & vbCrLf &
+            "Where W.EOAWTHREAD_STATUS(+) In ('D','P') " & vbCrLf &
+            "And W.EOAWTHREAD_ID = X.EOAWTHREAD_ID (+) " & vbCrLf &
+            "And W.EOAWPRCS_ID = X.EOAWPRCS_ID (+) " & vbCrLf &
+            "And W.REQ_ID = '" & strordNumber & "' " & vbCrLf &
+            "And W.LINE_NBR = '" & strlinenbr & "' " & vbCrLf &
+            "And ( X.EOAW_SEQ_NBR = (SELECT MAX( Y.EOAW_SEQ_NBR)" & vbCrLf &
+            " From PS_EOAW_COMMENTS Y" & vbCrLf &
+            "Where X.EOAWTHREAD_ID = Y.EOAWTHREAD_ID" & vbCrLf &
+            " And X.EOAWPRCS_ID = Y.EOAWPRCS_ID)" & vbCrLf &
+            "Or X.EOAW_SEQ_NBR  Is null)"
+
+        StrNotes = GetScalar(StrSql)
+        If IsDBNull(StrNotes) Or StrNotes.Trim() = "" Then
+            StrNotes = " "
+        End If
+        Return StrNotes
+    End Function
 End Module
