@@ -14,6 +14,7 @@ Module CustInfoMail
     Dim rootDir As String = ConfigurationManager.AppSettings("LogPath")
     Dim logpath As String = rootDir & "CUSTInfoNoticationLog" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
     Dim connectOR As New OleDbConnection(Convert.ToString(ConfigurationManager.AppSettings("OLEDBconString")))
+    Private m_CN As OleDbConnection
 
     Sub Main()
 
@@ -66,13 +67,14 @@ Module CustInfoMail
         log.WriteLine("------------------------------------------------------------------------------------------")
         log.WriteLine("Start to fetch the orders that is need customer infromation, by using ISA_LINE_STATUS='CST' IN order line table")
 
-        strSQLString = "select oln.BUSINESS_UNIT_OM, oln.ORDER_NO,oln.isa_intfc_ln, oln.ISA_WORK_ORDER_NO " & vbCrLf &
+        strSQLString = "select oln.BUSINESS_UNIT_OM,oln.BUSINESS_UNIT_PO, oln.ORDER_NO,oln.isa_intfc_ln, oln.ISA_WORK_ORDER_NO " & vbCrLf &
                         " , usr.ISA_EMPLOYEE_EMAIL , usr.PHONE_NUM, oln.OPRID_ENTERED_BY " & vbCrLf &
                         "  , oln.ISA_REQUIRED_BY_DT, usr.ISA_EMPLOYEE_NAME,usr.ISA_EMPLOYEE_ID,ohd.order_date ,RLN.buyer_id " & vbCrLf &
                         "from PS_ISA_ORD_INTF_LN oln " & vbCrLf &
-                        "join sdix_users_tbl usr on usr.ISA_EMPLOYEE_ID = oln.ISA_EMPLOYEE_ID join PS_ISA_ORD_INTF_HD ohd on ohd.ORDER_NO = oln.ORDER_NO join PS_REQ_LINE RLN ON RLN.REQ_ID = oln.ORDER_NO AND RLN.LINE_NBR = oln.isa_intfc_ln " & vbCrLf &
+                        "join sdix_users_tbl usr on usr.ISA_EMPLOYEE_ID = oln.ISA_EMPLOYEE_ID join PS_ISA_ORD_INTF_HD ohd on ohd.ORDER_NO = oln.ORDER_NO join PS_REQ_LINE RLN ON RLN.REQ_ID = oln.ORDER_NO and RLN.BUSINESS_UNIT = OLN.BUSINESS_UNIT_PO AND RLN.LINE_NBR = oln.isa_intfc_ln and oln.business_unit_om = usr.business_unit" & vbCrLf &
                         "where oln.isa_LINE_STATUS='CST'" & vbCrLf &
-                        " group by oln.BUSINESS_UNIT_OM, oln.ORDER_NO, oln.ISA_WORK_ORDER_NO " & vbCrLf &
+                        "AND NOT EXISTS (SELECT 'X' FROM sdix_Cust_Info_email_log lg WHERE lg.BUSINESS_UNIT = OLN.BUSINESS_UNIT_PO  AND lg.REQ_ID = oln.ORDER_NO) " & vbCrLf &
+                        " group by oln.BUSINESS_UNIT_OM ,oln.BUSINESS_UNIT_PO, oln.ORDER_NO, oln.ISA_WORK_ORDER_NO " & vbCrLf &
                         " , usr.ISA_EMPLOYEE_EMAIL , usr.PHONE_NUM, oln.OPRID_ENTERED_BY " & vbCrLf &
                         " , oln.ISA_REQUIRED_BY_DT, usr.ISA_EMPLOYEE_NAME, usr.ISA_EMPLOYEE_ID, ohd.order_date,oln.isa_intfc_ln,RLN.buyer_id"
 
@@ -81,6 +83,7 @@ Module CustInfoMail
             Dim OrderNo As List(Of String) = New List(Of String)()
             While dtrAppReader.Read()
 
+                Dim strPOBU As String = ""
                 Dim strEmpName As String = ""
                 Dim strORderNo As String = ""
                 Dim strEmail As String = ""
@@ -94,6 +97,10 @@ Module CustInfoMail
 
                 If Not OrderNo.Contains(Convert.ToString(ORDER_NO)) Then
                     OrderNo.Add(Convert.ToString(ORDER_NO))
+
+                    If Not IsDBNull(dtrAppReader.Item("BUSINESS_UNIT_PO")) Then
+                        strPOBU = Convert.ToString(dtrAppReader.Item("BUSINESS_UNIT_PO"))
+                    End If
 
                     If Not IsDBNull(dtrAppReader.Item("ISA_EMPLOYEE_NAME")) Then
                         strEmpName = Convert.ToString(dtrAppReader.Item("ISA_EMPLOYEE_NAME"))
@@ -143,10 +150,10 @@ Module CustInfoMail
                         If IsDontNotifierCustomer = "True" Then
                             'Don't Send notification
                         Else
-                            buildNotifyApprover(strORderNo, strEmail, strEmpName, Required_By_Dttm, strWorkONo, strOrdDate, strBuyer)
+                            buildNotifyApprover(strPOBU, strORderNo, strEmail, strEmpName, Required_By_Dttm, strWorkONo, strOrdDate, strBuyer)
                         End If
                     Catch ex As Exception
-                        buildNotifyApprover(strORderNo, strEmail, strEmpName, Required_By_Dttm, strWorkONo, strOrdDate, strBuyer)
+                        buildNotifyApprover(strPOBU, strORderNo, strEmail, strEmpName, Required_By_Dttm, strWorkONo, strOrdDate, strBuyer)
                     End Try
 
                 End If
@@ -165,9 +172,27 @@ Module CustInfoMail
         Return log
 
     End Function
+    'INC0023606, INC0023997 CustInfo Mail utility email to correct user And stop repeating emails
+    Public Function getpurchasingEmailFrom(ByVal sBU As String) As String
+        Dim sqlStringEmailFrom As String = ""
+        Dim PurchasingEmailFrom As String = ""
+        Try
+            sqlStringEmailFrom = "Select ISA_PURCH_EML_FROM from PS_ISA_BUS_UNIT_PM where BUSINESS_UNIT_PO ='" & sBU & "'"
+            PurchasingEmailFrom = GetScalar(sqlStringEmailFrom)
+        Catch ex As Exception
+            If (sBU = "I0W01" Or sBU = "WAL00") Then
+                PurchasingEmailFrom = "WalmartPurchasing@sdi.com"
+            ElseIf (sBU = "EMC00" Or sBU = "I0631") Then
+                PurchasingEmailFrom = "Emcorpurchasing@sdi.com"
+            Else
+                PurchasingEmailFrom = "SDIExchange@SDI.com"
+            End If
+        End Try
+        Return PurchasingEmailFrom
+    End Function
     'Madhu-INC0015106-Removed avacorp in Email flow
 
-    Public Sub buildNotifyApprover(ByVal orderNum As String, ByVal EmpEmail As String, ByVal EmpNme As String, ByVal Required_By_Dttm As String, ByVal strWorkONo As String, ByVal strOrdDate As String, ByVal strBuyer As String)
+    Public Sub buildNotifyApprover(ByVal POBU As String, ByVal orderNum As String, ByVal EmpEmail As String, ByVal EmpNme As String, ByVal Required_By_Dttm As String, ByVal strWorkONo As String, ByVal strOrdDate As String, ByVal strBuyer As String)
 
         Dim strPuncher As Boolean = False
         Dim I As Integer
@@ -212,7 +237,8 @@ Module CustInfoMail
         End If
 
         Dim Mailer As MailMessage = New MailMessage
-        Dim FromAddress As String = "SDIExchange@SDI.com"
+        Dim FromAddress As String = ""
+        FromAddress = getpurchasingEmailFrom(POBU)
         Dim Mailcc As String = ""
         Dim MailBcc As String = "webdev@sdi.com;Tony.Smith@sdi.com"
 
@@ -274,10 +300,23 @@ Module CustInfoMail
         Mailer.BodyFormat = MailFormat.Html
         '' Mailer.IsBodyHtml = True
         Dim connectionEmail As OleDbConnection = New OleDbConnection((Convert.ToString(ConfigurationManager.AppSettings("OLEDBconString"))))
+        ' INC0023606, INC0023997 CustInfo Mail utility email to correct user and stop repeating emails[Change by vishalini]
+        Dim com As OleDbCommand
         connectionEmail.Open()
+        Dim rowsaffected As Integer = 0
+        Dim SqlStringEmailLog = ""
+        Dim SDIEmailService As EmailService.EmailServices = New EmailService.EmailServices()
         Try
-            Dim SDIEmailService As EmailService.EmailServices = New EmailService.EmailServices()
-            SDIEmailService.EmailUtilityServices("MailandStore", "SDIExchange@SDI.com", Mailer.To.ToString(), Mailer.Subject, "", "", Mailer.Body, "CustInfoMailer", Nothing, Nothing)
+            SDIEmailService.EmailUtilityServices("MailandStore", FromAddress, Mailer.To.ToString(), Mailer.Subject, "", "", Mailer.Body, "CustInfoMailer", Nothing, Nothing)
+            SqlStringEmailLog = "Insert Into sdix_Cust_Info_email_log(business_unit,req_id,isa_recipient,ISA_SENDER,ISA_SUBJECT,EMAIL_DATETIME) " & vbCrLf &
+            "values('" & POBU & "','" & orderNum & "','" & Mailer.To.ToString() & "','" & FromAddress & "','" & Mailer.Subject & "', SYSDATE)" & vbCrLf
+
+            com = New OleDbCommand(SqlStringEmailLog, connectionEmail)
+            rowsaffected = com.ExecuteNonQuery()
+            If rowsaffected = 0 Then
+                Mailer.Body = "Unable to write record to sdix_Cust_Info_email_log: " & vbCrLf & SqlStringEmailLog &
+                SDIEmailService.EmailUtilityServices("MailandStore", FromAddress, "webdev@sdi.com", "Error in updating table sdix_Cust_Info_email_log", "", "", Mailer.Body, "CustInfoMailer", Nothing, Nothing)
+            End If
 
             ''UpdEmailOut.UpdEmailOut.UpdEmailOut(Mailer.Subject, FromAddress, Mailer.To.ToString(), Mailcc, MailBcc, "CustInfoMailer", Mailer.Body, connectionEmail)
             Try
@@ -287,6 +326,8 @@ Module CustInfoMail
             End Try
 
         Catch exEmailOut As Exception
+            Mailer.Body = "Exception : Unable to write record to sdix_Cust_Info_email_log:  '" & SqlStringEmailLog & " ' "
+            SDIEmailService.EmailUtilityServices("MailandStore", FromAddress, "webdev@sdi.com", "Error in updating table sdix_Cust_Info_email_log", "", "", Mailer.Body, "CustInfoMailer", Nothing, Nothing)
             Try
                 connectionEmail.Close()
             Catch ex As Exception
@@ -340,26 +381,26 @@ Module CustInfoMail
 
     Private Function getBinLoc(ByVal stritemid) As String
         'changed to qty >0 rather than hitting the first bin in the array
-        Dim strSQLString As String = "" & _
-                    "SELECT " & vbCrLf & _
-                    " (C.STORAGE_AREA ||" & vbCrLf & _
-                    "  C.STOR_LEVEL_1 ||" & vbCrLf & _
-                    "  C.STOR_LEVEL_2 ||" & vbCrLf & _
-                    "  C.STOR_LEVEL_3 ||" & vbCrLf & _
-                    "  C.STOR_LEVEL_4) as binloc " & vbCrLf & _
-                    "FROM " & vbCrLf & _
-                    " PS_INV_ITEMS B " & vbCrLf & _
-                    ",PS_PHYSICAL_INV C " & vbCrLf & _
-                    "WHERE B.INV_ITEM_ID = '" & stritemid & "' " & vbCrLf & _
-                    "  AND B.EFFDT = (" & vbCrLf & _
-                    "                 SELECT MAX(B_ED.EFFDT) FROM PS_INV_ITEMS B_ED " & vbCrLf & _
-                    "  	 	          WHERE B.SETID = B_ED.SETID " & vbCrLf & _
-                    "  		            AND B.INV_ITEM_ID = B_ED.INV_ITEM_ID " & vbCrLf & _
-                    "		            AND B_ED.EFFDT <= SYSDATE" & vbCrLf & _
-                    "                ) " & vbCrLf & _
-                    "  AND B.INV_ITEM_ID = C.INV_ITEM_ID(+) " & vbCrLf & _
-                    " AND C.QTY > 0 " & vbCrLf & _
-                    "ORDER BY C.DT_TIMESTAMP DESC " & vbCrLf & _
+        Dim strSQLString As String = "" &
+                    "SELECT " & vbCrLf &
+                    " (C.STORAGE_AREA ||" & vbCrLf &
+                    "  C.STOR_LEVEL_1 ||" & vbCrLf &
+                    "  C.STOR_LEVEL_2 ||" & vbCrLf &
+                    "  C.STOR_LEVEL_3 ||" & vbCrLf &
+                    "  C.STOR_LEVEL_4) as binloc " & vbCrLf &
+                    "FROM " & vbCrLf &
+                    " PS_INV_ITEMS B " & vbCrLf &
+                    ",PS_PHYSICAL_INV C " & vbCrLf &
+                    "WHERE B.INV_ITEM_ID = '" & stritemid & "' " & vbCrLf &
+                    "  AND B.EFFDT = (" & vbCrLf &
+                    "                 SELECT MAX(B_ED.EFFDT) FROM PS_INV_ITEMS B_ED " & vbCrLf &
+                    "  	 	          WHERE B.SETID = B_ED.SETID " & vbCrLf &
+                    "  		            AND B.INV_ITEM_ID = B_ED.INV_ITEM_ID " & vbCrLf &
+                    "		            AND B_ED.EFFDT <= SYSDATE" & vbCrLf &
+                    "                ) " & vbCrLf &
+                    "  AND B.INV_ITEM_ID = C.INV_ITEM_ID(+) " & vbCrLf &
+                    " AND C.QTY > 0 " & vbCrLf &
+                    "ORDER BY C.DT_TIMESTAMP DESC " & vbCrLf &
                     ""
 
         Try
@@ -436,7 +477,58 @@ Module CustInfoMail
 
     End Function
 
+    Public Function GetScalar(ByVal p_strQuery As String, Optional ByVal bGoToErrPage As Boolean = True) As String
+        'Gives us a reference to the current asp.net 
+        'application executing the method.
+        '  Dim currentApp As HttpApplication = HttpContext.Current.ApplicationInstance
+        Dim strReturn As String = ""
+        Dim connection As OleDbConnection = New OleDbConnection(DbUrl)
+        Try
 
+            Dim Command As OleDbCommand = New OleDbCommand(p_strQuery, connection)
+            Command.CommandTimeout = 120
+            connection.Open()
+            Try
+                strReturn = CType(Command.ExecuteScalar(), String)
+            Catch ex32 As Exception
+                strReturn = ""
+            End Try
+            If strReturn Is Nothing Then
+                strReturn = ""
+            End If
+            Try
+                Command.Dispose()
+            Catch ex1 As Exception
+
+            End Try
+            Try
+                connection.Close()
+                connection.Dispose()
+            Catch ex2 As Exception
+
+            End Try
+            'connection.close()
+        Catch objException As Exception
+            strReturn = ""
+
+            Try
+                connection.Close()
+                connection.Dispose()
+            Catch ex As Exception
+
+                'connection.close()
+                'sendErrorEmail(objException.ToString & "  Check Connection String for permission problems", "NO", currentApp.Request.ServerVariables("URL"), p_strQuery & " --- from ORDBData.vb, GetScalar. User supposed to see DBErrorPage.aspx")
+                'Dim sMsg66 As String = LCase(objException.ToString)
+                'If bGoToErrPage Then
+                '    Call ProcessError(sMsg66)
+                'End If
+            End Try
+
+        End Try
+
+        Return strReturn
+
+    End Function
 
     Private Function buildCartforemail(ByVal ordNumber As String, _
                       ByRef strWrkOrder As String) As DataTable
