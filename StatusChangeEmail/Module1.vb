@@ -160,22 +160,22 @@ Module Module1
                 'Added checkAllStatusWAL() by checking I0W01 BU, Email time for order status summary email--  WW-287 & WAL-632 Poornima S
                 'SP-316 EMCOR order status summary- Dhamotharan
                 If (dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") = "I0W01" Or dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") = "I0631") And ((TimeNow > SumryStartLngTime) And (TimeNow < SumryEndLngTime)) Then
-                        Try
-                            Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                            objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                            objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
-                            objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
-                            buildstatchgout = checkAllStatusWAL(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
-                        Catch ex As Exception
+                    Try
+                        Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
+                        objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
+                        objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
+                        objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                        buildstatchgout = checkAllStatusWAL(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                    Catch ex As Exception
 
-                        End Try
+                    End Try
 
-                    End If
-                    Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
+                End If
+                Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
                     objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
                     objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
                     objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
-                    buildstatchgout = checkAllStatusNew(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                buildstatchgout = checkAllStatusNew(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
 
                 If buildstatchgout = True Then
                     bolErrorSomeWhere = True
@@ -2447,57 +2447,71 @@ Module Module1
 
             Catch ex As Exception
             End Try
+            'INC0022437 - Scott: We are being told by our NYC DOE - Dhamotharan P
+            Try
 
-            If I = ds.Tables(0).Rows.Count - 1 Then
+                Dim StrShipTo As String = ds.Tables(0).Rows(I).Item("SHIPTO")
+                Dim strLineSts As String = ds.Tables(0).Rows(I).Item("ISA_ORDER_STATUS")
 
-                sendCustEmail1(dsEmail,
-                ds.Tables(0).Rows(I).Item("ORDER_NO"),
-                dteCompanyID,
-                dteCustID,
-                ds.Tables(0).Rows(I).Item("ISA_ORDER_STATUS"),
-                strdescription,
-                ds.Tables(0).Rows(I).Item("INV_ITEM_ID"),
-                ds.Tables(0).Rows(I).Item("LINE_NBR"),
-                ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"),
-                ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"),
-                strEmailTo,
-                ds.Tables(0).Rows(I).Item("Origin"),
-                strBU, strEmpID,
-                ds.Tables(0).Rows(I).Item("WORK_ORDER_NO"),
-                Store
-                    )
 
-                dsEmail.Clear()
-                If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
-                    connectOR.Close()
+                If ((StrShipTo <> "L0260-01") Or (StrShipTo = "L0260-01" And strLineSts <> "RCP" And strLineSts <> "RCF")) Then
+
+                    If I = ds.Tables(0).Rows.Count - 1 Then
+
+                        sendCustEmail1(dsEmail,
+                            ds.Tables(0).Rows(I).Item("ORDER_NO"),
+                            dteCompanyID,
+                            dteCustID,
+                            ds.Tables(0).Rows(I).Item("ISA_ORDER_STATUS"),
+                            strdescription,
+                            ds.Tables(0).Rows(I).Item("INV_ITEM_ID"),
+                            ds.Tables(0).Rows(I).Item("LINE_NBR"),
+                            ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"),
+                            ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"),
+                            strEmailTo,
+                            ds.Tables(0).Rows(I).Item("Origin"),
+                            strBU, strEmpID,
+                            ds.Tables(0).Rows(I).Item("WORK_ORDER_NO"),
+                            Store
+                                )
+
+                        dsEmail.Clear()
+                        If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
+                            connectOR.Close()
+                        End If
+                    ElseIf ds.Tables(0).Rows(I + 1).Item("BUSINESS_UNIT_OM") _
+                                      & ds.Tables(0).Rows(I + 1).Item("ORDER_NO") <>
+                                      ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM") _
+                                      & ds.Tables(0).Rows(I).Item("ORDER_NO") Then
+
+                        sendCustEmail1(dsEmail,
+                           ds.Tables(0).Rows(I).Item("ORDER_NO"),
+                           dteCompanyID,
+                           dteCustID,
+                           ds.Tables(0).Rows(I).Item("ISA_ORDER_STATUS"),
+                           strdescription,
+                           ds.Tables(0).Rows(I).Item("INV_ITEM_ID"),
+                           ds.Tables(0).Rows(I).Item("LINE_NBR"),
+                           ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"),
+                           ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"),
+                           strEmailTo,
+                           ds.Tables(0).Rows(I).Item("Origin"),
+                           strBU, strEmpID,
+                           ds.Tables(0).Rows(I).Item("WORK_ORDER_NO"),
+                           Store
+                           )
+
+                        dsEmail.Clear()
+                        If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
+                            connectOR.Close()
+                        End If
+                    End If
                 End If
-            ElseIf ds.Tables(0).Rows(I + 1).Item("BUSINESS_UNIT_OM") _
-                          & ds.Tables(0).Rows(I + 1).Item("ORDER_NO") <>
-                          ds.Tables(0).Rows(I).Item("BUSINESS_UNIT_OM") _
-                          & ds.Tables(0).Rows(I).Item("ORDER_NO") Then
+            Catch ex As Exception
 
-                sendCustEmail1(dsEmail,
-               ds.Tables(0).Rows(I).Item("ORDER_NO"),
-               dteCompanyID,
-               dteCustID,
-               ds.Tables(0).Rows(I).Item("ISA_ORDER_STATUS"),
-               strdescription,
-               ds.Tables(0).Rows(I).Item("INV_ITEM_ID"),
-               ds.Tables(0).Rows(I).Item("LINE_NBR"),
-               ds.Tables(0).Rows(I).Item("FIRST_NAME_SRCH"),
-               ds.Tables(0).Rows(I).Item("LAST_NAME_SRCH"),
-               strEmailTo,
-               ds.Tables(0).Rows(I).Item("Origin"),
-               strBU, strEmpID,
-               ds.Tables(0).Rows(I).Item("WORK_ORDER_NO"),
-               Store
-               )
+            End Try
 
-                dsEmail.Clear()
-                If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
-                    connectOR.Close()
-                End If
-            End If
+
         Next
 
         If Not connectOR Is Nothing AndAlso ((connectOR.State And ConnectionState.Open) = ConnectionState.Open) Then
