@@ -24,6 +24,11 @@ namespace PO_OpenUtility
             int ItemCount = 0;
             string baseWebURL = ConfigurationSettings.AppSettings["WebAppName"];
             string logFilePath = ConfigurationSettings.AppSettings["LogFilePath"];
+            //Mythili -- SP-404 Embedding new supplier portal link in the email
+            string DBurl = ConfigurationSettings.AppSettings["OLEDBconString"];
+            DBurl = DBurl.Substring(DBurl.Length - 4).ToUpper();
+
+            string strPT = ConfigurationSettings.AppSettings["Disp_Method"];
 
             logFilePath = logFilePath + "OpenPOUtility_" + string.Format("{0:yyyy-MM-dd_hh-mm-ss-tt}", DateTime.Now) + "." + "txt";
             logFileInfo = new FileInfo(logFilePath);
@@ -43,7 +48,6 @@ namespace PO_OpenUtility
             string Sqlstring = "SELECT *  FROM SYSADM8.PS_ISA_PO_DISP_PTL WHERE DTTM_OPENED IS NULL";
             DataSet ds_OpentPOs = GetAdapter(Sqlstring);
             List<string> PODetails = new List<string>();
-
             if (ds_OpentPOs.Tables[0].Rows.Count != 0)
             {
                 foreach (DataRow rw in ds_OpentPOs.Tables[0].Rows)
@@ -57,6 +61,26 @@ namespace PO_OpenUtility
                         string PO_BU = Convert.ToString(rw["BUSINESS_UNIT"]);
                         string Email = Convert.ToString(rw["ISA_VENDOR_EMAIL"]);
                         string strEncrypt_POID = Encrypt(POID, "bautista");
+                        //Mythili -- SP-404 Embedding new supplier portal link in the email
+                        string strPT2 = string.Empty;
+                        Boolean IsPT2 = false;
+                        if (DBNull.Value.Equals(rw["DISP_METHOD"]))
+                        {
+                            strPT2 = " ";
+                        }
+                        else
+                        {
+                            strPT2  = Convert.ToString(rw["DISP_METHOD"]);
+                        }
+                        if (strPT2 == strPT)
+                        {
+                            IsPT2 = true;
+                        }
+                        else
+                        {
+                            IsPT2 = false;
+                        }
+                        
                         //SP-282 Replacing Plus with %2b to pass in query string[Change By vishalini]
                         if (strEncrypt_POID.Contains("+")){
                             strEncrypt_POID = strEncrypt_POID.Replace("+", "%2b"); 
@@ -118,7 +142,18 @@ namespace PO_OpenUtility
                             catch (Exception)
                             {
                             }
-                            string EmailBasueURL = baseWebURL + "Supplier/PODetails.aspx?POID=" + strEncrypt_POID + "&vendorid=" + strEncrypt_VendorID + "&PO_BU=" + strEncrypt_PO_BU + "&OPR_ID=" + Vendr_OprID + "";
+                            //Mythili -- SP-404 Embedding new supplier portal link in the email
+                            baseWebURL = GetWebBaseUrl(DBurl,IsPT2);
+                            string EmailBasueURL = string.Empty;
+                            if(IsPT2 == true)
+                            {
+                                EmailBasueURL = baseWebURL + "po-dispatch/" + POID;
+                            }
+                            else
+                            {
+                                EmailBasueURL = baseWebURL + "Supplier/PODetails.aspx?POID=" + strEncrypt_POID + "&vendorid=" + strEncrypt_VendorID + "&PO_BU=" + strEncrypt_PO_BU + "&OPR_ID=" + Vendr_OprID + "";
+                            }
+                            
 
                             Boolean EmailSent = SendEmail(VendorID, Vendr_UN, Vendr_Email, POID, PO_BU, EmailBasueURL, strBuyerEmail, Email, techPhno, techEmail, Notes);
 
@@ -140,6 +175,50 @@ namespace PO_OpenUtility
             }
             log.Close();
             fileStream.Close();
+        }
+        //Mythili -- SP-404 Embedding new supplier portal link in the email -- get site url based on 
+        public static string GetWebBaseUrl(string strDB,Boolean IsPT2)
+        {
+            string strSQLString = "";
+            string strPT2 = "";
+            string strGetWebBaseUrl = "";
+            DataSet dssites = new DataSet();
+            if (IsPT2 == true)
+            {
+                strPT2 = "SP2";
+            }
+            else
+            {
+                strPT2 = "ZEUS1";
+            }
+            try
+            {
+                strSQLString = @"Select * from SDIX_SITE_URL WHERE SITENAME = '" + strPT2 + "'";
+
+                dssites = GetAdapter(strSQLString);
+                if (strDB == "DEVL")
+                {
+                    strGetWebBaseUrl = dssites.Tables[0].Rows[0]["TEST_SITE"].ToString();
+                }
+                else if(strDB == "SNBX" || strDB == "SUAT")
+                {
+                    strGetWebBaseUrl = dssites.Tables[0].Rows[0]["DEMO_SITE"].ToString();
+                }
+                else if (strDB == "PROD" || strDB == "SPRD")
+                {
+                    strGetWebBaseUrl = dssites.Tables[0].Rows[0]["PROD_SITE"].ToString();
+                }
+                else
+                {
+                    strGetWebBaseUrl = dssites.Tables[0].Rows[0]["PRE_PROD_SITE"].ToString();
+                }
+                return strGetWebBaseUrl;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         public static string getBuyerEmail(string strPO, string strPOBU)
@@ -509,7 +588,7 @@ and a.business_unit = '" + strPOBU + "' and a.po_id='" + strPO + "'";
                 OleDbConnection connectionEmail = new OleDbConnection(ConfigurationSettings.AppSettings["OLEDBconString"]);
 
                 try
-                {
+                {                   
                     sendemails(Mailer);
 
                     try
@@ -550,7 +629,7 @@ and a.business_unit = '" + strPOBU + "' and a.po_id='" + strPO + "'";
             List<byte[]> MailAttachmentbytes = new List<byte[]>();
             //byte[] bytes = Encoding.ASCII.GetBytes(fileStream);
             //MailAttachmentbytes.Add(bytes);
-
+            
             try
             {
                 SDIEmailService.EmailUtilityServices("MailandStore", mailer.From.ToString(), mailer.To.ToString(), mailer.Subject, string.Empty, string.Empty, mailer.Body, "SDIERRMAIL", null, null);
