@@ -104,7 +104,7 @@ Module Module1
         For I = 0 To dsRows.Tables(0).Rows.Count - 1
             If dsRows.Tables(0).Rows(I).Item("SITESTK") = "Y" Then
                 Console.WriteLine(Convert.ToString(I + 1) + ".Verifying/Updating StatChg Email for Stock - BU: " + Convert.ToString(dsRows.Tables(0).Rows(I).Item("SITEBU")) + "")
-                objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Verifying/Updating StatChg Email for Stock - BU: " + Convert.ToString(dsRows.Tables(0).Rows(I).Item("SITEBU")) + "" & " " & Now())
+                objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Verifying/Updating StatChg Email for Stock - BU: " + Convert.ToString(dsRows.Tables(0).Rows(I).Item("SITEBU")) + " " & Now())
                 objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
                 objStreamWriter.WriteLine("  StatChg Email send stock emails for " & dsRows.Tables(0).Rows(I).Item("SITEBU") & " " & Now())
                 buildstatchgout = checkStock(dsRows.Tables(0).Rows(I).Item("SITEBU"), dsRows.Tables(0).Rows(I).Item("SITESTART"))
@@ -119,7 +119,7 @@ Module Module1
         For I = 0 To dsRows.Tables(0).Rows.Count - 1
             If dsRows.Tables(0).Rows(I).Item("SITENSTK") = "Y" Then
                 Console.WriteLine(Convert.ToString(I + 1) + ".Verifying/Updating StatChg Email for Non-Stock - BU: " + Convert.ToString(dsRows.Tables(0).Rows(I).Item("SITEBU")) + "")
-                objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Verifying/Updating StatChg Email for Non-Stock - BU: " + Convert.ToString(dsRows.Tables(0).Rows(I).Item("SITEBU")) + "" & " " & Now())
+                objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Verifying/Updating StatChg Email for Non-Stock - BU: " + Convert.ToString(dsRows.Tables(0).Rows(I).Item("SITEBU")) + " " & Now())
                 objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
                 objStreamWriter.WriteLine("  StatChg Email send nonstock emails for " & dsRows.Tables(0).Rows(I).Item("SITEBU") & " " & Now())
                 buildstatchgout = checkNonStock(dsRows.Tables(0).Rows(I).Item("SITEBU"), dsRows.Tables(0).Rows(I).Item("SITESTART"))
@@ -132,7 +132,7 @@ Module Module1
 
         For I = 0 To dsRows.Tables(0).Rows.Count - 1
             Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsRows.Tables(0).Rows(I).Item("SITEBU")) + "")
-            objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsRows.Tables(0).Rows(I).Item("SITEBU")) + "" & " " & Now())
+            objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsRows.Tables(0).Rows(I).Item("SITEBU")) + " " & Now())
             objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
             objStreamWriter.WriteLine("  StatChg Email send allstatus emails for XML Site : " & dsRows.Tables(0).Rows(I).Item("SITEBU") & " " & Now())
             buildstatchgout = checkAllStatus_7(dsRows.Tables(0).Rows(I).Item("SITEBU"), dsRows.Tables(0).Rows(I).Item("SITESTART"))
@@ -172,7 +172,7 @@ Module Module1
 
                 End If
                 Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "" & " " & Now())
+                objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + " " & Now())
                 objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
                 objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") & " " & Now())
                 buildstatchgout = checkAllStatusNew(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
@@ -1872,7 +1872,7 @@ Module Module1
         Else
             Console.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()))
             objStreamWriter.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()) & " " & Now())
-
+            objGenerallLogStreamWriter.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()) & " " & Now())
         End If
 
         'Dim rowsaffected As Integer
@@ -3085,7 +3085,7 @@ Module Module1
                     End Try
 
                 Next
-                objWalSCComments.WriteLine("/////////////////////////////////////////////////////////////////////////////////////////////" & " " & Now())
+                objWalSCComments.WriteLine("/////////////////////////////////////////////////////////////////////////////////////////////")
             Else
                 objWalSCComments.WriteLine("No data fetched" & " " & Now())
             End If
