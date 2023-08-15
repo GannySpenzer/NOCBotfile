@@ -187,13 +187,13 @@ Module Module1
         '7 is stock
         'R is non-stock
         objGenerallLogStreamWriter.WriteLine("-------------------------------------------------------------------------------")
-        objGenerallLogStreamWriter.WriteLine("Start buildNotifyReceiver for Stock" & Now())
+        objGenerallLogStreamWriter.WriteLine("Start buildNotifyReceiver for Stock " & Now())
         bolErrorSomeWhere = buildNotifyReceiver("7")
-        objGenerallLogStreamWriter.WriteLine("End buildNotifyReceiver for Stock" & Now())
+        objGenerallLogStreamWriter.WriteLine("End buildNotifyReceiver for Stock " & Now())
         objGenerallLogStreamWriter.WriteLine("-------------------------------------------------------------------------------")
-        objGenerallLogStreamWriter.WriteLine("Start buildNotifyReceiver for Non-Stock" & Now())
+        objGenerallLogStreamWriter.WriteLine("Start buildNotifyReceiver for Non-Stock " & Now())
         bolErrorSomeWhere = buildNotifyReceiver("R")
-        objGenerallLogStreamWriter.WriteLine("End buildNotifyReceiver for Non-Stock" & Now())
+        objGenerallLogStreamWriter.WriteLine("End buildNotifyReceiver for Non-Stock " & Now())
         Try
             connectOR.Close()
         Catch ex As Exception
@@ -484,7 +484,7 @@ Module Module1
         If ds.Tables(0).Rows.Count = 0 Then
             Console.WriteLine("Fetched Datas:0")
             objGenerallLogStreamWriter.WriteLine("Fetched Datas:0")
-            objStreamWriter.WriteLine("  StatChg Email send select orders = 0 for" & strbu & " " & Now())
+            objStreamWriter.WriteLine("  StatChg Email send select orders = 0 for " & strbu & " " & Now())
             Try
                 connectOR.Close()
             Catch ex As Exception
@@ -597,10 +597,10 @@ Module Module1
 
         Select Case strOrderStatus
             Case "7"
-                objGenerallLogStreamWriter.WriteLine("Stock Notification StatEmail" & " " & Now())
+                objGenerallLogStreamWriter.WriteLine("Stock Notification StatEmail")
                 buildNotifyReceiver = buildNotifySTKReady()
             Case "R"
-                objGenerallLogStreamWriter.WriteLine("Non-Stock Notification StatEmail" & " " & Now())
+                objGenerallLogStreamWriter.WriteLine("Non-Stock Notification StatEmail")
                 buildNotifyReceiver = buildNotifyNSTKReady()
         End Select
     End Function
@@ -2914,8 +2914,20 @@ Module Module1
 
             Try
                 objWalmartSC.WriteLine("  UpdateWalmartSourceCode Q1New: " & strSQLstring)
+                Try
+                    Dim st As New Stopwatch()
+                    st.Start()
+                    ds = ORDBAccess.GetAdapter(strSQLstring, connectOR)
+                    st.Stop()
+                    Dim ts As TimeSpan = st.Elapsed
+                    Dim elapsedTime As String = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                    ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10)
+                    objStreamWriter.WriteLine("Query Execution Time " + elapsedTime)
+                Catch ex As Exception
+                    ds = ORDBAccess.GetAdapter(strSQLstring, connectOR)
+                    objStreamWriter.WriteLine("Query Execution Time " + Now())
+                End Try
 
-                ds = ORDBAccess.GetAdapter(strSQLstring, connectOR)
                 Dim I As Integer
                 Dim lstOfString As List(Of String) = New List(Of String)
                 For I = 0 To ds.Tables(0).Rows.Count - 1
