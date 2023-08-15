@@ -162,9 +162,9 @@ Module Module1
                 If (dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") = "I0W01" Or dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") = "I0631") And ((TimeNow > SumryStartLngTime) And (TimeNow < SumryEndLngTime)) Then
                     Try
                         Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                        objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
+                        objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + " " & Now())
                         objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
-                        objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                        objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") & " " & Now())
                         buildstatchgout = checkAllStatusWAL(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
                     Catch ex As Exception
 
@@ -172,9 +172,9 @@ Module Module1
 
                 End If
                 Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                    objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                    objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
-                    objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
+                objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
+                objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
                 buildstatchgout = checkAllStatusNew(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
 
                 If buildstatchgout = True Then
@@ -1313,7 +1313,7 @@ Module Module1
                  " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, " & vbCrLf   '  & _
 
 
-            strSQLstring += "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','1','NEW','2','DSP','3','ORD','3','RSV','3','PKA','4','PKP','4','DLP','5','RCP','5','RCF','6','PKQ','5','DLO','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','1') AS OLD_ORDER_STATUS," & vbCrLf &
+        strSQLstring += "  G.ISA_LINE_STATUS AS ISA_ORDER_STATUS, DECODE(G.ISA_LINE_STATUS,'CRE','1','NEW','2','DSP','3','ORD','3','RSV','3','PKA','4','PKP','4','DLP','5','RCP','5','RCF','6','PKQ','5','DLO','5','DLF','6','PKF','7','CNC','C','QTS','Q','QTW','W','1') AS OLD_ORDER_STATUS," & vbCrLf &
                      " (SELECT E.XLATLONGNAME" & vbCrLf &
                                     " FROM XLATTABLE E" & vbCrLf &
                                     " WHERE E.EFFDT =" & vbCrLf &
@@ -1330,7 +1330,7 @@ Module Module1
                      " ,A.origin, LD.PO_ID, SH.ISA_ASN_TRACK_NO" & vbCrLf &
                      " FROM ps_isa_ord_intf_HD A," & vbCrLf  '   & _
 
-            strSQLstring += " ps_isa_ord_intf_LN B," & vbCrLf &
+        strSQLstring += " ps_isa_ord_intf_LN B," & vbCrLf &
                      " PS_MASTER_ITEM_TBL C," & vbCrLf &
                      " PS_ISA_USERS_TBL D," & vbCrLf &
                      " PS_ISAORDSTATUSLOG G, PS_ISA_ASN_SHIPPED SH, PS_PO_LINE_DISTRIB LD" & vbCrLf &
@@ -1361,18 +1361,18 @@ Module Module1
         ' We are going to check for priveleges in the upd_email_out program that sends the emails out.
 
         Try
-                objStreamWriter.WriteLine("  CheckAllStatus_7 (2) Q1: " & strSQLstring)
+            objStreamWriter.WriteLine("  CheckAllStatus_7 (2) Q1: " & strSQLstring)
 
-                ds = ORDBAccess.GetAdapter(strSQLstring, connectOR)
+            ds = ORDBAccess.GetAdapter(strSQLstring, connectOR)
 
-            Catch OleDBExp As OleDbException
-                Console.WriteLine("")
-                Console.WriteLine("***OLEDB error - " & OleDBExp.ToString)
-                Console.WriteLine("")
-                connectOR.Close()
-                objStreamWriter.WriteLine("     Error - error reading transaction FROM PS_ISAORDSTATUSLOG A")
-                Return True
-            End Try
+        Catch OleDBExp As OleDbException
+            Console.WriteLine("")
+            Console.WriteLine("***OLEDB error - " & OleDBExp.ToString)
+            Console.WriteLine("")
+            connectOR.Close()
+            objStreamWriter.WriteLine("     Error - error reading transaction FROM PS_ISAORDSTATUSLOG A")
+            Return True
+        End Try
 
         If IsDBNull(ds.Tables(0).Rows.Count) Or (ds.Tables(0).Rows.Count) = 0 Then
             Console.WriteLine("Fetched Datas 0")
@@ -1788,31 +1788,45 @@ Module Module1
 
         Try
             objStreamWriter.WriteLine("  checkAllStatusWAL (2) Q1: " & strSQLstring)
+            Try
+                Dim st As New Stopwatch()
+                st.Start()
+                ds = ORDBAccess.GetAdapter(strSQLstring, connectOR)
+                st.Stop()
+                Dim ts As TimeSpan = st.Elapsed
+                Dim elapsedTime As String = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                    ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10)
+                objStreamWriter.WriteLine("Query Execution Time " + elapsedTime)
+            Catch ex As Exception
+                ds = ORDBAccess.GetAdapter(strSQLstring, connectOR)
+                objStreamWriter.WriteLine("Query Execution Time " + Now())
 
-            ds = ORDBAccess.GetAdapter(strSQLstring, connectOR)
+            End Try
 
         Catch OleDBExp As OleDbException
             Console.WriteLine("")
             Console.WriteLine("***OLEDB error - " & OleDBExp.ToString)
             Console.WriteLine("")
             connectOR.Close()
-            objStreamWriter.WriteLine("     Error - error reading the order details")
+            objStreamWriter.WriteLine("     Error - error reading the order details" & " " & Now())
             Return True
         End Try
 
         If IsDBNull(ds.Tables(0).Rows.Count) Or (ds.Tables(0).Rows.Count) = 0 Then
             Console.WriteLine("Fetched Datas 0")
-            objGenerallLogStreamWriter.WriteLine("Fetched Datas 0")
-            objStreamWriter.WriteLine("     Warning - no status changes to process at this time for All Statuses")
+            objGenerallLogStreamWriter.WriteLine("Fetched Datas 0" & " " & Now())
+            objStreamWriter.WriteLine("     Warning - no status changes to process at this time for All Statuses" & " " & Now())
             Try
                 connectOR.Close()
             Catch ex As Exception
+                objStreamWriter.WriteLine("Warning Error in fetching data- " & " " & Now())
 
             End Try
             Return False
         Else
             Console.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()))
-            objGenerallLogStreamWriter.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()))
+            objStreamWriter.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()) & " " & Now())
+
         End If
 
         'Dim rowsaffected As Integer
@@ -1855,7 +1869,7 @@ Module Module1
         dsEmail.Columns.Add("Supplier Name")
         dsEmail.Columns.Add("Shipment Status")
         Try
-            strSQLstring = "SELECT DESCR,SHIPTO_ID FROM PS_SHIPTO_TBL"
+            strSQLstring = "Select DESCR, SHIPTO_ID FROM PS_SHIPTO_TBL"
             dsShipTo = ORDBAccess.GetAdapter(strSQLstring, connectOR)
         Catch
         End Try
@@ -1873,8 +1887,8 @@ Module Module1
                 Dim OrderDetailDT As New DataTable
 
                 OrderDetailDT = (From C In ds.Tables(0).AsEnumerable Where C.Field(Of String)("ISA_EMPLOYEE_ID") = EmpID).CopyToDataTable()
-                objGenerallLogStreamWriter.WriteLine("Reading order details of Employee:" + EmpID)
-                objStreamWriter.WriteLine("Reading order details of Employee:" + EmpID)
+                objGenerallLogStreamWriter.WriteLine("Reading order details of Employee: " + EmpID)
+                objStreamWriter.WriteLine("Reading order details of Employee:" + EmpID & " " & Now())
 
                 For I = 0 To OrderDetailDT.Rows.Count - 1
                     Dim strStatus_code As String = " "
@@ -1895,7 +1909,7 @@ Module Module1
                         " FROM PS_REQ_LOADER_DFL A" & vbCrLf &
                         " WHERE A.LOADER_BU = '" & strBU & "'" & vbCrLf
 
-                    objStreamWriter.WriteLine("  CheckAllStatusWAL (3): " & strSQLstring)
+                    objStreamWriter.WriteLine("  CheckAllStatusWAL (3): " & strSQLstring & " " & Now())
 
                     Command = New OleDbCommand(strSQLstring, connectOR)
                     connectOR.Open()
@@ -1903,13 +1917,13 @@ Module Module1
                         strSiteBU = Command.ExecuteScalar
                         connectOR.Close()
                     Catch ex As Exception
-                        objStreamWriter.WriteLine("  StatChg Email NSTK send select siteBU for " & strBU)
+                        objStreamWriter.WriteLine("  StatChg Email NSTK send select siteBU for " & strBU & " " & Now())
                         connectOR.Close()
                         strSiteBU = "ISA00"
                     End Try
 
                     dr1 = dsEmail.NewRow()
-                    objStreamWriter.WriteLine("Setting details of order " + OrderDetailDT.Rows(I).Item("ORDER_NO") + "to email datatset")
+                    objStreamWriter.WriteLine("Setting details of order " + OrderDetailDT.Rows(I).Item("ORDER_NO") + "to email datatset" & " " & Now())
                     Dim Dtformat As String = "MM/dd/yyyy"
                     Dim stroderno As String = OrderDetailDT.Rows(I).Item("ORDER_NO")
                     Dim strlineno As String = OrderDetailDT.Rows(I).Item("LINE_NBR")
@@ -2018,7 +2032,8 @@ Module Module1
 
                     strSQLstring = "Select NAME1 from PS_Vendor where VENDOR_ID= '" & vendor & "'"
 
-                    objStreamWriter.WriteLine("  CheckAllStatusWAL (4): " & strSQLstring)
+                    objStreamWriter.WriteLine("  CheckAllStatusWAL (4): " & strSQLstring & " " & Now())
+
 
                     Cmd = New OleDbCommand(strSQLstring, connectOR)
                     connectOR.Open()
@@ -2027,7 +2042,7 @@ Module Module1
                         dr1.Item(21) = OrderDetailDT.Rows(I).Item("VENDOR_ID") + "- " + vendorName
                         connectOR.Close()
                     Catch ex As Exception
-                        objStreamWriter.WriteLine()
+                        objStreamWriter.WriteLine("  Exception in fetching vendor ID " & " " & Now())
                         connectOR.Close()
                         dr1.Item(21) = ""
                     End Try
@@ -2646,8 +2661,8 @@ Module Module1
 
                     NewStoreNumDT = (From C In StoreNumDT.AsEnumerable Where C.Field(Of String)("STORE") = StoreNum).CopyToDataTable()
                     If strBU <> "I0631" Then
-                        objGenerallLogStreamWriter.WriteLine("Reading order details of Store Num:" + StoreNum)
-                        objStreamWriter.WriteLine("Reading order details of Store Num:" + StoreNum)
+                        objGenerallLogStreamWriter.WriteLine("Reading order details of Store Num:" + StoreNum & " " & Now())
+                        objStreamWriter.WriteLine("Reading order details of Store Num:" + StoreNum & " " & Now())
 
                         strbodydet1 = strbodydet1 & "<div style='float:left;width:100%;margin-bottom:30px'>"
                         If Not (String.IsNullOrEmpty(StoreNum.Trim())) Then
@@ -2671,7 +2686,7 @@ Module Module1
                     Dim Ordernum As String() = WONumDetails.AsEnumerable().[Select](Function(r) r.Field(Of String)("Order No.")).Distinct().ToArray()
 
                     For Each orderno As String In Ordernum
-                        objStreamWriter.WriteLine("  Reading order details of order " & orderno)
+                        objStreamWriter.WriteLine("  Reading order details of order " & orderno & " " & Now())
                         Dim OrderDetails As New DataTable
 
                         If connectOR.State = ConnectionState.Open Then
@@ -2688,18 +2703,18 @@ Module Module1
                             Dim statusImg As String
                             OrdStatusArr = OrderStatus.Split("^")
                             If OrdStatusArr(3) = 1 Then
-                                    statusImg = "'https://walmarttest.sdi.com/images/chain0.png'"
-                                ElseIf OrdStatusArr(3) = 2 Then
-                                    statusImg = "'https://walmarttest.sdi.com/images/chain1.png'"
-                                ElseIf OrdStatusArr(3) = 3 Then
-                                    statusImg = "'https://walmarttest.sdi.com/images/chain2.png'"
-                                ElseIf OrdStatusArr(3) = 4 Then
-                                    statusImg = "'https://walmarttest.sdi.com/images/chain3.png'"
-                                ElseIf OrdStatusArr(3) = 5 Then
-                                    statusImg = "'https://walmarttest.sdi.com/images/chain4.png'"
-                                Else
-                                    statusImg = "'https://walmarttest.sdi.com/images/chain6.png'"
-                                End If
+                                statusImg = "'https://walmarttest.sdi.com/images/chain0.png'"
+                            ElseIf OrdStatusArr(3) = 2 Then
+                                statusImg = "'https://walmarttest.sdi.com/images/chain1.png'"
+                            ElseIf OrdStatusArr(3) = 3 Then
+                                statusImg = "'https://walmarttest.sdi.com/images/chain2.png'"
+                            ElseIf OrdStatusArr(3) = 4 Then
+                                statusImg = "'https://walmarttest.sdi.com/images/chain3.png'"
+                            ElseIf OrdStatusArr(3) = 5 Then
+                                statusImg = "'https://walmarttest.sdi.com/images/chain4.png'"
+                            Else
+                                statusImg = "'https://walmarttest.sdi.com/images/chain6.png'"
+                            End If
 
                             Dim bgColor As String = ""
                             Dim Color As String = ""
@@ -2743,8 +2758,8 @@ Module Module1
                                         strbodydet1 = strbodydet1 & "<p style='float: left;width: 100%;padding-left: 17px;margin-bottom:9px !important;margin-top:0px'><span style='font-weight:bold;font-family:Calibri;'> Ship-to Store:</span> <span style='font-family:Calibri;'>&nbsp;" & OrderDetails.Rows(K).Item("Ship To") & "</span></p> "
                                     End If
                                     strbodydet1 = strbodydet1 & "<p style='float: left;width: 100%;padding-left: 17px;margin-bottom:9px !important;margin-top:0px'><span style='font-weight:bold;font-family:Calibri;'> Items Ordered:</span></p> "
-                                    End If
-                                    strbodydet1 = strbodydet1 & "<p style='float: left;width: 100%;padding-left: 17px;margin-bottom:1px;margin-top:0px'><span style='font-family:Calibri;font-weight:bold;'> &nbsp;&nbsp; Qty:</span> <span style='font-family:Calibri;'>" & OrderDetails.Rows(K).Item("Qty Ordered") & "</span><span style='font-family:Calibri;'>,&nbsp; " & OrderDetails.Rows(K).Item("Non-Stock Item Description") & "</span></p> "
+                                End If
+                                strbodydet1 = strbodydet1 & "<p style='float: left;width: 100%;padding-left: 17px;margin-bottom:1px;margin-top:0px'><span style='font-family:Calibri;font-weight:bold;'> &nbsp;&nbsp; Qty:</span> <span style='font-family:Calibri;'>" & OrderDetails.Rows(K).Item("Qty Ordered") & "</span><span style='font-family:Calibri;'>,&nbsp; " & OrderDetails.Rows(K).Item("Non-Stock Item Description") & "</span></p> "
 
                                 strbodydet1 = strbodydet1 & "<p style='float: left;width: 100%;padding-left: 17px;margin:1px !important;'><span style='font-weight:bold;font-family:Calibri;'> &nbsp;&nbsp; Tracking Number:</span> <span style='font-family:Calibri;'>&nbsp;" & OrderDetails.Rows(K).Item("Tracking No") & "</span></p> "
                                 strbodydet1 = strbodydet1 & "<p style='float: left;width: 100%;padding-left: 17px;margin:1px !important;'><span style='font-weight:bold;font-family:Calibri;'> &nbsp;&nbsp; Delivery Date:</span> <span style='font-family:Calibri;'>&nbsp;" & OrderDetails.Rows(K).Item("Delivery Date") & "</span></p> "
@@ -2788,13 +2803,15 @@ Module Module1
         Mailer1.BodyFormat = System.Web.Mail.MailFormat.Html
         Try
             objGenerallLogStreamWriter.WriteLine("Sending order summary email to " + Mailer1.To)
-            objStreamWriter.WriteLine("Sending order summary email to " + Mailer1.To)
+            objStreamWriter.WriteLine("Sending order summary email to " + Mailer1.To & " " & Now())
             'Mythili -- INC0023448 Adding CC emails
             SDIEmailService.EmailUtilityServices("MailandStore", Mailer1.From, Mailer1.To, Mailer1.Subject, Mailer1.Cc, "webdev@sdi.com", Mailer1.Body, "StatusChangeEmail1", MailAttachmentName, MailAttachmentbytes.ToArray())
         Catch ex As Exception
             objGenerallLogStreamWriter.WriteLine("Error in sending order summary email to " + Mailer1.To)
-            objStreamWriter.WriteLine("Error in sending order summary email to " + Mailer1.To)
+            objStreamWriter.WriteLine("Error in sending order summary email to " + Mailer1.To & " " & Now())
+            objStreamWriter.WriteLine("  Generated Email for the order number " & " " & Now())
         End Try
+        objStreamWriter.WriteLine("  Generated Email for the order number " & " " & Now())
 
     End Sub
 
@@ -2981,7 +2998,7 @@ Module Module1
                 "AND C.DTTM_STAMP > TO_DATE('" & StartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf &
                 "AND C.DTTM_STAMP <= TO_DATE('" & EndDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf
 
-            objWalSCComments.WriteLine("   Supplier comments Query: " & sqlstring)
+            objWalSCComments.WriteLine("   Supplier comments Query: " & sqlstring & " " & Now())
             objWalSCComments.WriteLine("Start Supplier comment Service Channel " & Now())
 
             ds = ORDBAccess.GetAdapter(sqlstring, connectOR)
@@ -3013,13 +3030,13 @@ Module Module1
                         End If
                         UpdateNotes(WorkOrder, CredType, strComments, PO_num, OrderNum)
                     Catch ex As Exception
-                        objWalSCComments.WriteLine("Result- Failed in updating notes for the PO " + PO_num)
+                        objWalSCComments.WriteLine("Result- Failed in updating notes for the PO " + PO_num & " " & Now())
                     End Try
 
                 Next
-                objWalSCComments.WriteLine("/////////////////////////////////////////////////////////////////////////////////////////////")
+                objWalSCComments.WriteLine("/////////////////////////////////////////////////////////////////////////////////////////////" & " " & Now())
             Else
-                objWalSCComments.WriteLine("No data fetched")
+                objWalSCComments.WriteLine("No data fetched" & " " & Now())
             End If
 
         Catch ex As Exception
@@ -3051,10 +3068,10 @@ Module Module1
                         Dim response = httpClient.PostAsync(apiURL, New StringContent(serializedparameter, Encoding.UTF8, "application/json")).Result
                         If response.IsSuccessStatusCode Then
                             Dim workorderAPIResponse As String = response.Content.ReadAsStringAsync().result
-                            objWalSCComments.WriteLine("Result - Success " + Convert.ToString(workorderAPIResponse) + " Work Order-" + workOrder + " PO ID-" + Ponum + " Order No-" + Ordernum + " CredType-" + credType)
+                            objWalSCComments.WriteLine("Result - Success " + Convert.ToString(workorderAPIResponse) + " Work Order-" + workOrder + " PO ID-" + Ponum + " Order No-" + Ordernum + " CredType-" + credType & " " & Now())
                             Return "Success"
                         Else
-                            objWalSCComments.WriteLine("Result- Failed in API response Work Order-" + workOrder + " PO ID-" + Ponum + " Order No-" + Ordernum + " CredType-" + credType)
+                            objWalSCComments.WriteLine("Result- Failed in API response Work Order-" + workOrder + " PO ID-" + Ponum + " Order No-" + Ordernum + " CredType-" + credType & " " & Now())
                             Return "Failed"
                         End If
                     End If
@@ -3062,7 +3079,7 @@ Module Module1
             End If
         Catch ex As Exception
             Return "Failed"
-            objWalSCComments.WriteLine("Method:UpdateNotes - " + ex.Message)
+            objWalSCComments.WriteLine("Method:UpdateNotes - " + ex.Message & " " & Now())
         End Try
     End Function
     Function GetOrderNotes(ByVal OrderNo As String, ByVal BU As String) As String
