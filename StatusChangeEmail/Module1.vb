@@ -104,9 +104,9 @@ Module Module1
         For I = 0 To dsRows.Tables(0).Rows.Count - 1
             If dsRows.Tables(0).Rows(I).Item("SITESTK") = "Y" Then
                 Console.WriteLine(Convert.ToString(I + 1) + ".Verifying/Updating StatChg Email for Stock - BU: " + Convert.ToString(dsRows.Tables(0).Rows(I).Item("SITEBU")) + "")
-                objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Verifying/Updating StatChg Email for Stock - BU: " + Convert.ToString(dsRows.Tables(0).Rows(I).Item("SITEBU")) + "")
+                objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Verifying/Updating StatChg Email for Stock - BU: " + Convert.ToString(dsRows.Tables(0).Rows(I).Item("SITEBU")) + "" & " " & Now())
                 objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
-                objStreamWriter.WriteLine("  StatChg Email send stock emails for " & dsRows.Tables(0).Rows(I).Item("SITEBU"))
+                objStreamWriter.WriteLine("  StatChg Email send stock emails for " & dsRows.Tables(0).Rows(I).Item("SITEBU") & " " & Now())
                 buildstatchgout = checkStock(dsRows.Tables(0).Rows(I).Item("SITEBU"), dsRows.Tables(0).Rows(I).Item("SITESTART"))
                 'buildstatchgout = False
                 If buildstatchgout = True Then
@@ -119,9 +119,9 @@ Module Module1
         For I = 0 To dsRows.Tables(0).Rows.Count - 1
             If dsRows.Tables(0).Rows(I).Item("SITENSTK") = "Y" Then
                 Console.WriteLine(Convert.ToString(I + 1) + ".Verifying/Updating StatChg Email for Non-Stock - BU: " + Convert.ToString(dsRows.Tables(0).Rows(I).Item("SITEBU")) + "")
-                objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Verifying/Updating StatChg Email for Non-Stock - BU: " + Convert.ToString(dsRows.Tables(0).Rows(I).Item("SITEBU")) + "")
+                objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Verifying/Updating StatChg Email for Non-Stock - BU: " + Convert.ToString(dsRows.Tables(0).Rows(I).Item("SITEBU")) + "" & " " & Now())
                 objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
-                objStreamWriter.WriteLine("  StatChg Email send nonstock emails for " & dsRows.Tables(0).Rows(I).Item("SITEBU"))
+                objStreamWriter.WriteLine("  StatChg Email send nonstock emails for " & dsRows.Tables(0).Rows(I).Item("SITEBU") & " " & Now())
                 buildstatchgout = checkNonStock(dsRows.Tables(0).Rows(I).Item("SITEBU"), dsRows.Tables(0).Rows(I).Item("SITESTART"))
                 If buildstatchgout = True Then
                     bolErrorSomeWhere = True
@@ -132,9 +132,9 @@ Module Module1
 
         For I = 0 To dsRows.Tables(0).Rows.Count - 1
             Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsRows.Tables(0).Rows(I).Item("SITEBU")) + "")
-            objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsRows.Tables(0).Rows(I).Item("SITEBU")) + "")
+            objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsRows.Tables(0).Rows(I).Item("SITEBU")) + "" & " " & Now())
             objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
-            objStreamWriter.WriteLine("  StatChg Email send allstatus emails for XML Site : " & dsRows.Tables(0).Rows(I).Item("SITEBU"))
+            objStreamWriter.WriteLine("  StatChg Email send allstatus emails for XML Site : " & dsRows.Tables(0).Rows(I).Item("SITEBU") & " " & Now())
             buildstatchgout = checkAllStatus_7(dsRows.Tables(0).Rows(I).Item("SITEBU"), dsRows.Tables(0).Rows(I).Item("SITESTART"))
             If buildstatchgout = True Then
                 bolErrorSomeWhere = True
@@ -172,9 +172,9 @@ Module Module1
 
                 End If
                 Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
+                objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "" & " " & Now())
                 objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
-                objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") & " " & Now())
                 buildstatchgout = checkAllStatusNew(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
 
                 If buildstatchgout = True Then
@@ -187,10 +187,13 @@ Module Module1
         '7 is stock
         'R is non-stock
         objGenerallLogStreamWriter.WriteLine("-------------------------------------------------------------------------------")
+        objGenerallLogStreamWriter.WriteLine("Start buildNotifyReceiver for Stock" & Now())
         bolErrorSomeWhere = buildNotifyReceiver("7")
+        objGenerallLogStreamWriter.WriteLine("End buildNotifyReceiver for Stock" & Now())
         objGenerallLogStreamWriter.WriteLine("-------------------------------------------------------------------------------")
+        objGenerallLogStreamWriter.WriteLine("Start buildNotifyReceiver for Non-Stock" & Now())
         bolErrorSomeWhere = buildNotifyReceiver("R")
-
+        objGenerallLogStreamWriter.WriteLine("End buildNotifyReceiver for Non-Stock" & Now())
         Try
             connectOR.Close()
         Catch ex As Exception
@@ -295,9 +298,23 @@ Module Module1
         Else
             connectOR.Open()
         End If
-        Dim dataAdapter As OleDbDataAdapter =
-                    New OleDbDataAdapter(Command)
+        Dim dataAdapter As OleDbDataAdapter
+        Dim st As New Stopwatch()
         Dim ds As System.Data.DataSet = New System.Data.DataSet
+        Dim ts As TimeSpan
+        Dim elapsedTime As String
+        Try
+            st.Start()
+            dataAdapter = New OleDbDataAdapter(Command)
+            st.Stop()
+            ts = st.Elapsed
+            elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                    ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10)
+            objStreamWriter.WriteLine("Query Execution Time " + elapsedTime)
+        Catch ex As Exception
+            dataAdapter = New OleDbDataAdapter(Command)
+            objStreamWriter.WriteLine("Query Execution Time " + Now())
+        End Try
         Try
             dataAdapter.Fill(ds)
             connectOR.Close()
@@ -362,7 +379,7 @@ Module Module1
                         objStreamWriter.WriteLine("  StatChg Email NSTK send insert orders for " & ds.Tables(0).Rows(I).Item("ORDER_NO") & " " &
                          ds.Tables(0).Rows(I).Item("LINE_NBR") & " " &
                                             ds.Tables(0).Rows(I).Item("RECEIVER_ID") & " " &
-                                            ds.Tables(0).Rows(I).Item("RECV_LN_NBR"))
+                                            ds.Tables(0).Rows(I).Item("RECV_LN_NBR") & " " & Now())
                         checkNonStock = True
                     End If
                     command1.Dispose()
@@ -370,7 +387,7 @@ Module Module1
                     objStreamWriter.WriteLine("  StatChg Email NSTK send insert error for " & ds.Tables(0).Rows(I).Item("ORDER_NO") & " " &
                         ds.Tables(0).Rows(I).Item("LINE_NBR") & " " &
                         ds.Tables(0).Rows(I).Item("RECEIVER_ID") & " " &
-                        ds.Tables(0).Rows(I).Item("RECV_LN_NBR"))
+                        ds.Tables(0).Rows(I).Item("RECV_LN_NBR") & " " & Now())
                     objStreamWriter.WriteLine(ex.ToString)
                     checkNonStock = True
                 End Try
@@ -378,11 +395,11 @@ Module Module1
                 objStreamWriter.WriteLine("  StatChg Email NSTK send insert already exists in PS_ISA_ORDSTAT_EML table for order no " & ds.Tables(0).Rows(I).Item("ORDER_NO") & " " &
                         ds.Tables(0).Rows(I).Item("LINE_NBR") & " " &
                         ds.Tables(0).Rows(I).Item("RECEIVER_ID") & " " &
-                        ds.Tables(0).Rows(I).Item("RECV_LN_NBR"))
+                        ds.Tables(0).Rows(I).Item("RECV_LN_NBR") & " " & Now())
                 checkNonStock = True
             End If
         Next
-        objStreamWriter.WriteLine("  StatChg Email NSTK send select orders = " & ds.Tables(0).Rows.Count & " for" & strBU)
+        objStreamWriter.WriteLine("  StatChg Email NSTK send select orders = " & ds.Tables(0).Rows.Count & " for" & strBU & " " & Now())
 
         Try
             connectOR.Close()
@@ -438,14 +455,28 @@ Module Module1
             connectOR.Open()
         End If
 
-        Dim dataAdapter As OleDbDataAdapter =
-                    New OleDbDataAdapter(Command)
+        Dim dataAdapter As OleDbDataAdapter
+        Dim st As New Stopwatch()
         Dim ds As System.Data.DataSet = New System.Data.DataSet
+        Dim ts As TimeSpan
+        Dim elapsedTime As String
+        Try
+            st.Start()
+            dataAdapter = New OleDbDataAdapter(Command)
+            st.Stop()
+            ts = st.Elapsed
+            elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                    ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10)
+            objStreamWriter.WriteLine("Query Execution Time " + elapsedTime)
+        Catch ex As Exception
+            dataAdapter = New OleDbDataAdapter(Command)
+            objStreamWriter.WriteLine("Query Execution Time " + Now())
+        End Try
         Try
             dataAdapter.Fill(ds)
             connectOR.Close()
         Catch ex As Exception
-            objStreamWriter.WriteLine("Error in StatChg Email send select orders for " & strbu)
+            objStreamWriter.WriteLine("Error in StatChg Email send select orders for " & strbu & " " & Now())
             connectOR.Close()
             Return True
         End Try
@@ -453,7 +484,7 @@ Module Module1
         If ds.Tables(0).Rows.Count = 0 Then
             Console.WriteLine("Fetched Datas:0")
             objGenerallLogStreamWriter.WriteLine("Fetched Datas:0")
-            objStreamWriter.WriteLine("  StatChg Email send select orders = 0 for" & strbu)
+            objStreamWriter.WriteLine("  StatChg Email send select orders = 0 for" & strbu & " " & Now())
             Try
                 connectOR.Close()
             Catch ex As Exception
@@ -463,7 +494,7 @@ Module Module1
             Return False
         Else
             Console.WriteLine("Fetched Datas:" + Convert.ToString(ds.Tables(0).Rows.Count()))
-            objGenerallLogStreamWriter.WriteLine("Fetched Datas:" + Convert.ToString(ds.Tables(0).Rows.Count()))
+            objGenerallLogStreamWriter.WriteLine("Fetched Datas:" + Convert.ToString(ds.Tables(0).Rows.Count()) & " " & Now())
         End If
 
         'insert into the PS_ISA_ORDSTAT_EML table
@@ -503,7 +534,7 @@ Module Module1
                         objStreamWriter.WriteLine("  StatChg Email send insert error for " & ds.Tables(0).Rows(I).Item("ORDER_NO") & " " &
                         ds.Tables(0).Rows(I).Item("INTFC_LINE_NUM") & " " &
                         ds.Tables(0).Rows(I).Item("ORDER_INT_LINE_NO") & " " &
-                        ds.Tables(0).Rows(I).Item("DEMAND_LINE_NO"))
+                        ds.Tables(0).Rows(I).Item("DEMAND_LINE_NO") & " " & Now())
                         checkStock = True
                     End If
                     command1.Dispose()
@@ -511,19 +542,19 @@ Module Module1
                     objStreamWriter.WriteLine("  StatChg Email send insert orders for " & ds.Tables(0).Rows(I).Item("ORDER_NO") & " " &
                         ds.Tables(0).Rows(I).Item("INTFC_LINE_NUM") & " " &
                         ds.Tables(0).Rows(I).Item("ORDER_INT_LINE_NO") & " " &
-                        ds.Tables(0).Rows(I).Item("DEMAND_LINE_NO"))
+                        ds.Tables(0).Rows(I).Item("DEMAND_LINE_NO") & " " & Now())
                     checkStock = True
                 End Try
             Else
                 objStreamWriter.WriteLine("  StatChg Email send insert already exists in PS_ISA_ORDSTAT_EML table for order no " & ds.Tables(0).Rows(I).Item("ORDER_NO") & " " &
                         ds.Tables(0).Rows(I).Item("INTFC_LINE_NUM") & " " &
                         ds.Tables(0).Rows(I).Item("ORDER_INT_LINE_NO") & " " &
-                        ds.Tables(0).Rows(I).Item("DEMAND_LINE_NO"))
+                        ds.Tables(0).Rows(I).Item("DEMAND_LINE_NO") & " " & Now())
                 checkStock = True
             End If
         Next
 
-        objStreamWriter.WriteLine("  StatChg Email STK send select orders = " & ds.Tables(0).Rows.Count & " for" & strbu)
+        objStreamWriter.WriteLine("  StatChg Email STK send select orders = " & ds.Tables(0).Rows.Count & " for" & strbu & " " & Now())
         Try
             connectOR.Close()
         Catch ex As Exception
@@ -566,10 +597,10 @@ Module Module1
 
         Select Case strOrderStatus
             Case "7"
-                objGenerallLogStreamWriter.WriteLine("Stock Notification StatEmail")
+                objGenerallLogStreamWriter.WriteLine("Stock Notification StatEmail" & " " & Now())
                 buildNotifyReceiver = buildNotifySTKReady()
             Case "R"
-                objGenerallLogStreamWriter.WriteLine("Non-Stock Notification StatEmail")
+                objGenerallLogStreamWriter.WriteLine("Non-Stock Notification StatEmail" & " " & Now())
                 buildNotifyReceiver = buildNotifyNSTKReady()
         End Select
     End Function
@@ -1127,6 +1158,7 @@ Module Module1
             End If
             Try
                 SDIEmailService.EmailUtilityServices("MailandStore", Mailer.From, Mailer.To, Mailer.Subject, String.Empty, "webdev@sdi.com", Mailer.Body, "StatusChangeEmail0", MailAttachmentName, MailAttachmentbytes.ToArray())
+                objStreamWriter.WriteLine("  Generated Email for the order number " & strOrderNo & " " & Now())
             Catch ex As Exception
 
             End Try
@@ -1248,7 +1280,21 @@ Module Module1
             Else
                 connectOR.Open()
             End If
-            dr = command.ExecuteReader
+            Dim st As New Stopwatch()
+            Dim ts As TimeSpan
+            Dim elapsedTime As String
+            Try
+                st.Start()
+                dr = command.ExecuteReader
+                st.Stop()
+                ts = st.Elapsed
+                elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                    ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10)
+                objStreamWriter.WriteLine("Query Execution Time " + elapsedTime)
+            Catch ex As Exception
+                dr = command.ExecuteReader
+                objStreamWriter.WriteLine("Query Execution Time " + Now())
+            End Try
             Try
 
                 If dr.Read Then
@@ -2093,7 +2139,7 @@ Module Module1
         Dim dr As OleDbDataReader = Nothing
 
         Try
-            objStreamWriter.WriteLine("  checkAllStatusNew (1): " & strSQLstring)
+            objStreamWriter.WriteLine("  checkAllStatusNew (1): " & strSQLstring & " " & Now())
 
             Dim command As OleDbCommand
             command = New OleDbCommand(strSQLstring, connectOR)
@@ -2262,15 +2308,20 @@ Module Module1
 
         Try
             objStreamWriter.WriteLine("  checkAllStatusNew (2) Q1: " & strSQLstring)
-
+            Dim st As New Stopwatch()
+            st.Start()
             ds = ORDBAccess.GetAdapter(strSQLstring, connectOR)
-
+            st.Stop()
+            Dim ts As TimeSpan = st.Elapsed
+            Dim elapsedTime As String = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10)
+            objStreamWriter.WriteLine("Query Execution Time " + elapsedTime)
         Catch OleDBExp As OleDbException
             Console.WriteLine("")
             Console.WriteLine("***OLEDB error - " & OleDBExp.ToString)
             Console.WriteLine("")
             connectOR.Close()
-            objStreamWriter.WriteLine("     Error - error reading transaction FROM PS_ISAORDSTATUSLOG A")
+            objStreamWriter.WriteLine("     Error - error reading transaction FROM PS_ISAORDSTATUSLOG A" & " " & Now())
             Return True
         End Try
 
