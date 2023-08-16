@@ -3445,6 +3445,7 @@ Module Module1
             Mailer1.BodyFormat = System.Web.Mail.MailFormat.Html
 
             SDIEmailService.EmailUtilityServices("MailandStore", Mailer1.From, Mailer1.To, Mailer1.Subject, Mailer1.Cc, "webdev@sdi.com", Mailer1.Body, "StatusChangeEmail1", MailAttachmentName, MailAttachmentbytes.ToArray())
+            objStreamWriter.WriteLine("  Generated Email for the order number " & strOrderNo & " " & Now())
         Catch ex As Exception
 
         End Try
