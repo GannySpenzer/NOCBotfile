@@ -2922,10 +2922,10 @@ Module Module1
                     Dim ts As TimeSpan = st.Elapsed
                     Dim elapsedTime As String = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
                     ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10)
-                    objStreamWriter.WriteLine("Query Execution Time " + elapsedTime)
+                    objWalmartSC.WriteLine("Query Execution Time " + elapsedTime)
                 Catch ex As Exception
                     ds = ORDBAccess.GetAdapter(strSQLstring, connectOR)
-                    objStreamWriter.WriteLine("Query Execution Time " + Now())
+                    objWalmartSC.WriteLine("Query Execution Time " + Now())
                 End Try
 
                 Dim I As Integer
