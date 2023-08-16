@@ -319,7 +319,7 @@ Module Module1
             dataAdapter.Fill(ds)
             connectOR.Close()
         Catch ex As Exception
-            objStreamWriter.WriteLine("  StatChg Email NSTK send select orders for " & strBU)
+            objStreamWriter.WriteLine("  StatChg Email NSTK send select orders for " & strBU & " " & Now())
             connectOR.Close()
             Return True
         End Try
@@ -327,7 +327,7 @@ Module Module1
         If ds.Tables(0).Rows.Count = 0 Or strBU = "I0256" Then
             Console.WriteLine("Fetched Datas:0")
             objGenerallLogStreamWriter.WriteLine("Fetched Datas:0")
-            objStreamWriter.WriteLine("  StatChg Email NSTK send select orders = 0 for" & strBU)
+            objStreamWriter.WriteLine("  StatChg Email NSTK send select orders = 0 for" & strBU & " " & Now())
             Try
                 connectOR.Close()
             Catch ex As Exception
@@ -1316,7 +1316,7 @@ Module Module1
             Catch exOR As Exception
 
             End Try
-            objStreamWriter.WriteLine("     Error - error reading end date FROM PS_ISAORDSTATUSLOG A")
+            objStreamWriter.WriteLine("     Error - error reading end date FROM PS_ISAORDSTATUSLOG A" & " " & Now())
             Return True
         End Try
 
@@ -1408,22 +1408,36 @@ Module Module1
 
         Try
             objStreamWriter.WriteLine("  CheckAllStatus_7 (2) Q1: " & strSQLstring)
+            Dim st As New Stopwatch()
+            Dim ts As TimeSpan
+            Dim elapsedTime As String
+            Try
+                st.Start()
+                ds = ORDBAccess.GetAdapter(strSQLstring, connectOR)
+                st.Stop()
+                ts = st.Elapsed
+                elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                    ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10)
+                objStreamWriter.WriteLine("Query Execution Time " + elapsedTime)
+            Catch ex As Exception
+                ds = ORDBAccess.GetAdapter(strSQLstring, connectOR)
+                objStreamWriter.WriteLine("Query Execution Time " + Now())
+            End Try
 
-            ds = ORDBAccess.GetAdapter(strSQLstring, connectOR)
 
         Catch OleDBExp As OleDbException
             Console.WriteLine("")
             Console.WriteLine("***OLEDB error - " & OleDBExp.ToString)
             Console.WriteLine("")
             connectOR.Close()
-            objStreamWriter.WriteLine("     Error - error reading transaction FROM PS_ISAORDSTATUSLOG A")
+            objStreamWriter.WriteLine("     Error - error reading transaction FROM PS_ISAORDSTATUSLOG A" & " " & Now())
             Return True
         End Try
 
         If IsDBNull(ds.Tables(0).Rows.Count) Or (ds.Tables(0).Rows.Count) = 0 Then
             Console.WriteLine("Fetched Datas 0")
             objGenerallLogStreamWriter.WriteLine("Fetched Datas 0")
-            objStreamWriter.WriteLine("     Warning - no status changes to process at this time for All Statuses")
+            objStreamWriter.WriteLine("     Warning - no status changes to process at this time for All Statuses" & " " & Now())
             Try
                 connectOR.Close()
             Catch ex As Exception
@@ -1488,7 +1502,7 @@ Module Module1
                     " FROM PS_REQ_LOADER_DFL A" & vbCrLf &
                     " WHERE A.LOADER_BU = '" & strBU & "'" & vbCrLf
 
-            objStreamWriter.WriteLine("  CheckAllStatus_7 (3): " & strSQLstring)
+            objStreamWriter.WriteLine("  CheckAllStatus_7 (3): " & strSQLstring & " " & Now())
 
             Command = New OleDbCommand(strSQLstring, connectOR)
             connectOR.Open()
@@ -1496,7 +1510,7 @@ Module Module1
                 strSiteBU = Command.ExecuteScalar
                 connectOR.Close()
             Catch ex As Exception
-                objStreamWriter.WriteLine("  StatChg Email NSTK send select siteBU for " & strBU)
+                objStreamWriter.WriteLine("  StatChg Email NSTK send select siteBU for " & strBU & " " & Now())
                 connectOR.Close()
                 strSiteBU = "ISA00"
             End Try
@@ -2171,7 +2185,7 @@ Module Module1
             Catch exOR As Exception
 
             End Try
-            objStreamWriter.WriteLine("     Error - error reading end date FROM PS_ISAORDSTATUSLOG A")
+            objStreamWriter.WriteLine("     Error - error reading end date FROM PS_ISAORDSTATUSLOG A" & " " & Now())
             Return True
         End Try
 
@@ -3008,7 +3022,7 @@ Module Module1
                             End If
                         End If
                     Catch ex As Exception
-                        objWalmartSC.WriteLine("Method:checkAllStatusNew - " + ex.Message)
+                        objWalmartSC.WriteLine("Method:checkAllStatusNew - " + ex.Message & " " & Now())
                     End Try
                 Next
 
@@ -3017,14 +3031,14 @@ Module Module1
                 Console.WriteLine("***OLEDB error - " & OleDBExp.ToString)
                 Console.WriteLine("")
                 connectOR.Close()
-                objWalmartSC.WriteLine("     Error - error reading transaction FROM PS_ISAORDSTATUSLOG A")
+                objWalmartSC.WriteLine("     Error - error reading transaction FROM PS_ISAORDSTATUSLOG A" & " " & Now())
                 Return True
             End Try
 
             If IsDBNull(ds.Tables(0).Rows.Count) Or (ds.Tables(0).Rows.Count) = 0 Then
                 Console.WriteLine("Fetched Datas 0")
                 objWalmartSC.WriteLine("Fetched Datas 0")
-                objWalmartSC.WriteLine("     Warning - no status changes to process at this time for All Statuses")
+                objWalmartSC.WriteLine("     Warning - no status changes to process at this time for All Statuses" & " " & Now())
                 Try
                     connectOR.Close()
                 Catch ex As Exception
@@ -3033,7 +3047,7 @@ Module Module1
                 Return False
             Else
                 Console.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()))
-                objWalmartSC.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()))
+                objWalmartSC.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()) & " " & Now())
             End If
         Catch ex As Exception
 
@@ -3611,7 +3625,7 @@ Module Module1
 
         Try
             Dim Command = New OleDbCommand(strSQLstring, connectOR)
-            objStreamWriter.WriteLine("  updateEnterprise (1): " & strSQLstring)
+            objStreamWriter.WriteLine("  updateEnterprise (1): " & strSQLstring & " " & Now())
             connectOR.Open()
             rowsaffected = Command.ExecuteNonQuery()
             connectOR.Close()
@@ -3620,7 +3634,7 @@ Module Module1
             Console.WriteLine("***OLEDB error - " & OleDBExp.ToString)
             Console.WriteLine("")
             connectOR.Close()
-            objStreamWriter.WriteLine("  Error - updating the Enterprise send date " & OleDBExp.ToString)
+            objStreamWriter.WriteLine("  Error - updating the Enterprise send date " & OleDBExp.ToString & " " & Now())
             bolerror1 = True
             objXMLWriter.WriteEndElement()
             objXMLWriter.Flush()
@@ -3865,10 +3879,10 @@ Module Module1
                         Dim response = httpClient.PutAsync(apiURL, New StringContent(serializedparameter, Encoding.UTF8, "application/json")).Result
                         If response.IsSuccessStatusCode Then
                             Dim workorderAPIResponse As String = response.Content.ReadAsStringAsync().result
-                            objWalmartSC.WriteLine("Result-" + Convert.ToString(workorderAPIResponse))
+                            objWalmartSC.WriteLine("Result-" + Convert.ToString(workorderAPIResponse) & " " & Now())
                             Return "Success"
                         Else
-                            objWalmartSC.WriteLine("Result- Failed in API response")
+                            objWalmartSC.WriteLine("Result- Failed in API response" & " " & Now())
                             Return "Failed"
                         End If
                     End If
@@ -3876,7 +3890,7 @@ Module Module1
             End If
         Catch ex As Exception
             Return "Failed"
-            objWalmartSC.WriteLine("Method:UpdateWorkOrderStatus - " + ex.Message)
+            objWalmartSC.WriteLine("Method:UpdateWorkOrderStatus - " + ex.Message & " " & Now())
         End Try
     End Function
 
