@@ -1872,23 +1872,46 @@ Module Module1
             Return True
         End Try
 
-        If IsDBNull(ds.Tables(0).Rows.Count) Or (ds.Tables(0).Rows.Count) = 0 Then
+        If Not ds Is Nothing Then
+            If ds.Tables.Count > 0 Then
+                If IsDBNull(ds.Tables(0).Rows.Count) Or (ds.Tables(0).Rows.Count) = 0 Then
+                    Console.WriteLine("Fetched Datas 0")
+                    objGenerallLogStreamWriter.WriteLine("Fetched Datas 0" & " " & Now())
+                    objStreamWriter.WriteLine("     Warning - no status changes to process at this time for All Statuses" & " " & Now())
+                    Try
+                        connectOR.Close()
+                    Catch ex As Exception
+                        objStreamWriter.WriteLine("Warning Error in fetching data- " & " " & Now())
+
+                    End Try
+                    Return False
+                Else
+                    Console.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()))
+                    objStreamWriter.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()) & " " & Now())
+                    objGenerallLogStreamWriter.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()) & " " & Now())
+                End If
+            Else
+                Console.WriteLine("Fetched Datas 0")
+                objGenerallLogStreamWriter.WriteLine("Fetched Datas 0")
+                objStreamWriter.WriteLine(" Tables does not exist")
+                Try
+                    connectOR.Close()
+                Catch ex As Exception
+
+                End Try
+                Return False
+            End If
+        Else
             Console.WriteLine("Fetched Datas 0")
-            objGenerallLogStreamWriter.WriteLine("Fetched Datas 0" & " " & Now())
-            objStreamWriter.WriteLine("     Warning - no status changes to process at this time for All Statuses" & " " & Now())
+            objGenerallLogStreamWriter.WriteLine("Fetched Datas 0")
+            objStreamWriter.WriteLine("    Dataset is nothing")
             Try
                 connectOR.Close()
             Catch ex As Exception
-                objStreamWriter.WriteLine("Warning Error in fetching data- " & " " & Now())
 
             End Try
             Return False
-        Else
-            Console.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()))
-            objStreamWriter.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()) & " " & Now())
-            objGenerallLogStreamWriter.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()) & " " & Now())
         End If
-
         'Dim rowsaffected As Integer
         'Dim tmpOrderNo As String
 
@@ -2339,21 +2362,44 @@ Module Module1
             Return True
         End Try
 
-        If IsDBNull(ds.Tables(0).Rows.Count) Or (ds.Tables(0).Rows.Count) = 0 Then
+        If Not ds Is Nothing Then
+            If ds.Tables.Count > 0 Then
+                If IsDBNull(ds.Tables(0).Rows.Count) Or (ds.Tables(0).Rows.Count) = 0 Then
+                    Console.WriteLine("Fetched Datas 0")
+                    objGenerallLogStreamWriter.WriteLine("Fetched Datas 0")
+                    objStreamWriter.WriteLine("     Warning - no status changes to process at this time for All Statuses")
+                    Try
+                        connectOR.Close()
+                    Catch ex As Exception
+
+                    End Try
+                    Return False
+                Else
+                    Console.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()))
+                    objGenerallLogStreamWriter.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()))
+                End If
+            Else
+                Console.WriteLine("Fetched Datas 0")
+                objGenerallLogStreamWriter.WriteLine("Fetched Datas 0")
+                objStreamWriter.WriteLine(" Tables does not exist")
+                Try
+                    connectOR.Close()
+                Catch ex As Exception
+
+                End Try
+                Return False
+            End If
+        Else
             Console.WriteLine("Fetched Datas 0")
             objGenerallLogStreamWriter.WriteLine("Fetched Datas 0")
-            objStreamWriter.WriteLine("     Warning - no status changes to process at this time for All Statuses")
+            objStreamWriter.WriteLine("    Dataset is nothing")
             Try
                 connectOR.Close()
             Catch ex As Exception
 
             End Try
             Return False
-        Else
-            Console.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()))
-            objGenerallLogStreamWriter.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()))
         End If
-
         Dim rowsaffected As Integer
         Dim tmpOrderNo As String
 
