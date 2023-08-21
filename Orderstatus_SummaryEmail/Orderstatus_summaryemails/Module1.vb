@@ -605,9 +605,9 @@ Module Module1
                  " AND B.ISA_INTFC_LN = G.ISA_INTFC_LN" & vbCrLf &
                  " AND A.BUSINESS_UNIT_OM = D.BUSINESS_UNIT" & vbCrLf &
                  " And LD.Req_id (+) = B.order_no AND LD.REQ_LINE_NBR (+) = B.ISA_INTFC_LN" & vbCrLf
-        'reusing the query to union the table which will get the 'PUR' status without date limit
-        strSQLstring += " AND G.DTTM_STAMP > (TRUNC(sysdate -1) + '" & SumryMailTime & "'/24)" & vbCrLf &
-             " AND G.DTTM_STAMP <= (TRUNC(sysdate) + '" & SumryMailTime & "'/24)" & vbCrLf
+        ''reusing the query to union the table which will get the 'PUR' status without date limit
+        'strSQLstring += " AND G.DTTM_STAMP > (TRUNC(sysdate -1) + '" & SumryMailTime & "'/24)" & vbCrLf &
+        '     " AND G.DTTM_STAMP <= (TRUNC(sysdate) + '" & SumryMailTime & "'/24)" & vbCrLf
 
         strSQLstring += " AND EXISTS (SELECT 'X' FROM PS_ISA_WO_STATUS I " & vbCrLf &
                   "WHERE B.BUSINESS_UNIT_OM = I.BUSINESS_UNIT_OM " & vbCrLf &
