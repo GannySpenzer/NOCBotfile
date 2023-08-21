@@ -159,18 +159,18 @@ Module Module1
 
                 'Added checkAllStatusWAL() by checking I0W01 BU, Email time for order status summary email--  WW-287 & WAL-632 Poornima S
                 'SP-316 EMCOR order status summary- Dhamotharan
-                If (dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") = "I0W01" Or dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") = "I0631") And ((TimeNow > SumryStartLngTime) And (TimeNow < SumryEndLngTime)) Then
-                    Try
-                        Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
-                        objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + " " & Now())
-                        objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
-                        objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") & " " & Now())
-                        buildstatchgout = checkAllStatusWAL(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
-                    Catch ex As Exception
+                'If (dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") = "I0W01" Or dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") = "I0631") And ((TimeNow > SumryStartLngTime) And (TimeNow < SumryEndLngTime)) Then
+                '    Try
+                '        Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
+                '        objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + " " & Now())
+                '        objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
+                '        objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") & " " & Now())
+                '        buildstatchgout = checkAllStatusWAL(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                '    Catch ex As Exception
 
-                    End Try
+                '    End Try
 
-                End If
+                'End If
                 Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
                 objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + " " & Now())
                 objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
