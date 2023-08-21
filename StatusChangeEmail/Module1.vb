@@ -50,7 +50,7 @@ Module Module1
         objWalSCComments = File.CreateText(WalmartSCComments)
         objWalSCComments.WriteLine("Start Walmart Service Channel Comments " & Now())
 
-        GetNotes() 'Mythili - WAL-534, Updating all the supplier portal and expedite comments to service channel
+        'GetNotes() 'Mythili - WAL-534, Updating all the supplier portal and expedite comments to service channel
 
         Dim bolError As Boolean = buildstatchgout()
 
