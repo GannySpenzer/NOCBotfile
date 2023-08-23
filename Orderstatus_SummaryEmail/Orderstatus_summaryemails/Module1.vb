@@ -191,6 +191,8 @@ Module Module1
         Dim Mailer1 As MailMessage = New MailMessage
         Dim strccfirst1 As String = "erwin.bautista"  '  "pete.doyle"
         Dim strcclast1 As String = "sdi.com"
+        Mailer1.Cc = ""
+        Dim MailCC As String = ""
         'SP-316 get from email from table - Dhamotharan
         'SDI-40628 Changing Mail id as walmartpurchasing@sdi.com from sdiexchange@sdi.com for Walmart BU.
         'If strBU = "I0W01" Then
@@ -211,7 +213,7 @@ Module Module1
                 Mailer1.From = getFromMail(BU, connectOR)
             End If
             'Mythili -- INC0023448 Adding CC emails
-            Mailer1.Cc = getToMail(BU, connectOR)
+            MailCC = getToMail(BU, connectOR)
         Catch ex As Exception
 
         End Try
@@ -282,9 +284,12 @@ Module Module1
             If Not getDBName() Then
                 Mailer1.To = "webdev@sdi.com"
                 Mailer1.Subject = "<<TEST SITE>>Order Status Summary - " & dateAsString & ""
+                'INC0025710-Madhu-Commenting the lines
+                ' Mailer1.Cc = MailCC - Commenting since this CC Needs not to be added in test site
             Else
                 Mailer1.To = EmailTo
                 Mailer1.Subject = "Order Status Summary - " & dateAsString & ""
+                Mailer1.Cc = MailCC
                 IsProdDB = True
             End If
 
@@ -500,6 +505,7 @@ Module Module1
             Return Nothing
         End Try
     End Function
+    'INC0025710-Madhu-Added the condition in query to only brig the current linestatus
     Private Function checkAllStatusWAL(ByVal strBU As String) As Boolean
         Dim strSQLstring As String
         Dim ds As New DataSet
@@ -541,6 +547,7 @@ Module Module1
                  " PS_ISAORDSTATUSLOG G, PS_PO_LINE_DISTRIB LD" & vbCrLf &
                  " where G.BUSINESS_UNIT_OM = '" & strBU & "' " & vbCrLf &
                  " AND G.BUSINESS_UNIT_OM = A.BUSINESS_UNIT_OM " & vbCrLf &
+                 "  AND G.ISA_LINE_STATUS = B.ISA_LINE_STATUS " & vbCrLf &
                  " AND G.BUSINESS_UNIT_OM = D.BUSINESS_UNIT " & vbCrLf     '   & _
 
         strSQLstring += "  and A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf &
@@ -595,6 +602,7 @@ Module Module1
                  " PS_ISAORDSTATUSLOG G, PS_PO_LINE_DISTRIB LD" & vbCrLf &
                  " where G.BUSINESS_UNIT_OM = '" & strBU & "' " & vbCrLf &
                  " AND G.BUSINESS_UNIT_OM = A.BUSINESS_UNIT_OM " & vbCrLf &
+                 "  AND G.ISA_LINE_STATUS = B.ISA_LINE_STATUS " & vbCrLf &
                  " AND G.BUSINESS_UNIT_OM = D.BUSINESS_UNIT " & vbCrLf     '   & _
 
         strSQLstring += "  and A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf &
