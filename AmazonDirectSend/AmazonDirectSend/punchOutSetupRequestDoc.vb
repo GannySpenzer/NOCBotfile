@@ -440,7 +440,8 @@ Public Class punchOutSetupRequestDoc
                 Dim nodeOrderReq As XmlNode = docXML.SelectSingleNode(xpath:="//cXML//Request")
 
                 ' for each order get all order info including lines info
-                Dim strOrder As String = "select * from SYSADM8.PS_ISA_PO_DISP_XML where po_id='" & strOrderNo & "'"
+                Dim strOrder As String = "select * from SYSADM8.PS_ISA_PO_DISP_XML where po_id='" & strOrderNo & "' and business_unit = 'EMC00'"
+                ' Dim strOrder As String = "select * from SYSADM8.PS_ISA_PO_DISP_XML WHERE PO_ID = 'E015087861'"
                 If Not connectOR.State = ConnectionState.Open Then
                     connectOR.Open()
                 End If
@@ -655,6 +656,27 @@ Public Class punchOutSetupRequestDoc
                                     '           Number under TelephoneNumber under Phone - under address - under ShipTo
                                     node = nodeTelephoneNumber.AppendChild(docXML.CreateElement(name:="Number"))
                                     node.InnerText = strNumberSuffix
+                                    'IPM-145 Need to ensure Amazon CXML process works
+                                    'Fetching Account Value
+                                    Dim strAccount As String = ""
+                                    If Not OrderDataSet.Tables(0).Rows(iOrd).Item("ACCOUNT").ToString() Is Nothing Then
+                                        Try
+                                            If Trim(OrderDataSet.Tables(0).Rows(iOrd).Item("ACCOUNT").ToString()) <> "" Then
+                                                strAccount = Trim(OrderDataSet.Tables(0).Rows(iOrd).Item("ACCOUNT").ToString())
+                                            Else
+                                                strAccount = ""
+                                            End If
+                                        Catch ex As Exception
+                                            strAccount = ""
+                                        End Try
+                                    End If
+
+                                    ' Extrinsic for Account
+                                    Dim nodeExtrAccount As XmlNode = nodeOrderHeader.AppendChild(docXML.CreateElement(name:="Extrinsic"))
+                                    '            (1) name
+                                    attrib = nodeExtrAccount.Attributes.Append(docXML.CreateAttribute(name:="name"))
+                                    attrib.Value = "Account"
+                                    nodeExtrAccount.InnerText = strAccount
 
                                     ' Extrinsic for e-mail
                                     Dim nodeExtrEmail As XmlNode = nodeOrderHeader.AppendChild(docXML.CreateElement(name:="Extrinsic"))

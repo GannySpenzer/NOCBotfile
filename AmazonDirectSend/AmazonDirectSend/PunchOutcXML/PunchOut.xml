@@ -411,4 +411,17 @@
     <VendorURL>https://www.amazon.com/eprocurement/punchout</VendorURL>
     <PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
   </Catalog>
+  <!--IPM-145 Need to ensure Amazon CXML process works-->
+  <Catalog id="EMCORAMAZON.default" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="error" sdiVendorId="EM00000031" securityProtocol="3072">
+    <Identities>
+      <From domain="NetworkId" userId="SDIZeus2739084254" />
+      <To domain="DUNS" userId="Amazon" />
+      <Sender domain="NetworkId" userId="SDIZeus2739084254" userPw="d7cLeoXSPLnhpKBn7N0D5LXnMoOiJ7">
+        <UserAgentOverride>Ariba Network 1.2</UserAgentOverride>
+      </Sender>
+    </Identities>
+    <VendorURL>https://www.amazon.com/eprocurement/punchout</VendorURL>
+    <PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.sdiexchange.com/PunchOutcXML/cXML.dtd" />
+  </Catalog>
+  
 </xmlData>

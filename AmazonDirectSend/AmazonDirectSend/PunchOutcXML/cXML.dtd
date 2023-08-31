@@ -3120,9 +3120,10 @@ xml:lang %xmlLangCode; #REQUIRED>
 
     When Status not present, '<Status code="200" text="OK" />' is implied.
 -->
+<!--IPM-145 Need to ensure Amazon CXML process works-->
 <!ELEMENT Message (Status?, %cxml.messages;)>
 <!ATTLIST Message
-    deploymentMode  (production | test)  "production"
+    deploymentMode  (production | test)  "test"
     inReplyTo       %string;  #IMPLIED
     Id              ID        #IMPLIED
 >
@@ -3130,7 +3131,7 @@ xml:lang %xmlLangCode; #REQUIRED>
 <!-- request -->
 <!ELEMENT Request (%cxml.requests;)>
 <!ATTLIST Request
-    deploymentMode  (production | test)  "production"
+    deploymentMode  (production | test)  "test"
     Id              ID        #IMPLIED
 >
 

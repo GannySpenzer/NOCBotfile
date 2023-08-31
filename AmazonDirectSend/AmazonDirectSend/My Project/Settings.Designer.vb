@@ -53,11 +53,11 @@ Namespace My
                 Return defaultInstance
             End Get
         End Property
-        
-        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
-         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.SpecialSettingAttribute(Global.System.Configuration.SpecialSetting.WebServiceUrl),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx")>  _
+
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.SpecialSettingAttribute(Global.System.Configuration.SpecialSetting.WebServiceUrl),
+         Global.System.Configuration.DefaultSettingValueAttribute("http://sdixaws2016test:8083/SDIEmailSvc/EmailServices.asmx")>
         Public ReadOnly Property AmazonDirectSend_AmazonSDIDirectEmailSvc_EmailServices() As String
             Get
                 Return CType(Me("AmazonDirectSend_AmazonSDIDirectEmailSvc_EmailServices"),String)

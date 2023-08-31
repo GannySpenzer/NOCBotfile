@@ -61,6 +61,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.EnterpriseServices" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
@@ -141,8 +142,12 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <CustomToolNamespace>My</CustomToolNamespace>
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
+      <SubType>Designer</SubType>
     </None>
-    <None Include="PunchOutcXML\cXML.dtd" />
+    <None Include="packages.config" />
+    <None Include="PunchOutcXML\cXML.dtd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Web References\AmazonSDIDirectEmailSvc\EmailServices.wsdl" />
     <None Include="Web References\AmazonSDIDirectEmailSvc\Reference.map">
       <Generator>MSDiscoCodeGenerator</Generator>
@@ -152,10 +157,13 @@
   <ItemGroup>
     <Content Include="configSetting.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </Content>
     <Content Include="PunchOutcXML\Grainger.PriceGrpIdentifier.xml" />
     <Content Include="PunchOutcXML\GraybaR.PriceGrpIdentifier.xml" />
-    <Content Include="PunchOutcXML\OrderRequestTemplate.xml" />
+    <Content Include="PunchOutcXML\OrderRequestTemplate.xml">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="PunchOutcXML\orig.PunchOut.xml" />
     <Content Include="PunchOutcXML\PunchOut.xml">
       <SubType>Designer</SubType>
@@ -170,10 +178,10 @@
     <WebReferences Include="Web References\" />
   </ItemGroup>
   <ItemGroup>
-    <WebReferenceUrl Include="http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx">
+    <WebReferenceUrl Include="http://sdixaws2016test:8083/SDIEmailSvc/EmailServices.asmx">
       <UrlBehavior>Dynamic</UrlBehavior>
       <RelPath>Web References\AmazonSDIDirectEmailSvc\</RelPath>
-      <UpdateFromURL>http://ims.sdi.com:8913/SDIEmailSvc/EmailServices.asmx</UpdateFromURL>
+      <UpdateFromURL>http://sdixaws2016test:8083/SDIEmailSvc/EmailServices.asmx</UpdateFromURL>
       <ServiceLocationURL>
       </ServiceLocationURL>
       <CachedDynamicPropName>

@@ -35,13 +35,14 @@ Module Module1
     Dim logpath As String = "C:\Program Files\sdi\AmazonClient\AmazonLOGS\AmazonClientOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".txt"
     Dim filePath As String = "C:\Program Files\sdi\AmazonClient\AmazonXMLFiles\AmazonClientXMLOut" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".xml"
     Dim filePathResponse As String = "C:\Program Files\sdi\AmazonClient\AmazonXMLFiles\AmznClntXMLRspns" & Now.Year & Now.Month & Now.Day & Now.GetHashCode & ".xml"
-    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=PROD")
+    Dim connectOR As New OleDbConnection("Provider=OraOLEDB.Oracle.1;Password=sd1exchange;User ID=sdiexchange;Data Source=DEVL")
     Dim cnString As String = ""
     Sub Main()
 
         Dim strInput As String = ""  '  <?xml version=""1.0"" encoding=""UTF-8""?><!DOCTYPE cXML SYSTEM ""http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd""[]><cXML payloadID=""3/30/2015 11:56:16 AM 019768490@sdi.com"" xml:lang=""en-US"" timestamp=""3/30/2015 11:56:16 AM""><Header><From><Credential domain=""NetworkId""><Identity>SDIINC</Identity></Credential></From><To><Credential domain=""NetworkId""><Identity>Amazon</Identity></Credential></To><Sender><Credential domain=""DUNS""><Identity>SDIINC</Identity><SharedSecret>Y2XN7SefSxpPAoD5i6OtYix4w5TK402d</SharedSecret></Credential><UserAgent>Ariba Network 1.2</UserAgent></Sender></Header><Request><PunchOutSetupRequest operation=""create""><BuyerCookie>3xx1vu5dn5sttwrc2zqspprl</BuyerCookie><Extrinsic name=""UniqueName"">ROVENSKY,VITALY</Extrinsic><Extrinsic name=""UserEmail"">vitaly.rovensky@sdi.com</Extrinsic><Extrinsic name=""CostCenter"">I0256</Extrinsic><BrowserFormPost><URL>http://localhost/InsiteOnline/shopredirect.aspx?PUNOUT=YES</URL></BrowserFormPost><ShipTo><Address addressID=""L0256-01""><Name xml:lang=""en-US"">UNCC Facility Maint. Shop</Name><PostalAddress><DeliverTo>SDI c/o UNCC Facility Maint Shop</DeliverTo><Street>9201 University City Blvd.</Street><City>Charlotte</City><State>NC</State><PostalCode>28223</PostalCode><Country isoCountryCode=""US"">United States</Country></PostalAddress></Address></ShipTo></PunchOutSetupRequest></Request></cXML>"
         Dim strOutput As String = ""
-        Dim strWhatToTest As String = "AMAZON"   ' "NEW_AMAZON"  '    "CYTECMXM" 
+        'IPM-145 Need to ensure Amazon CXML process works
+        Dim strWhatToTest As String = "EMCORAMAZON"   ' "NEW_AMAZON"  '    "CYTECMXM" 
         Dim Response_Doc As String
         Dim msgEx As String = ""
         Dim strMsgVendConfig As String = ""
@@ -81,8 +82,8 @@ Module Module1
         If Trim(cnString) <> "" Then
             connectOR.ConnectionString = cnString
         End If
-
-        Dim strPunSite As String = "AMAZON"
+        'IPM-145 Need to ensure Amazon CXML process works
+        Dim strPunSite As String = "EMCORAMAZON"
         ' list of orders - will be used later to change status flag
         Dim OrderListDataSet As System.Data.DataSet = New System.Data.DataSet()
 
@@ -166,7 +167,8 @@ Module Module1
                     objStreamWriter.WriteLine("Got VendorConfig " & Now())
 
                     'read view, get list of orders
-                    Dim strListOrders As String = "select distinct po_id from SYSADM8.PS_ISA_PO_DISP_XML"  '   WHERE PO_ID = 'S010792283'"
+                    Dim strListOrders As String = "select distinct po_id from SYSADM8.PS_ISA_PO_DISP_XML where business_unit = 'EMC00'"  '   WHERE PO_ID = 'S010792283'"
+                    'Dim strListOrders As String = "select PO_ID from SYSADM8.PS_ISA_PO_DISP_XML WHERE PO_ID = 'E015087861'"  '   WHERE PO_ID = 'S010792283'" 
 
                     Try
                         Dim Command As OleDbCommand = New OleDbCommand(strListOrders, connectOR)
@@ -264,7 +266,7 @@ Module Module1
                                                     bIsOK = False
                                                 End Try
 
-                                                    If bIsOK Then
+                                                If bIsOK Then
                                                     Try
                                                         Try
                                                             If Not root.SelectNodes("Response/Status").Item(0).Attributes(name:="code").Value Is Nothing Then
@@ -310,8 +312,9 @@ Module Module1
                                                             Dim bNoErrors As Boolean = True
 
                                                             connectOR.Open()
+                                                            'IPM-145 Need to ensure Amazon CXML process works
                                                             Try
-                                                                Dim iOrdCount As Integer = OrderListDataSet.Tables(0).Rows.Count
+                                                                'Dim iOrdCount As Integer = OrderListDataSet.Tables(0).Rows.Count
                                                                 ' run query for every order sent
                                                                 If connectOR.State = ConnectionState.Open Then
                                                                 Else
@@ -319,12 +322,12 @@ Module Module1
                                                                 End If
                                                                 Dim rowsAffected As Integer = 0
                                                                 Dim iCnt As Integer = 0
-                                                                For iCnt = 0 To iOrdCount - 1
-                                                                    'If iCnt = 1 Then Exit For ' for testing ONLY!
-                                                                    rowsAffected = 0
-                                                                    strOrderNo = OrderListDataSet.Tables(0).Rows(iCnt).Item("po_id").ToString()
-                                                                    'run query
-                                                                    Dim strToWrite As String = intNumberToWrite.ToString()
+                                                                'For iCnt = 0 To iOrdCount - 1
+                                                                'If iCnt = 1 Then Exit For ' for testing ONLY!
+                                                                rowsAffected = 0
+                                                                'strOrderNo = OrderListDataSet.Tables(0).Rows(iCnt).Item("po_id").ToString()
+                                                                'run query
+                                                                Dim strToWrite As String = intNumberToWrite.ToString()
                                                                     If Microsoft.VisualBasic.Left(strToWrite, 1) = "-" Then
                                                                         strToWrite = Mid(strToWrite, 2)
                                                                     End If
@@ -342,7 +345,7 @@ Module Module1
                                                                         bNoErrors = False
                                                                         objStreamWriter.WriteLine("Order status change returned: 'rowsAffected = 0' for Order: " & strOrderNo)
                                                                     End If
-                                                                Next
+                                                                'Next
                                                             Catch ex As Exception
                                                                 bNoErrors = False
                                                                 objStreamWriter.WriteLine("Error trying to update Order: " & strOrderNo & " Error Message: " & ex.Message)

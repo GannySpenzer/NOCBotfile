@@ -157,7 +157,8 @@ Public Class easyHttp
                     request.ContentLength = Me.DataToPostAsBytes.Length
                     strErrors = strErrors & " after 10;"
                 Else
-                    request.ContentLength = Me.DataToPost.Length
+                    'IPM-145 Need to ensure Amazon CXML process works
+                    'request.ContentLength = Me.DataToPost.Length
                     strErrors = strErrors & " after 11;"
                 End If
             End If
@@ -183,7 +184,7 @@ Public Class easyHttp
                 strErrors = strErrors & " after 15;"
             End If
 
-            request.Timeout = 6000
+            request.Timeout = 100000
 
             ' Send request, If request
             If (m_httpMethod = HTTPMethod.HTTP_POST) Then

@@ -6,6 +6,7 @@
 		<To />
 		<Sender />
 	</Header>
-  <Request deploymentMode="production">
+  <!--IPM-145 Need to ensure Amazon CXML process works-->
+  <Request deploymentMode="Test">
 	</Request>
 </cXML>
