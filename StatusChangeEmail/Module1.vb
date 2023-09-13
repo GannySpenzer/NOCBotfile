@@ -2242,14 +2242,15 @@ Module Module1
         End If
 
         dteEndDate.AddSeconds(1)
+        'Madhu-WAL-1203-Commenting this part of code since we have separated the utility
 
-        If strBU = "I0W01" Then
-            Try
-                UpdateWalmartSourceCode(dteStartDate, dteEndDate, strBU)
-            Catch
+        'If strBU = "I0W01" Then
+        '    Try
+        '        UpdateWalmartSourceCode(dteStartDate, dteEndDate, strBU)
+        '    Catch
 
-            End Try
-        End If
+        '    End Try
+        'End If
 
         ' stock items will get item id from the ps_isa_ord_intfc_l table  but description from the PS_MASTER_ITEM_TB
         ' non-stock items  has no item-id num and gets description from the ps_isa_ord_intfc_l
