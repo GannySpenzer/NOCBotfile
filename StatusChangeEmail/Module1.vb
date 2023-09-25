@@ -173,9 +173,9 @@ Module Module1
                 'End If
                 Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
                 objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + " " & Now())
-                objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
-                objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") & " " & Now())
-                buildstatchgout = checkAllStatusNew(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                    objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
+                    objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") & " " & Now())
+                    buildstatchgout = checkAllStatusNew(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
 
                 If buildstatchgout = True Then
                     bolErrorSomeWhere = True
@@ -2163,6 +2163,7 @@ Module Module1
         End If
 
     End Function
+    'Madhu-INC0027259-Status change utility - Optimisation
     Private Function checkAllStatusNew(ByVal strBU As String) As Boolean
         Dim strSQLstring As String
         Dim dteEndDate As DateTime = Now
@@ -2309,7 +2310,8 @@ Module Module1
                  " and C.SETID (+) = 'MAIN1'" & vbCrLf &
                  " and C.INV_ITEM_ID(+) = B.INV_ITEM_ID " & vbCrLf &
                  " AND G.ORDER_NO = A.ORDER_NO " & vbCrLf &
-                 " AND B.ISA_INTFC_LN = G.ISA_INTFC_LN" & vbCrLf
+                 " AND B.ISA_INTFC_LN = G.ISA_INTFC_LN" & vbCrLf &
+                " AND B.ISA_LINE_STATUS = G.ISA_LINE_STATUS " & vbCrLf
 
         If strBU <> "I0W01" Then
             strSQLstring += " AND SH.PO_ID (+) = LD.PO_ID And SH.LINE_NBR (+) = LD.LINE_NBR And SH.SCHED_NBR (+) = LD.SCHED_NBR" & vbCrLf
@@ -2465,7 +2467,7 @@ Module Module1
                     " FROM PS_REQ_LOADER_DFL A" & vbCrLf &
                     " WHERE A.LOADER_BU = '" & strBU & "'" & vbCrLf
 
-            objStreamWriter.WriteLine("  CheckAllStatus_7 (3): " & strSQLstring)
+            objStreamWriter.WriteLine("  CheckAllStatusNew (3): " & strSQLstring)
 
             Command = New OleDbCommand(strSQLstring, connectOR)
             connectOR.Open()
