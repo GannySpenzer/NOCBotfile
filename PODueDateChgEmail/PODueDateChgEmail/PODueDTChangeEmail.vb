@@ -122,10 +122,16 @@ Public Class PODueDTChangeEmail
                         'send each req to class for email and update poduedtmon
                         If Not tempReq.EmployeeId Is Nothing Then
                             If tempReq.EmployeeId.Trim() <> "" Then
+                                Try
+                                    If tempReq.BusinessUnit.Trim() = "" Then
+                                        tempReq.BusinessUnit = GetBusinessUnit(tempReq.ReqId)
+                                    End If
+                                Catch ex As Exception
+                                End Try
                                 If sendEmailForPO(tempReq) Then
                                     For Each myline As ReqLine In tempReq.ReqLines
                                         flagPOAsProcessed(tempReq.BusinessUnit, tempReq.ReqId, myline.ReqLineNo,
-                                                     myline.POLineSched_NBR, myline.newDate, True)
+                                                             myline.POLineSched_NBR, myline.newDate, True)
 
                                     Next
                                     logger.WriteVerboseLog("///////////////////////////////////////////////////////////////////////////////////////////////////////////////")
@@ -674,6 +680,7 @@ Public Class PODueDTChangeEmail
             Try
                 sEmailBody &= vbCrLf & "</TABLE> <br><br>&nbsp;<BR>Sincerely,<BR>SDI Customer " &
                      "Care<BR>&nbsp;<BR></P></DIV><DIV>&nbsp;</DIV><DIV>&nbsp;</DIV><HR width='100%' SIZE='1'><img src='https://www.sdizeus.com/Images/SDIFooter_Email.png' /></BODY></HTML>"
+                logger.WriteVerboseLog("BusinessUnit: " & myReq.BusinessUnit.ToString)
                 sEmailTo = GetPOEmailAddress(myReq.BusinessUnit, myReq.EmployeeId)
 
                 If Trim(sEmailTo) <> "" Then
@@ -935,7 +942,37 @@ Public Class PODueDTChangeEmail
         Catch ex As Exception
         End Try
     End Sub
+    Public Function GetBusinessUnit(ByVal Req_ID As String) As String
 
+        Dim connection As New OleDbConnection(m_oraCNstring)
+        Dim p_strQuery As String = ""
+        Dim oleCommand As New OleDbCommand()
+        Dim BU As String = ""
+        Try
+            p_strQuery = "SELECT business_unit_om  FROM sysadm8.ps_isa_ord_intf_hD  WHERE ORDER_NO = '" + Req_ID + "'"
+            logger.WriteVerboseLog("GetBusinessUnit: " & p_strQuery)
+            oleCommand = New OleDbCommand(p_strQuery, connection)
+            oleCommand.CommandTimeout = 120
+            connection.Open()
+            Try
+                BU = CType(oleCommand.ExecuteScalar(), String)
+            Catch ex32 As Exception
+                BU = ""
+            End Try
+            Try
+                connection.Close()
+            Catch ex1 As Exception
+
+            End Try
+        Catch objException As Exception
+            BU = ""
+            If connection.State = ConnectionState.Open Then
+                connection.Close()
+            End If
+        End Try
+
+        Return BU
+    End Function
     Public Function GetPOExists(ByVal PO_ID As String, ByVal LineNo As String, ByVal SchedNO As String) As String
 
         Dim connection As New OleDbConnection(m_oraCNstring)
@@ -1123,6 +1160,7 @@ Public Class PODueDTChangeEmail
         End If
 
         Try
+            logger.WriteVerboseLog("BusinessUnit: " & strBu3)
             logger.WriteVerboseLog("GetPOEmailAddress(" & myBusinessUnit & "  " & myEmployeeID & ")")
             sSQL = "" &
     "                  SELECT DISTINCT E.BUSINESS_UNIT as BUSINESS_UNIT, E.ISA_EMPLOYEE_ID as ISA_EMPLOYEE_ID, E.ISA_EMPLOYEE_EMAIL as ISA_EMPLOYEE_EMAIL  "    '  & _
@@ -1135,6 +1173,7 @@ Public Class PODueDTChangeEmail
             Else
                 sSQL = sSQL & "                    WHERE upper(E.ISA_EMPLOYEE_ID) =   upper('" & myEmployeeID & "')"
             End If
+            logger.WriteVerboseLog("GetPOEmailAddress Query" & sSQL.Trim())
 
 
             If cn.State = ConnectionState.Open Then
