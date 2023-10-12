@@ -122,12 +122,6 @@ Public Class PODueDTChangeEmail
                         'send each req to class for email and update poduedtmon
                         If Not tempReq.EmployeeId Is Nothing Then
                             If tempReq.EmployeeId.Trim() <> "" Then
-                                Try
-                                    If tempReq.BusinessUnit.Trim() = "" Then
-                                        tempReq.BusinessUnit = GetBusinessUnit(tempReq.ReqId)
-                                    End If
-                                Catch ex As Exception
-                                End Try
                                 If sendEmailForPO(tempReq) Then
                                     For Each myline As ReqLine In tempReq.ReqLines
                                         flagPOAsProcessed(tempReq.BusinessUnit, tempReq.ReqId, myline.ReqLineNo,
@@ -680,6 +674,13 @@ Public Class PODueDTChangeEmail
             Try
                 sEmailBody &= vbCrLf & "</TABLE> <br><br>&nbsp;<BR>Sincerely,<BR>SDI Customer " &
                      "Care<BR>&nbsp;<BR></P></DIV><DIV>&nbsp;</DIV><DIV>&nbsp;</DIV><HR width='100%' SIZE='1'><img src='https://www.sdizeus.com/Images/SDIFooter_Email.png' /></BODY></HTML>"
+                'Madhu-INC0028242-Passing the BU Condition for To EmailID
+                Try
+                    If myReq.BusinessUnit.Trim() = "" Or myReq.BusinessUnit.Length = 0 Then
+                        myReq.BusinessUnit = GetBusinessUnit(myReq.ReqId)
+                    End If
+                Catch ex As Exception
+                End Try
                 logger.WriteVerboseLog("BusinessUnit: " & myReq.BusinessUnit.ToString)
                 sEmailTo = GetPOEmailAddress(myReq.BusinessUnit, myReq.EmployeeId)
 
@@ -1160,7 +1161,8 @@ Public Class PODueDTChangeEmail
         End If
 
         Try
-            logger.WriteVerboseLog("BusinessUnit: " & strBu3)
+            'logger.WriteVerboseLog("BusinessUnit: " & strBu3)
+            'logger.WriteVerboseLog("Len(BusinessUnit): " & strBu3.Length)
             logger.WriteVerboseLog("GetPOEmailAddress(" & myBusinessUnit & "  " & myEmployeeID & ")")
             sSQL = "" &
     "                  SELECT DISTINCT E.BUSINESS_UNIT as BUSINESS_UNIT, E.ISA_EMPLOYEE_ID as ISA_EMPLOYEE_ID, E.ISA_EMPLOYEE_EMAIL as ISA_EMPLOYEE_EMAIL  "    '  & _
