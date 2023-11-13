@@ -156,9 +156,13 @@ namespace PO_OpenUtility
                                 {
 
                                 }
-                             
-                            }
 
+                            }
+                            else
+                            {
+                                log.WriteLine("{0}No data found for  PO ID - {1} \n", ItemCount, POID, EmailBasueURL, Vendr_UN.ToUpper());
+
+                            }
                         }
                         else
                         {
@@ -242,7 +246,12 @@ namespace PO_OpenUtility
                                 {
                                 }
                             }
-                           
+                            else
+                            {
+                                log.WriteLine("{0}No data found for  PO ID - {1} \n", ItemCount, POID, EmailBasueURL, Vendr_UN.ToUpper());
+
+                            }
+
                         }
                     }
                 }
