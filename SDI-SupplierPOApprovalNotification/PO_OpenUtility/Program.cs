@@ -80,95 +80,169 @@ namespace PO_OpenUtility
                         {
                             IsPT2 = false;
                         }
-                        
-                        //SP-282 Replacing Plus with %2b to pass in query string[Change By vishalini]
-                        if (strEncrypt_POID.Contains("+")){
-                            strEncrypt_POID = strEncrypt_POID.Replace("+", "%2b"); 
-                        }
-                       string strEncrypt_VendorID = Encrypt(VendorID, "bautista");
-                        //SP-282 Replacing Plus with %2b to pass in query string[Change By vishalini]
-                        if (strEncrypt_VendorID.Contains("+"))
+                        string techPhno = string.Empty;
+                        string techEmail = string.Empty;
+                        string Notes = string.Empty;
+                        string strBuyerEmail = string.Empty;
+                        string vendorname1 = string.Empty;
+                        string Vendr_UN = string.Empty;
+                        DataSet ds_UserDetail = new DataSet();
+                        try
                         {
-                            strEncrypt_VendorID = strEncrypt_VendorID.Replace("+", "%2b");
+                            baseWebURL = GetWebBaseUrl(DBurl, IsPT2);
+
                         }
-                        string strEncrypt_PO_BU = Encrypt(PO_BU, "bautista");
-                        //SP-282 Replacing Plus with %2b to pass in query string[Change By vishalini]
-                        if (strEncrypt_PO_BU.Contains("+"))
+                        catch(Exception ex)
                         {
-                            strEncrypt_PO_BU = strEncrypt_PO_BU.Replace("+", "%2b");
+
                         }
-                        string UsrTblQuery = "SELECT * FROM SDIX_USERS_TBL WHERE ISA_EMPLOYEE_ID = '" + VendorID + "'";
-                        DataSet ds_UserDetail = GetAdapter(UsrTblQuery);
-                        if (ds_UserDetail.Tables[0].Rows.Count != 0)
+                        string EmailBasueURL = string.Empty;
+                        string Vendr_Email = String.Empty;
+                        string Vendr_OprID = string.Empty;
+                        Boolean EmailSent = false;
+                        if (IsPT2 == true)
                         {
-                            string strBuyerEmail = string.Empty;
-                            if (PO_BU == "WAL00" || PO_BU == "EMC00")
+                            string UsrTblQuery = "SELECT NAME1 FROM PS_VENDOR WHERE VENDOR_STATUS = 'A' AND VENDOR_ID = '" + VendorID + "'";
+                            vendorname1 = GetScalar(UsrTblQuery);
+                            if (vendorname1.Trim() != "")
                             {
-                                strBuyerEmail = getpurchasingEmailFrom(PO_BU);
-                            }
-                            else
-                            {
-                                strBuyerEmail = getBuyerEmail(POID, PO_BU);
-                            }
-                            
-                            DataSet dsTech = getTechDetails(POID, PO_BU);
-                            string techPhno = string.Empty;
-                            string techEmail = string.Empty;
-                            string Notes = string.Empty;
-                            if (dsTech.Tables[0].Rows.Count != 0)
-                            {
-                                techPhno = Convert.ToString(dsTech.Tables[0].Rows[0]["PHONE_NUM"]);
-                                techEmail = Convert.ToString(dsTech.Tables[0].Rows[0]["ISA_EMPLOYEE_EMAIL"]);
+                                if (PO_BU == "WAL00" || PO_BU == "EMC00")
+                                {
+                                    strBuyerEmail = getpurchasingEmailFrom(PO_BU);
+                                }
+                                else
+                                {
+                                    strBuyerEmail = getBuyerEmail(POID, PO_BU);
+                                }
+
+                                DataSet dsTech = getTechDetails(POID, PO_BU);
+
+                                if (dsTech.Tables[0].Rows.Count != 0)
+                                {
+                                    techPhno = Convert.ToString(dsTech.Tables[0].Rows[0]["PHONE_NUM"]);
+                                    techEmail = Convert.ToString(dsTech.Tables[0].Rows[0]["ISA_EMPLOYEE_EMAIL"]);
+                                }
+                                try
+                                {
+                                    string CTblQuery = "select A.BUSINESS_UNIT, A.PO_ID, A.LINE_NBR, B.COMMENTS_2000 from sysadm8.ps_po_comments A, ps_comments_tbl B where A.business_unit = 'WAL00' AND A.OPRID = B.OPRID AND A.COMMENT_ID = B.COMMENT_ID AND A.RANDOM_CMMT_NBR = B.RANDOM_CMMT_NBR AND A.LINE_NBR <> 0 AND B.SHARED_FLG = 'Y' AND A.PO_ID= '" + POID + "'";
+                                    DataSet Comments = GetAdapter(CTblQuery);
+                                    if (Comments.Tables[0].Rows.Count != 0)
+                                    {
+                                        Notes = Convert.ToString(Comments.Tables[0].Rows[0]["COMMENTS_2000"]);
+                                    }
+                                }
+                                catch (Exception)
+                                {
+                                    Notes = " ";
+                                }
+                               
+                               EmailBasueURL = baseWebURL + "po-dispatch/" + POID;
+                                try
+                                {
+                                    EmailSent = SendEmail(VendorID, vendorname1, Vendr_Email, POID, PO_BU, EmailBasueURL, strBuyerEmail, Email, techPhno, techEmail, Notes);
+                                    if (EmailSent)
+                                    {
+                                        log.WriteLine("{0}. PO ID - {1}, Generated email link {2} notification sent to - {3} \n", ItemCount, POID, EmailBasueURL, vendorname1.ToUpper());
+                                        string strUpdQuery = "UPDATE SYSADM8.PS_ISA_PO_DISP_PTL  SET DTTM_OPENED = SYSDATE WHERE PO_ID = '" + POID + "' AND VENDOR_ID = '" + VendorID + "' ";
+                                        Boolean results = false;
+                                        results = ExecuteNonQuery(strUpdQuery);
+                                    }
+                                    else
+                                    {
+                                        log.WriteLine("{0}. PO ID - {1}, Error in {2} notification sent to - {3} \n", ItemCount, POID, EmailBasueURL, vendorname1.ToUpper());
+                                    }
+                                }
+                                catch (Exception)
+                                {
+
+                                }
+                             
                             }
 
-                            string Vendr_UN = Convert.ToString(ds_UserDetail.Tables[0].Rows[0]["ISA_USER_NAME"]);
-                            string Vendr_Email = Convert.ToString(ds_UserDetail.Tables[0].Rows[0]["ISA_EMPLOYEE_EMAIL"]);
-                            string Vendr_OprID = Convert.ToString(ds_UserDetail.Tables[0].Rows[0]["ISA_USER_ID"]);
-                            Vendr_OprID = Encrypt(Vendr_OprID, "bautista");
-                            //SP-282 Replacing Plus with %2b to pass in query string[Change By vishalini]
-                            if (Vendr_OprID.Contains("+"))
+                        }
+                        else
+                        {
+                          
+                            string UsrTblQuery = "SELECT * FROM SDIX_USERS_TBL WHERE ISA_EMPLOYEE_ID = '" + VendorID + "'";
+                            ds_UserDetail = GetAdapter(UsrTblQuery);
+                            if (ds_UserDetail.Tables[0].Rows.Count != 0)
                             {
-                                Vendr_OprID = Vendr_OprID.Replace("+", "%2b");
-                            }
-                            try
-                            {
-                                string CTblQuery = "select A.BUSINESS_UNIT, A.PO_ID, A.LINE_NBR, B.COMMENTS_2000 from sysadm8.ps_po_comments A, ps_comments_tbl B where A.business_unit = 'WAL00' AND A.OPRID = B.OPRID AND A.COMMENT_ID = B.COMMENT_ID AND A.RANDOM_CMMT_NBR = B.RANDOM_CMMT_NBR AND A.LINE_NBR <> 0 AND B.SHARED_FLG = 'Y' AND A.PO_ID= '" + POID + "'";
-                                DataSet Comments = GetAdapter(CTblQuery);
-                                if (Comments.Tables[0].Rows.Count != 0)
+                                //SP-282 Replacing Plus with %2b to pass in query string[Change By vishalini]
+                                if (strEncrypt_POID.Contains("+"))
                                 {
-                                    Notes = Convert.ToString(Comments.Tables[0].Rows[0]["COMMENTS_2000"]);
+                                    strEncrypt_POID = strEncrypt_POID.Replace("+", "%2b");
+                                }
+                                string strEncrypt_VendorID = Encrypt(VendorID, "bautista");
+                                //SP-282 Replacing Plus with %2b to pass in query string[Change By vishalini]
+                                if (strEncrypt_VendorID.Contains("+"))
+                                {
+                                    strEncrypt_VendorID = strEncrypt_VendorID.Replace("+", "%2b");
+                                }
+                                string strEncrypt_PO_BU = Encrypt(PO_BU, "bautista");
+                                //SP-282 Replacing Plus with %2b to pass in query string[Change By vishalini]
+                                if (strEncrypt_PO_BU.Contains("+"))
+                                {
+                                    strEncrypt_PO_BU = strEncrypt_PO_BU.Replace("+", "%2b");
+                                }
+                                if (PO_BU == "WAL00" || PO_BU == "EMC00")
+                                {
+                                    strBuyerEmail = getpurchasingEmailFrom(PO_BU);
+                                }
+                                else
+                                {
+                                    strBuyerEmail = getBuyerEmail(POID, PO_BU);
+                                }
+
+                                DataSet dsTech = getTechDetails(POID, PO_BU);
+
+                                if (dsTech.Tables[0].Rows.Count != 0)
+                                {
+                                    techPhno = Convert.ToString(dsTech.Tables[0].Rows[0]["PHONE_NUM"]);
+                                    techEmail = Convert.ToString(dsTech.Tables[0].Rows[0]["ISA_EMPLOYEE_EMAIL"]);
+                                }
+                                Vendr_UN = Convert.ToString(ds_UserDetail.Tables[0].Rows[0]["ISA_USER_NAME"]);
+                                Vendr_Email = Convert.ToString(ds_UserDetail.Tables[0].Rows[0]["ISA_EMPLOYEE_EMAIL"]);
+                                Vendr_OprID = Convert.ToString(ds_UserDetail.Tables[0].Rows[0]["ISA_USER_ID"]);
+                                Vendr_OprID = Encrypt(Vendr_OprID, "bautista");
+                                //SP-282 Replacing Plus with %2b to pass in query string[Change By vishalini]
+                                if (Vendr_OprID.Contains("+"))
+                                {
+                                    Vendr_OprID = Vendr_OprID.Replace("+", "%2b");
+                                }
+                                try
+                                {
+                                    string CTblQuery = "select A.BUSINESS_UNIT, A.PO_ID, A.LINE_NBR, B.COMMENTS_2000 from sysadm8.ps_po_comments A, ps_comments_tbl B where A.business_unit = 'WAL00' AND A.OPRID = B.OPRID AND A.COMMENT_ID = B.COMMENT_ID AND A.RANDOM_CMMT_NBR = B.RANDOM_CMMT_NBR AND A.LINE_NBR <> 0 AND B.SHARED_FLG = 'Y' AND A.PO_ID= '" + POID + "'";
+                                    DataSet Comments = GetAdapter(CTblQuery);
+                                    if (Comments.Tables[0].Rows.Count != 0)
+                                    {
+                                        Notes = Convert.ToString(Comments.Tables[0].Rows[0]["COMMENTS_2000"]);
+                                    }
+                                }
+                                catch (Exception)
+                                {
+                                    Notes = " ";
+                                }
+                                EmailBasueURL = baseWebURL + "Supplier/PODetails.aspx?POID=" + strEncrypt_POID + "&vendorid=" + strEncrypt_VendorID + "&PO_BU=" + strEncrypt_PO_BU + "&OPR_ID=" + Vendr_OprID + "";
+                                try
+                                {
+                                    EmailSent = SendEmail(VendorID, Vendr_UN, Vendr_Email, POID, PO_BU, EmailBasueURL, strBuyerEmail, Email, techPhno, techEmail, Notes);
+                                    if (EmailSent)
+                                    {
+                                        log.WriteLine("{0}. PO ID - {1}, Generated email link {2} notification sent to - {3} \n", ItemCount, POID, EmailBasueURL, Vendr_UN.ToUpper());
+                                        string strUpdQuery = "UPDATE SYSADM8.PS_ISA_PO_DISP_PTL  SET DTTM_OPENED = SYSDATE WHERE PO_ID = '" + POID + "' AND VENDOR_ID = '" + VendorID + "' ";
+                                        Boolean results = false;
+                                        results = ExecuteNonQuery(strUpdQuery);
+                                    }
+                                    else
+                                    {
+                                        log.WriteLine("{0}. PO ID - {1}, Error in {2} notification sent to - {3} \n", ItemCount, POID, EmailBasueURL, Vendr_UN.ToUpper());
+                                    }
+                                }
+                                catch (Exception)
+                                {
                                 }
                             }
-                            catch (Exception)
-                            {
-                            }
-                            //Mythili -- SP-404 Embedding new supplier portal link in the email
-                            baseWebURL = GetWebBaseUrl(DBurl,IsPT2);
-                            string EmailBasueURL = string.Empty;
-                            if(IsPT2 == true)
-                            {
-                                EmailBasueURL = baseWebURL + "po-dispatch/" + POID;
-                            }
-                            else
-                            {
-                                EmailBasueURL = baseWebURL + "Supplier/PODetails.aspx?POID=" + strEncrypt_POID + "&vendorid=" + strEncrypt_VendorID + "&PO_BU=" + strEncrypt_PO_BU + "&OPR_ID=" + Vendr_OprID + "";
-                            }
-                            
-
-                            Boolean EmailSent = SendEmail(VendorID, Vendr_UN, Vendr_Email, POID, PO_BU, EmailBasueURL, strBuyerEmail, Email, techPhno, techEmail, Notes);
-
-                            if (EmailSent)
-                            {
-                                log.WriteLine("{0}. PO ID - {1}, Generated email link {2} notification sent to - {3} \n", ItemCount, POID, EmailBasueURL, Vendr_UN.ToUpper());
-                                string strUpdQuery = "UPDATE SYSADM8.PS_ISA_PO_DISP_PTL  SET DTTM_OPENED = SYSDATE WHERE PO_ID = '" + POID + "' AND VENDOR_ID = '" + VendorID + "' ";
-                                Boolean results = false;
-                                results = ExecuteNonQuery(strUpdQuery);
-                            }
-                            else
-                            {
-                                log.WriteLine("{0}. PO ID - {1}, Error in {2} notification sent to - {3} \n", ItemCount, POID, EmailBasueURL, Vendr_UN.ToUpper());
-                            }
-
+                           
                         }
                     }
                 }
@@ -177,7 +251,7 @@ namespace PO_OpenUtility
             fileStream.Close();
         }
         //Mythili -- SP-404 Embedding new supplier portal link in the email -- get site url based on 
-        public static string GetWebBaseUrl(string strDB,Boolean IsPT2)
+        public static string GetWebBaseUrl(string strDB, Boolean IsPT2)
         {
             string strSQLString = "";
             string strPT2 = "";
@@ -200,7 +274,7 @@ namespace PO_OpenUtility
                 {
                     strGetWebBaseUrl = dssites.Tables[0].Rows[0]["TEST_SITE"].ToString();
                 }
-                else if(strDB == "SNBX" || strDB == "SUAT")
+                else if (strDB == "SNBX" || strDB == "SUAT")
                 {
                     strGetWebBaseUrl = dssites.Tables[0].Rows[0]["DEMO_SITE"].ToString();
                 }
@@ -455,7 +529,7 @@ and a.business_unit = '" + strPOBU + "' and a.po_id='" + strPO + "'";
                 MailMessage Mailer = new MailMessage();
                 MailerFrom = getpurchasingEmailFrom(PO_BU);
                 MailAddress From = new MailAddress(MailerFrom);
-                Mailer.From = From;                
+                Mailer.From = From;
                 //string FromAddress = "SDIZEUS@SDI.COM";
                 string Mailcc = "";
                 string MailBcc = "webdev@sdi.com;Tony.Smith@sdi.com";
@@ -530,7 +604,7 @@ and a.business_unit = '" + strPOBU + "' and a.po_id='" + strPO + "'";
                     {
                         strbodydetl = strbodydetl + "<p style='font-weight: bold;'>Tech e-mail: " + techEmail + " </p>";
                         strbodydetl = strbodydetl + "<p style='font-weight: bold;'>Tech Phone No: " + PhNo + "  </p>";
-                    }                   
+                    }
                 }
 
                 strbodydetl = strbodydetl + "&nbsp;<br>";
@@ -581,14 +655,14 @@ and a.business_unit = '" + strPOBU + "' and a.po_id='" + strPO + "'";
                     }
                     catch (Exception)
                     {
-                    }                   
+                    }
                     Mailer.Subject = "SDIZEUS - Purchase Order " + POID + "";
                 }
 
                 OleDbConnection connectionEmail = new OleDbConnection(ConfigurationSettings.AppSettings["OLEDBconString"]);
 
                 try
-                {                   
+                {
                     sendemails(Mailer);
 
                     try
@@ -629,7 +703,7 @@ and a.business_unit = '" + strPOBU + "' and a.po_id='" + strPO + "'";
             List<byte[]> MailAttachmentbytes = new List<byte[]>();
             //byte[] bytes = Encoding.ASCII.GetBytes(fileStream);
             //MailAttachmentbytes.Add(bytes);
-            
+
             try
             {
                 SDIEmailService.EmailUtilityServices("MailandStore", mailer.From.ToString(), mailer.To.ToString(), mailer.Subject, string.Empty, string.Empty, mailer.Body, "SDIERRMAIL", null, null);
