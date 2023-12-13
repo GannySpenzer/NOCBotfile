@@ -8,6 +8,7 @@ Imports System.Web.Services
 Imports System.Web.Services.Protocols
 Imports System.Xml.Serialization
 Imports System.Xml
+Imports System.Configuration
 
 Module Module1
 
@@ -40,12 +41,129 @@ Module Module1
         End If
 
         objStreamWriter.WriteLine("End of check deluxe delivery at " & Now().ToString())
+        'INC0031520 - Service channel updation not working then send an Error email - Dhamotharan P
+        objStreamWriter.WriteLine("\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\")
+        Console.WriteLine("Started to Error emails from SCUpdateWO - sub main")
+        Console.WriteLine("")
+        objStreamWriter.WriteLine("Started Error emails from SCUpdateWO at " & Now().ToString())
+        CheckErrorEmail()
+
+
+        objStreamWriter.WriteLine("End of Error emails from SCUpdateWO at " & Now().ToString())
 
         objStreamWriter.Flush()
         objStreamWriter.Close()
 
     End Sub
+    'INC0031520 - Service channel updation not working then send an Error email - Dhamotharan P
+    Private Sub SendErrEmailForSC()
+        Dim SDIEmailService As SDIEmailUtility.EmailServices = New SDIEmailUtility.EmailServices()
+        Dim MailAttachmentName As String()
+        Dim MailAttachmentbytes As New List(Of Byte())()
+        Dim email As New MailMessage
+        Dim strSQLstring As String
+        strSQLstring = "select ISA_LAST_STAT_SEND from SDIX_EMAIL_DETAIL where ORDER_MFG_BU = 'I0W01'"
+        Dim cnString As String = ""
+        Try
 
+            ' retrieve the source DB connection string to use
+            If Not (m_xmlConfig("configuration")("sourceDB").Attributes("cnString").InnerText Is Nothing) Then
+                cnString = m_xmlConfig("configuration")("sourceDB").Attributes("cnString").InnerText.Trim
+            End If
+        Catch ex As Exception
+            cnString = ""
+        End Try
+
+
+        If Trim(cnString) <> "" Then
+            connectOR.ConnectionString = cnString
+        End If
+        Dim Command As OleDbCommand = New OleDbCommand(strSQLstring, connectOR)
+        connectOR.Open()
+        Dim LastSendDate As String = ""
+        Try
+            LastSendDate = Command.ExecuteScalar
+
+        Catch ex As Exception
+            objStreamWriter.WriteLine("error selecting from SDIX_EMAIL_DETAIL table")
+            objStreamWriter.WriteLine("         " & ex.Message)
+        Finally
+            connectOR.Close()
+        End Try
+        Dim lastRunDate As String = LastSendDate
+        email.From = "walmartpurchasing@sdi.com"
+        If Not getDBName() Then
+            email.To = "webdev@sdi.com"
+        Else
+            email.To = ConfigurationSettings.AppSettings("EMailListForSC").ToString.Trim
+        End If
+        email.Subject = "Error - Walmart Service Channel updation Warning - No WO# updation on " & lastRunDate.ToString
+        email.Priority = MailPriority.High
+        email.BodyFormat = MailFormat.Html
+        email.Body = "<html><body><table><tr><td>No WO# updations on " & lastRunDate.ToString & ".  Check log.</td></tr>"
+        email.Cc = "webdev@sdi.com"
+        email.Bcc = ""
+
+        'Send the email and handle any error that occurs
+        Try
+            'SmtpMail.Send(email)
+            SDIEmailService.EmailUtilityServices("MailandStore", email.From, email.To, email.Subject, String.Empty, String.Empty, email.Body, "StatusChangeEmail0", MailAttachmentName, MailAttachmentbytes.ToArray())
+            objStreamWriter.WriteLine("Warning Email sent at " & LastSendDate)
+        Catch
+            objStreamWriter.WriteLine("     Error - an Error email was not sent")
+        End Try
+    End Sub
+    'INC0031520 - Service channel updation not working then send an Error email - Dhamotharan P
+    Private Function CheckErrorEmail()
+        Dim bResult As Boolean = False
+        Dim strSQLstring As String
+        strSQLstring = "select ISA_LAST_STAT_SEND from SDIX_EMAIL_DETAIL where trunc(ISA_LAST_STAT_SEND) = trunc(sysdate) and ORDER_MFG_BU = 'I0W01'"
+        Dim cnString As String = ""
+        Try
+
+            ' retrieve the source DB connection string to use
+            If Not (m_xmlConfig("configuration")("sourceDB").Attributes("cnString").InnerText Is Nothing) Then
+                cnString = m_xmlConfig("configuration")("sourceDB").Attributes("cnString").InnerText.Trim
+            End If
+        Catch ex As Exception
+            cnString = ""
+        End Try
+
+
+        If Trim(cnString) <> "" Then
+            connectOR.ConnectionString = cnString
+        End If
+        Dim Command As OleDbCommand = New OleDbCommand(strSQLstring, connectOR)
+        connectOR.Open()
+        Dim LastSendDate As String = ""
+        Try
+            LastSendDate = Command.ExecuteScalar
+
+        Catch ex As Exception
+            objStreamWriter.WriteLine("error selecting from SDIX_EMAIL_DETAIL table")
+            objStreamWriter.WriteLine("         " & ex.Message)
+        Finally
+            connectOR.Close()
+        End Try
+
+        If LastSendDate Is Nothing Then
+            connectOR.Close()
+            SendErrEmailForSC()
+        End If
+    End Function
+    'INC0031520 - Service channel updation not working then send an Error email - Dhamotharan P
+    Public Function getDBName() As Boolean
+        Dim isPRODDB As Boolean = False
+        Dim PRODDbList As String = ConfigurationSettings.AppSettings("OraPRODDbList")
+        Dim DbUrl As String = ConfigurationSettings.AppSettings("OLEDBconString")
+        Try
+            DbUrl = DbUrl.Substring(DbUrl.Length - 4).ToUpper()
+            isPRODDB = (PRODDbList.IndexOf(DbUrl.Trim.ToUpper) > -1)
+        Catch ex As Exception
+            isPRODDB = False
+        End Try
+        Return isPRODDB
+    End Function
     Private Function CheckDeluxe() As Boolean
         Dim bResult As Boolean = False
 
