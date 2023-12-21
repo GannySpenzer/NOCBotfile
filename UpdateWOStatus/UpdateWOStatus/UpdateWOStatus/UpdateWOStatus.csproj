@@ -53,10 +53,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>2ABFE9918698BA3CA8AACC3DD30AB3C0E1352EE0</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>92BF123039A99DDBB41C1D86FDA7FDC901316785</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>UpdateWOStatus_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>UpdateWOStatus_1_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>true</GenerateManifests>
@@ -69,7 +69,9 @@
       <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -84,6 +86,7 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+    <None Include="UpdateWOStatus_1_TemporaryKey.pfx" />
     <None Include="UpdateWOStatus_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
