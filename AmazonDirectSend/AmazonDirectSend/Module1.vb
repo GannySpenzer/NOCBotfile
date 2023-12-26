@@ -7,6 +7,7 @@ Imports System.Data
 Imports System.Data.OleDb
 Imports System.Xml
 Imports System.Text
+Imports System.Configuration
 Imports System.Text.Encoding
 
 
@@ -465,12 +466,15 @@ Module Module1
 
                         End Try
                     Catch ex As Exception
+                        Dim error_Message As String = ex.Message
+                        Dim str_OrderNo As String = ""
                         Try
                             connectOR.Close()
                         Catch ex1 As Exception
 
                         End Try
-
+                        'INC0028226 - Triggering error email when utility doesnt run
+                        Call Module1.SendErrorEmail(str_OrderNo, error_Message, logpath)
                         objStreamWriter.WriteLine("Error: " & ex.Message & vbCrLf & " ; Trace: " & ex.StackTrace)
 
                     End Try
@@ -602,19 +606,36 @@ Module Module1
         Dim strEmailBcc As String = ""
         Dim strEmailTo As String = ""
         Dim strEmailSubject As String = ""
-        If cnString.Substring(cnString.Length - 4).ToUpper = "PLGR" Or
-                   cnString.Substring(cnString.Length - 4).ToUpper = "STAR" Or
-                   cnString.Substring(cnString.Length - 4).ToUpper = "DEVL" Or
-                    cnString.Substring(cnString.Length - 4).ToUpper = "SNBX" Or
-                    cnString.Substring(cnString.Length - 5).ToUpper = "FSTST" Or
-                     cnString.Substring(cnString.Length - 5).ToUpper = "FSUAT" Or
-               cnString.Substring(cnString.Length - 4).ToUpper = "RPTG" Then
-            strEmailTo = "WebDev@sdi.com"
-            strEmailSubject = " (Test) 'Amazon SDI Direct send XML out' was completed with Error(s) for Order No: " & strOrdrNo
+
+        Dim test_Emailto As String = ConfigurationSettings.AppSettings("test_mail").ToString()
+        Dim prod_Emailto As String = ConfigurationSettings.AppSettings("prod_mail").ToString()
+        'If cnString.Substring(cnString.Length - 4).ToUpper = "PLGR" Or
+        '           cnString.Substring(cnString.Length - 4).ToUpper = "STAR" Or
+        '           cnString.Substring(cnString.Length - 4).ToUpper = "DEVL" Or
+        '            cnString.Substring(cnString.Length - 4).ToUpper = "SNBX" Or
+        '            cnString.Substring(cnString.Length - 5).ToUpper = "FSTST" Or
+        '             cnString.Substring(cnString.Length - 5).ToUpper = "FSUAT" Or
+        '       cnString.Substring(cnString.Length - 4).ToUpper = "RPTG" Then
+        If Not getDBName() Then
+
+            If strOrdrNo <> "" Then
+                strEmailTo = test_Emailto
+                strEmailSubject = " <<Test>> 'Amazon SDI Direct send XML out' was completed with Error(s) for Order No: " & strOrdrNo
+            Else
+                strEmailTo = test_Emailto
+                strEmailSubject = " <<Test>> 'Amazon SDI Direct send XML out' was completed with Error(s)"
+            End If
+
         Else
-            strEmailTo = If(emailid = "", "WebDev@sdi.com", emailid)
-            strEmailBcc = "WebDev@sdi.com"
-            strEmailSubject = "Amazon SDI Direct send XML out' was completed with Error(s) for Order No: " & strOrdrNo
+            'strEmailTo = If(emailid = "", "WebDev@sdi.com", emailid)
+            strEmailTo = If(emailid = "", prod_Emailto, emailid & ";" & prod_Emailto)
+            'strEmailBcc = "WebDev@sdi.com" 
+            'strEmailBcc = "WebDevNotifications@sdi.com"   [webdevnotification is added to prod_Emailto, so excluded]
+            If strOrdrNo <> "" Then
+                strEmailSubject = "Amazon SDI Direct send XML out' was completed with Error(s) for Order No: " & strOrdrNo
+            Else
+                strEmailSubject = " Amazon SDI Direct send XML out' was completed with Error(s)"
+            End If
         End If
 
         Dim strEmailBody As String = ""
@@ -637,6 +658,25 @@ Module Module1
         End If
     End Sub
 
+    'INC0028226 - Triggering error email when utility doesnt run
+    Public Function getDBName() As Boolean
+        Dim isPRODDB As Boolean = False
+        ' Dim PRODDbList As String = ConfigurationManager.AppSettings("OraPRODDbList").ToString()
+        Dim DbUrl As String = m_xmlConfig("configuration")("sourceDB").Attributes("cnString").InnerText.Trim
+        Try
+            DbUrl = DbUrl.Substring(DbUrl.Length - 5).ToUpper()
+            '  isPRODDB = (PRODDbList.IndexOf(DbUrl.Trim.ToUpper) > -1)
+            If DbUrl = "PROD" Or DbUrl = "FSPRD" Then
+                isPRODDB = True
+            Else
+                isPRODDB = False
+            End If
+
+        Catch ex As Exception
+            isPRODDB = False
+        End Try
+        Return isPRODDB
+    End Function
 
 
 End Module
