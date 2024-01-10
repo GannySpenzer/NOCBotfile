@@ -11,11 +11,13 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net;
+using System.Net.Mail;
 
 namespace UpdateWOStatus
 {
     class Program
-    {
+    {        
         static void Main(string[] args)
         {
             StreamWriter objStreamWriter;
@@ -56,29 +58,101 @@ namespace UpdateWOStatus
             //UpdateWorkOrders();
             //string apiresponse = AuthenticateService1("Walmart");
         }
+
+        public static bool getDBName()
+        {
+            bool isPRODDB = false;
+            string PRODDbList = ConfigurationSettings.AppSettings["OLEProdDB"].ToString();
+            string DbUrl = ConfigurationSettings.AppSettings["OLEDBconString"].ToString();
+           
+            try
+            {
+                DbUrl = DbUrl.Substring(DbUrl.Length - 4).ToUpper();
+                isPRODDB = (PRODDbList.IndexOf(DbUrl.Trim().ToUpper()) > -1);
+            }
+            catch (Exception ex)
+            {
+                isPRODDB = false;
+            }
+
+            return isPRODDB;
+        }
+
+        private static void SendEmail(StreamWriter log, string Message = "")
+        {
+            SDiEmailUtilityService.EmailServices SDIEmailService = new SDiEmailUtilityService.EmailServices();
+            List<byte[]> MailAttachmentbytes = new List<byte[]>();
+            MailMessage email = new MailMessage();
+            string MailToSpecial = ConfigurationSettings.AppSettings["MailToSpecial"];
+
+            email.From = new MailAddress("WalmartPurchasing@sdi.com");
+            if (!getDBName())
+            {
+                email.To.Add("webdev@sdi.com");
+            }
+            else
+            {
+                email.To.Add(MailToSpecial);
+            }
+
+            email.Subject = "Error in the Update workorder status.";
+
+            email.Priority = MailPriority.High;
+
+            email.Body = "<html><body><table><tr><td> Update workorder status has completed with errors. Please check the logs. </td></tr>";
+            try
+            {
+                SDIEmailService.EmailUtilityServices("MailandStore", email.From.Address, email.To.First().Address, email.Subject, String.Empty, String.Empty, email.Body, "StatusChangeEmail0", null, MailAttachmentbytes.ToArray());
+            }
+            catch
+            {
+                log.WriteLine("     Error - the email was not sent");
+            }
+        }
+
         public static StreamWriter UpdateWorkOrders(StreamWriter log)
         {
             try
             {
-                string strqry = "Select * from ps_isa_wo_status where isa_wo_status <> 'COMPLETED'";
+                string strqry = "Select * from ps_isa_wo_status where isa_wo_status <> 'COMPLETED' and business_unit_om ='I0W01'";
                 DataSet WOdataset = GetAdapterSpc(strqry);
+                
                 if (WOdataset.Tables.Count > 0)
                 {
                     if (WOdataset.Tables[0].Rows.Count > 0)
                     {
                         foreach (DataRow workorder in WOdataset.Tables[0].AsEnumerable().Where(x=>x.Field<string>("ISA_WO_STATUS").ToLower() !="completed"))
                         {
-                            string status = CheckWorkOrderStatus(workorder["ISA_WORK_ORDER_NO"].ToString(), "");
+                            bool IsSamsclubWO = false;
+                            if (!string.IsNullOrEmpty(workorder["ISA_Install_Cust"].ToString()))
+                            {
+                                string WO_Type = workorder["ISA_Install_Cust"].ToString();
+                                log.WriteLine("Work order type:" + WO_Type);                                
+                                string samsclub = ConfigurationManager.AppSettings["SamsClub"];
+
+                                if (WO_Type.ToUpper() == samsclub)
+                                {
+                                    IsSamsclubWO = true;
+                                }
+                            }
+                            else
+                            {
+                                log.WriteLine("Install Cust is null or empty for work order: " + workorder["ISA_WORK_ORDER_NO"].ToString());
+                            }                          
+
+                            string status = CheckWorkOrderStatus(workorder["ISA_WORK_ORDER_NO"].ToString(), "", IsSamsclubWO, log);                            
                             if (status.ToLower() == "completed")
                             {
-                                strqry = "update ps_isa_wo_status set isa_wo_status = '" + status + "' where isa_work_order_no='" + workorder["ISA_WORK_ORDER_NO"].ToString() + "'";
-                                    int rowaffect = ExecNonQuery(strqry);
+                                strqry = "update ps_isa_wo_status set isa_wo_status = '" + status + "', LAST_UPDATE_DTTM = SYSTIMESTAMP where isa_work_order_no='" + workorder["ISA_WORK_ORDER_NO"].ToString() + "'";
+                                int rowaffect = ExecNonQuery(strqry);
+                                log.WriteLine("Work order status updated to 'Completed' status:" + workorder["ISA_WORK_ORDER_NO"].ToString());
                             }
                             else if(status.ToLower() == "invoiced")
                             {
                                 status = "COMPLETED";  
-                                strqry = "update ps_isa_wo_status set isa_wo_status = '" + status + "' where isa_work_order_no='" + workorder["ISA_WORK_ORDER_NO"].ToString() + "'";
+                                strqry = "update ps_isa_wo_status set isa_wo_status = '" + status + "', LAST_UPDATE_DTTM = SYSTIMESTAMP where isa_work_order_no='" + workorder["ISA_WORK_ORDER_NO"].ToString() + "'";
                                 int rowaffect = ExecNonQuery(strqry);
+                                log.WriteLine("Work order status updated to 'Completed' due to 'Invoiced' status:" + workorder["ISA_WORK_ORDER_NO"].ToString());
                             }
                             else if (status.ToLower() == "failed")
                             {
@@ -95,18 +169,28 @@ namespace UpdateWOStatus
             catch (Exception ex)
             {
                 log.WriteLine(ex.Message);
+                SendEmail(log, ex.Message);
             }
             return log;
         }        
 
-        public static string CheckWorkOrderStatus(string workOrder, string THIRDPARTY_COMP_ID)
+        public static string CheckWorkOrderStatus(string workOrder, string THIRDPARTY_COMP_ID, bool IsSamsclubWO, StreamWriter log)
         {
             try
             {
+                string username = string.Empty;
+                string password = string.Empty;
+                string clientKey = string.Empty;
+                string baseurl = string.Empty;
+                string credType = string.Empty;
+                string apiurl = string.Empty;
+                string grant_type = string.Empty;
                 string APIresponse = string.Empty;
+                string samsclub = ConfigurationManager.AppSettings["SamsClub"];
                 if (!string.IsNullOrEmpty(workOrder) & !string.IsNullOrWhiteSpace(workOrder))
                 {
                     /* SDI-45198 Updating Work order for CBRE [change by vishalini] */
+                    workOrder = workOrder.Trim();
                         string strquery = "SELECT DISTINCT LN.ISA_EMPLOYEE_ID AS ISA_EMPLOYEE_ID,LN.LASTUPDDTTM  from PS_ISA_ORD_INTF_LN LN,ps_isa_wo_status WO where LN.ISA_WORK_ORDER_NO = '" + workOrder + "' AND LN.ISA_WORK_ORDER_NO = WO.ISA_WORK_ORDER_NO AND WO.BUSINESS_UNIT_OM = LN.BUSINESS_UNIT_OM  AND LN.ISA_EMPLOYEE_ID <> ' ' order by ISA_EMPLOYEE_ID,LN.LASTUPDDTTM desc";
                         DataSet WOdataset = GetAdapterSpc(strquery);
                     string employeeId= ""; 
@@ -115,14 +199,76 @@ namespace UpdateWOStatus
 
                         string sqlquery = "select THIRDPARTY_COMP_ID from SDIX_USERS_TBL where ISA_EMPLOYEE_ID='" + employeeId + "'";
                         string THIRDPARTYID = GetScalar(sqlquery, false);
-  
-                    if (!string.IsNullOrEmpty(THIRDPARTYID))
+
+                    DataSet ds = new DataSet();
+                    if (THIRDPARTYID == ConfigurationSettings.AppSettings["CBRECompanyID"].ToString())
                     {
-                        if (THIRDPARTYID == ConfigurationSettings.AppSettings["CBRECompanyID"].ToString())
-                            APIresponse = AuthenticateService("CBRE");
-                        else
-                            APIresponse = AuthenticateService("Walmart");
+                        //APIresponse = AuthenticateService("CBRE");
+                        ds = GetCredentials("CBRE");
                     }
+                    else if (IsSamsclubWO == true)
+                    {
+                        ds = GetCredentials(samsclub);
+                    }
+                    else
+                    {
+                        ds = GetCredentials("WALMART");
+                    }
+
+                    try
+                    {
+                        if (ds != null)
+                        {
+                            if (ds.Tables.Count > 0)
+                            {
+                                if (ds.Tables[0].Rows.Count > 0)
+                                {
+                                    try
+                                    {
+                                        username = ds.Tables[0].Rows[0]["CLIENT_ID"].ToString();
+                                        password = ds.Tables[0].Rows[0]["CLIENT_SECRET"].ToString();
+                                        clientKey = ds.Tables[0].Rows[0]["CLIENT_KEY"].ToString();
+                                        baseurl = ds.Tables[0].Rows[0]["BASEURL"].ToString();
+                                        apiurl = ds.Tables[0].Rows[0]["TOKENBASEURL"].ToString();
+                                        credType = ds.Tables[0].Rows[0]["CRED_TYPE"].ToString();
+                                        grant_type = ds.Tables[0].Rows[0]["GRANT_TYPE"].ToString();
+                                    }
+                                    catch (Exception innerEx)
+                                    {
+                                        log.WriteLine("Error while retrieving values from DataSet: " + innerEx.Message);
+                                        SendEmail(log, innerEx.Message);                                        
+                                    }
+                                }
+                                else
+                                {
+                                    log.WriteLine("Error: DataSet 'ds' is empty.");
+                                }
+                            }
+                            else
+                            {
+                                log.WriteLine("Error: DataSet 'ds' has no data.");
+                            }
+                        }
+                        else
+                        {
+                            log.WriteLine("Error: DataSet 'ds' is null.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        log.WriteLine("Error in outer try-catch block: " + ex.Message);
+                        SendEmail(log, ex.Message);                        
+                    }
+                    try
+                    {
+                        APIresponse = AuthenticateService(credType, username, password, clientKey, apiurl, grant_type, log);
+                    }
+                    catch (Exception ex)
+                    {
+                        log.WriteLine("Method:CheckWorkOrderStatus - ", ex.Message);
+                        SendEmail(log, ex.Message);                        
+                    }
+
                     //APIresponse = AuthenticateService("Walmart");
                     if ((APIresponse != "Server Error" & APIresponse != "Internet Error" & APIresponse != "Error"))
                     {
@@ -130,10 +276,11 @@ namespace UpdateWOStatus
                         {
                             ValidateUserResponseBO objValidateUserResponseBO = JsonConvert.DeserializeObject<ValidateUserResponseBO>(APIresponse);
                             string apiURL = "";
-                            if (ConfigurationSettings.AppSettings["OLEProdDB"] == ConfigurationSettings.AppSettings["OLECurrentDB"])
-                                apiURL = "https://api.servicechannel.com/v3/odata/" + "workorders(" + workOrder + ")?$select=Status";
-                            else
-                                apiURL = "https://sb2api.servicechannel.com/v3/odata/" + "workorders(" + workOrder + ")?$select=Status";
+                            //if (ConfigurationSettings.AppSettings["OLEProdDB"] == ConfigurationSettings.AppSettings["OLECurrentDB"])
+                            //    apiURL = "https://api.servicechannel.com/v3/odata/" + "workorders(" + workOrder + ")?$select=Status";                                
+                            //else
+                            //    apiURL = "https://sb2api.servicechannel.com/v3/odata/" + "workorders(" + workOrder + ")?$select=Status";
+                                apiURL = baseurl + "/odata/" + "workorders(" + workOrder + ")?$select=Status";
                             HttpClient httpClient = new HttpClient();
                             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", objValidateUserResponseBO.access_token);
@@ -155,14 +302,30 @@ namespace UpdateWOStatus
                 }
             }
             catch (Exception ex)
-            {                
-                return "Failed";
+            {
+                log.WriteLine("Method:CheckWorkOrderStatus - ", ex.Message);
+                SendEmail(log, ex.Message);                 
                 //objWalmartSC.WriteLine("Method:CheckWorkOrderStatus - " + ex.Message);
             }
             return "Failed";
         }
-
        
+        public static DataSet GetCredentials(string credType)
+        {
+            DataSet ds = new DataSet();
+            try
+            {
+                string strQuery = "SELECT CLIENT_ID, CLIENT_SECRET, CLIENT_KEY, BASEURL, TOKENBASEURL, CRED_TYPE, GRANT_TYPE FROM SDIX_USERSACCESSTOKEN_TBL WHERE CRED_TYPE = '" + credType + "' AND BUSINESS_UNIT='I0W01' AND ISACTIVE='Y' ";
+                ds = GetAdapterSpc(strQuery);
+            }
+            catch (Exception ex)
+            {
+                SendEmail(null, "Error in GetCredentials method: " + ex.Message);
+                // Set a default or empty DataSet here if needed
+            }
+
+            return ds;
+        }
 
         public static DataSet GetAdapterSpc(string p_strQuery)
         {
@@ -325,45 +488,46 @@ namespace UpdateWOStatus
         }
 
 
-        public static string AuthenticateService(string credType)
+        public static string AuthenticateService(string credType, string username, string password, string clientKey, string apiurl, string grant_type, StreamWriter log)
         {
             try
             {
                 HttpClient httpClient = new HttpClient();
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-                string username = string.Empty;
-                string password = string.Empty;
-                string clientKey = string.Empty;
-                if (credType == "Walmart")
-                {
-                    username = "SDIAPI";
-                    password = "WalmartUser!123";
-                    if (ConfigurationSettings.AppSettings["OLEProdDB"] == ConfigurationSettings.AppSettings["OLECurrentDB"])
-                        clientKey = "U0IuMjAwMDA1MTI1OS5DQkREOEY3Qy0xRjVBLTREMEItODFBNy0zRjlDNUVEODlBQjA6RkYyRUQ4MDItQ0Y4OS00RTNDLTgzRUYtNUU4ODZDOTBFNjQw";//Prod
-                    else
-                        clientKey = "U0IuMjAwMDA1MTI1OS5GNjg2RENCNi0yNDMzLTQ3QjgtOEVCNi0zMDg3QkZERkREM0U6NDkzMTlENDAtRUEzQS00NjY0LUE2MTctRjY2NkQ0QUVBNzA4";//Test
-                }
-                else
-                {
-                    username = ConfigurationSettings.AppSettings["CBREUName"];
-                    password = ConfigurationSettings.AppSettings["CBREPassword"];
-                    if (ConfigurationSettings.AppSettings["OLEProdDB"] == ConfigurationSettings.AppSettings["OLECurrentDB"])
-                        clientKey = "U0IuMjAxNDkxNzQzMC4wNjU5RjkwQS00RUJCLTQ5MjItOUY5MS02NUZGNjFFRDBCMEQ6NzhBOTFBNTEtMkJGMS00MzJFLUIwNEMtRjgzRjJEOTk5OTVB";
-                    else
-                        clientKey = ConfigurationSettings.AppSettings["CBREClientKey"];
-                }
-                string apiurl = "";
-                if (ConfigurationSettings.AppSettings["OLEProdDB"] == ConfigurationSettings.AppSettings["OLECurrentDB"])
-                    apiurl = "https://login.servicechannel.com/oauth/token";
-                else
-                    apiurl = "https://sb2login.servicechannel.com/oauth/token";
-                var formContent = new FormUrlEncodedContent(new[] { new KeyValuePair<string, string>("username", username), new KeyValuePair<string, string>("password", password), new KeyValuePair<string, string>("grant_type", "password") });
+                //string username = string.Empty;
+                //string password = string.Empty;
+                //string clientKey = string.Empty;
+                //if (credType == "Walmart")
+                //{
+                //    username = "SDIAPI";
+                //    password = "WalmartUser!123";
+                //    if (ConfigurationSettings.AppSettings["OLEProdDB"] == ConfigurationSettings.AppSettings["OLECurrentDB"])
+                //        clientKey = "U0IuMjAwMDA1MTI1OS5DQkREOEY3Qy0xRjVBLTREMEItODFBNy0zRjlDNUVEODlBQjA6RkYyRUQ4MDItQ0Y4OS00RTNDLTgzRUYtNUU4ODZDOTBFNjQw";//Prod
+                //    else
+                //        clientKey = "U0IuMjAwMDA1MTI1OS5GNjg2RENCNi0yNDMzLTQ3QjgtOEVCNi0zMDg3QkZERkREM0U6NDkzMTlENDAtRUEzQS00NjY0LUE2MTctRjY2NkQ0QUVBNzA4";//Test
+                //}
+                //else
+                //{
+                //    username = ConfigurationSettings.AppSettings["CBREUName"];
+                //    password = ConfigurationSettings.AppSettings["CBREPassword"];
+                //    if (ConfigurationSettings.AppSettings["OLEProdDB"] == ConfigurationSettings.AppSettings["OLECurrentDB"])
+                //        clientKey = "U0IuMjAxNDkxNzQzMC4wNjU5RjkwQS00RUJCLTQ5MjItOUY5MS02NUZGNjFFRDBCMEQ6NzhBOTFBNTEtMkJGMS00MzJFLUIwNEMtRjgzRjJEOTk5OTVB";
+                //    else
+                //        clientKey = ConfigurationSettings.AppSettings["CBREClientKey"];
+                //}
+                //string apiurl = "";
+                //if (ConfigurationSettings.AppSettings["OLEProdDB"] == ConfigurationSettings.AppSettings["OLECurrentDB"])
+                //    apiurl = "https://login.servicechannel.com/oauth/token";
+                //else
+                //    apiurl = "https://sb2login.servicechannel.com/oauth/token";
+
+                var formContent = new FormUrlEncodedContent(new[] { new KeyValuePair<string, string>("username", username), new KeyValuePair<string, string>("password", password), new KeyValuePair<string, string>("grant_type", grant_type) });
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", clientKey); // Add("Authorization", "Basic " + clientKey)
                 var response = httpClient.PostAsync(apiurl, formContent).Result;
                 if (response.IsSuccessStatusCode)
                 {
                     var APIResponse = response.Content.ReadAsStringAsync().Result;
-                    return APIResponse;
+                    return APIResponse;                    
                 }
                 else
                 {
@@ -377,10 +541,14 @@ namespace UpdateWOStatus
             }
             catch (Exception ex)
             {
+                log.WriteLine("Method:AuthenticateService - " + ex.Message);
+                SendEmail(log, ex.Message);    
                 //bjWalmartSC.WriteLine("Method:AuthenticateService - " + ex.Message);
             }
             return "Server Error";
         }
+
+        
         public static string DbUrl
         {
             get
@@ -402,6 +570,5 @@ namespace UpdateWOStatus
     {
         public string access_token { get; set; }
         public string refresh_token { get; set; }
-    }
-
+    }   
 }
