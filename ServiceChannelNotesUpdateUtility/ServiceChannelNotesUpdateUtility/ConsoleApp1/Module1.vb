@@ -455,35 +455,44 @@ Module Module1
                                             OrderStatusDetail.dueDate = Order(2)
                                             OrderStatusDetail.message = "Success"
                                             objWalSCWorkOrder.WriteLine("Order No: " + Convert.ToString(OrderNo) + "Status" + Convert.ToString(OrderStatusDetail.statusDesc))
+                                            Try
+                                                If IsSamsclubWO = True Then
+                                                    If IsExcludedSamsclubStatus(OrderStatusDetail.orderStatus) Then
+                                                        OrderStatusDetail.message = "Invalid"
+                                                    End If
+                                                End If
+                                            Catch ex As Exception
+                                            End Try
                                             If OrderStatusDetail.message = "Success" Then
-                                                'WAL-622: SC Updates for Canceled Orders And Partial Deliveries 
-                                                'Mythili - WAL-824 Need Service Channel API change to map PUR (Ready for Pickup) from In Progress / Parts on Order to new Service Channel Extended Status “In Progress / Parts Ready for Pickup
-                                                If OrderStatusDetail.statusDesc = "Delivered" Or OrderStatusDetail.statusDesc = "En Route from Vendor" Or OrderStatusDetail.statusDesc = "Partially Delivered" Or OrderStatusDetail.statusDesc = "Cancelled" Or OrderStatusDetail.statusDesc = "Ready for Pickup" Then
-                                                    Dim CheckWOStatus As String = CheckWorkOrderStatus(WorkOrder, THIRDPARTY_COMP_ID, IsSamsclubWO)
-                                                    objWalSCWorkOrder.WriteLine("CheckWOStatus: " + Convert.ToString(CheckWOStatus))
-                                                    If CheckWOStatus.ToUpper() <> "COMPLETED" And CheckWOStatus <> "Failed" Then
-                                                        Dim WOStatus As String = String.Empty
-                                                        If OrderStatusDetail.statusDesc = "Delivered" Then
-                                                            WOStatus = "PARTS DELIVERED"
-                                                        ElseIf OrderStatusDetail.statusDesc = "En Route from Vendor" Then
-                                                            WOStatus = "PARTS SHIPPED"
-                                                        ElseIf IsSamsclubWO = False And OrderStatusDetail.statusDesc = "Partially Delivered" Then
-                                                            WOStatus = "PARTIAL PARTS DELIVERED"
-                                                        ElseIf OrderStatusDetail.statusDesc = "Cancelled" Then
-                                                            WOStatus = "INCOMPLETE"
-                                                        ElseIf IsSamsclubWO = False And OrderStatusDetail.statusDesc = "Ready for Pickup" Then
-                                                            WOStatus = "PARTS READY FOR PICKUP"
-                                                        End If
-                                                        If CheckWOStatus <> WOStatus Then
-                                                            Dim PurchaseNo As String = PurchaseOrderNo(WorkOrder, THIRDPARTY_COMP_ID, IsSamsclubWO)
-                                                            If PurchaseNo <> "Failed" Then
-                                                                If THIRDPARTY_COMP_ID = ConfigurationSettings.AppSettings("CBRECompanyID").ToString() Then
-                                                                    UpdateWorkOrderStatus(WorkOrder, "CBRE", WOStatus, IsSamsclubWO)
-                                                                    UpdateWorkOrderStatus(PurchaseNo, "Walmart", WOStatus, IsSamsclubWO)
-                                                                ElseIf IsSamsclubWO Then
-                                                                    UpdateWorkOrderStatus(WorkOrder, SamsClub_Key, WOStatus, IsSamsclubWO)
-                                                                Else
-                                                                    UpdateWorkOrderStatus(WorkOrder, "Walmart", WOStatus, IsSamsclubWO)
+                                                    'WAL-622: SC Updates for Canceled Orders And Partial Deliveries 
+                                                    'Mythili - WAL-824 Need Service Channel API change to map PUR (Ready for Pickup) from In Progress / Parts on Order to new Service Channel Extended Status “In Progress / Parts Ready for Pickup
+                                                    If OrderStatusDetail.statusDesc = "Delivered" Or OrderStatusDetail.statusDesc = "En Route from Vendor" Or OrderStatusDetail.statusDesc = "Partially Delivered" Or OrderStatusDetail.statusDesc = "Cancelled" Or OrderStatusDetail.statusDesc = "Ready for Pickup" Then
+                                                        Dim CheckWOStatus As String = CheckWorkOrderStatus(WorkOrder, THIRDPARTY_COMP_ID, IsSamsclubWO)
+                                                        objWalSCWorkOrder.WriteLine("CheckWOStatus: " + Convert.ToString(CheckWOStatus))
+                                                        If CheckWOStatus.ToUpper() <> "COMPLETED" And CheckWOStatus <> "Failed" Then
+                                                            Dim WOStatus As String = String.Empty
+                                                            If OrderStatusDetail.statusDesc = "Delivered" Then
+                                                                WOStatus = "PARTS DELIVERED"
+                                                            ElseIf OrderStatusDetail.statusDesc = "En Route from Vendor" Then
+                                                                WOStatus = "PARTS SHIPPED"
+                                                            ElseIf IsSamsclubWO = False And OrderStatusDetail.statusDesc = "Partially Delivered" Then
+                                                                WOStatus = "PARTIAL PARTS DELIVERED"
+                                                            ElseIf OrderStatusDetail.statusDesc = "Cancelled" Then
+                                                                WOStatus = "INCOMPLETE"
+                                                            ElseIf IsSamsclubWO = False And OrderStatusDetail.statusDesc = "Ready for Pickup" Then
+                                                                WOStatus = "PARTS READY FOR PICKUP"
+                                                            End If
+                                                            If CheckWOStatus <> WOStatus Then
+                                                                Dim PurchaseNo As String = PurchaseOrderNo(WorkOrder, THIRDPARTY_COMP_ID, IsSamsclubWO)
+                                                                If PurchaseNo <> "Failed" Then
+                                                                    If THIRDPARTY_COMP_ID = ConfigurationSettings.AppSettings("CBRECompanyID").ToString() Then
+                                                                        UpdateWorkOrderStatus(WorkOrder, "CBRE", WOStatus, IsSamsclubWO)
+                                                                        UpdateWorkOrderStatus(PurchaseNo, "Walmart", WOStatus, IsSamsclubWO)
+                                                                    ElseIf IsSamsclubWO Then
+                                                                        UpdateWorkOrderStatus(WorkOrder, SamsClub_Key, WOStatus, IsSamsclubWO)
+                                                                    Else
+                                                                        UpdateWorkOrderStatus(WorkOrder, "Walmart", WOStatus, IsSamsclubWO)
+                                                                    End If
                                                                 End If
                                                             End If
                                                         End If
@@ -491,7 +500,6 @@ Module Module1
                                                 End If
                                             End If
                                         End If
-                                    End If
                                 End If
                             End If
                         End If
@@ -535,6 +543,22 @@ Module Module1
             SendEmail()
         End If
 
+    End Function
+    Public Function IsExcludedSamsclubStatus(ByVal s_Status As String) As Boolean
+        Dim IsExcluded As Boolean = False
+        Dim SamsClubstatuslist As String = ""
+
+        Try
+            SamsClubstatuslist = (ConfigurationSettings.AppSettings("SAMSCLUBStatus").ToString)
+        Catch ex As Exception
+        End Try
+
+        Try
+            IsExcluded = (SamsClubstatuslist.IndexOf(s_Status.Trim.ToUpper) > -1)
+        Catch ex As Exception
+            IsExcluded = False
+        End Try
+        Return IsExcluded
     End Function
     Public Function GetCredentials(ByVal credtye As String) As DataSet
         Try
