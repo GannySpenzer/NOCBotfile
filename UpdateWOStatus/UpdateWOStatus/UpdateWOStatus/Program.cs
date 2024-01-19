@@ -92,9 +92,19 @@ namespace UpdateWOStatus
             }
             else
             {
-                email.To.Add(MailToSpecial);
-            }
+                try
+                {
+                    foreach (var address in MailToSpecial.Split(';'))
+                    {
+                        email.To.Add(new MailAddress(address, ""));
+                    }
+                }
+                catch
+                {
+                    log.WriteLine("Error in emailsent");
+                }
 
+            }
             email.Subject = "Error in the Update workorder status.";
 
             email.Priority = MailPriority.High;
@@ -102,7 +112,7 @@ namespace UpdateWOStatus
             email.Body = "<html><body><table><tr><td> Update workorder status has completed with errors. Please check the logs. </td></tr>" + Message;
             try
             {
-                SDIEmailService.EmailUtilityServices("MailandStore", email.From.Address, email.To.First().Address, email.Subject, String.Empty, String.Empty, email.Body, "StatusChangeEmail0", null, MailAttachmentbytes.ToArray());
+                SDIEmailService.EmailUtilityServices("MailandStore", email.From.Address, email.To.ToString(), email.Subject, String.Empty, String.Empty, email.Body, "StatusChangeEmail0", null, MailAttachmentbytes.ToArray());
             }
             catch
             {
@@ -170,7 +180,7 @@ namespace UpdateWOStatus
             catch (Exception ex)
             {
                 log.WriteLine(ex.Message);
-                SendEmail(log, ex.Message);
+               SendEmail(log, ex.Message);
             }
             return log;
         }        
@@ -237,7 +247,7 @@ namespace UpdateWOStatus
                                     catch (Exception innerEx)
                                     {
                                         log.WriteLine("Error while retrieving values from DataSet: " + innerEx.Message);
-                                        SendEmail(log, innerEx.Message);                                        
+                                       SendEmail(log, innerEx.Message);                                        
                                     }
                                 }
                                 else
@@ -258,7 +268,7 @@ namespace UpdateWOStatus
                     catch (Exception ex)
                     {
                         log.WriteLine("Error in outer try-catch block: " + ex.Message);
-                        SendEmail(log, ex.Message);                        
+                        //SendEmail(log, ex.Message);                        
                     }
                     try
                     {
@@ -267,7 +277,7 @@ namespace UpdateWOStatus
                     catch (Exception ex)
                     {
                         log.WriteLine("Method:CheckWorkOrderStatus - ", ex.Message);
-                        SendEmail(log, ex.Message);                        
+                       // SendEmail(log, ex.Message);                        
                     }
 
                     //APIresponse = AuthenticateService("Walmart");
@@ -307,7 +317,7 @@ namespace UpdateWOStatus
             catch (Exception ex)
             {
                 log.WriteLine("Method:CheckWorkOrderStatus - ", ex.Message);
-                SendEmail(log, ex.Message);                 
+              // SendEmail(log, ex.Message);                 
                 //objWalmartSC.WriteLine("Method:CheckWorkOrderStatus - " + ex.Message);
             }
             return "Failed";
@@ -545,7 +555,7 @@ namespace UpdateWOStatus
             catch (Exception ex)
             {
                 log.WriteLine("Method:AuthenticateService - " + ex.Message);
-                SendEmail(log, ex.Message);    
+               // SendEmail(log, ex.Message);    
                 //bjWalmartSC.WriteLine("Method:AuthenticateService - " + ex.Message);
             }
             return "Server Error";
