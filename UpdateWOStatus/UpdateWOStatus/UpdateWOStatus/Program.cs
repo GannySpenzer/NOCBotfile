@@ -58,7 +58,7 @@ namespace UpdateWOStatus
             //UpdateWorkOrders();
             //string apiresponse = AuthenticateService1("Walmart");
         }
-
+        //Shanmugapriya-INC0032107 CLONE - As a Sam's Club User, I need my Work Order status updated in the PS_ISA_WO_STATUS table For UpdateWOStatus utility
         public static bool getDBName()
         {
             bool isPRODDB = false;
@@ -77,7 +77,7 @@ namespace UpdateWOStatus
 
             return isPRODDB;
         }
-
+        //Shanmugapriya-INC0032107 CLONE - As a Sam's Club User, I need my Work Order status updated in the PS_ISA_WO_STATUS table For UpdateWOStatus utility
         private static void SendEmail(StreamWriter log, string Message = "")
         {
             SDiEmailUtilityService.EmailServices SDIEmailService = new SDiEmailUtilityService.EmailServices();
@@ -99,7 +99,7 @@ namespace UpdateWOStatus
 
             email.Priority = MailPriority.High;
 
-            email.Body = "<html><body><table><tr><td> Update workorder status has completed with errors. Please check the logs. </td></tr>";
+            email.Body = "<html><body><table><tr><td> Update workorder status has completed with errors. Please check the logs. </td></tr>" + Message;
             try
             {
                 SDIEmailService.EmailUtilityServices("MailandStore", email.From.Address, email.To.First().Address, email.Subject, String.Empty, String.Empty, email.Body, "StatusChangeEmail0", null, MailAttachmentbytes.ToArray());
@@ -116,18 +116,19 @@ namespace UpdateWOStatus
             {
                 string strqry = "Select * from ps_isa_wo_status where isa_wo_status <> 'COMPLETED' and business_unit_om ='I0W01'";
                 DataSet WOdataset = GetAdapterSpc(strqry);
-                
+
                 if (WOdataset.Tables.Count > 0)
                 {
                     if (WOdataset.Tables[0].Rows.Count > 0)
                     {
                         foreach (DataRow workorder in WOdataset.Tables[0].AsEnumerable().Where(x=>x.Field<string>("ISA_WO_STATUS").ToLower() !="completed"))
                         {
+                            //Shanmugapriya-INC0032107 CLONE - As a Sam's Club User, I need my Work Order status updated in the PS_ISA_WO_STATUS table For UpdateWOStatus utility
                             bool IsSamsclubWO = false;
                             if (!string.IsNullOrEmpty(workorder["ISA_Install_Cust"].ToString()))
                             {
                                 string WO_Type = workorder["ISA_Install_Cust"].ToString();
-                                log.WriteLine("Work order type:" + WO_Type);                                
+                                log.WriteLine("Work order type:" + WO_Type);
                                 string samsclub = ConfigurationManager.AppSettings["SamsClub"];
 
                                 if (WO_Type.ToUpper() == samsclub)
@@ -138,9 +139,9 @@ namespace UpdateWOStatus
                             else
                             {
                                 log.WriteLine("Install Cust is null or empty for work order: " + workorder["ISA_WORK_ORDER_NO"].ToString());
-                            }                          
+                            }
 
-                            string status = CheckWorkOrderStatus(workorder["ISA_WORK_ORDER_NO"].ToString(), "", IsSamsclubWO, log);                            
+                            string status = CheckWorkOrderStatus(workorder["ISA_WORK_ORDER_NO"].ToString(), "", IsSamsclubWO, log);
                             if (status.ToLower() == "completed")
                             {
                                 strqry = "update ps_isa_wo_status set isa_wo_status = '" + status + "', LAST_UPDATE_DTTM = SYSTIMESTAMP where isa_work_order_no='" + workorder["ISA_WORK_ORDER_NO"].ToString() + "'";
@@ -149,7 +150,7 @@ namespace UpdateWOStatus
                             }
                             else if(status.ToLower() == "invoiced")
                             {
-                                status = "COMPLETED";  
+                                status = "COMPLETED";
                                 strqry = "update ps_isa_wo_status set isa_wo_status = '" + status + "', LAST_UPDATE_DTTM = SYSTIMESTAMP where isa_work_order_no='" + workorder["ISA_WORK_ORDER_NO"].ToString() + "'";
                                 int rowaffect = ExecNonQuery(strqry);
                                 log.WriteLine("Work order status updated to 'Completed' due to 'Invoiced' status:" + workorder["ISA_WORK_ORDER_NO"].ToString());
@@ -158,7 +159,7 @@ namespace UpdateWOStatus
                             {
                                 log.WriteLine("Work order number with failed response:" + workorder["ISA_WORK_ORDER_NO"].ToString());
                             }
-                            else 
+                            else
                             {
                                 log.WriteLine("Work order numbers with status other than completed and invoiced:" + workorder["ISA_WORK_ORDER_NO"].ToString());
                             }
@@ -199,7 +200,7 @@ namespace UpdateWOStatus
 
                         string sqlquery = "select THIRDPARTY_COMP_ID from SDIX_USERS_TBL where ISA_EMPLOYEE_ID='" + employeeId + "'";
                         string THIRDPARTYID = GetScalar(sqlquery, false);
-
+                   //Shanmugapriya-INC0032107 CLONE - As a Sam's Club User, I need my Work Order status updated in the PS_ISA_WO_STATUS table For UpdateWOStatus utility
                     DataSet ds = new DataSet();
                     if (THIRDPARTYID == ConfigurationSettings.AppSettings["CBRECompanyID"].ToString())
                     {
@@ -276,11 +277,13 @@ namespace UpdateWOStatus
                         {
                             ValidateUserResponseBO objValidateUserResponseBO = JsonConvert.DeserializeObject<ValidateUserResponseBO>(APIresponse);
                             string apiURL = "";
+                            //Shanmugapriya-INC0032107 CLONE - As a Sam's Club User, I need my Work Order status updated in the PS_ISA_WO_STATUS table For UpdateWOStatus utility
+
                             //if (ConfigurationSettings.AppSettings["OLEProdDB"] == ConfigurationSettings.AppSettings["OLECurrentDB"])
                             //    apiURL = "https://api.servicechannel.com/v3/odata/" + "workorders(" + workOrder + ")?$select=Status";                                
                             //else
                             //    apiURL = "https://sb2api.servicechannel.com/v3/odata/" + "workorders(" + workOrder + ")?$select=Status";
-                                apiURL = baseurl + "/odata/" + "workorders(" + workOrder + ")?$select=Status";
+                            apiURL = baseurl + "/odata/" + "workorders(" + workOrder + ")?$select=Status";
                             HttpClient httpClient = new HttpClient();
                             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", objValidateUserResponseBO.access_token);
@@ -309,7 +312,7 @@ namespace UpdateWOStatus
             }
             return "Failed";
         }
-       
+        //Shanmugapriya-INC0032107 CLONE - As a Sam's Club User, I need my Work Order status updated in the PS_ISA_WO_STATUS table For UpdateWOStatus utility
         public static DataSet GetCredentials(string credType)
         {
             DataSet ds = new DataSet();
@@ -487,7 +490,7 @@ namespace UpdateWOStatus
             return strReturn;
         }
 
-
+        //Shanmugapriya-INC0032107 CLONE - As a Sam's Club User, I need my Work Order status updated in the PS_ISA_WO_STATUS table For UpdateWOStatus utility
         public static string AuthenticateService(string credType, string username, string password, string clientKey, string apiurl, string grant_type, StreamWriter log)
         {
             try
