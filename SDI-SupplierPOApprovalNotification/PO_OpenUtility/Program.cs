@@ -45,7 +45,7 @@ namespace PO_OpenUtility
             log = new StreamWriter(fileStream);
             log.WriteLine("Open PO Utility Logs: ");
 
-            string Sqlstring = "SELECT *  FROM SYSADM8.PS_ISA_PO_DISP_PTL WHERE DTTM_OPENED IS NULL";
+            string Sqlstring = "SELECT *  FROM SYSADM8.PS_ISA_PO_DISP_PTL WHERE DTTM_OPENED IS NULL"; 
             DataSet ds_OpentPOs = GetAdapter(Sqlstring);
             List<string> PODetails = new List<string>();
             if (ds_OpentPOs.Tables[0].Rows.Count != 0)
@@ -206,7 +206,13 @@ namespace PO_OpenUtility
                                 }
                                 Vendr_UN = Convert.ToString(ds_UserDetail.Tables[0].Rows[0]["ISA_USER_NAME"]);
                                 Vendr_Email = Convert.ToString(ds_UserDetail.Tables[0].Rows[0]["ISA_EMPLOYEE_EMAIL"]);
+                                //INC0030964 ps_isa_po_hdr_stg oprids are inconsistent
+                                try {
+                                Vendr_OprID = Convert.ToString(ds_UserDetail.Tables[0].Rows[0]["ISA_EMPLOYEE_ID"]);
+                                }
+                                catch (Exception) { 
                                 Vendr_OprID = Convert.ToString(ds_UserDetail.Tables[0].Rows[0]["ISA_USER_ID"]);
+                                }
                                 Vendr_OprID = Encrypt(Vendr_OprID, "bautista");
                                 //SP-282 Replacing Plus with %2b to pass in query string[Change By vishalini]
                                 if (Vendr_OprID.Contains("+"))
