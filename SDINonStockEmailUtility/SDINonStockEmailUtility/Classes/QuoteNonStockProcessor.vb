@@ -970,7 +970,7 @@ Public Class QuoteNonStockProcessor
         m_colMsgs = Nothing
         m_config = Nothing
     End Sub
-
+    'INC0037100 - Email To for Needs approvals from Non stock email utility should come from the ISA_USERS1 based upon Zeus 2 site flag = 'Y' - Dhamo
     Public Function GetQuotedItems() As Integer
         Dim cHdr As String = "QuoteNonStockProcessor.GetQuotedItems: "
         Dim connectionString As String = ConfigurationManager.AppSettings("OLEDBconString")
@@ -988,11 +988,11 @@ Public Class QuoteNonStockProcessor
                                  ",A2.ISA_EMPLOYEE_NAME AS ISA_EMPLOYEE_NAME" & vbCrLf &
                                  ",A2.ISA_PRICE_BLOCK AS ISA_PRICE_BLOCK" & vbCrLf &
                                  ",A3.ISA_NONSKREQ_EMAIL AS ISA_NONSKREQ_EMAIL" & vbCrLf &
-                                 ",L.ISA_EMPLOYEE_ID AS ISA_EMPLOYEE_ID,L.isa_user1 AS WALMARTAPPROVER" & vbCrLf &
+                                 ",L.ISA_EMPLOYEE_ID AS ISA_EMPLOYEE_ID,L.isa_user1 AS APPROVER" & vbCrLf &
                                  ",A4.BUSINESS_UNIT_OM AS BUSINESS_UNIT_OM" & vbCrLf &
                                  ",L.ISA_PRIORITY_FLAG,A4.ORIGIN" & vbCrLf &
                                  ",L.OPRID_MODIFIED_BY AS OPRID_MODIFIED_BY, L.ISA_WORK_ORDER_NO AS WORK_ORDER_ID,L.ISA_USER2 AS STORE , A3.APPRVALTHRESHOLD AS APPROVAL_LIMIT " & vbCrLf &
-                                 ",A3.ISA_CUSTINT_APPRVL " & vbCrLf &
+                                 ",A3.ISA_CUSTINT_APPRVL,A3.ZEUS_SITE " & vbCrLf &
                                  "FROM " & vbCrLf &
                                  " PS_REQ_HDR A" & vbCrLf &
                                  ",SYSADM8.PS_ROLEXLATOPR B" & vbCrLf &
@@ -1017,6 +1017,8 @@ Public Class QuoteNonStockProcessor
                                  "  AND L.OPRID_APPROVED_BY in (' ',L.ISA_EMPLOYEE_ID,'AUTOSYS')" & vbCrLf &
                                  "  AND L.ISA_LINE_STATUS in ('QTS','QTW')" & vbCrLf &
                                  "  and trunc(L.ADD_DTTM) >= TO_DATE('" & StartDate & "','DD-MM-YY')" & vbCrLf &
+                                 "  AND (A3.ZEUS_SITE = 'N' OR (A3.ZEUS_SITE = 'Y' AND ((L.ISA_LINE_STATUS = 'QTS') OR (L.ISA_LINE_STATUS = 'QTW'" & vbCrLf &
+                                 "  And NOT EXISTS ( SELECT 1 FROM PS_ISA_ORD_INTF_LN SL WHERE SL.ISA_LINE_STATUS IN ('QTS','CRE','IPR','NEW') AND L.ORDER_NO = SL.ORDER_NO)))))" & vbCrLf &
                                  "  AND NOT EXISTS ( " & vbCrLf &
                                  "                  SELECT 'X' " & vbCrLf &
                                  "                  FROM SYSADM8.PS_NLINK_CUST_PLNT C " & vbCrLf &
@@ -1313,10 +1315,11 @@ Public Class QuoteNonStockProcessor
                                 End If
                                 arr = Nothing
                             End If
+                            'INC0037100 - Email To for Needs approvals from Non stock email utility should come from the ISA_USERS1 based upon Zeus 2 site flag = 'Y' - Dhamo
                         Else
                             Dim strOrigApproverID As String = String.Empty
-                            If boItem.BusinessUnitID = "WAL00" Then
-                                strOrigApproverID = rdr("WALMARTAPPROVER").trim
+                            If boItem.BusinessUnitID = "WAL00" Or rdr("ZEUS_SITE") = "Y" Then
+                                strOrigApproverID = rdr("APPROVER").trim
                             Else
                                 strOrigApproverID = GetOriginalApprover(rdr("BUSINESS_UNIT_OM").trim, rdr("ISA_EMPLOYEE_ID").trim)
 
