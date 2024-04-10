@@ -15,6 +15,7 @@ Imports System.Net.Http.Headers
 Imports System.Threading.Tasks
 Imports System.Web.Script.Serialization
 Imports System.Web
+Imports System.Globalization
 
 Module Module1
 
@@ -32,6 +33,7 @@ Module Module1
     Dim SumryStartLngTime As String = ConfigurationManager.AppSettings("SummaryStartLongTime")
     Dim SumryEndLngTime As String = ConfigurationManager.AppSettings("SummaryEndLongTime")
     Dim SumryMailTime As String = ConfigurationManager.AppSettings("SummaryMailTime")
+    Dim ImageUrl As String = ConfigurationManager.AppSettings("Image")
 
     Sub Main()
 
@@ -173,9 +175,9 @@ Module Module1
                 'End If
                 Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
                 objGenerallLogStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + " " & Now())
-                    objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
-                    objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") & " " & Now())
-                    buildstatchgout = checkAllStatusNew(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                objStreamWriter.WriteLine("--------------------------------------------------------------------------------------")
+                objStreamWriter.WriteLine("  StatChg Email send allstatus emails for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") & " " & Now())
+                buildstatchgout = checkAllStatusNew(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
 
                 If buildstatchgout = True Then
                     bolErrorSomeWhere = True
@@ -1526,6 +1528,9 @@ Module Module1
             dr1.Item(5) = ds.Tables(0).Rows(I).Item("LINE_NBR")
             Dim ln_notes As String = ""
             ln_notes = GetLineNotes(stroderno, strBU, strlineno)
+            If ln_notes Is Nothing OrElse ln_notes = "(null)" OrElse ln_notes.Trim() = "" Then
+                ln_notes = "-"
+            End If
             dr1.Item(11) = ln_notes
             connectOR.Open()
             dr1.Item(6) = ds.Tables(0).Rows(I).Item("DTTM_STAMP")
@@ -1557,7 +1562,7 @@ Module Module1
                     dr1.Item(10) = m_cURL1
                 End If
             Else
-                dr1.Item(10) = ""
+                dr1.Item(10) = "-"
             End If
             Try
                 dr1.Item(12) = ds.Tables(0).Rows(I).Item("QTY_REQUESTED")
@@ -2491,6 +2496,9 @@ Module Module1
             dr1.Item(5) = ds.Tables(0).Rows(I).Item("LINE_NBR")
             Dim ln_notes As String = ""
             ln_notes = GetLineNotes(stroderno, strBU, strlineno)
+            If ln_notes Is Nothing OrElse ln_notes = "(null)" OrElse ln_notes.Trim() = "" Then
+                ln_notes = "-"
+            End If
             dr1.Item(10) = ln_notes
             connectOR.Open()
             dr1.Item(6) = ds.Tables(0).Rows(I).Item("DTTM_STAMP")
@@ -2522,7 +2530,7 @@ Module Module1
                     dr1.Item(11) = m_cURL1
                 End If
             Else
-                dr1.Item(11) = ""
+                dr1.Item(11) = "-"
             End If
             Try
                 dr1.Item(12) = ds.Tables(0).Rows(I).Item("QTY_REQUESTED")
@@ -3320,7 +3328,30 @@ Module Module1
         End Try
         Return strAscendEmail
     End Function
+    'Shanmugapriya - INC0037618-UI needs to be revamped for the status change emails from status change email utility
+    Public Function bindFooterMail(BU As String) As String
+        Dim strFooter As String = ""
+        Try
+            Dim strQuery As String = "SELECT * FROM SDIX_BU_CONTACT_DETAILS WHERE BUSINESS_UNIT = '" & BU & "' OR (BUSINESS_UNIT = 'SDI' AND NOT " & "EXISTS (SELECT 1 FROM SDIX_BU_CONTACT_DETAILS WHERE BUSINESS_UNIT = '" & BU & "'))"
+            Dim footerDS As DataSet = ORDBAccess.GetAdapter(strQuery, connectOR)
 
+            If footerDS IsNot Nothing AndAlso footerDS.Tables.Count > 0 AndAlso footerDS.Tables(0).Rows.Count > 0 Then
+                Dim phoneNum As String = footerDS.Tables(0).Rows(0)("PHONE_NUM").ToString().Trim()
+                Dim emailID As String = footerDS.Tables(0).Rows(0)("EMAIL_ID").ToString().Trim()
+                Dim visibility As String = If(Not IsDBNull(footerDS.Tables(0).Rows(0)("PHONE_EMAIL_VISIBLE")), footerDS.Tables(0).Rows(0)("PHONE_EMAIL_VISIBLE").ToString(), "")
+
+                Dim strPhone As String = If(phoneNum <> "" AndAlso visibility.Contains("P"), "<a href='tel:" & phoneNum & "' style='color: blue; margin: 0; text-decoration: none;'>Call us @ " & phoneNum & "</a> ", "")
+                Dim strEmail As String = If(emailID <> "" AndAlso visibility.Contains("E"), "<a href='mailto:" & emailID & "' style ='color: blue; margin: 0; text-decoration: none; margin-right: 12px;'> Contact SDI customer care </a> ", "")
+
+                If strPhone <> "" OrElse strEmail <> "" Then
+                    strFooter = "<tfoot><tr><td style='background-color: #F8F8F8; -webkit-print-color-adjust: exact; padding: 10px 5px; font-size: 12px; text-align: center;' colspan='2'>" & strPhone & If(strPhone <> "" AndAlso strEmail <> "", "<span style='border-right:2px solid #C2C2C2; margin:0px 10px;'></span>", "") & strEmail & "</td></tr></tfoot>"
+                End If
+            End If
+        Catch ex As Exception
+        End Try
+        Return strFooter
+    End Function
+    'Shanmugapriya - INC0037618-UI needs to be revamped for the status change emails from status change email utility
     Private Sub sendCustEmail1(ByVal dsEmail As DataTable,
                           ByVal strOrderNo As String,
                           ByVal strCustID As String,
@@ -3349,6 +3380,16 @@ Module Module1
         Dim bolSelectItem1 As Boolean
         Dim sendEmailAlert As Boolean
         Dim IsProdDB As Boolean = False
+        Dim StrQuery As String
+        Dim ds As New DataSet
+        Dim Op_Description As String = ""
+        Dim Non_Stock As String
+        Dim Tracking_No As String
+        Dim Qty_Order As String
+        Dim Line_Notes As String
+        Dim firstAssetNumber As String = ""
+        Dim assetNumber As String
+        Dim Footer As String = ""
 
         'Email notifications won't be sent for Walmart Orders only Web & Push notifications will be sent for all status changes
         'If strBU = "I0W01" Then
@@ -3356,6 +3397,56 @@ Module Module1
         'Else
         '    sendEmailAlert = True
         'End If
+
+        StrQuery = "SELECT CASE WHEN B.isa_machine_no = ' ' THEN '-' ELSE B.isa_machine_no END AS Asset_No, 
+                    CASE WHEN TRIM(W.name1) IS NULL OR W.name1 = ' ' THEN '-' ELSE W.name1 END AS OP_Description, 
+                    CASE WHEN B.ISA_WORK_ORDER_NO = ' ' THEN '-' ELSE B.ISA_WORK_ORDER_NO END AS Workorder
+                    FROM ps_isa_ord_intf_LN B LEFT JOIN PS_ISA_WO_STATUS W ON W.ISA_WORK_ORDER_NO = B.ISA_WORK_ORDER_NO AND W.Business_unit_om = B.BUSINESS_UNIT_OM WHERE B.Order_no = '" & strOrderNo & "'"
+        ds = ORDBAccess.GetAdapter(StrQuery, connectOR)
+        connectOR.Close()
+
+        Dim Asset As DataTable = New DataTable()
+        Asset.Columns.Add("Asset_No", GetType(String))
+        Try
+            If ds IsNot Nothing Then
+                If ds.Tables.Count > 0 Then
+                    If ds.Tables(0).Rows.Count > 0 Then
+                        Try
+                            Dim assetNumbers As String() = ds.Tables(0).AsEnumerable().Select(Function(row) row.Field(Of String)("Asset_No")).ToArray()
+                            Dim allAssetNumbersSame As Boolean = False
+                            firstAssetNumber = assetNumbers(0)
+                            If assetNumbers.Count > 1 Then
+                                For i As Integer = 1 To assetNumbers.Count - 1
+                                    Try
+                                        If assetNumbers(i) <> firstAssetNumber Then
+                                            allAssetNumbersSame = True
+                                            Exit For
+                                        End If
+                                    Catch ex As Exception
+                                    End Try
+                                Next
+                            End If
+
+                            Dim finalAssetNumbers As New List(Of String)()
+
+                            If allAssetNumbersSame Then
+                                finalAssetNumbers.AddRange(assetNumbers)
+                            Else
+                                finalAssetNumbers.Add(firstAssetNumber)
+                            End If
+                            For Each assetNumber In finalAssetNumbers
+                                Asset.Rows.Add(assetNumber)
+                            Next
+
+                            Op_Description = ds.Tables(0).Rows(0)("OP_Description").ToString()
+                            strWOno = ds.Tables(0).Rows(0)("Workorder").ToString()
+                        Catch ex As Exception
+                        End Try
+                    End If
+                End If
+            End If
+        Catch ex As Exception
+        End Try
 
         If Not getDBName() Then
             IsProdDB = False
@@ -3395,10 +3486,6 @@ Module Module1
         Mailer1.From = fromMail
         Mailer1.Cc = ""
         Mailer1.Bcc = strccfirst1 & "@" & strcclast1
-        strbodyhead1 = "<table width='100%'><tbody><tr><td><img src='http://www.sdiexchange.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='82px' vspace='0' hspace='0' /></td><td width='100%'><br /><br /><br /><br /><br /><br /><center><span style='font-family: Arial; font-size: x-large; text-align: center;'>SDI Marketplace</span></center><center><span style='text-align: center; margin: 0px auto;'>SDiExchange - Order Status</span></center></td></tr></tbody></table>"
-        strbodyhead1 = strbodyhead1 & "<HR width='100%' SIZE='1'>"
-        strbodyhead1 = strbodyhead1 & "&nbsp;" & vbCrLf
-
         Dim dtgEmail1 As WebControls.DataGrid
         dtgEmail1 = New WebControls.DataGrid
 
@@ -3421,45 +3508,123 @@ Module Module1
         ''Get Order Notes here
         Dim Ord_notes As String = ""
         Ord_notes = GetOrderNotes(strOrderNo, strBU)
+        If Ord_notes Is Nothing OrElse Ord_notes = "(null)" OrElse Ord_notes.Trim() = "" Then
+            Ord_notes = "-"
+        End If
 
         'Dim strPurchaserName As String = strCustID
         Dim strPurchaserName As String = strFirstName &
                " " & strLastName
+        Try
+            Dim txtInfo As TextInfo = New CultureInfo("en-US", False).TextInfo
+            strPurchaserName = txtInfo.ToTitleCase(strPurchaserName.ToLower())
+        Catch ex As Exception
+        End Try
         'Dim ted As String = ";erwin.bautista@sdi.com"
         Dim strPurchaserEmail As String = strEmail
-        'Dim strPurchaserEmail As String = strEmail
-        strbodydet1 = "&nbsp;" & vbCrLf
-        strbodydet1 = strbodydet1 & "<div>"
-        strbodydet1 = strbodydet1 & "<p >Hello " & strPurchaserName & ",</p>"
-        'strbodydet1 = strbodydet1 & "&nbsp;<BR>" 
-        strbodydet1 = strbodydet1 & "<p style='font-weight:bold;'>Order Number: " & strOrderNo & " </p> "
 
-        If Not Ord_notes Is Nothing Then
-            If Not (String.IsNullOrEmpty(Ord_notes.Trim())) Then
-                strbodydet1 = strbodydet1 & "<p style='font-weight:bold;'>Customer Notes: " & Ord_notes & " </p> "
+        strbodyhead1 = "<!DOCTYPE html>
+                        <html lang='en'>
+                        <head>
+                            <meta charset='UTF-8'>
+                            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+                            <title>Email Template - Table Structure</title>
+                        </head>" & vbCrLf
+
+        strbodyhead1 = strbodyhead1 & "<body style='background-color: #ebebeb; font-family: Arial;'>
+                                       <style>
+                                            @media only screen and (max-width: 840px) {
+                                                .table-grid {
+                                                    display: grid;
+                                                }
+
+                                                .table-grid td {
+                                                    width: 100% !important;
+                                                }
+                                            }
+                                        </style>
+                                    <table style='background-color:#ffffff; margin:auto; border-collapse:collapse' width='100%' align='center' border='0' cellpadding='0' cellspacing='0'>
+                                    <thead> <tr style='padding: 20px 0px; background-color: #151723;'> <th style='text-align:left;' colspan='2'>
+                                    <img src=" & ImageUrl & " alt='sdi-logo' style='width: 200px; padding: 14px 24px;'>
+                                    </th> </tr> </thead> <tbody> <tr> <td style='padding: 0px 24px;'> <table style='width: 100%; border-collapse: collapse;'> <tbody>" & vbCrLf
+
+        strbodydet1 = "<tr style='font-size: 16px;'> <td colspan='2'> <p style='font-size:18px;margin-bottom:10px;font-weight:bold;margin-top: 0;padding-top: 24px;'>  Hello " & strPurchaserName & "!</p>" & vbCrLf
+
+        strbodydet1 = strbodydet1 & "<p style='color: #000; margin: 24px 0px 18px 0px; line-height: 24px; font-weight:500; font-size:15px;'> We wanted to update you on the status of your recent order with us. </p> </td> </tr>" & vbCrLf
+
+        strbodydet1 = strbodydet1 & "<tr style='font-size: 16px;'> <td style='padding: 18px 12px; background-color: #F9F9F9;' colspan='2'> <p style='margin-top: 0px; margin-bottom: 0px; font-weight:600;'>Order Information</p> </td> </tr>" & vbCrLf
+
+        strbodydet1 = strbodydet1 & "<tr style='font-size: 13px;'> <td style='padding: 0px 12px;' colspan='2'> <table style='width:100%; border-collapse:collapse;'> <tbody> <tr class='table-grid' style='vertical-align: top'> <td style='width:50%'>" & vbCrLf
+
+        strbodydet1 = strbodydet1 & "<p style='font-weight: 600; margin: 10px 0px 12px 0px;'> " & If(strBU = "I0635", "WO # OP : ", "WO # : ") & "<span style='color: #595959; font-weight: 500;'>" & strWOno & "</span></p></td>" & vbCrLf
+
+        strbodydet1 = strbodydet1 & "<td style='width:50%'> <p style='font-weight: 600; margin: 10px 0px 12px 0px;'> Asset # : <span style='color: #595959; font-weight: 500;'>" & If(Asset.Rows.Count > 1, "See line details", firstAssetNumber) & "</span> </p></td></tr>" & vbCrLf
+
+        strbodydet1 = strbodydet1 & "<tr class='table-grid' style='vertical-align: top'> <td style='width:50%'> <p style='font-weight: 600; margin: 10px 0px 12px 0px;'> OP Description : <span style='color: #595959; font-weight: 500;'>" & Op_Description & "</span> </p></td>" & vbCrLf
+
+        strbodydet1 = strbodydet1 & "<td style='width:50%'> <p style='font-weight: 600; margin: 10px 0px 12px 0px;'> Order # : <span style='color: #595959; font-weight: 500;'>" & strOrderNo & "</span> </p></td></tr>" & vbCrLf
+
+        strbodydet1 = strbodydet1 & "<tr class='table-grid' style='vertical-align: top'> <td colspan='2'> <p style='font-weight: 600; margin: 10px 0px 12px 0px;'> Customer Notes : <span style='color: #595959; font-weight: 500;'>" & Ord_notes & "</span> </p></td></tr></tbody></table></td></tr>" & vbCrLf
+
+        strbodydet1 = strbodydet1 & "<tr style='font-size: 16px;'> <td style='padding: 18px 12px; background-color: #F9F9F9;' colspan='2'> 
+                                    <p style='margin-top: 0px; margin-bottom: 0px; font-weight:600;'>Item Details</p> </td> </tr>" & vbCrLf
+
+        If dsEmail IsNot Nothing Then
+            If dsEmail.Rows.Count > 0 Then
+                Dim assetIndex As Integer = 0
+                Dim currentRow As Integer = 0
+                Dim totalRows As Integer = dsEmail.Rows.Count
+                For Each row As DataRow In dsEmail.Rows
+                    Try
+                        Non_Stock = row("Non-Stock Item Description").ToString()
+                        If String.IsNullOrWhiteSpace(Non_Stock) Then
+                            Non_Stock = "-"
+                        End If
+                        Tracking_No = row("Tracking No").ToString()
+                        Qty_Order = row("Qty Ordered").ToString()
+                        Line_Notes = row("Line Notes").ToString()
+
+                        If Asset.Rows.Count > 1 Then
+                            strbodydet1 = strbodydet1 & "<tr style='font-size: 13px;'> <td style='width: 41%; padding: 0px 12px; vertical-align: top; '> <p style='font-weight: 600; white-space : nowrap; margin: 10px 0px;'>Asset # :</p>
+                                </td> <td style='padding: 0px 12px; '> <p style='color: #595959; margin: 10px 0px;'>" & Asset.Rows(assetIndex)("Asset_No").ToString() & "</p> </td> </tr>" & vbCrLf
+                        End If
+                        assetIndex += 1
+
+                        strbodydet1 = strbodydet1 & "<tr style='font-size: 13px;'> <td style='width: 41%; padding: 0px 12px; vertical-align: top; '> <p style='font-weight: 600; white-space : nowrap; margin: 10px 0px;'>Status :</p>
+                                </td> <td style='padding: 0px 12px; '> <p style='color: #595959; margin: 10px 0px;'>" & strOrderStatDesc & "</p></td></tr>" & vbCrLf
+
+                        strbodydet1 = strbodydet1 & "<tr style='font-size: 13px;'> <td style='width: 41%; padding: 0px 12px; vertical-align: top;'> <p style='font-weight: 600; white-space : nowrap; margin: 10px 0px;'>Description :</p> </td>
+                                    <td style='padding: 0px 12px; '> <p style='color: #595959; margin: 10px 0px'>" & Non_Stock & "</p></td></tr>" & vbCrLf
+
+                        strbodydet1 = strbodydet1 & "<tr style='font-size: 13px;'> <td style='width: 41%; padding: 0px 12px; vertical-align: top; '>
+                                    <p style='font-weight: 600;white-space : nowrap; margin: 10px 0px;'>Quantity :</p> </td> <td style='padding: 0px 12px; '> <p style='color: #595959; margin: 10px 0px;'>" & Qty_Order & "</p></td></tr>" & vbCrLf
+
+                        strbodydet1 = strbodydet1 & "<tr style='font-size: 13px;'> <td style='width: 41%; padding: 0px 12px; vertical-align: top; '> <p style='font-weight: 600;white-space : nowrap; margin: 10px 0px;'>Tracking :</p> </td>
+                                    <td style='padding: 0px 12px; '> <p style='color: #595959; margin: 10px 0px;'>" & Tracking_No & "</p></td></tr>" & vbCrLf
+
+                        strbodydet1 = strbodydet1 & "<tr style='font-size: 13px;'> <td style='width: 41%; padding: 0px 12px; vertical-align: top; '>
+                                    <p style='font-weight: 600; white-space : nowrap; margin: 10px 0px;'>Line notes :</p> </td> <td style='padding: 0px 12px; '> <p style='color: #595959; margin: 10px 0px;'>" & Line_Notes & "</p></td></tr>" & vbCrLf
+
+                        If currentRow < totalRows - 1 Then
+                            strbodydet1 = strbodydet1 & "<tr> <td colspan='2' style='border-bottom: #DFDFDF 1px solid;'></td> </tr>" & vbCrLf
+                        End If
+                        currentRow += 1
+                    Catch ex As Exception
+                    End Try
+                Next
             End If
         End If
 
-        strbodydet1 = strbodydet1 & "<p style='font-weight:bold;'>Order contents: </p>"
-        'strbodydet1 = strbodydet1 & "&nbsp;<BR>"
-        ' strbodydet1 = strbodydet1 & "Order Status:  " & strOrderStatDesc & " <br>"
-        'strbodydet1 = strbodydet1 & "Order Number:  " & strOrderNo & " <br>"
-        ' strbodydet1 = strbodydet1 & "Line Number:  " & strLineNbr & " <br>"
-        strbodydet1 = strbodydet1 & "&nbsp;"
-        strbodydet1 = strbodydet1 & "<TABLE cellSpacing='1' cellPadding='1' width='100%' border='0'>" & vbCrLf
-        strbodydet1 = strbodydet1 + "<TR><TD Class='DetailRow' width='100%'>" & dataGridHTML1 & "</TD></TR>"
-        strbodydet1 = strbodydet1 + "<TR><TD Class='DetailRow'>&nbsp;</TD></TR>"
-        strbodydet1 = strbodydet1 & "</TABLE>" & vbCrLf
+        strbodydet1 = strbodydet1 & "<tr style='font-size: 14px;'> <td style='width: 41%; padding: 0px;'> <p style='font-weight: 500; margin: 40px 0px 6px 0px;'>Thanks,</p> </td> </tr> <tr style='font-size: 14px;'>
+                                <td style='width: 41%; padding: 0px; '> <p style='font-weight: 500; white-space : nowrap; margin: 4px 0px 40px 0px;'>SDI Customer Care</p> </td> </tr> </tbody> </table> </td> </tr> </tbody>" & vbCrLf
+        Try
+            Footer = bindFooterMail(strBU)
+        Catch ex As Exception
+        End Try
+        strbodydet1 = strbodydet1 & Footer
 
-        strbodydet1 = strbodydet1 & "&nbsp;<br>"
-        strbodydet1 = strbodydet1 & "Sincerely,<br>"
-        strbodydet1 = strbodydet1 & "&nbsp;<br>"
-        strbodydet1 = strbodydet1 & "SDI Customer Care<br>"
-        strbodydet1 = strbodydet1 & "&nbsp;<br>"
-        strbodydet1 = strbodydet1 & "</p>"
-        strbodydet1 = strbodydet1 & "</div>"
-        strbodydet1 = strbodydet1 & "<HR width='100%' SIZE='1'>" & vbCrLf
-        strbodydet1 = strbodydet1 & "<img src='http://www.sdiexchange.com/Images/SDIFooter_Email.png' />" & vbCrLf
+        strbodydet1 = strbodydet1 & "</table> </body> </html>"
+
 
         Mailer1.Body = strbodyhead1 & strbodydet1
         'SP-316 get to emails and Changed subject for EMCOR  - Dhamotharan
@@ -3479,11 +3644,8 @@ Module Module1
                 If strBU = "I0W01" Then
                     'Mailer1.Cc = toMail
                     Mailer1.Subject = "<<TEST SITE>>Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
-                ElseIf strBU = "I0631" Then
-                    'Mailer1.Cc = toMail
-                    Mailer1.Subject = "<<TEST SITE>>Status Update - " + strOrderStatDesc + " - WO # " & strWOno
                 Else
-                    Mailer1.Subject = "<<TEST SITE>>SDiExchange - Order Status records for Order Number: " & strOrderNo
+                    Mailer1.Subject = "<<TEST SITE>>SDI Order(" & strOrderNo & ") " & strOrderStatDesc & If(strWOno <> "-", " For " & strWOno, "")
                 End If
             Else
                 If strBU = "I0W01" Then
@@ -3493,11 +3655,11 @@ Module Module1
                 ElseIf strBU = "I0631" Then
                     Mailer1.To = "webdev@sdi.com"
                     Mailer1.Cc = toMail
-                    Mailer1.Subject = "Status Update - " + strOrderStatDesc + " - WO # " & strWOno
+                    Mailer1.Subject = "SDI Order(" & strOrderNo & ") " & strOrderStatDesc & If(strWOno <> "-", " For " & strWOno, "")
                 Else
                     Mailer1.To = strPurchaserEmail
                     Mailer1.Cc = ""
-                    Mailer1.Subject = "SDiExchange - Order Status records for Order Number: " & strOrderNo
+                    Mailer1.Subject = "SDI Order(" & strOrderNo & ") " & strOrderStatDesc & If(strWOno <> "-", " For " & strWOno, "")
                 End If
             End If
         Catch ex As Exception
@@ -3523,28 +3685,24 @@ Module Module1
             If Not IsProdDB Then
                 If strBU = "I0W01" Then
                     strPushNoti = "<<TEST SITE>>Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
-                ElseIf strBU = "I0631" Then
-                    strPushNoti = "<<TEST SITE>>Status Update - " + strOrderStatDesc + " - WO # " & strWOno
                 Else
-                    strPushNoti = "<<TEST SITE>>Order Number: " + strOrderNo + " - Status Modified To  " + strOrderStatDesc + " . Please check the details in order status menu."
+                    strPushNoti = "<<TEST SITE>>SDI Order(" & strOrderNo & ") " & strOrderStatDesc & If(strWOno <> "-", " For " & strWOno, "")
                 End If
             Else
                 If strBU = "I0W01" Then
                     strPushNoti = "Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
-                ElseIf strBU = "I0631" Then
-                    strPushNoti = "Status Update - " + strOrderStatDesc + " - WO # " & strWOno
                 Else
-                    strPushNoti = "Order Number: " + strOrderNo + " - Status Modified To " + strOrderStatDesc + ". Please check the details in order status menu."
+                    strPushNoti = "SDI Order(" & strOrderNo & ") " & strOrderStatDesc & If(strWOno <> "-", " For " & strWOno, "")
                 End If
             End If
         Catch ex As Exception
 
         End Try
 
-
         If Not strEmpID.Trim = "" Then
             sendNotification(strEmpID, strPushNoti, strOrderNo, strBU)
-            Dim Title As String = "Order Number: " + strOrderNo + " - Status Modified To " + strOrderStatDesc + ""
+            Dim Title As String
+            Title = "SDI Order(" & strOrderNo & ") " & strOrderStatDesc & If(strWOno <> "-", " For " & strWOno, "")
             sendWebNotification(strEmpID, Title)
         End If
 
