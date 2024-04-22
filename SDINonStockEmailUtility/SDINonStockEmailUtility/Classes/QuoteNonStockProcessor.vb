@@ -18,65 +18,69 @@ Imports System.Security.Cryptography
 Imports System.Math
 Imports System.Net
 Imports System.Web.Script.Serialization
+Imports System.Globalization
+Imports SDINonStockEmailUtility.OrderApprovals
+Imports SDINonStockEmailUtility.QuoteNonStockProcessor
 
 Public Class QuoteNonStockProcessor
-
+    Private m_siteCurrency As sdiCurrency = Nothing
     Private m_oApprovalDetails As ApprovalDetails
 
     Private m_logger As appLogger = Nothing
-    Private Const LETTER_HEAD_SdiExch As String = "<table width='100%' bgcolor='black'><tbody><tr><td><img src='https://www.sdizeus.com/images/SDNewLogo_Email.png' alt='SDI' vspace='0' hspace='0' /></td>" &
-                                                    "<td width='100%'><br/><br/><br/><div align='center'><SPAN style='FONT-SIZE: x-large; WIDTH: 256px; FONT-FAMILY: Arial; Color: White;'>SDI Marketplace</SPAN></div>" &
-                                                    "<div align='center'><SPAN style='FONT-FAMILY: Arial; Color: White;'>SDI ZEUS - Request for Quote</SPAN></div></td></tr></tbody></table>" &
-                                                    "<HR width='100%' SIZE='1'>"
+    'Private Const LETTER_HEAD_SdiExch As String = "<table width='100%' bgcolor='black'><tbody><tr><td><img src='https://www.sdizeus.com/images/SDNewLogo_Email.png' alt='SDI' vspace='0' hspace='0' /></td>" &
+    '                                                "<td width='100%'><br/><br/><br/><div align='center'><SPAN style='FONT-SIZE: x-large; WIDTH: 256px; FONT-FAMILY: Arial; Color: White;'>SDI Marketplace</SPAN></div>" &
+    '                                                "<div align='center'><SPAN style='FONT-FAMILY: Arial; Color: White;'>SDI ZEUS - Request for Quote</SPAN></div></td></tr></tbody></table>" &
+    '                                                "<HR width='100%' SIZE='1'>"
 
-    Private Const LETTER_HEAD_SdiExch_QTW As String = "<table width='100%' bgcolor='black'><tbody><tr><td><img src='https://www.sdizeus.com/images/SDNewLogo_Email.png' alt='SDI' vspace='0' hspace='0' /></td>" &
-                                                    "<td width='100%'><br/><br/><br/><div align='center'><SPAN style='FONT-SIZE: x-large; WIDTH: 256px; FONT-FAMILY: Arial; Color: White;'>SDI Marketplace</SPAN></div>" &
-                                                    "<div align='center'><SPAN style='FONT-FAMILY: Arial; Color: White;'>SDI ZEUS - Request for Approval</SPAN></div></td></tr></tbody></table>" &
-                                                    "<HR width='100%' SIZE='1'>"
+    'Private Const LETTER_HEAD_SdiExch_QTW As String = "<table width='100%' bgcolor='black'><tbody><tr><td><img src='https://www.sdizeus.com/images/SDNewLogo_Email.png' alt='SDI' vspace='0' hspace='0' /></td>" &
+    '                                                "<td width='100%'><br/><br/><br/><div align='center'><SPAN style='FONT-SIZE: x-large; WIDTH: 256px; FONT-FAMILY: Arial; Color: White;'>SDI Marketplace</SPAN></div>" &
+    '                                                "<div align='center'><SPAN style='FONT-FAMILY: Arial; Color: White;'>SDI ZEUS - Request for Approval</SPAN></div></td></tr></tbody></table>" &
+    '                                                "<HR width='100%' SIZE='1'>"
 
-    Private Const LETTER_HEAD As String = "<div><img src='https://www.sdizeus.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></div>" &
-                                            "<div align=""center""><SPAN style=""FONT-SIZE: x-large; WIDTH: 256px; FONT-FAMILY: Arial"">SDI Marketplace</SPAN></div>" &
-                                            "<div align=""center""><SPAN>In-Site® Online - Request for Quote</SPAN></div><br><br>" &
-                                            "<HR width='100%' SIZE='1'>"
-    Private Const LETTER_CONTENT As String = "<p style=""TEXT-INDENT: 25pt"">" &
-                                             "The above referenced order contains items that required a price " &
-                                             "quote before processing.&nbsp;&nbsp;To view the quoted price either " &
-                                             "click the link below or select the ""Requestor Approval"" menu option " &
-                                             "in In-Site&reg; Online to approve or decline the order." &
-                                             "<br></p>Sincerely,</p>" &
-                                             "<p>SDI Customer Care</p>"
+    'Private Const LETTER_HEAD As String = "<div><img src='https://www.sdizeus.com/images/SDILogo_Email.png' alt='SDI' width='98px' height='182px' vspace='0' hspace='0' /></div>" &
+    '                                        "<div align=""center""><SPAN style=""FONT-SIZE: x-large; WIDTH: 256px; FONT-FAMILY: Arial"">SDI Marketplace</SPAN></div>" &
+    '                                        "<div align=""center""><SPAN>In-Site® Online - Request for Quote</SPAN></div><br><br>" &
+    '                                        "<HR width='100%' SIZE='1'>"
 
-    Private Const LETTER_CONTENT_SDiExchange As String = "<p style=""TEXT-INDENT: 25pt"">" &
-                                             "The above referenced order contains items that required a price " &
-                                             "quote before processing.&nbsp;&nbsp;To view the quoted price either " &
-                                             "click the link below or select the ""Requestor Approval"" menu option " &
-                                             "in SDI ZEUS to approve or decline the order." &
-                                             "<br></p>Sincerely,</p>" &
-                                             "<p>SDI Customer Care</p>"
+    'Private Const LETTER_CONTENT As String = "<p style=""TEXT-INDENT: 25pt"">" &
+    '                                         "The above referenced order contains items that required a price " &
+    '                                         "quote before processing.&nbsp;&nbsp;To view the quoted price either " &
+    '                                         "click the link below or select the ""Requestor Approval"" menu option " &
+    '                                         "in In-Site&reg; Online to approve or decline the order." &
+    '                                         "<br></p>Sincerely,</p>" &
+    '                                         "<p>SDI Customer Care</p>"
 
-    Private Const LETTER_CONTENT_SDiExchange_QTW As String = "<p style=""TEXT-INDENT: 25pt"">" &
-                                             "The above referenced order has needs your approval " &
-                                             "Click the link below or select the ""Approve Orders"" menu option " &
-                                             "in SDI ZEUS to approve or decline the order." &
-                                             "<br></p>Sincerely,</p>" &
-                                             "<p>SDI Customer Care</p>"
+    'Private Const LETTER_CONTENT_SDiExchange As String = "<p style=""TEXT-INDENT: 25pt"">" &
+    '                                         "The above referenced order contains items that required a price " &
+    '                                         "quote before processing.&nbsp;&nbsp;To view the quoted price either " &
+    '                                         "click the link below or select the ""Requestor Approval"" menu option " &
+    '                                         "in SDI ZEUS to approve or decline the order." &
+    '                                         "<br></p>Sincerely,</p>" &
+    '                                         "<p>SDI Customer Care</p>"
+
+    'Private Const LETTER_CONTENT_SDiExchange_QTW As String = "<p style=""TEXT-INDENT: 25pt"">" &
+    '                                         "The above referenced order has needs your approval " &
+    '                                         "Click the link below or select the ""Approve Orders"" menu option " &
+    '                                         "in SDI ZEUS to approve or decline the order." &
+    '                                         "<br></p>Sincerely,</p>" &
+    '                                         "<p>SDI Customer Care</p>"
 
 
-    Private Const LETTER_CONTENT_PI As String = "<p style=""TEXT-INDENT: 25pt"">" &
-                                                "The above referenced order contains items that required a price " &
-                                                "quote before processing.&nbsp;&nbsp;To view the quoted price, please " &
-                                                "select the ""Requestor Approval"" menu option " &
-                                                "in In-Site&reg; Online to approve or decline the order." &
-                                                "<br></p>Sincerely,</p>" &
-                                                "<p>SDI Customer Care</p>"
+    'Private Const LETTER_CONTENT_PI As String = "<p style=""TEXT-INDENT: 25pt"">" &
+    '                                            "The above referenced order contains items that required a price " &
+    '                                            "quote before processing.&nbsp;&nbsp;To view the quoted price, please " &
+    '                                            "select the ""Requestor Approval"" menu option " &
+    '                                            "in In-Site&reg; Online to approve or decline the order." &
+    '                                            "<br></p>Sincerely,</p>" &
+    '                                            "<p>SDI Customer Care</p>"
 
-    Private Const LETTER_CONTENT_PI_SDiExchange As String = "<p style=""TEXT-INDENT: 25pt"">" &
-                                                "The above referenced order contains items that required a price " &
-                                                "quote before processing.&nbsp;&nbsp;To view the quoted price, please " &
-                                                "select the ""Requestor Approval"" menu option " &
-                                                "in SDI ZEUS to approve or decline the order." &
-                                                "<br></p>Sincerely,</p>" &
-                                                "<p>SDI Customer Care</p>"
+    'Private Const LETTER_CONTENT_PI_SDiExchange As String = "<p style=""TEXT-INDENT: 25pt"">" &
+    '                                            "The above referenced order contains items that required a price " &
+    '                                            "quote before processing.&nbsp;&nbsp;To view the quoted price, please " &
+    '                                            "select the ""Requestor Approval"" menu option " &
+    '                                            "in SDI ZEUS to approve or decline the order." &
+    '                                            "<br></p>Sincerely,</p>" &
+    '                                            "<p>SDI Customer Care</p>"
 
 
     Private Shared m_CN As OleDbConnection
@@ -326,6 +330,8 @@ Public Class QuoteNonStockProcessor
         dstcart.Columns.Add("Alt. Partnum")  'Mythili - SDI-37570,to add alt part num in material request email
         dstcart.Columns.Add("QTY")
         dstcart.Columns.Add("UOM")
+        dstcart.Columns.Add("WorkOrder")
+        dstcart.Columns.Add("ChargeCode")
         'dstcart.Columns.Add("Price")
         'dstcart.Columns.Add("Ext. Price")
         'dstcart.Columns.Add("Base Price")
@@ -448,9 +454,11 @@ Public Class QuoteNonStockProcessor
                     intMy21 = intMy21 + 1  ' end code to get work order id
 
                     dr = dstcart.NewRow()
+                    dr("LN") = CType(dataRowMain("ISA_INTFC_LN"), String).Trim()
                     dr("Item ID") = CType(dataRowMain("INV_ITEM_ID"), String).Trim()
                     dr("Description") = CType(dataRowMain("DESCR254"), String).Trim()
-
+                    dr("WorkOrder") = CType(dataRowMain("ISA_WORK_ORDER_NO"), String).Trim()
+                    dr("ChargeCode") = CType(dataRowMain("ISA_CUST_CHARGE_CD"), String).Trim()
                     Try
                         dr("Manuf.") = If(CType(dataRowMain("MFG_ID"), String).Trim() <> "", CType(dataRowMain("MFG_ID"), String).Trim(), CType(dataRowMain("ISA_MFG_FREEFORM"), String).Trim())
                     Catch ex As Exception
@@ -469,13 +477,23 @@ Public Class QuoteNonStockProcessor
                     Dim alt_part_num As String = " "  'Mythili - SDI-37570,to add alt part num in material request email
                     Try
                         Dim item_id As String = Trim(dr("Item ID"))
-                        Dim sqlstring As String = " "
-                        sqlstring = "select SUB_ITM_ID from PS_SUBSTITUTE_ITM where INV_ITEM_ID like '%" + item_id + "'"
-                        alt_part_num = ORDBData.GetScalar(sqlstring)
-                        If Trim(alt_part_num) <> "" Then
-                            AltPartFlag = True
-                            dr("Alt. Partnum") = alt_part_num
-                        End If
+                        Try
+                            If item_id IsNot Nothing Then
+                                If Trim(item_id) <> "" Then
+
+                                    Dim sqlstring As String = " "
+                                    sqlstring = "select SUB_ITM_ID from PS_SUBSTITUTE_ITM where INV_ITEM_ID like '%" + item_id + "'"
+                                    alt_part_num = ORDBData.GetScalar(sqlstring)
+                                    dr("Alt. Partnum") = alt_part_num
+                                End If
+                            End If
+                        Catch ex As Exception
+
+                        End Try
+                        'If Trim(alt_part_num) <> "" Then
+                        '    ' AltPartFlag = True
+                        '    'dr("Alt. Partnum") = alt_part_num
+                        'End If
                     Catch ex As Exception
 
                     End Try
@@ -567,9 +585,9 @@ Public Class QuoteNonStockProcessor
 
                     dstcart.Rows.Add(dr)
                 Next
-                If AltPartFlag = False Then  'Mythili - SDI-37570,to add alt part num in material request email
-                    dstcart.Columns.Remove("Alt. Partnum")
-                End If
+                'If AltPartFlag = False Then  'Mythili - SDI-37570,to add alt part num in material request email
+                '    dstcart.Columns.Remove("Alt. Partnum")
+                'End If
             End If
         Catch ex As Exception
 
@@ -1158,7 +1176,11 @@ Public Class QuoteNonStockProcessor
                     If Not (boItem.ShipTo.Length > 0) Then
                         boItem.ShipTo = CType(rdr("SHIPTO"), String).Trim
                     End If
+                    'Set the zeus_site flag
 
+                    If Not (boItem.Zeussiteflag.Length > 0) Then
+                        boItem.Zeussiteflag = CType(rdr("ZEUS_SITE"), String).Trim
+                    End If
                     ' get the first Business Unit OM available
                     If Not (boItem.BusinessUnitOM.Length > 0) Then
                         If Not (rdr("BUSINESS_UNIT_OM") Is System.DBNull.Value) Then
@@ -1486,8 +1508,7 @@ Public Class QuoteNonStockProcessor
         End Try
 
     End Function
-
-    Private Shared Function GetOriginalApprover(ByVal strBU As String, ByVal strLastApprover As String) As String
+    Public Shared Function GetOriginalApprover(ByVal strBU As String, ByVal strLastApprover As String) As String
         Dim strOrigApproverID As String = ""
 
         Try
@@ -1862,7 +1883,7 @@ Public Class QuoteNonStockProcessor
                 'WAL-533 Subject Line email change for walmart-change by madhu
                 Try
                     If LineStatus = "QTW" Then
-                        eml.Subject = "SDI ZEUS - Order Number "
+                        eml.Subject = "Order # "
                         eml.Subject &= itmQuoted.OrderID & " needs approval"
                     End If
                     Dim Business_unit As String = itmQuoted.BusinessUnitID
@@ -1927,11 +1948,12 @@ Public Class QuoteNonStockProcessor
 
                 ' override for RFQ origin to include (if provided) the work order # on the subject line
                 '   - erwin 3/26/2014
-                If (itmQuoted.OrderOrigin = "RFQ") Then
-                    If Trim(itmQuoted.WorkOrderNumber) <> "" Then  '  If (itmQuoted.WorkOrderNumber.Length > 0) Then
-                        eml.Subject &= " (Work Order # " & itmQuoted.WorkOrderNumber & ")"
-                    End If
-                End If
+                'As per the New UI And recent orders were from 2019 so commented the code
+                'If (itmQuoted.OrderOrigin = "RFQ") Then
+                '    If Trim(itmQuoted.WorkOrderNumber) <> "" Then  '  If (itmQuoted.WorkOrderNumber.Length > 0) Then
+                '        eml.Subject &= " (Work Order # " & itmQuoted.WorkOrderNumber & ")"
+                '    End If
+                'End If
 
                 Dim sWorkOrder As String = ""
                 Try
@@ -1959,112 +1981,96 @@ Public Class QuoteNonStockProcessor
                 Dim PI As String = String.Empty
                 Dim ContentSDI As String = String.Empty
                 Dim Content As String = String.Empty
-                If bIsPunchInBU Then
-                    If bIsBusUnitSDiExch Then
-                        'SdiExchange
-                        'WorkOrder should show for all the BU's
-                        bShowWorkOrderNo = True
+                Dim strOrderTotal As String = ""
 
-                        PI_SDI = LETTER_CONTENT_PI_SDiExchange
-                        eml.Body = "<HTML>" &
-                                    "<HEAD></HEAD>" &
-                                    "<BODY>" &
+                If LineStatus = "QTW" Then
+                    Dim cGetNSTKOnly As Boolean = False
+                    Dim strType As String = "approve"
+                    Dim intLnID As Integer
+                    m_siteCurrency = sdiMultiCurrency.getSiteCurrency(BU)
+                    Dim concatenatedLineNumbers As String = ""
+                    Dim LnrLst As String = ""
+
+                    Try
+                        If dstcartSTK IsNot Nothing Then
+                            If dstcartSTK.Rows.Count > 0 Then
+                                For Each dr As DataRow In dstcartSTK.Rows
+
+                                    If dr("LN") IsNot Nothing AndAlso dr("LN").ToString().Trim() <> "" Then
+                                        intLnID = dr("LN")
+                                        Try
+                                            concatenatedLineNumbers &= intLnID & ","
+                                        Catch ex As Exception
+
+                                        End Try
+                                    End If
+                                Next
+                                ' Remove the trailing comma
+                                If concatenatedLineNumbers <> "" Then
+                                    concatenatedLineNumbers = concatenatedLineNumbers.Substring(0, concatenatedLineNumbers.Length - 1)
+                                End If
+                                Try
+                                    If concatenatedLineNumbers = "" Then
+                                        If IsAEES(BU) Then
+                                            strOrderTotal = "$" & OrderTotals.getOrderTotalMail(BU, itmQuoted.OrderID, m_siteCurrency, cGetNSTKOnly, strType, concatenatedLineNumbers) & " " & m_siteCurrency.Id.ToString
+                                        Else
+                                            strOrderTotal = "$" & OrderTotals.getOrderTotalMail(BU, itmQuoted.OrderID, m_siteCurrency, cGetNSTKOnly, strType, concatenatedLineNumbers) & " " & m_siteCurrency.Id.ToString
+
+                                        End If
+                                    Else
+                                        If IsAEES(BU) Then
+                                            strOrderTotal = "$" & OrderTotals.getOrderTotalMail(BU, itmQuoted.OrderID, m_siteCurrency, cGetNSTKOnly, strType, concatenatedLineNumbers) & " " & m_siteCurrency.Id.ToString
+                                        Else
+                                            strOrderTotal = "$" & OrderTotals.getOrderTotalMail(BU, itmQuoted.OrderID, m_siteCurrency, cGetNSTKOnly, strType, concatenatedLineNumbers) & " " & m_siteCurrency.Id.ToString
+                                        End If
+                                    End If
+                                Catch ex As Exception
+                                End Try
+
+
+                            End If
+
+                        End If
+
+                    Catch ex As Exception
+                    End Try
+                End If
+                If bIsPunchInBU Then
+                    'SdiExchange
+                    'WorkOrder should show for all the BU's
+                    bShowWorkOrderNo = True
+                    'PI_SDI = LETTER_CONTENT_PI_SDiExchange
+                    eml.Body = "<HTML>" &
+                                        BodyStyle() &
                                         AddNoRecepientExistNote(eml.To) &
-                                        LETTER_HEAD_SdiExch &
-                                        FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority) &
-                                        PositionGrid(dataGridHTML) &
-                                        PI_SDI &
-                                        AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail, LineStatus) &
-                                        AddVersionNumber() &
-                                        "<HR width='100%' SIZE='1'>" &
-                                        "<img src='https://www.sdizeus.com/Images/SDIFooter_Email.png' />" &
+                                        EmailBodyHead(itmQuoted.Addressee, itmQuoted.OrderID, BU, LineStatus, itmQuoted.Zeussiteflag, itmQuoted.EmployeeID) &
+                                        FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, LineStatus, bShowApproveViaEmailLink) &
+                                       FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority, LineStatus, strOrderTotal) &
+                                        PositionGrid(dstcartSTK, LineStatus, BU) &
+                                        EmailBodyClosure() &
+                                        bindFooterMail(BU) &
+                                          "</table>" &
                                     "</BODY>" &
                                "</HTML>"
-                    Else
-                        'InsiteOnline
-                        If IsAscend(itmQuoted.BusinessUnitOM) Then
-                            PI = LETTER_CONTENT_PI.Replace("Requestor Approval", "Approve Quotes (Ascend)")
-                        Else
-                            PI = LETTER_CONTENT_PI
-                        End If
-                        'WorkOrder should show for all the BU's
-                        bShowWorkOrderNo = True
-                        eml.Body = "<HTML>" &
-                                        "<HEAD></HEAD>" &
-                                        "<BODY>" &
-                                            AddNoRecepientExistNote(eml.To) &
-                                            LETTER_HEAD &
-                                            FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority) &
-                                            PositionGrid(dataGridHTML) &
-                                            PI &
-                                            AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail, LineStatus) &
-                                            AddVersionNumber() &
-                                            "<HR width='100%' SIZE='1'>" &
-                                            "<img src='https://www.sdizeus.com/Images/SDIFooter_Email.png' />" &
-                                        "</BODY>" &
-                                   "</HTML>"
-                    End If
+
 
                 Else
-                    If bIsBusUnitSDiExch Then
-                        bShowApproveViaEmailLink = True
-                        'SdiExchange
-                        'WorkOrder should show for all the BU's
-                        bShowWorkOrderNo = True
-                        Dim LetterHead As String = ""
-                        If LineStatus = "QTW" Then
-                            ContentSDI = LETTER_CONTENT_SDiExchange_QTW
-                            LetterHead = LETTER_HEAD_SdiExch_QTW
-                        Else
-                            ContentSDI = LETTER_CONTENT_SDiExchange
-                            LetterHead = LETTER_HEAD_SdiExch
-                        End If
+                    bShowApproveViaEmailLink = True
+                    bShowWorkOrderNo = True
+                    Dim LetterHead As String = ""
 
-                        eml.Body = "<HTML>" &
-                                   "<HEAD></HEAD>" &
-                                   "<BODY>" &
-                                       AddNoRecepientExistNote(eml.To) &
-                                       LetterHead &
-                                       FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority) &
-                                       PositionGrid(dataGridHTML) &
-                                       ContentSDI &
-                                       FormHTMLLinkSDiExchange(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, LineStatus, bShowApproveViaEmailLink) &
-                                       AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail, LineStatus) &
-                                       AddVersionNumber() &
-                                       "<HR width='100%' SIZE='1'>" &
-                                           "<img src='https://www.sdizeus.com/Images/SDIFooter_Email.png' />" &
-                                   "</BODY>" &
-                              "</HTML>"
-
-
-
-                    Else
-                        'InsiteOnline
-                        If IsAscend(itmQuoted.BusinessUnitOM) Then
-                            Content = LETTER_CONTENT.Replace("Requestor Approval", "Approve Quotes (Ascend)")
-                        Else
-                            Content = LETTER_CONTENT
-                        End If
-                        'WorkOrder should show for all the BU's
-                        bShowWorkOrderNo = True
-
-                        eml.Body = "<HTML>" &
-                                        "<HEAD></HEAD>" &
-                                        "<BODY>" &
-                                            AddNoRecepientExistNote(eml.To) &
-                                            LETTER_HEAD &
-                                            FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority) &
-                                            PositionGrid(dataGridHTML) &
-                                            Content &
-                                            FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, LineStatus, bShowApproveViaEmailLink) &
-                                            AddBuyerInfo(itmQuoted.BuyerId, itmQuoted.BuyerEmail, LineStatus) &
-                                            AddVersionNumber() &
-                                            "<HR width='100%' SIZE='1'>" &
-                                            "<img src='https://www.sdizeus.com/Images/SDIFooter_Email.png' />" &
-                                        "</BODY>" &
-                                   "</HTML>"
-                    End If
-
+                    eml.Body = "<HTML>" &
+                                    BodyStyle() &
+                                        AddNoRecepientExistNote(eml.To) &
+                                        EmailBodyHead(itmQuoted.Addressee, itmQuoted.OrderID, BU, LineStatus, itmQuoted.Zeussiteflag, itmQuoted.EmployeeID) &
+                                         FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, LineStatus, bShowApproveViaEmailLink) &
+                                       FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority, LineStatus, strOrderTotal) &
+                                        PositionGrid(dstcartSTK, LineStatus, BU) &
+                                        EmailBodyClosure() &
+                                        bindFooterMail(BU) &
+                                                                "</table>" &
+                                    "</BODY>" &
+                               "</HTML>"
                 End If
 
                 cHdr = cHdr & "VR End my code.  'eml.Body' is: " & eml.Body.ToString()
@@ -2153,18 +2159,18 @@ Public Class QuoteNonStockProcessor
                     End If
                 Catch ex As Exception
                 End Try
-                If Trim(itmQuoted.Priority) <> "" Then
-                    If Trim(itmQuoted.Priority) = "R" Then
-                        eml.Subject = eml.Subject & " - PRIORITY"
-                    End If
-                End If
+                'If Trim(itmQuoted.Priority) <> "" Then
+                '    If Trim(itmQuoted.Priority) = "R" Then
+                '        eml.Subject = eml.Subject & " - PRIORITY"
+                '    End If
+                'End If
                 ' send this email
                 Try
 
                     SendLogger(eml.Subject, eml.Body, "QUOTEAPPROVAL", "Mail", eml.To, eml.Cc, eml.Bcc, itmQuoted.BusinessUnitID, itmQuoted.BusinessUnitOM)
-                    SendNotification(itmQuoted.EmployeeID, eml.Subject, itmQuoted.OrderID, itmQuoted.BusinessUnitOM)
+                    SendNotification(itmQuoted.EmployeeID, eml.Subject, itmQuoted.OrderID, itmQuoted.BusinessUnitOM, itmQuoted.Priority, LineStatus)
                     'Dim Title As String = "Order Number: " + itmQuoted.OrderID + " Requested For Quote Approval"
-                    sendWebNotification(itmQuoted.EmployeeID, eml.Subject)
+                    sendWebNotification(itmQuoted.EmployeeID, eml.Subject, itmQuoted.Priority, LineStatus)
                 Catch ex As Exception
 
                 End Try
@@ -2185,19 +2191,19 @@ Public Class QuoteNonStockProcessor
                                 If ds.Tables(0).Rows.Count() = 0 Then
                                     ' build insert SQL command
                                     cSQL =
-                                "INSERT INTO PS_ISA_REQ_EML_LOG " &
-                                "(BUSINESS_UNIT, REQ_ID, ISA_RECIPIENT, ISA_SENDER, ISA_SUBJECT, EMAIL_DATETIME, LINE_NO, PRICE) " &
-                                "VALUES " &
-                                "(" &
-                                    "'" & CType(IIf(itmQuoted.BusinessUnitID.Length > 0, itmQuoted.BusinessUnitID, "."), String) & "', " &
-                                    "'" & CType(IIf(itmQuoted.OrderID.Length > 0, itmQuoted.OrderID, "."), String) & "', " &
-                                    "'" & "TO=" & eml.To & "CC=" & eml.Cc & "BCC=" & eml.Bcc & "', " &
-                                    "'" & CType(IIf(eml.From.Length > 0, eml.From, "."), String) & "', " &
-                                    "'" & CType(IIf(eml.Subject.Length > 0, eml.Subject, "."), String) & "', " &
-                                    "TO_DATE('" & System.DateTime.Now.ToString & "','MM/DD/YYYY HH:MI:SS AM'), " &
-                                    "'" & dataRowMain("ISA_INTFC_LN") & "'," &
-                                   "'" & dataRowMain("ISA_SELL_PRICE") & "'" &
-                                ")"
+                            "INSERT INTO PS_ISA_REQ_EML_LOG " &
+                            "(BUSINESS_UNIT, REQ_ID, ISA_RECIPIENT, ISA_SENDER, ISA_SUBJECT, EMAIL_DATETIME, LINE_NO, PRICE) " &
+                            "VALUES " &
+                            "(" &
+                                "'" & CType(IIf(itmQuoted.BusinessUnitID.Length > 0, itmQuoted.BusinessUnitID, "."), String) & "', " &
+                                "'" & CType(IIf(itmQuoted.OrderID.Length > 0, itmQuoted.OrderID, "."), String) & "', " &
+                                "'" & "TO=" & eml.To & "CC=" & eml.Cc & "BCC=" & eml.Bcc & "', " &
+                                "'" & CType(IIf(eml.From.Length > 0, eml.From, "."), String) & "', " &
+                                "'" & CType(IIf(eml.Subject.Length > 0, eml.Subject, "."), String) & "', " &
+                                "TO_DATE('" & System.DateTime.Now.ToString & "','MM/DD/YYYY HH:MI:SS AM'), " &
+                                "'" & dataRowMain("ISA_INTFC_LN") & "'," &
+                               "'" & dataRowMain("ISA_SELL_PRICE") & "'" &
+                            ")"
 
                                 Else
                                     cSQL = "UPDATE PS_ISA_REQ_EML_LOG set PRICE='" & dataRowMain("ISA_SELL_PRICE") & "' where REQ_ID= '" & itmQuoted.OrderID & "' and LINE_NO= '" & dataRowMain("ISA_INTFC_LN") & "'"
@@ -2274,8 +2280,141 @@ Public Class QuoteNonStockProcessor
             'SendLogger("Quote Non Stock New Utility - Dev", ex, "ERROR")
         End Try
     End Sub
+    Public Shared Function BodyStyle() As String
+        Dim strStyle As String = ""
+
+        Try
+            strStyle &= "<HEAD>"
+            strStyle &= "<meta charset='UTF-8'>"
+            strStyle &= "<meta name='viewport' content='width=device-width, initial-scale=1.0'>"
+            strStyle &= "</HEAD>"
+            strStyle &= "<BODY style='background-color: #ebebeb; font-family: Arial;'> "
+            strStyle &= "<style>"
+            strStyle &= "@media only screen and (max-width: 840px) {"
+            strStyle &= ".table-grid {"
+            strStyle &= "display: grid;}"
+            strStyle &= ".table-grid td {"
+            strStyle &= "width: 100% !important;}}"
+            strStyle &= "</style>"
+            strStyle &= "<table style='background-color:#ffffff; margin:auto; border-collapse:collapse' width='100%' align='center' border='0' cellpadding='0' cellspacing='0'>"
+
+        Catch ex As Exception
+        End Try
+        Return strStyle
+    End Function
+
+    Public Shared Function EmailBodyHead(ByVal IsaEmployeeName As String, ByVal orderNo As String, ByVal Bu As String, ByVal Linestatus As String, ByVal Zeussite As String, ByVal Employeeid As String) As String
+        Dim OrderNum As String = orderNo
+        Dim strBu As String = Bu
+        Dim bodyHead As String = ""
+        Dim img = ConfigurationSettings.AppSettings("ZeusMailImg")
+        Dim format As New System.Globalization.CultureInfo("en-US", True)
+
+        Try
+            bodyHead &= "<thead>"
+            bodyHead &= "<tr style='padding: 20px 0px; background-color: #151723;'>"
+            bodyHead &= "<th style='text-align:left;' colspan='2'>"
+
+            bodyHead &= "<img src=" & img & " alt='sdi-logo' style='width: 200px; padding: 14px 24px;'>"
+            bodyHead &= "</th>"
+            bodyHead &= "</tr>"
+            bodyHead &= "</thead>"
+            bodyHead &= "<tbody>"
+            bodyHead &= "<tr>"
+            bodyHead &= "<td style='padding: 0px 24px;'>"
+            bodyHead &= "<table style='width: 100%; border-collapse: collapse;'>"
+            bodyHead &= "<tbody>"
+            bodyHead &= "<tr style='font-size: 16px;'>"
+            bodyHead &= "<td colspan='2'>"
+            bodyHead &= "<p style='font-size:18px;margin-bottom:10px;font-weight:bold;margin-top: 0;padding-top: 24px;'>"
+            Dim strappName As String = ""
+            Dim strSQLstring As String = ""
+            Dim IsaUser1 As String = ""
+            If Linestatus = "QTW" Then
+                Try
+                    If Zeussite = "Y" Or strBu = "I0W01" Then
+                        IsaUser1 = GetWalmartApprover(OrderNum)
+                    Else
+                        IsaUser1 = GetOriginalApprover(strBu, Employeeid)
+                    End If
+                Catch ex As Exception
+                End Try
+            Else
+                IsaUser1 = Employeeid
+            End If
+            Try
+                strSQLstring = "SELECT FIRST_NAME_SRCH," & vbCrLf &
+                " LAST_NAME_SRCH" & vbCrLf &
+                " FROM PS_ISA_USERS_TBL" & vbCrLf &
+                " WHERE ISA_EMPLOYEE_ID = '" & IsaUser1 & "'"
+
+                Dim dtrAppReader As OleDbDataReader = GetReader(strSQLstring)
+                If dtrAppReader.HasRows() = True Then
+                    dtrAppReader.Read()
+                    strappName = dtrAppReader.Item("FIRST_NAME_SRCH") & " " & dtrAppReader.Item("LAST_NAME_SRCH")
+                    Dim txtInfoLocal As TextInfo = New CultureInfo("en-US", False).TextInfo
+                    strappName = txtInfoLocal.ToTitleCase(strappName.ToLower())
+                    bodyHead &= " Hello " & strappName & "!"
+                    dtrAppReader.Close()
+                Else
+                    dtrAppReader.Close()
+                End If
+
+            Catch ex As Exception
+            End Try
+
+
+            bodyHead &= "</p>"
+        Catch ex As Exception
+        End Try
+        Return bodyHead
+    End Function
+    Public Function EmailBodyClosure()
+        Dim strclose As String = ""
+        strclose &= "<tr style = 'font-size: 14px;'>"
+        strclose &= "<td style='width: 41%; padding: 0px;'>"
+        strclose &= "<p style='font-weight: 500; margin: 40px 0px 6px 0px;'>Thanks,</p>"
+        strclose &= "</td>"
+        strclose &= "</tr>"
+        strclose &= "<tr style = 'font-size: 14px;' >"
+        strclose &= "<td style='width: 41%; padding: 0px;'>"
+        strclose &= "<p style='font-weight: 500;white-space : nowrap; margin: 4px 0px 40px 0px;'>SDI Customer Care</p>"
+        strclose &= "</td>"
+        strclose &= "</tr>"
+        Return strclose
+    End Function
+    Public Function bindFooterMail(BU As String) As String
+        Dim strFooter As String = ""
+        Try
+            Dim strQuery As String = "SELECT * FROM SDIX_BU_CONTACT_DETAILS WHERE BUSINESS_UNIT = '" & BU & "' OR (BUSINESS_UNIT = 'SDI' AND NOT " & "EXISTS (SELECT 1 FROM SDIX_BU_CONTACT_DETAILS WHERE BUSINESS_UNIT = '" & BU & "'))"
+            Dim footerDS As DataSet = ORDBData.GetAdapter(strQuery)
+
+            If footerDS IsNot Nothing AndAlso footerDS.Tables.Count > 0 AndAlso footerDS.Tables(0).Rows.Count > 0 Then
+                Dim phoneNum As String = footerDS.Tables(0).Rows(0)("PHONE_NUM").ToString().Trim()
+                Dim emailID As String = footerDS.Tables(0).Rows(0)("EMAIL_ID").ToString().Trim()
+                Dim visibility As String = If(Not IsDBNull(footerDS.Tables(0).Rows(0)("PHONE_EMAIL_VISIBLE")), footerDS.Tables(0).Rows(0)("PHONE_EMAIL_VISIBLE").ToString(), "")
+
+                Dim strPhone As String = If(phoneNum <> "" AndAlso visibility.Contains("P"), "<a href='tel:" & phoneNum & "' style='color: blue; margin: 0; text-decoration: none;'>Call us @ " & phoneNum & "</a> ", "")
+                Dim strEmail As String = If(emailID <> "" AndAlso visibility.Contains("E"), "<a href='mailto:" & emailID & "' style ='color: blue; margin: 0; text-decoration: none; margin-right: 12px;'> Contact SDI customer care </a> ", "")
+
+                If strPhone <> "" OrElse strEmail <> "" Then
+                    strFooter = "<tfoot><tr><td style='background-color: #F8F8F8; -webkit-print-color-adjust: exact; padding: 10px 5px; font-size: 12px; text-align: center;' colspan='2'>" & strPhone & If(strPhone <> "" AndAlso strEmail <> "", "<span style='border-right:2px solid #C2C2C2; margin:0px 10px;'></span>", "") & strEmail & "</td></tr></tfoot>"
+                End If
+            End If
+        Catch ex As Exception
+            ' Handle exception if needed
+        End Try
+        Return strFooter
+    End Function
     'IPM-18-Madhu-Modifyingg the title for IPM
-    Public Shared Sub SendNotification(ByVal Session_UserID As String, ByVal subject As String, ByVal orderNo As String, Optional ByVal cBusinessUnitOM As String = "")
+    Public Shared Sub SendNotification(ByVal Session_UserID As String, ByVal subject As String, ByVal orderNo As String, Optional ByVal cBusinessUnitOM As String = "", Optional priority As String = "", Optional LineStatus As String = "")
+        Try
+            If LineStatus = "QTW" And Trim(priority) = "R" Then
+                subject = subject & " " & "*PRIORITY*"
+            End If
+        Catch ex As Exception
+
+        End Try
         Dim response As String
         Try
             Dim NotificationContent As String = subject
@@ -2347,7 +2486,15 @@ Public Class QuoteNonStockProcessor
         End Try
     End Sub
 
-    Public Sub sendWebNotification(ByVal Session_UserID As String, ByVal subject As String)
+    Public Sub sendWebNotification(ByVal Session_UserID As String, ByVal subject As String, Optional ByVal priority As String = "", Optional Linestatus As String = "")
+
+        Try
+            If Linestatus = "QTW" And Trim(priority) = "R" Then
+                subject = subject & " " & "*PRIORITY*"
+            End If
+        Catch ex As Exception
+
+        End Try
         Try
             Dim _notificationResult As New DataSet
             Dim notificationSQLStr = "select max(NOTIFY_ID) As NOTIFY_ID from SDIX_NOTIFY_QUEUE where USER_ID='" + Session_UserID + "'"
@@ -2381,56 +2528,113 @@ Public Class QuoteNonStockProcessor
     End Sub
 
     Private Function FormHTMLQouteInfo(ByVal cAddressee As String, ByVal cOrderID As String, Optional ByVal bIsShowWorkOrderNo As Boolean = False,
-                Optional ByVal cWorkOrderNo As String = "", Optional ByVal strPriority As String = "") As String
+                Optional ByVal cWorkOrderNo As String = "", Optional ByVal strPriority As String = "", Optional ByVal LineStatus As String = "", Optional ByVal ordtotal As String = "") As String
 
         Dim cHdr As String = "QuoteNonStockProcessor.FormHTMLQouteInfo: "
 
         Dim strOrderPriorty As String = " "
-        If Trim(strPriority) <> "" Then
+        If Trim(strPriority) <> " " Then
             If Trim(strPriority) = "R" Then
-                strOrderPriorty = "PRIORITY"
+                strOrderPriorty = "*PRIORITY*"
+            Else
+                strOrderPriorty = ""
             End If
         End If
 
-        Try
-            Dim cInfoHTML As String = ""
+        If String.IsNullOrEmpty(cOrderID) Then
+            cOrderID = "-"
+        End If
 
-            cInfoHTML &= "<TABLE id=""Table1"" cellSpacing=""1"" cellPadding=""1"" width=""100%"" border=""0"">"
-            cInfoHTML &= "       <TR>" &
-                                    "<TD style=""WIDTH: 110px;Font-Weight:Bold"">TO:</TD>" &
-                                    "<TD><B>" & cAddressee & "</B></TD>" &
-                                "</TR>" &
-                                "<TR>" &
-                                    "<TD style=""WIDTH: 110px;Font-Weight:Bold"">Date:</TD>" &
-                                    "<TD>" & DateTime.Now.ToString(format:="MM/dd/yyyy HH:mm:ss") & "</TD>" &
-                                "</TR>" &
-                                "<TR>" &
-                                    "<TD style=""WIDTH: 110px;Font-Weight:Bold"">Order:</TD>" &
-                                    "<TD style=""COLOR: purple"">" & cOrderID & "</TD>" &
-                                "</TR>"
-            If bIsShowWorkOrderNo Then
-                cInfoHTML &= "  <TR>" &
-                               "<TD style=""WIDTH: 110px;Font-Weight:Bold"">Work Order:</TD>" &
-                               "<TD style=""overflow-wrap: anywhere;COLOR: purple"">" & cWorkOrderNo & "</TD>" &
-                               "</TR>"
-            End If
-            If strOrderPriorty = "PRIORITY" Then
-                cInfoHTML &= "  <TR>" &
-                               "<TD style=""WIDTH: 110px;Font-Weight:Bold;COLOR: red"">Priority Order!</TD>" &
-                               "<TD style=""COLOR: purple""> </TD>" &
-                               "</TR>"
-            End If
-            cInfoHTML &= "</TABLE>"
+        If String.IsNullOrEmpty(cWorkOrderNo) Then
+            cWorkOrderNo = "-"
+        End If
+
+        If String.IsNullOrEmpty(cAddressee) Then
+            Try
+                If Not (cAddressee.Trim.Length > 0) Then
+                    Dim parts() As String = cAddressee.Split(","c)
+                    cAddressee = parts(1).Trim() & " " & parts(0).Trim()
+                Else
+                    cAddressee = "-"
+                End If
+            Catch ex As Exception
+            End Try
+        End If
+
+
+        Try
+
+            Dim cInfoHTML As String = ""
+            Dim additionalInfoHTML As String = ""
+
+            cInfoHTML &= "<tr style='font-size: 13px;'>"
+            cInfoHTML &= "<td style='padding: 0px 12px;' colspan='2'>"
+            cInfoHTML &= "<table style='width: 100%; border-collapse: collapse;'>"
+            cInfoHTML &= "<tbody>"
+
+            Try
+                If LineStatus = "QTW" Then
+                    additionalInfoHTML &= "<tr class='table-grid'>"
+                    additionalInfoHTML &= "<td>"
+                    additionalInfoHTML &= "<p style='font-weight: 600; margin: 10px 0px 14px 0px;'> Order # : <span style='color: #595959; font-weight: 500;'>" & cOrderID & "</span> </p>"
+                    additionalInfoHTML &= "</td>"
+                    Try
+                        If bIsShowWorkOrderNo Then
+                            additionalInfoHTML &= "<td>"
+                            additionalInfoHTML &= "<p style='font-weight: 600; margin: 10px 0px 14px 0px;'> Work Order : <span style='color: #595959; font-weight: 500;'>" & cWorkOrderNo & "</span> </p>"
+                            additionalInfoHTML &= "</td>"
+                        End If
+                    Catch ex As Exception
+                    End Try
+                    additionalInfoHTML &= "</tr>"
+                    additionalInfoHTML &= "<tr class='table-grid'>"
+                    additionalInfoHTML &= "<td>"
+                    additionalInfoHTML &= "<p style='font-weight: 600; margin: 10px 0px 14px 0px;'> Order Total : <span style='color: #595959; font-weight: 500;'>" & ordtotal & "</span> </p>"
+                    additionalInfoHTML &= "</td>"
+                    If Trim(strPriority) = "R" Then
+                        additionalInfoHTML &= "<td>"
+                        additionalInfoHTML &= "<p style='font-weight: 600; margin: 10px 0px 14px 0px;'> Priority : <span style='color: #595959; font-weight: 500;'>" & strOrderPriorty & "</span> </p>"
+                        additionalInfoHTML &= "</td>"
+                    End If
+                    additionalInfoHTML &= "</tr>"
+
+
+                Else
+                    additionalInfoHTML &= "<tr class='table-grid'>"
+                    additionalInfoHTML &= "<td>"
+                    additionalInfoHTML &= "<p style='font-weight: 600; margin: 10px 0px 14px 0px;'> Date : <span style='color: #595959; font-weight: 500;'>" & DateTime.Now.ToString(format:="MM/dd/yyyy") & "</span> </p>"
+                    additionalInfoHTML &= "</td>"
+                    additionalInfoHTML &= "<td>"
+                    additionalInfoHTML &= "<p style='font-weight: 600; margin: 10px 0px 14px 0px;'> Order # : <span style='color: #595959; font-weight: 500;'>" & cOrderID & "</span> </p>"
+                    additionalInfoHTML &= "</td>"
+                    additionalInfoHTML &= "</tr>"
+                    additionalInfoHTML &= "<td>"
+                    Try
+                        If bIsShowWorkOrderNo Then
+                            additionalInfoHTML &= "<p style='font-weight: 600; margin: 10px 0px 14px 0px;'> Work Order : <span style='color: #595959; font-weight: 500;'>" & cWorkOrderNo & "</span> </p>"
+                            additionalInfoHTML &= "</td>"
+                        End If
+                    Catch ex As Exception
+                    End Try
+                    additionalInfoHTML &= "</tr>"
+                End If
+            Catch ex As Exception
+            End Try
+
+            cInfoHTML &= additionalInfoHTML
+
+            cInfoHTML &= "</tbody>"
+            cInfoHTML &= "</table>"
+            cInfoHTML &= "</td>"
+            cInfoHTML &= "</tr>"
+
 
             Return cInfoHTML
-
         Catch ex As Exception
-            'm_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
-
-            m_logger.WriteVerboseLog(cHdr & ".  Error:  " & ex.ToString)
+            m_logger.WriteVerboseLog(cHdr & ".  Error  " & ex.ToString)
             SendAlertMessage(msg:=cHdr & ex.ToString)
         End Try
-        Return ""
+        'Return cInfoHTML
     End Function
 
     Private Function FormHTMLLink(ByVal cOrderID As String, ByVal cEmployeeID As String, ByVal cBusinessUnitOM As String, ByVal LineStatus As String, Optional ByVal bShowLink As Boolean = True) As String
@@ -2449,14 +2653,23 @@ Public Class QuoteNonStockProcessor
                                        "&xyz=" & boEncrypt.Encrypt(cBusinessUnitOM, m_cEncryptionKey) &
                                        "&HOME=N"
 
-                cLink &= "<p>" &
-                            "Click this " &
-                            "<a href=""" & m_cURL1 & cParam & """ target=""_blank"">link</a> " &
-                            " to APPROVE or DECLINE order." &
-                         "</p>"
+                If LineStatus = "QTW" Then
+                    cLink = "<p style='color: #000; margin: 0px 0px 18px 0px; line-height: 24px;'>" &
+                    "The below referenced order has been requested by " & cEmployeeID & " and needs your approval.Click the " &
+                    "<a href=""" & m_cURL1 & cParam & """ style='text-decoration: none; color: #3090FF;'>link</a> " &
+                    "or select the ""Approve Orders"" menu option in SDI ZEUS to approve or reject the order." &
+                    "</p>"
+                Else
+                    cLink = "<p style='color: #000; margin: 0px 0px 18px 0px; line-height: 24px;'> " &
+                    "The below referenced order contains items that required a price quote before processing.To view quoted price either click the " &
+                    "<a href=""" & m_cURL1 & cParam & """ style='text-decoration none; color: #3090FF;'>link</a> " &
+                    "or select the ""Requestor Approvals"" menu option in SDI ZEUS to approve or decline the order. " &
+                   "</p>"
 
+                End If
                 boEncrypt = Nothing
-
+                cLink &= "</td>"
+                cLink &= "</tr>"
                 Return cLink
 
             Catch ex As Exception
@@ -2505,6 +2718,7 @@ Public Class QuoteNonStockProcessor
         End If
         Return (cLink)
     End Function
+
 
     Private Function AddBuyerInfo(ByVal strBuyerDescr As String, ByVal strBuyerEmail As String, ByVal LineStatus As String) As String
         Dim cHdr As String = "QuoteNonStockProcessor.AddBuyerInfo: "
@@ -2973,16 +3187,1241 @@ Public Class QuoteNonStockProcessor
         End Try
     End Function
 
-    Public Function PositionGrid(ByVal htmlGrid As String) As String
+    Public Function PositionGrid(ByVal dstcartSTK As DataTable, Optional ByVal LineStatus As String = "", Optional ByVal sBU As String = "") As String
+
+        Dim Item_ID As String = ""
+        Dim Descr As String = ""
+        Dim MfgID As String = ""
+        Dim Mfg_Itm_ID As String = ""
+        Dim Qty As String = ""
+        Dim UOM As String = ""
+        Dim Price As String = ""
+        Dim ExtPrice As String = ""
+        Dim POPrice As String = ""
+        Dim POExtPrice As String = ""
+        Dim WorkOrder As String = ""
+        Dim ChargeCode As String = ""
+        Dim Supplier As String = ""
+        Dim SupplierPartNum As String = ""
+        Dim AltpartNum As String = ""
+        Dim content As String = ""
+
+
+
+
         Try
-            Dim content As String = "<TABLE cellSpacing='1' cellPadding='1' width='100%' border='0'>" &
-                                    "<TR><TD Class='DetailRow' width='100%'>" & htmlGrid & "</TD></TR>" &
-                                    "</TABLE>"
-            Return content
+            If dstcartSTK IsNot Nothing Then
+                If dstcartSTK.Rows.Count > 0 Then
+                    Dim currentRow As Integer = 0
+                    Dim totalRows As Integer = dstcartSTK.Rows.Count
+                    content &= "<tr style = 'font-size: 16px;' >"
+                    content &= "<td style ='padding: 18px 12px; background-color: #F9F9F9;' colspan='2'>"
+                    content &= "<p style='margin-top: 0px; margin-bottom: 0px; font-weight: 600;'>Item Details</p>"
+                    content &= "</td>"
+                    content &= "</tr>"
+                    For Each dr As DataRow In dstcartSTK.Rows
+                        Try
+                            If dr("Item ID") Is DBNull.Value OrElse dr("Item ID") Is Nothing OrElse dr("Item ID").Trim() = "" Then
+                                Item_ID = "-"
+                            Else
+                                Item_ID = dr("Item ID").ToString()
+                            End If
+                        Catch ex As Exception
+                        End Try
+                        Try
+                            If dr("Description") Is DBNull.Value OrElse dr("Description") Is Nothing OrElse dr("Description").Trim() = "" Then
+                                Descr = "-"
+                            Else
+                                Descr = dr("Description").ToString()
+                            End If
+                        Catch ex As Exception
+                        End Try
+                        Try
+                            If dr("Manuf.") Is DBNull.Value OrElse dr("Manuf.") Is Nothing OrElse dr("Manuf.").Trim() = "" Then
+                                MfgID = "-"
+                            Else
+                                MfgID = dr("Manuf.").ToString()
+                            End If
+                        Catch ex As Exception
+                        End Try
+                        Try
+                            If dr("Manuf. Partnum") Is DBNull.Value OrElse dr("Manuf. Partnum") Is Nothing OrElse dr("Manuf. Partnum").Trim() = "" Then
+                                Mfg_Itm_ID = "-"
+                            Else
+                                Mfg_Itm_ID = dr("Manuf. Partnum").ToString()
+                            End If
+                        Catch ex As Exception
+                        End Try
+                        Try
+                            If dr("QTY") Is DBNull.Value OrElse dr("QTY") Is Nothing OrElse dr("QTY").Trim() = "" Then
+                                Qty = "-"
+                            Else
+                                Qty = dr("QTY").ToString()
+                            End If
+                        Catch ex As Exception
+                        End Try
+                        Try
+                            If dr("UOM") Is DBNull.Value OrElse dr("UOM") Is Nothing OrElse dr("UOM").Trim() = "" Then
+                                UOM = "-"
+                            Else
+                                UOM = dr("UOM").ToString()
+                            End If
+                        Catch ex As Exception
+                        End Try
+                        Try
+                            If dr("WorkOrder") Is DBNull.Value OrElse dr("WorkOrder") Is Nothing OrElse dr("WorkOrder").Trim() = "" Then
+                                WorkOrder = "-"
+                            Else
+                                WorkOrder = dr("WorkOrder").ToString()
+                            End If
+                        Catch ex As Exception
+                        End Try
+                        Try
+                            If dr("ChargeCode") Is DBNull.Value OrElse dr("ChargeCode") Is Nothing OrElse dr("ChargeCode").Trim() = "" Then
+                                ChargeCode = "-"
+                            Else
+                                ChargeCode = dr("ChargeCode").ToString()
+                            End If
+                        Catch ex As Exception
+                        End Try
+                        Try
+                            If dr("Alt. Partnum") Is DBNull.Value OrElse dr("Alt. Partnum") Is Nothing OrElse dr("Alt. Partnum").ToString().Trim() = "" Then
+                                AltpartNum = "-"
+                            Else
+                                AltpartNum = dr("Alt. Partnum").ToString()
+                            End If
+                        Catch ex As Exception
+                        End Try
+
+                        Try
+                            If IsECI(sBU) Then
+                                Try
+                                    If dr("Item PO Price") Is DBNull.Value OrElse dr("Item PO Price") Is Nothing OrElse dr("Item PO Price").Trim() = "" Then
+                                        POPrice = "-"
+                                    Else
+                                        POPrice = dr("Item PO Price").ToString()
+                                    End If
+                                Catch ex As Exception
+                                End Try
+                                Try
+                                    If dr("Item PO Ext. Price") Is DBNull.Value OrElse dr("Item PO Ext. Price") Is Nothing OrElse dr("Item PO Ext. Price").Trim() = "" Then
+                                        POExtPrice = "-"
+                                    Else
+                                        POExtPrice = dr("Item PO Ext. Price").ToString()
+                                    End If
+                                Catch ex As Exception
+                                End Try
+                            End If
+
+                            Try
+                                If dr("Item USD Price") Is DBNull.Value OrElse dr("Item USD Price") Is Nothing OrElse dr("Item USD Price").Trim() = "" Then
+                                    Price = "-"
+                                Else
+                                    Price = dr("Item USD Price").ToString()
+                                End If
+                            Catch ex As Exception
+                            End Try
+                            Try
+                                If dr("Ext. USD Price") Is DBNull.Value OrElse dr("Ext. USD Price") Is Nothing OrElse dr("Ext. USD Price").Trim() = "" Then
+                                    ExtPrice = "-"
+                                Else
+                                    ExtPrice = dr("Ext. USD Price").ToString()
+                                End If
+                            Catch ex As Exception
+                            End Try
+                        Catch ex As Exception
+                        End Try
+                        Try
+                            If sBU = "I0W01" Then
+                                Try
+                                    If dr("Supplier") Is DBNull.Value OrElse dr("Supplier") Is Nothing OrElse dr("Supplier").Trim() = "" Then
+                                        Supplier = "-"
+                                    Else
+                                        Supplier = dr("Supplier").ToString()
+                                    End If
+                                Catch ex As Exception
+                                End Try
+                                Try
+                                    If dr("Supplier Part Number") Is DBNull.Value OrElse dr("Supplier Part Number") Is Nothing OrElse dr("Supplier Part Number").Trim() = "" Then
+                                        SupplierPartNum = "-"
+                                    Else
+                                        SupplierPartNum = dr("Supplier Part Number").ToString()
+                                    End If
+                                Catch ex As Exception
+                                End Try
+                            End If
+                        Catch ex As Exception
+                        End Try
+
+                        Try
+                            content &= "<tr style='font-size: 13px;'>"
+                            content &= "<td style='width: 41%; padding: 0px 12px; vertical-align: top;'>"
+                            content &= "<p style=font-weight: 600; margin: 10px 0px;>Item ID :</p>"
+                            content &= "</td>"
+                            content &= "<td style='padding:0px 12px; '>"
+                            content &= "<p style= 'color: #595959; margin: 10px 0px;' >" & Item_ID & "</p>"
+                            content &= "</td>"
+                            content &= "</tr>"
+                            Try
+                                content &= "<tr style='font-size: 13px;'>"
+                                content &= "<td style='width: 41%; padding: 0px 12px; vertical-align: top;'>"
+                                content &= "<p style=font-weight: 600; margin: 10px 0px;>Description :</p>"
+                                content &= "</td>"
+                                content &= "<td style='padding:0px 12px; '>"
+                                content &= "<p style= 'color: #595959; margin: 10px 0px;'>" & Descr & "</p>"
+                                content &= "</td>"
+                                content &= "</tr>"
+
+                                content &= "<tr style='font-size: 13px;'>"
+                                content &= "<td style='width: 41%; padding: 0px 12px; vertical-align: top;'>"
+                                content &= "<p style=font-weight: 600; margin: 10px 0px;> Manufacturer :</p>"
+                                content &= "</td>"
+                                content &= "<td style='padding:0px 12px; '>"
+                                content &= "<p style= 'color: #595959; margin: 10px 0px;'>" & MfgID & "</p>"
+                                content &= "</td>"
+                                content &= "</tr>"
+                            Catch ex As Exception
+                            End Try
+                            Try
+                                content &= "<tr style='font-size: 13px;'>"
+                                content &= "<td style='width: 41%; padding: 0px 12px; vertical-align: top;'>"
+                                content &= "<p style=font-weight: 600; margin: 10px 0px;>Manufacturer part # :</p>"
+                                content &= "</td>"
+                                content &= "<td style='padding:0px 12px; '>"
+                                content &= "<p style= 'color: #595959; margin: 10px 0px;'>" & Mfg_Itm_ID & "</p>"
+                                content &= "</td>"
+                                content &= "</tr>"
+                            Catch ex As Exception
+                            End Try
+                            'if Alt part #
+                            Try
+                                content &= "<tr style='font-size: 13px;'>"
+                                content &= "<td style='width: 41%; padding: 0px 12px; vertical-align: top;'>"
+                                content &= "<p style=font-weight: 600; margin: 10px 0px;>Alternate part # :</p>"
+                                content &= "</td>"
+                                content &= "<td style='padding:0px 12px; '>"
+                                content &= "<p style= 'color: #595959; margin: 10px 0px;'>" & AltpartNum & "</p>"
+                                content &= "</td>"
+                                content &= "</tr>"
+                            Catch ex As Exception
+                            End Try
+                            Try
+                                content &= "<tr style='font-size: 13px;'>"
+                                content &= "<td style='width: 41%; padding: 0px 12px; vertical-align: top;'>"
+                                content &= "<p style=font-weight: 600; margin: 10px 0px;>Quantity :</p>"
+                                content &= "</td>"
+                                content &= "<td style='padding:0px 12px; '>"
+                                content &= "<p style= 'color: #595959; margin: 10px 0px;'>" & Qty & "</p>"
+                                content &= "</td>"
+                                content &= "</tr>"
+                            Catch ex As Exception
+                            End Try
+
+                            Try
+                                content &= "<tr style='font-size: 13px;'>"
+                                content &= "<td style='width: 41%; padding: 0px 12px; vertical-align: top;'>"
+                                content &= "<p style=font-weight: 600; margin: 10px 0px;>UOM :</p>"
+                                content &= "</td>"
+                                content &= "<td style='padding:0px 12px; '>"
+                                content &= "<p style= 'color: #595959; margin: 10px 0px;'>" & UOM & "</p>"
+                                content &= "</td>"
+                                content &= "</tr>"
+                            Catch ex As Exception
+
+                            End Try
+
+                            Try
+                                content &= "<tr style='font-size: 13px;'>"
+                                content &= "<td style='width: 41%; padding: 0px 12px; vertical-align: top;'>"
+                                content &= "<p style=font-weight: 600; margin: 10px 0px;>Price :</p>"
+                                content &= "</td>"
+                                content &= "<td style='padding:0px 12px; '>"
+                                content &= "<p style= 'color: #595959; margin: 10px 0px;'>" & "$" & Price & "</p>"
+                                content &= "</td>"
+                                content &= "</tr>"
+                            Catch ex As Exception
+                            End Try
+
+                            Try
+                                content &= "<tr style='font-size: 13px;'>"
+                                content &= "<td style='width: 41%; padding: 0px 12px; vertical-align: top;'>"
+                                content &= "<p style=font-weight: 600; margin: 10px 0px;>Ext. price :</p>"
+                                content &= "</td>"
+                                content &= "<td style='padding:0px 12px; '>"
+                                content &= "<p style= 'color: #595959; margin: 10px 0px;'>" & "$" & ExtPrice & "</p>"
+                                content &= "</td>"
+                                content &= "</tr>"
+                            Catch ex As Exception
+                            End Try
+
+
+                            Try
+                                If IsECI(sBU) Then
+                                    Try
+                                        content &= "<tr style='font-size: 13px;'>"
+                                        content &= "<td style='width: 41%; padding: 0px 12px; vertical-align: top;'>"
+                                        content &= "<p style=font-weight: 600; margin: 10px 0px;>Item PO Price:</p>"
+                                        content &= "</td>"
+                                        content &= "<td style='padding:0px 12px; '>"
+                                        content &= "<p style= 'color: #595959; margin: 10px 0px;'>" & POPrice & "</p>"
+                                        content &= "</td>"
+                                        content &= "</tr>"
+                                        content &= "<tr style='font-size: 13px;'>"
+                                        content &= "<td style='width: 41%; padding: 0px 12px; vertical-align: top;'>"
+                                        content &= "<p style=font-weight: 600; margin: 10px 0px;>Item PO Ext Price:</p>"
+                                        content &= "</td>"
+                                        content &= "<td style='padding:0px 12px; '>"
+                                        content &= "<p style= 'color: #595959; margin: 10px 0px;'>" & POExtPrice & "</p>"
+                                        content &= "</td>"
+                                        content &= "</tr>"
+                                    Catch ex As Exception
+
+                                    End Try
+
+                                End If
+                            Catch ex As Exception
+                            End Try
+
+                            Try
+                                If LineStatus = "QTW" Then
+                                    content &= "<tr style='font-size: 13px;'>"
+                                    content &= "<td style='width: 41%; padding: 0px 12px; vertical-align: top;'>"
+                                    content &= "<p style=font-weight: 600; margin: 10px 0px;>Work order :</p>"
+                                    content &= "</td>"
+                                    content &= "<td style='padding:0px 12px; '>"
+                                    content &= "<p style= 'color: #595959; margin: 10px 0px;'>" & WorkOrder & "</p>"
+                                    content &= "</td>"
+                                    content &= "</tr>"
+
+                                    content &= "<tr style='font-size: 13px;'>"
+                                    content &= "<td style='width: 41%; padding: 0px 12px; vertical-align: top;'>"
+                                    content &= "<p style=font-weight: 600; margin: 10px 0px;>Item Charge code :</p>"
+                                    content &= "</td>"
+                                    content &= "<td style='padding:0px 12px; '>"
+                                    content &= "<p style= 'color: #595959; margin: 10px 0px;'>" & ChargeCode & "</p>"
+                                    content &= "</td>"
+                                    content &= "</tr>"
+                                End If
+                            Catch ex As Exception
+                            End Try
+
+                            Try
+                                If sBU = "I0W01" Then
+                                    content &= "<tr style='font-size: 13px;'>"
+                                    content &= "<td style='width: 41%; padding: 0px 12px; vertical-align: top;'>"
+                                    content &= "<p style=font-weight: 600; margin: 10px 0px;>Supplier :</p>"
+                                    content &= "</td>"
+                                    content &= "<td style='padding:0px 12px; '>"
+                                    content &= "<p style= 'color: #595959; margin: 10px 0px;'>" & Supplier & "</p>"
+                                    content &= "</td>"
+                                    content &= "</tr>"
+
+                                    content &= "<tr style='font-size: 13px;'>"
+                                    content &= "<td style='width: 41%; padding: 0px 12px; vertical-align: top;'>"
+                                    content &= "<p style=font-weight: 600; margin: 10px 0px;>Supplier part # :</p>"
+                                    content &= "</td>"
+                                    content &= "<td style='padding:0px 12px; '>"
+                                    content &= "<p style= 'color: #595959; margin: 10px 0px;'>" & SupplierPartNum & "</p>"
+                                    content &= "</td>"
+                                    content &= "</tr>"
+                                End If
+                            Catch ex As Exception
+                            End Try
+
+                            If currentRow < totalRows - 1 Then
+                                content &= "<tr> <td colspan='2' style='border-bottom: #DFDFDF 1px solid;'></td> </tr>" & vbCrLf
+                            End If
+                            currentRow += 1
+
+                        Catch ex As Exception
+                        End Try
+                    Next
+                    Return content
+                End If
+            End If
+        Catch ex As Exception
+        End Try
+    End Function
+
+    Public Class OrderTotals
+        Private Shared Function GetOrderTotal(ByVal iBU As String, ByVal orderNo As String,
+        ByVal siteCurrency As sdiCurrency, bNSTKonly As Boolean) As Decimal
+            Dim currentApp As HttpApplication = HttpContext.Current.ApplicationInstance
+            Dim orderTotal As Decimal = 0
+            Try
+                Dim cn As New OleDbConnection(ORDBData.DbUrl)
+                cn.Open()
+                If cn.State = ConnectionState.Open Then
+                    Dim sql As String = ""
+                    'sql = "" & _
+                    '      "SELECT " & vbCrLf & _
+                    '      " INTFC.BUSINESS_UNIT_OM" & vbCrLf & _
+                    '      ",INTFC.BUSINESS_UNIT_BI" & vbCrLf & _
+                    '      ",INTFC.ORDER_NO" & vbCrLf & _
+                    '      ",INTFC.LINE_NBR" & vbCrLf & _
+                    '      ",INTFC.INV_ITEM_ID" & vbCrLf & _
+                    '      ",DECODE(D.CURRENCY_CD, NULL, '" & siteCurrency.Id & "', D.CURRENCY_CD) AS CURRENCY_CD" & vbCrLf & _
+                    '      ",DECODE(DECODE(D.PRICE_REQ, NULL, 0, D.PRICE_REQ), 0, INTFC.NET_UNIT_PRICE, D.PRICE_REQ) AS NET_UNIT_PRICE" & vbCrLf & _
+                    '      ",DECODE(DECODE(D.QTY_REQ, NULL, 0, D.QTY_REQ), 0, INTFC.QTY_REQ, D.QTY_REQ) AS QTY_REQ" & vbCrLf & _
+                    '      ",INTFC.ORDER_STATUS, D.ISA_SELL_PRICE " & vbCrLf & _
+                    '      "FROM " & vbCrLf & _
+                    '      " (" & vbCrLf & _
+                    '      "  SELECT" & vbCrLf & _
+                    '      "   A.BUSINESS_UNIT_OM" & vbCrLf & _
+                    '      "  ,C.BUSINESS_UNIT_BI" & vbCrLf & _
+                    '      "  ,A.ORDER_NO" & vbCrLf & _
+                    '      "  ,B.LINE_NBR" & vbCrLf & _
+                    '      "  ,A.ORDER_STATUS" & vbCrLf & _
+                    '      "  ,B.INV_ITEM_ID" & vbCrLf & _
+                    '      "  ,B.ISA_ORDER_STATUS" & vbCrLf & _
+                    '      "  ,B.QTY_REQ" & vbCrLf & _
+                    '      "  ,B.NET_UNIT_PRICE" & vbCrLf & _
+                    '      "  ,A.OPRID_ENTERED_BY" & vbCrLf & _
+                    '      "  ,A.OPRID_APPROVED_BY" & vbCrLf & _
+                    '      "  FROM PS_ISA_ORD_INTFC_H A" & vbCrLf & _
+                    '      "  ,PS_ISA_ORD_INTFC_L B" & vbCrLf & _
+                    '      "  ,PS_BUS_UNIT_TBL_OM C" & vbCrLf & _
+                    '      "  WHERE A.ISA_IDENTIFIER = B.ISA_PARENT_IDENT" & vbCrLf & _
+                    '      "    AND A.BUSINESS_UNIT_OM = C.BUSINESS_UNIT" & vbCrLf & _
+                    '      "    AND A.BUSINESS_UNIT_OM = '" & iBU & "' " & vbCrLf & _
+                    '      "    AND A.ORDER_NO = '" & orderNo & "' " & vbCrLf
+                    'If bNSTKonly Then
+                    '    sql = sql & _
+                    '        " AND NOT EXISTS (SELECT 'X'" & vbCrLf & _
+                    '        " FROM PS_INV_ITEMS C" & vbCrLf & _
+                    '        " WHERE C.EFFDT =" & vbCrLf & _
+                    '        " (SELECT MAX(C_ED.EFFDT) FROM PS_INV_ITEMS C_ED" & vbCrLf & _
+                    '        " WHERE(C.SETID = C_ED.SETID)" & vbCrLf & _
+                    '        " AND C.INV_ITEM_ID = C_ED.INV_ITEM_ID" & vbCrLf & _
+                    '        " AND C_ED.EFFDT <= SYSDATE)" & vbCrLf & _
+                    '        " AND C.INV_ITEM_ID = B.INV_ITEM_ID" & vbCrLf & _
+                    '        " AND C.INV_STOCK_TYPE = 'STK')" & vbCrLf
+                    'End If
+                    'sql = sql & " ) INTFC" & vbCrLf & _
+                    '      ",PS_REQ_LINE D" & vbCrLf & _
+                    '      "WHERE INTFC.ORDER_NO = D.REQ_ID (+)" & vbCrLf & _
+                    '      "  AND INTFC.LINE_NBR = D.LINE_NBR (+)" & vbCrLf & _
+                    '      "ORDER BY INTFC.BUSINESS_UNIT_OM" & vbCrLf & _
+                    '      ",INTFC.ORDER_NO" & vbCrLf & _
+                    '      ",INTFC.LINE_NBR" & vbCrLf & _
+                    '      ""
+
+                    'sql = "" & _
+                    '    "SELECT " & vbCrLf & _
+                    '    " INTFC.BUSINESS_UNIT_OM" & vbCrLf & _
+                    '    ",INTFC.BUSINESS_UNIT_BI" & vbCrLf & _
+                    '    ",INTFC.ORDER_NO" & vbCrLf & _
+                    '    ",INTFC.LINE_NBR" & vbCrLf & _
+                    '    ",INTFC.INV_ITEM_ID" & vbCrLf & _
+                    '    ",DECODE(D.CURRENCY_CD, NULL, '" & siteCurrency.Id & "', D.CURRENCY_CD) AS CURRENCY_CD" & vbCrLf & _
+                    '    ",DECODE(DECODE(D.PRICE_REQ, NULL, 0, D.PRICE_REQ), 0, INTFC.NET_UNIT_PRICE, D.PRICE_REQ) AS NET_UNIT_PRICE" & vbCrLf & _
+                    '    ",DECODE(DECODE(D.QTY_REQ, NULL, 0, D.QTY_REQ), 0, INTFC.QTY_REQ, D.QTY_REQ) AS QTY_REQ" & vbCrLf & _
+                    '    ",INTFC.ORDER_STATUS, D.ISA_SELL_PRICE " & vbCrLf & _
+                    '    "FROM " & vbCrLf & _
+                    '    " (" & vbCrLf & _
+                    '    "  SELECT" & vbCrLf & _
+                    '    "   A.BUSINESS_UNIT_OM" & vbCrLf & _
+                    '    "  ,C.BUSINESS_UNIT_BI" & vbCrLf & _
+                    '    "  ,A.ORDER_NO" & vbCrLf & _
+                    '    "  ,B.LINE_NBR" & vbCrLf & _
+                    '    "  ,A.ORDER_STATUS" & vbCrLf & _
+                    '    "  ,B.INV_ITEM_ID" & vbCrLf & _
+                    '    "  ,B.ISA_ORDER_STATUS" & vbCrLf & _
+                    '    "  ,B.QTY_REQ" & vbCrLf & _
+                    '    "  ,B.NET_UNIT_PRICE" & vbCrLf & _
+                    '    "  ,A.OPRID_ENTERED_BY" & vbCrLf & _
+                    '    "  ,A.OPRID_APPROVED_BY" & vbCrLf & _
+                    '    "  FROM PS_ISA_ORD_INTFC_H A" & vbCrLf & _
+                    '    "  ,PS_ISA_ORD_INTFC_L B" & vbCrLf & _
+                    '    "  ,PS_BUS_UNIT_TBL_OM C" & vbCrLf & _
+                    '    "  WHERE A.ISA_IDENTIFIER = B.ISA_PARENT_IDENT" & vbCrLf & _
+                    '    "    AND A.BUSINESS_UNIT_OM = C.BUSINESS_UNIT" & vbCrLf & _
+                    '    "    AND A.BUSINESS_UNIT_OM = '" & iBU & "' " & vbCrLf & _
+                    '    "    AND A.ORDER_NO = '" & orderNo & "' " & vbCrLf
+                    'If bNSTKonly Then
+                    '    sql = sql & _
+                    '        " AND NOT EXISTS (SELECT 'X'" & vbCrLf & _
+                    '        " FROM PS_INV_ITEMS C" & vbCrLf & _
+                    '        " WHERE C.EFFDT =" & vbCrLf & _
+                    '        " (SELECT MAX(C_ED.EFFDT) FROM PS_INV_ITEMS C_ED" & vbCrLf & _
+                    '        " WHERE(C.SETID = C_ED.SETID)" & vbCrLf & _
+                    '        " AND C.INV_ITEM_ID = C_ED.INV_ITEM_ID" & vbCrLf & _
+                    '        " AND C_ED.EFFDT <= SYSDATE)" & vbCrLf & _
+                    '        " AND C.INV_ITEM_ID = B.INV_ITEM_ID" & vbCrLf & _
+                    '        " AND C.INV_STOCK_TYPE = 'STK')" & vbCrLf
+                    'End If
+                    'sql = sql & " ) INTFC" & vbCrLf & _
+                    '      ",PS_REQ_LINE D" & vbCrLf & _
+                    '      "WHERE INTFC.ORDER_NO = D.REQ_ID (+)" & vbCrLf & _
+                    '      "  AND INTFC.LINE_NBR = D.LINE_NBR (+)" & vbCrLf & _
+                    '      "ORDER BY INTFC.BUSINESS_UNIT_OM" & vbCrLf & _
+                    '      ",INTFC.ORDER_NO" & vbCrLf & _
+                    '      ",INTFC.LINE_NBR" & vbCrLf & _
+                    '      ""
+
+
+                    ' PeopleSoft 9.2 Changes
+
+                    sql = "" &
+                   "SELECT " & vbCrLf &
+                   " INTFC.BUSINESS_UNIT_OM" & vbCrLf &
+                   ",INTFC.BUSINESS_UNIT_BI" & vbCrLf &
+                   ",INTFC.ORDER_NO" & vbCrLf &
+                   ",INTFC.ISA_INTFC_LN" & vbCrLf &
+                   ",INTFC.INV_ITEM_ID" & vbCrLf &
+                   ",DECODE(D.CURRENCY_CD, NULL, '" & siteCurrency.Id & "', D.CURRENCY_CD) AS CURRENCY_CD" & vbCrLf &
+                   ",DECODE(DECODE(D.PRICE_REQ, NULL, 0, D.PRICE_REQ), 0, INTFC.ISA_SELL_PRICE, D.PRICE_REQ) AS NET_UNIT_PRICE" & vbCrLf &
+                   ",DECODE(DECODE(D.QTY_REQ, NULL, 0, D.QTY_REQ), 0, INTFC.QTY_REQUESTED, D.QTY_REQ) AS QTY_REQ" & vbCrLf &
+                   ",INTFC.ORDER_STATUS, ISA_SELL_PRICE " & vbCrLf &
+                   "FROM " & vbCrLf &
+                   " (" & vbCrLf &
+                   "  SELECT" & vbCrLf &
+                   "   A.BUSINESS_UNIT_OM" & vbCrLf &
+                   "  ,C.BUSINESS_UNIT_BI" & vbCrLf &
+                   "  ,A.ORDER_NO" & vbCrLf &
+                   "  ,B.ISA_INTFC_LN" & vbCrLf &
+                   "  ,A.ORDER_STATUS" & vbCrLf &
+                   "  ,B.INV_ITEM_ID" & vbCrLf &
+                   "  ,B.ISA_LINE_STATUS" & vbCrLf &
+                   "  ,B.QTY_REQUESTED" & vbCrLf &
+                   "  ,B.ISA_SELL_PRICE" & vbCrLf &
+                   "  ,B.OPRID_ENTERED_BY" & vbCrLf &
+                   "  ,B.OPRID_APPROVED_BY" & vbCrLf &
+                   "  FROM SYSADM8.PS_ISA_ORD_INTF_HD A" & vbCrLf &
+                   "  ,SYSADM8.PS_ISA_ORD_INTF_LN B" & vbCrLf &
+                   "  ,PS_BUS_UNIT_TBL_OM C" & vbCrLf &
+                   "  WHERE A.ORDER_NO = B.ORDER_NO" & vbCrLf &
+                   "    AND A.BUSINESS_UNIT_OM = C.BUSINESS_UNIT" & vbCrLf &
+                   "    AND A.BUSINESS_UNIT_OM = '" & iBU & "' " & vbCrLf &
+                   "    AND A.ORDER_NO = '" & orderNo & "' " & vbCrLf
+                    If bNSTKonly Then
+                        sql = sql &
+                        " AND NOT EXISTS (SELECT 'X'" & vbCrLf &
+                        " FROM PS_INV_ITEMS C" & vbCrLf &
+                        " WHERE C.EFFDT =" & vbCrLf &
+                        " (SELECT MAX(C_ED.EFFDT) FROM PS_INV_ITEMS C_ED" & vbCrLf &
+                        " WHERE(C.SETID = C_ED.SETID)" & vbCrLf &
+                        " AND C.INV_ITEM_ID = C_ED.INV_ITEM_ID" & vbCrLf &
+                        " AND C_ED.EFFDT <= SYSDATE)" & vbCrLf &
+                        " AND C.INV_ITEM_ID = B.INV_ITEM_ID" & vbCrLf &
+                        " AND C.INV_STOCK_TYPE = 'STK')" & vbCrLf
+                    End If
+                    sql = sql & " ) INTFC" & vbCrLf &
+                      ",PS_REQ_LINE D" & vbCrLf &
+                      "WHERE INTFC.ORDER_NO = D.REQ_ID (+)" & vbCrLf &
+                      "  AND INTFC.ISA_INTFC_LN = D.LINE_NBR (+)" & vbCrLf &
+                      "ORDER BY INTFC.BUSINESS_UNIT_OM" & vbCrLf &
+                      ",INTFC.ORDER_NO" & vbCrLf &
+                      ",INTFC.ISA_INTFC_LN" & vbCrLf &
+                      ""
+                    Dim ds As DataSet = ORDBData.GetAdapter(sql)
+                    'currentApp.Session("sesds") = ds
+
+
+                    Dim cmd As OleDbCommand = cn.CreateCommand
+                    cmd.CommandText = sql
+                    cmd.CommandType = CommandType.Text
+                    Dim rdr As OleDbDataReader = Nothing
+                    Try
+                        rdr = cmd.ExecuteReader
+                    Catch ex As Exception
+                    End Try
+                    If Not (rdr Is Nothing) Then
+                        Dim sdiItemId As String = ""
+                        Dim itm As sdiItem = Nothing
+                        Dim prc As sdiItemPrice = Nothing
+                        Dim qty As Decimal = 0
+                        Dim unitPrice As Decimal = 0
+                        Dim itemCurrencyCd As String = ""
+                        Dim convRate As sdiConversionRate = Nothing
+                        Dim convUnitPrice As Decimal = 0
+                        Dim bGetNonAEESPrice As Boolean = True
+                        Dim sOrderStatus As String = ""
+                        Dim decSellPrice As Decimal = 0
+                        While rdr.Read
+                            sdiItemId = ""
+                            Try
+                                sdiItemId = CStr(rdr("INV_ITEM_ID")).Trim.ToUpper
+                            Catch ex As Exception
+                            End Try
+                            If sdiItemId.Length > 0 Then
+                                itm = sdiItem.GetItemInfo(sdiItemId)
+                            Else
+                                itm = New sdiItem(sdiItemId, "")
+                            End If
+                            itm.IBusinessUnit = iBU
+                            qty = 0
+                            Try
+                                'qty = CDec(rdr("QTY_REQUESTED"))
+                                qty = CDec(rdr("QTY_REQ"))
+                            Catch ex As Exception
+                            End Try
+                            unitPrice = 0
+                            Try
+                                sOrderStatus = CStr(rdr("ORDER_STATUS"))
+                                If sOrderStatus.Trim.ToUpper = "Q" Then
+                                    decSellPrice = CDec(rdr("ISA_SELL_PRICE"))
+                                    If decSellPrice > 0 Then
+                                        unitPrice = decSellPrice
+                                    Else
+                                        unitPrice = CDec(rdr("ISA_SELL_PRICE"))
+                                    End If
+                                Else
+                                    unitPrice = CDec(rdr("ISA_SELL_PRICE"))
+                                End If
+                            Catch ex As Exception
+                            End Try
+                            itemCurrencyCd = ""
+                            Try
+                                itemCurrencyCd = CStr(rdr("CURRENCY_CD"))
+                            Catch ex As Exception
+                            End Try
+                            If itm.Id.Length > 0 Then
+                                prc = itm.GetItemPrice
+                            Else
+                                prc = New sdiItemPrice(unitPrice, New sdiCurrency(itemCurrencyCd, ""))
+                            End If
+                            ' conversion rate
+                            'convRate = sdiMultiCurrency.getConversionRate(itemCurrencyCd, _
+                            '                                              unitPrice, _
+                            '                                              m_siteCurrency.Id)
+                            ' to speed up the load of the orders on the initial screen when all the orders are displayed
+                            ' the reason why all the orders are displayed with price total is so they can approve all the orders at once
+                            ' the problem is that when you have multiple lines on a stock order there is a call to the currency web-service
+                            ' everytime which is a killer.  In this code we want to see if we already have the currency multiplier or if
+                            ' we need to call the service at all.
+                            ' if we grab it once per order it will correct the timeout issue at AEES and life will be good again South of the border
+                            ' and we can all go on a siesta!!!!! Pitchers of Corona for all!
+                            'convRate = sdiMultiCurrency.getConversionRate(prc.Currency.Id, _
+                            '                                              prc.UnitPrice, _
+                            '                                              m_siteCurrency.Id)
+                            bGetNonAEESPrice = True
+                            Dim decPrice As Decimal
+                            Dim str1 As String = iBU
+                            If OrderApprovals.IsAEES(iBU) And Trim(sdiItemId) <> "" Then
+                                Try
+                                    decPrice = CType(GetPriceFromSDiExPrice(sdiItemId), Decimal)
+                                    bGetNonAEESPrice = False
+                                Catch ex As Exception
+                                End Try
+                            End If
+                            If bGetNonAEESPrice Then
+                                decPrice = unitPrice
+                                'decPrice = prc.UnitPrice
+                            End If
+
+                            If convRate Is Nothing Then
+                                convRate = sdiMultiCurrency.getConversionRate(prc.Currency.Id,
+                                                                          decPrice,
+                                                                          siteCurrency.Id)
+                            Else
+                                If convRate.SourceCurrencyCode = prc.Currency.Id _
+                            And convRate.TargetCurrencyCode = siteCurrency.Id _
+                            And convRate.Multiplier <> 0 Then
+                                    convRate.SourceAmount = decPrice
+                                    convRate.ConvertedAmount = decPrice * convRate.Multiplier / convRate.Divider
+                                Else
+                                    convRate = sdiMultiCurrency.getConversionRate(prc.Currency.Id,
+                                                                          decPrice,
+                                                                          siteCurrency.Id)
+                                End If
+                            End If
+
+
+                            ' line total
+                            convUnitPrice = Math.Round(convRate.ConvertedAmount, 2)
+                            ' accumulate grand total
+                            orderTotal += (convUnitPrice * qty)
+                        End While
+                    End If
+                    Try
+                        rdr.Close()
+                    Catch ex As Exception
+                    Finally
+                        rdr = Nothing
+                    End Try
+                    Try
+                        cmd.Dispose()
+                    Catch ex As Exception
+                    Finally
+                        cmd = Nothing
+                    End Try
+                Else
+                    ' no database connection
+                    ' ...192.168.253.17
+                End If
+                Try
+                    cn.Close()
+                    cn.Dispose()
+                Catch ex As Exception
+                Finally
+                    cn = Nothing
+                End Try
+            Catch ex As Exception
+            End Try
+            Return (orderTotal)
+        End Function
+        Public Shared Function getOrderTotalMail(ByVal Ibu As String, ByVal orderNo As String,
+        ByVal siteCurrency As sdiCurrency, sNSTKOnly As String, strType As String, Optional ByVal intLnID As String = "", Optional ByVal IsAscendLogic As String = "") As Decimal
+
+            Dim orderTotal As Decimal = 0
+            Dim lineStatus As String = ""
+            'Dim currentApp As HttpApplication = HttpContext.Current.ApplicationInstance
+            '' To retrun the order total based on the line status.
+
+
+            Try
+                Dim cn As New OleDbConnection(ORDBData.DbUrl)
+                cn.Open()
+                If cn.State = ConnectionState.Open Then
+                    Dim sql As String = ""
+                    Dim ECIBoolean As Boolean = True
+
+                    If IsAscendLogic <> "Y" Then
+                        sql = "" &
+                      "SELECT " & vbCrLf &
+                      " INTFC.BUSINESS_UNIT_OM" & vbCrLf &
+                      ",INTFC.BUSINESS_UNIT_BI" & vbCrLf &
+                      ",INTFC.ORDER_NO" & vbCrLf &
+                      ",INTFC.ISA_INTFC_LN, INTFC.NET_UNIT_PRICE AS NET_UNT_PRC_NOT_AEES" & vbCrLf &
+                      ",INTFC.INV_ITEM_ID, F.INV_ITEM_TYPE, F.INV_STOCK_TYPE" & vbCrLf
+                        If IsECI(Ibu, ECIBoolean) Then
+                            sql = sql &
+                    ",DECODE(TRIM(F.CURRENCY_CD), NULL, D.CURRENCY_CD, F.CURRENCY_CD) AS CURRENCY_CD" & vbCrLf &
+                      ",DECODE(DECODE(INTFC.NET_UNIT_PRICE,null, 0,INTFC.NET_UNIT_PRICE),INTFC.NET_UNIT_PRICE, D.PRICE_REQ) AS NET_UNIT_PRICE" & vbCrLf
+                        Else
+                            sql = sql &
+                      ",DECODE(TRIM(P.CURRENCY_CD), NULL, DECODE(TRIM(F.CURRENCY_CD), NULL, D.CURRENCY_CD, F.CURRENCY_CD), P.CURRENCY_CD) AS CURRENCY_CD" & vbCrLf &
+                      ",DECODE(D.PRICE_REQ, NULL, DECODE(P.PRICE, NULL, INTFC.NET_UNIT_PRICE, P.PRICE), D.PRICE_REQ) AS NET_UNIT_PRICE" & vbCrLf
+                        End If
+                        sql = sql & ",DECODE(DECODE(D.QTY_REQ, NULL, 0, D.QTY_REQ), 0, D.QTY_REQ, INTFC.QTY_REQUESTED) AS QTY_REQUESTED" & vbCrLf &
+                      "FROM " & vbCrLf &
+                      " (" & vbCrLf &
+                      "  SELECT" & vbCrLf &
+                      "   A.BUSINESS_UNIT_OM" & vbCrLf &
+                      "  ,C.BUSINESS_UNIT_BI" & vbCrLf &
+                      "  ,A.ORDER_NO" & vbCrLf &
+                      "  ,B.ISA_INTFC_LN" & vbCrLf &
+                      "  ,A.ORDER_STATUS" & vbCrLf &
+                      "  ,B.INV_ITEM_ID" & vbCrLf &
+                      "  ,B.ISA_LINE_STATUS" & vbCrLf &
+                      "  ,B.QTY_REQUESTED" & vbCrLf &
+                      "  ,B.ISA_SELL_PRICE AS NET_UNIT_PRICE" & vbCrLf &
+                      "  ,B.OPRID_ENTERED_BY" & vbCrLf &
+                      "  ,B.OPRID_APPROVED_BY" & vbCrLf &
+                      "  FROM SYSADM8.PS_ISA_ORD_INTF_HD A" & vbCrLf &
+                      "  ,SYSADM8.PS_ISA_ORD_INTF_LN B" & vbCrLf &
+                      "  ,PS_BUS_UNIT_TBL_OM C" & vbCrLf &
+                      "  WHERE A.ORDER_NO = B.ORDER_NO" & vbCrLf &
+                      "    AND A.BUSINESS_UNIT_OM = C.BUSINESS_UNIT" & vbCrLf &
+                      "    AND A.BUSINESS_UNIT_OM = '" & Ibu & "' " & vbCrLf &
+                      "    AND A.ORDER_NO = '" & orderNo & "' " & vbCrLf &
+                      "   AND B.ISA_LINE_STATUS IN ('QTS','QTW') " & vbCrLf
+                        If intLnID <> "" Then
+                            sql = sql &
+                        "    AND B.ISA_INTFC_LN IN (" & intLnID & ") " & vbCrLf
+                        End If
+
+                        If sNSTKOnly Then
+                            sql = sql &
+                            " AND NOT EXISTS (SELECT 'X'" & vbCrLf &
+                            " FROM PS_INV_ITEMS C" & vbCrLf &
+                            " WHERE C.EFFDT =" & vbCrLf &
+                            " (SELECT MAX(C_ED.EFFDT) FROM PS_INV_ITEMS C_ED" & vbCrLf &
+                            " WHERE(C.SETID = C_ED.SETID)" & vbCrLf &
+                            " AND C.INV_ITEM_ID = C_ED.INV_ITEM_ID" & vbCrLf &
+                            " AND C_ED.EFFDT <= SYSDATE)" & vbCrLf &
+                            " AND C.INV_ITEM_ID = B.INV_ITEM_ID" & vbCrLf &
+                            " AND C.INV_STOCK_TYPE = 'STK')" & vbCrLf
+                        End If
+
+                        '20171026 - removed INTFC.BUSINESS_UNIT_BI = D.BUSINESS_UNIT (+)" & vbCrLf & _
+                        sql = sql & " ) INTFC" & vbCrLf &
+                       ",PS_REQ_LINE D" & vbCrLf &
+                       ",SYSADM8.PS_ISA_SDIEX_PRCBU P, SYSADM8.PS_ISA_REQ_BI_INFO F " & vbCrLf &
+                       "WHERE INTFC.ORDER_NO = D.REQ_ID (+)" & vbCrLf &
+                       "  AND INTFC.ISA_INTFC_LN = D.LINE_NBR (+)" & vbCrLf &
+                       "  AND TRIM(INTFC.INV_ITEM_ID) = P.INV_ITEM_ID(+) " & vbCrLf &
+                       " AND D.BUSINESS_UNIT = F.BUSINESS_UNIT (+) " & vbCrLf &
+                       " AND D.REQ_ID = F.REQ_ID (+) " & vbCrLf &
+                       " AND D.LINE_NBR = F.LINE_NBR (+) " & vbCrLf &
+                        "AND INTFC.BUSINESS_UNIT_OM = P.BUSINESS_UNIT (+) " & vbCrLf &
+                       "ORDER BY INTFC.BUSINESS_UNIT_OM" & vbCrLf &
+                       ",INTFC.ORDER_NO" & vbCrLf &
+                       ",INTFC.ISA_INTFC_LN" & vbCrLf &
+                       ""
+                    Else
+                        sql = "" &
+                      "SELECT " & vbCrLf &
+                      " INTFC.BUSINESS_UNIT_OM" & vbCrLf &
+                      ",INTFC.BUSINESS_UNIT_BI" & vbCrLf &
+                      ",INTFC.ORDER_NO" & vbCrLf &
+                      ",INTFC.ISA_INTFC_LN, INTFC.NET_UNIT_PRICE AS NET_UNT_PRC_NOT_AEES" & vbCrLf &
+                      ",INTFC.INV_ITEM_ID, F.INV_ITEM_TYPE, F.INV_STOCK_TYPE" & vbCrLf
+                        If IsECI(Ibu, ECIBoolean) Then
+                            sql = sql &
+                    ",DECODE(TRIM(F.CURRENCY_CD), NULL, D.CURRENCY_CD, F.CURRENCY_CD) AS CURRENCY_CD" & vbCrLf &
+                      ",DECODE(DECODE(INTFC.NET_UNIT_PRICE,null, 0,INTFC.NET_UNIT_PRICE),INTFC.NET_UNIT_PRICE, D.PRICE_REQ) AS NET_UNIT_PRICE" & vbCrLf
+                        Else
+                            sql = sql &
+                      ",DECODE(TRIM(P.CURRENCY_CD), NULL, DECODE(TRIM(F.CURRENCY_CD), NULL, D.CURRENCY_CD, F.CURRENCY_CD), P.CURRENCY_CD) AS CURRENCY_CD" & vbCrLf &
+                      ",DECODE(D.PRICE_REQ, NULL, DECODE(P.PRICE, NULL, INTFC.NET_UNIT_PRICE, P.PRICE), D.PRICE_REQ) AS NET_UNIT_PRICE" & vbCrLf
+                        End If
+                        sql = sql & ",DECODE(DECODE(D.QTY_REQ, NULL, 0, D.QTY_REQ), 0, D.QTY_REQ, INTFC.QTY_REQUESTED) AS QTY_REQUESTED" & vbCrLf &
+                      "FROM " & vbCrLf &
+                      " (" & vbCrLf &
+                      "  SELECT" & vbCrLf &
+                      "   A.BUSINESS_UNIT_OM" & vbCrLf &
+                      "  ,C.BUSINESS_UNIT_BI" & vbCrLf &
+                      "  ,A.ORDER_NO" & vbCrLf &
+                      "  ,B.ISA_INTFC_LN" & vbCrLf &
+                      "  ,A.ORDER_STATUS" & vbCrLf &
+                      "  ,B.INV_ITEM_ID" & vbCrLf &
+                      "  ,B.ISA_LINE_STATUS" & vbCrLf &
+                      "  ,B.QTY_REQUESTED" & vbCrLf &
+                      "  ,B.ISA_SELL_PRICE AS NET_UNIT_PRICE" & vbCrLf &
+                      "  ,B.OPRID_ENTERED_BY" & vbCrLf &
+                      "  ,B.OPRID_APPROVED_BY" & vbCrLf &
+                      "  FROM SYSADM8.PS_ISA_ORD_INTF_HD A" & vbCrLf &
+                      "  ,SYSADM8.PS_ISA_ORD_INTF_LN B" & vbCrLf &
+                      "  ,PS_BUS_UNIT_TBL_OM C" & vbCrLf &
+                      "  WHERE A.ORDER_NO = B.ORDER_NO" & vbCrLf &
+                      "    AND A.BUSINESS_UNIT_OM = C.BUSINESS_UNIT" & vbCrLf &
+                      "    AND A.BUSINESS_UNIT_OM = '" & Ibu & "' " & vbCrLf &
+                      "    AND A.ORDER_NO = '" & orderNo & "' " & vbCrLf
+                        If intLnID <> "" Then
+                            sql = sql &
+                        "    AND B.ISA_INTFC_LN IN (" & intLnID & ") " & vbCrLf
+                        End If
+
+                        If sNSTKOnly Then
+                            sql = sql &
+                            " AND NOT EXISTS (SELECT 'X'" & vbCrLf &
+                            " FROM PS_INV_ITEMS C" & vbCrLf &
+                            " WHERE C.EFFDT =" & vbCrLf &
+                            " (SELECT MAX(C_ED.EFFDT) FROM PS_INV_ITEMS C_ED" & vbCrLf &
+                            " WHERE(C.SETID = C_ED.SETID)" & vbCrLf &
+                            " AND C.INV_ITEM_ID = C_ED.INV_ITEM_ID" & vbCrLf &
+                            " AND C_ED.EFFDT <= SYSDATE)" & vbCrLf &
+                            " AND C.INV_ITEM_ID = B.INV_ITEM_ID" & vbCrLf &
+                            " AND C.INV_STOCK_TYPE = 'STK')" & vbCrLf
+                        End If
+
+                        '20171026 - removed INTFC.BUSINESS_UNIT_BI = D.BUSINESS_UNIT (+)" & vbCrLf & _
+                        sql = sql & " ) INTFC" & vbCrLf &
+                       ",PS_REQ_LINE D" & vbCrLf &
+                       ",SYSADM8.PS_ISA_SDIEX_PRCBU P, SYSADM8.PS_ISA_REQ_BI_INFO F " & vbCrLf &
+                       "WHERE INTFC.ORDER_NO = D.REQ_ID (+)" & vbCrLf &
+                       "  AND INTFC.ISA_INTFC_LN = D.LINE_NBR (+)" & vbCrLf &
+                       "  AND TRIM(INTFC.INV_ITEM_ID) = P.INV_ITEM_ID(+) " & vbCrLf &
+                       " AND D.BUSINESS_UNIT = F.BUSINESS_UNIT (+) " & vbCrLf &
+                       " AND D.REQ_ID = F.REQ_ID (+) " & vbCrLf &
+                       " AND D.LINE_NBR = F.LINE_NBR (+) " & vbCrLf &
+                        "AND INTFC.BUSINESS_UNIT_OM = P.BUSINESS_UNIT (+) " & vbCrLf &
+                       "ORDER BY INTFC.BUSINESS_UNIT_OM" & vbCrLf &
+                       ",INTFC.ORDER_NO" & vbCrLf &
+                       ",INTFC.ISA_INTFC_LN" & vbCrLf &
+                       ""
+                    End If
+                    Try
+                        Dim ds As DataSet = ORDBData.GetAdapter(sql)
+                        'currentApp.Session("sesds") = ds
+                    Catch ex As Exception
+
+                    End Try
+
+                    Dim cmd As OleDbCommand = cn.CreateCommand
+                    cmd.CommandText = sql
+                    cmd.CommandType = CommandType.Text
+                    Dim rdr As OleDbDataReader = Nothing
+                    Try
+                        rdr = cmd.ExecuteReader
+                    Catch ex As Exception
+                    End Try
+                    If Not (rdr Is Nothing) Then
+                        Dim sdiItemId As String = ""
+                        Dim qty As Decimal = 0
+                        Dim unitPrice As Decimal = 0
+                        Dim itemCurrencyCd As String = ""
+                        Dim convRate As sdiConversionRate = Nothing
+                        Dim convUnitPrice As Decimal = 0
+                        While rdr.Read
+                            sdiItemId = ""
+                            Try
+                                sdiItemId = CStr(rdr("INV_ITEM_ID")).Trim.ToUpper
+                            Catch ex As Exception
+                            End Try
+                            qty = 0
+                            Try
+                                qty = CDec(rdr("QTY_REQUESTED"))
+                            Catch ex As Exception
+                            End Try
+                            unitPrice = 0
+                            Try
+                                unitPrice = CDec(rdr("NET_UNIT_PRICE"))
+                            Catch ex As Exception
+                            End Try
+                            itemCurrencyCd = ""
+                            Try
+                                itemCurrencyCd = CStr(rdr("CURRENCY_CD"))
+                            Catch ex As Exception
+                            End Try
+
+                            '' item type
+
+                            ' itemType - Container.Dataitem("INV_ITEM_TYPE")
+
+                            Dim itmType As String = ""
+                            Try
+                                itmType = CStr(rdr("INV_ITEM_TYPE")).Trim.ToUpper
+                            Catch ex As Exception
+                                itmType = ""
+                            End Try
+                            '' item stock type
+                            Dim itmStockType As String = ""
+
+                            ' stockType - Container.Dataitem("INV_STOCK_TYPE")
+
+                            Try
+                                itmStockType = CStr(rdr("INV_STOCK_TYPE")).Trim.ToUpper
+                            Catch ex As Exception
+                                itmStockType = ""
+                            End Try
+
+                            If Not IsAEES(Ibu) Then
+                                unitPrice = CDec(rdr("NET_UNT_PRC_NOT_AEES"))
+                            Else
+                                Dim bGetNonAEESPrice As Boolean = True
+                                If IsAEES(Ibu) And Trim(sdiItemId) <> "" Then
+                                    Try
+                                        If Not IsECI(Ibu, ECIBoolean) Then
+                                            Dim strNewPrice As String = GetPriceFromSDiExPrice(sdiItemId, "NO")
+                                            unitPrice = CType(strNewPrice, Decimal)
+                                        End If
+                                        bGetNonAEESPrice = False
+
+                                    Catch ex As Exception
+
+                                    End Try
+                                End If
+                                If bGetNonAEESPrice Then
+
+
+                                    unitPrice = QuoteNonStockProcessor.ApplyMarkup(unitPrice, itmType, itmStockType, Ibu)
+
+                                End If
+                            End If
+
+                            Dim decPrice As Decimal
+                            decPrice = unitPrice
+
+                            If convRate Is Nothing Then
+                                convRate = sdiMultiCurrency.getConversionRate(itemCurrencyCd,
+                                                                          decPrice,
+                                                                          siteCurrency.Id)
+                            Else
+                                If convRate.SourceCurrencyCode = itemCurrencyCd _
+                            And convRate.TargetCurrencyCode = siteCurrency.Id _
+                            And convRate.Multiplier <> 0 Then
+                                    convRate.SourceAmount = decPrice
+                                    convRate.ConvertedAmount = decPrice * convRate.Multiplier / convRate.Divider
+                                Else
+                                    convRate = sdiMultiCurrency.getConversionRate(itemCurrencyCd,
+                                                                          decPrice,
+                                                                          siteCurrency.Id)
+                                End If
+                            End If
+
+
+                            '' line total
+                            'convUnitPrice = Math.Round(convRate.ConvertedAmount, 2)
+                            ' accumulate grand total
+                            orderTotal += Math.Round(convRate.ConvertedAmount * qty, 2)
+                        End While
+                    End If
+                    Try
+                        rdr.Close()
+                    Catch ex As Exception
+                    Finally
+                        rdr = Nothing
+                    End Try
+                    Try
+                        cmd.Dispose()
+                    Catch ex As Exception
+                    Finally
+                        cmd = Nothing
+                    End Try
+                Else
+                    ' no database connection
+                    ' ...192.168.253.17
+                End If
+                Try
+                    cn.Close()
+                    cn.Dispose()
+                Catch ex As Exception
+                Finally
+                    cn = Nothing
+                End Try
+            Catch ex As Exception
+            End Try
+
+            Return (orderTotal)
+        End Function
+
+    End Class
+
+    Public Shared Function GetPriceFromSDiExPrice(ByVal strItemID As String, Optional ByVal strToCheck As String = "YES") As String
+        ' Note: This function was moved here from clsShoppingCart.vb and renamed from GetNewPrice.
+
+        ' Purpose: Retrieves the price from the new price table for the given item ID.
+        ' Adds the site prefix to the item ID if needed before executing the query.
+        ' Return value is formatted to 2 decimal places. If a valid value is not read
+        ' from the table, defaults to zero.
+
+        Dim currentApp As HttpApplication = HttpContext.Current.ApplicationInstance
+        Dim strDBPrice As String = ""
+        Dim ds As DataSet
+        Dim bGotPrice As Boolean = False
+
+        'do lookup using item ID with prefix so make sure item ID has prefix
+        If Not strItemID.Substring(0, 3) = currentApp.Session("ITEMMODE") Then
+            If strToCheck = "YES" Then
+                strItemID = PrependSitePrefix(currentApp.Session("ITEMMODE"), strItemID, currentApp.Session("SITEPREFIX"))
+            End If
+        End If
+
+        ds = GetDataFromSDiExPrice(strItemID)
+        Try
+            If ds.Tables(0).Rows.Count > 0 Then
+                strDBPrice = ds.Tables(0).Rows(0).Item("PRICE")
+                If strDBPrice IsNot Nothing Then
+                    If IsNumeric(strDBPrice) Then
+                        If CType(strDBPrice, Decimal) > 0 Then
+                            bGotPrice = True
+                        End If
+                    End If
+                End If
+            End If
         Catch ex As Exception
 
         End Try
+
+        If Not bGotPrice Then
+            strDBPrice = "0.00"
+        End If
+
+        strDBPrice = String.Format("{0:####,###,##0.0000}", CType(strDBPrice, Decimal))
+
+        Return strDBPrice
+
     End Function
+
+    Public Shared Function GetDataFromSDiExPrice(ByVal strItemIDs As String) As DataSet
+
+        Dim currentApp As HttpApplication = HttpContext.Current.ApplicationInstance
+        Dim sBusUnit As String = currentApp.Session("BUSUNIT")
+
+        If (strItemIDs Is Nothing) Then
+            strItemIDs = ""
+        End If
+
+        Dim ds As DataSet = Nothing
+
+        strItemIDs = strItemIDs.Replace("'", "")
+
+        Dim sList As String = ""
+        Dim itemList As String() = strItemIDs.Trim.Split(","c)
+
+        For Each s As String In itemList
+            If (s.Trim.Length > 0) Then
+                sList &= "'" & s.Trim & "',"
+            End If
+        Next
+
+        sList = sList.TrimEnd(",")
+        If (sList.Trim.Length = 0) Then
+            ' just so the query below does not grab any unwanted item/s' price/qty and currency if passed value is blank
+            sList = "'~'"
+        End If
+        ' got another field from table SYSADM8.PS_ISA_SDIEX_PRCBU: FIRM_PRICE_FLG - in STAR only - VR 08/07/2018
+        'one more field from table SYSADM8.PS_ISA_SDIEX_PRCBU: STATUS_FLG ?? - in STAR only - VR 09/04/2018
+        Dim strSQLstring As String = "" & vbCrLf &
+             "SELECT " & vbCrLf &
+             "  INV_ITEM_ID " & vbCrLf &
+             ", PRICE " & vbCrLf &
+             ", QTY QTY_ONHAND " & vbCrLf &
+             ", CURRENCY_CD, FIRM_PRICE_FLG, SOURCE_FLAG " & vbCrLf &
+             " FROM SYSADM8.PS_ISA_SDIEX_PRCBU " & vbCrLf &
+             " WHERE INV_ITEM_ID IN (" & sList & ")" & vbCrLf &
+             " AND BUSINESS_UNIT='" & sBusUnit & "'" & vbCrLf &
+             ""
+
+        Try
+            ds = ORDBData.GetAdapter(strSQLstring)
+        Catch ex As Exception
+        End Try
+        If (ds Is Nothing) Then
+            ds = New DataSet
+        End If
+
+        Return ds
+    End Function
+
+
+    Public Shared Function PrependSitePrefix(ByVal sItemMode As String, ByVal strItemID As String, ByVal strSitePrefix As String) As String
+        If sItemMode = "4" Or sItemMode = "6" Then
+
+        Else
+
+            strItemID = strItemID.ToUpper
+
+            ' all Visteon items are setup with "COC" item prefix (in INV_ITEMS table) but with different
+            '   PS_BUS_UNIT_TBL_OM.ISA_SITE_CODE. Given that they don't follow the same "item prefixing" convention
+            '   this is to get around this issue - erwin 2008.09.04
+            Select Case strSitePrefix
+                Case "C00"
+                    strItemID = "COC" & strItemID
+                Case "O00"
+                    strItemID = "COC" & strItemID
+                Case "S00"
+                    strItemID = "COC" & strItemID
+                Case "F00"
+                    strItemID = "COC" & strItemID
+                Case Nothing
+
+                Case Else
+                    If Trim(strItemID).Length >= 2 Then
+                        If Not strItemID.Trim().StartsWith(strSitePrefix) Then
+                            'If the item has the site prefix,  leave it - mr 8/5/14
+                            strItemID = strSitePrefix & strItemID
+                        End If
+                    End If
+            End Select
+        End If
+
+        Return strItemID
+    End Function
+
+    <Serializable()>
+    Public Class sdiConversionRate
+
+        Public Sub New()
+
+        End Sub
+
+        Public Sub New(ByVal sourceCurrencyCode As String, ByVal targetCurrencyCode As String)
+            m_srcCurrencyCode = sourceCurrencyCode
+            m_tgtCurrencyCode = targetCurrencyCode
+        End Sub
+
+        Public Sub New(ByVal sourceCurrencyCode As String,
+                   ByVal sourceAmount As Decimal,
+                   ByVal targetCurrencyCode As String,
+                   ByVal convertedAmount As Decimal)
+            m_srcCurrencyCode = sourceCurrencyCode
+            m_srcAmount = sourceAmount
+            m_tgtCurrencyCode = targetCurrencyCode
+            m_tgtAmount = convertedAmount
+        End Sub
+
+        Public Sub New(ByVal sourceCurrencyCode As String,
+                   ByVal targetCurrencyCode As String,
+                   ByVal dt As DateTime)
+            m_srcCurrencyCode = sourceCurrencyCode
+            m_tgtCurrencyCode = targetCurrencyCode
+            m_dt = dt
+        End Sub
+
+        Private m_srcCurrencyCode As String = ""
+
+        Public Property [SourceCurrencyCode]() As String
+            Get
+                Return m_srcCurrencyCode
+            End Get
+            Set(ByVal value As String)
+                m_srcCurrencyCode = value
+            End Set
+        End Property
+
+        Private m_tgtCurrencyCode As String = ""
+
+        Public Property [TargetCurrencyCode]() As String
+            Get
+                Return m_tgtCurrencyCode
+            End Get
+            Set(ByVal value As String)
+                m_tgtCurrencyCode = value
+            End Set
+        End Property
+
+        Private m_multiplier As Decimal = CDec("0")
+
+        Public Property [Multiplier]() As Decimal
+            Get
+                Return m_multiplier
+            End Get
+            Set(ByVal value As Decimal)
+                m_multiplier = value
+            End Set
+        End Property
+
+        Private m_divider As Decimal = CDec("1")
+
+        Public Property [Divider]() As Decimal
+            Get
+                Return m_divider
+            End Get
+            Set(ByVal value As Decimal)
+                m_divider = value
+            End Set
+        End Property
+
+        Private m_bIsKnownConversion As Boolean = False
+
+        Public Property [IsKnownConversionRate]() As Boolean
+            Get
+                Return m_bIsKnownConversion
+            End Get
+            Set(ByVal value As Boolean)
+                m_bIsKnownConversion = value
+            End Set
+        End Property
+
+        Private m_dt As DateTime = Now
+
+        Public Property [RateDateTimeStamp]() As DateTime
+            Get
+                Return m_dt
+            End Get
+            Set(ByVal value As DateTime)
+                m_dt = value
+            End Set
+        End Property
+
+        Private m_srcAmount As Decimal = CDec("0")
+
+        Public Property [SourceAmount]() As Decimal
+            Get
+                Return m_srcAmount
+            End Get
+            Set(ByVal value As Decimal)
+                m_srcAmount = value
+            End Set
+        End Property
+
+        Private m_tgtAmount As Decimal = CDec("0")
+
+        Public Property [ConvertedAmount]() As Decimal
+            Get
+                Return m_tgtAmount
+            End Get
+            Set(ByVal value As Decimal)
+                m_tgtAmount = value
+            End Set
+        End Property
+
+    End Class
+
 
     Public Shared Function GetSQLReaderDazzle(ByVal p_strQuery As String) As SqlDataReader
 
@@ -3250,12 +4689,16 @@ Public Class QuoteNonStockProcessor
 
     End Function
     'Madhu-16592-Display columns for ECI BU 
-    Public Shared Function IsECI(ByVal sBU As String) As Boolean
+    Public Shared Function IsECI(ByVal sBU As String, Optional ByVal ECIBoolean As Boolean = True) As Boolean
+
         Dim bIsECI As Boolean = False
         Dim sECIBUList As String = ""
 
         Try
             sECIBUList = UCase(ConfigurationSettings.AppSettings("ECIList").ToString)
+            If ECIBoolean = True Then
+                sECIBUList &= "~I0966"
+            End If
         Catch ex As Exception
         End Try
 
@@ -3338,7 +4781,7 @@ Public Class QuoteNonStockProcessor
 
     End Function
 
-    Public Function ApplyMarkup(ByVal decVndPrc, ByVal strItemTyp, ByVal strStockTyp, ByVal StrBU) As Decimal
+    Public Shared Function ApplyMarkup(ByVal decVndPrc, ByVal strItemTyp, ByVal strStockTyp, ByVal StrBU) As Decimal
         Dim strSQLstring As String
         Dim strMarkup As String
         Dim decMarkup As Decimal
@@ -3598,7 +5041,7 @@ Public Class OrderApprovals
             strSQLstring &= " ) " & vbCrLf &
                 " AND ISA_INTFC_LN = " & oLineDetails.LineNbr
 
-            rowsaffected = ExecNonQuery(strSQLstring, False)
+            rowsaffected = ORDBData.ExecNonQuery(strSQLstring, False)
             If rowsaffected = 0 Then
                 bSuccessful = False
                 HandleApprovalError(trnsactSession, connection, cCaller, rowsaffected, strSQLstring, oApprovalDetails)
@@ -4080,11 +5523,11 @@ Public Class OrderApprovals
         If Not getDBName() Then
             ' Mailer.To = "DoNotSendPLGR@sdi.com"
             MailTo = "WebDev@sdi.com"
-            MailSub = "<<TEST SITE>> SDI ZEUS - Order Number " & strreqID & " has been " & strAction
+            MailSub = "<<TEST SITE>> Order # " & strreqID & " has been " & strAction
         Else
             'Mailer.To = strBuyerEmail
             MailTo = strBuyerEmail
-            MailSub = "SDI ZEUS - Order Number " & strreqID & " has been " & strAction
+            MailSub = "Order # " & strreqID & " has been " & strAction
             If Not bMoreAppr And
                 Not strType = "quote" Then
                 'Mailer.To = strBuyerEmail & "; " & strSDIBuyer
@@ -4522,7 +5965,7 @@ Public Class OrderApprovals
         Try
             strOraSelectQuery = "select * from SYSADM8.PS_ISA_ORD_INTF_HD where ORDER_NO = '" & ordNumber & "'"
             'strOraSelectQuery = "select * from PS_ISA_ORD_INTFC_H where ORDER_NO = 'M220016571'"
-            OrcRdr = GetReader(strOraSelectQuery)
+            OrcRdr = ORDBData.GetReader(strOraSelectQuery)
             If OrcRdr.HasRows Then
                 OrcRdr.Read()
                 ordIdentifier = CType(OrcRdr("ORDER_NO"), String).Trim()
@@ -4531,7 +5974,7 @@ Public Class OrderApprovals
             OrcRdr.Close()
 
             strOraSelectQuery = "select * from SYSADM8.PS_ISA_ORD_INTF_LN where ORDER_NO = '" & ordIdentifier & "'"
-            dsOrdLnItems = GetAdapter(strOraSelectQuery)
+            dsOrdLnItems = ORDBData.GetAdapter(strOraSelectQuery)
 
             If dsOrdLnItems.Tables(0).Rows.Count > 0 Then
                 For Each dataRowMain As DataRow In dsOrdLnItems.Tables(0).Rows
@@ -6090,11 +7533,11 @@ Public Class OrderApprovals
     Public Shared Function IsAEES(ByVal sBU As String) As Boolean
         Dim bIsAEES As Boolean = False
 
-        Dim sSP1AccessString As String = "I0913~I0914~I0915~I0916~I0917~I0918~I0919~I0920~I0921~I0922~I0923~I0924~I0925~I0926~I0940"
+        Dim sSP1AccessString As String = "I0913~I0914~I0915~I0916~I0917~I0918~I0919~I0920~I0921~I0922~I0923~I0924~I0925~I0926~I0940~I0967~I0968~I0969~I0970~I0971~I0972~I0973~I0974"
         Try
             sSP1AccessString = UCase(ConfigurationSettings.AppSettings("AEESsitesList").ToString)
         Catch ex As Exception
-            sSP1AccessString = "I0913~I0914~I0915~I0916~I0917~I0918~I0919~I0920~I0921~I0922~I0923~I0924~I0925~I0926~I0940"
+            sSP1AccessString = "I0913~I0914~I0915~I0916~I0917~I0918~I0919~I0920~I0921~I0922~I0923~I0924~I0925~I0926~I0940~I0967~I0968~I0969~I0970~I0971~I0972~I0973~I0974"
         End Try
         Dim sAEESsites As String = sSP1AccessString  '  "I0913~I0914~I0915~I0916~I0917~I0918~I0919~I0920~I0921~I0922~I0923~I0924~I0925~I0926~I0940"
         Try
@@ -6115,7 +7558,134 @@ Public Class sdiMultiCurrency
     Private Sub New()
 
     End Sub
+    Public Shared Function getConversionRate(ByVal sourceCurrencyCode As String,
+                                             ByVal sourceAmount As Decimal,
+                                             ByVal targetCurrencyCode As String) As sdiConversionRate
+        Dim convRate As sdiConversionRate = New sdiConversionRate(sourceCurrencyCode, targetCurrencyCode)
+        'convRate = New sdiConversionRate(sourceCurrencyCode, targetCurrencyCode)
+        convRate.SourceAmount = sourceAmount
+        convRate.IsKnownConversionRate = False
 
+        If Not (sourceCurrencyCode Is Nothing) Then
+            sourceCurrencyCode = sourceCurrencyCode.Trim.ToUpper
+        End If
+        If Not (targetCurrencyCode Is Nothing) Then
+            targetCurrencyCode = targetCurrencyCode.Trim.ToUpper
+        End If
+
+        Dim dtTransaction As DateTime = Now
+
+        Try
+            Dim strSQLString As String = "SELECT " & vbCrLf &
+                                    " CURRTO.RATE_MULT " & vbCrLf &
+                                    ",CURRTO.RATE_DIV " & vbCrLf &
+                                    "FROM SYSADM8.PS_RT_RATE_TBL CURRTO " & vbCrLf &
+                                    "WHERE CURRTO.EFFDT = ( " & vbCrLf &
+                                    "                      SELECT MAX(A1.EFFDT) " & vbCrLf &
+                                    "                      FROM SYSADM8.PS_RT_RATE_TBL A1 " & vbCrLf &
+                                    "                      WHERE A1.RT_RATE_INDEX = CURRTO.RT_RATE_INDEX " & vbCrLf &
+                                    "                        AND A1.TERM = CURRTO.TERM " & vbCrLf &
+                                    "                        AND A1.FROM_CUR = CURRTO.FROM_CUR " & vbCrLf &
+                                    "                        AND A1.TO_CUR = CURRTO.TO_CUR " & vbCrLf &
+                                    "                        AND A1.RT_TYPE = CURRTO.RT_TYPE " & vbCrLf &
+                                    "                        AND A1.EFFDT <= TO_DATE('" & dtTransaction.ToString("MM/dd/yyyy HH:mm:ss") & "','MM/DD/YYYY HH24:MI:SS') " & vbCrLf &
+                                    "                     )" & vbCrLf &
+                                    "  AND CURRTO.FROM_CUR = '" & sourceCurrencyCode & "' " & vbCrLf &
+                                    "  AND CURRTO.TO_CUR = '" & targetCurrencyCode & "' " & vbCrLf &
+                                    "  AND CURRTO.RT_RATE_INDEX = 'MODEL'" & vbCrLf &
+                                    "  AND CURRTO.RT_TYPE = 'CRRNT' "
+
+            'Code to get conversion details
+            Dim dsCurrencyConvert As New DataSet
+            dsCurrencyConvert = ORDBData.GetAdapterSpc(strSQLString)
+
+            'Code to generate sdiConversionRate object
+            convRate = GetSDIConversionRateObject(dsCurrencyConvert, convRate, sourceAmount)
+        Catch ex As Exception
+
+        End Try
+
+        Return (convRate)
+    End Function
+    Public Shared Function getItemBaseCurrency(ByVal itemId As String) As sdiCurrency
+
+        Dim currentApp As HttpApplication = HttpContext.Current.ApplicationInstance
+        'Dim sBusUnit As String = currentApp.Session("BUSUNIT")
+        'Dim strBu3 As String = ""
+        'Try
+        '    strBu3 = sBusUnit.Substring(2, 3)
+        'Catch ex As Exception
+        '    strBu3 = ""
+        'End Try
+
+        Dim curr As sdiCurrency = New sdiCurrency(id:=sdiCommon.DEFAULT_CURRENCY_CODE, desc:="")
+        curr.IsKnownCurrency = False
+        Dim strCurrencyCode As String
+        Dim strSQLString As String
+
+        Try
+            If itemId.Substring(0, 3) = currentApp.Session("SITEPREFIX") Then
+                itemId = itemId
+            Else
+                itemId = currentApp.Session("SITEPREFIX") & itemId
+            End If
+            strSQLString = String.Format("select CURRENCY_CD from SYSADM8.PS_ISA_SDIEX_PRCBU where INV_ITEM_ID = '{0}' AND BUSINESS_UNIT = '{1}'", itemId, Convert.ToString(currentApp.Session("BUSUNIT")))
+
+            'If Trim(strBu3) <> "" Then
+            '    strBu3 = Trim(strBu3)
+            '    If Len(strBu3) = 3 Then
+            '        strSQLString = "select CURRENCY_CD from SYSADM8.PS_ISA_SDIEX_PRICE where INV_ITEM_ID = '" & itemId & "' AND ISA_SITE_ID = '" & strBu3 & "'"
+            '    End If
+            'End If
+            strCurrencyCode = Trim(ORDBData.GetScalar(strSQLString))
+
+            'Code to get currency details
+            Dim dsCurrencyInfo As New DataSet
+            dsCurrencyInfo = GetCurrency(strCurrencyCode)
+
+            'Code to generate sdicurrency object
+            curr = GetSDICurrencyObject(dsCurrencyInfo)
+        Catch ex As Exception
+
+        End Try
+        Return (curr)
+
+    End Function
+
+    Public Shared Function GetSDIConversionRateObject(ByVal dsConvRateInfo As DataSet, ByVal objsdiConversionrate As sdiConversionRate, ByVal sourceAmt As Decimal) As sdiConversionRate
+
+        Dim convRate As sdiConversionRate = Nothing
+        convRate = New sdiConversionRate(objsdiConversionrate.SourceCurrencyCode, objsdiConversionrate.TargetCurrencyCode)
+        convRate.SourceAmount = sourceAmt
+        convRate.IsKnownConversionRate = False
+
+        Try
+            Dim sMultiplier As String = ""
+            Dim sDivider As String = ""
+            If Not dsConvRateInfo Is Nothing And dsConvRateInfo.Tables(0).Rows.Count > 0 Then
+                sMultiplier = dsConvRateInfo.Tables(0).Rows(0)("RATE_MULT")
+                sDivider = dsConvRateInfo.Tables(0).Rows(0)("RATE_DIV")
+
+                If Not (sMultiplier Is Nothing) Then
+                    If IsNumeric(sMultiplier) Then
+                        convRate.Multiplier = CDec(sMultiplier)
+                    End If
+                End If
+
+                If Not (sDivider Is Nothing) Then
+                    If IsNumeric(sDivider) Then
+                        convRate.Divider = CDec(sDivider)
+                    End If
+                End If
+                convRate.IsKnownConversionRate = True
+                convRate.RateDateTimeStamp = Now
+                convRate.ConvertedAmount = CDec(((convRate.SourceAmount) * convRate.Multiplier) / convRate.Divider)
+            End If
+        Catch ex As Exception
+
+        End Try
+        Return (convRate)
+    End Function
     Public Shared Function getSiteCurrency(ByVal siteBU As String) As sdiCurrency
 
         Dim curr As sdiCurrency = New sdiCurrency(id:=sdiCommon.DEFAULT_CURRENCY_CODE, desc:="")
@@ -6128,7 +7698,7 @@ Public Class sdiMultiCurrency
             'Code to get currency code
             Dim strSQLString As String
             strSQLString = String.Format("SELECT A.CURRENCY_CD_BASE AS BASE_CURRENCY FROM PS_BUS_UNIT_TBL_OM A  " & vbCrLf &
-                            "WHERE A.BUSINESS_UNIT LIKE '%{0}' AND A.CURRENCY_CD_BASE <> ' ' GROUP BY A.CURRENCY_CD_BASE ", bu3digit)
+                                "WHERE A.BUSINESS_UNIT LIKE '%{0}' AND A.CURRENCY_CD_BASE <> ' ' GROUP BY A.CURRENCY_CD_BASE ", bu3digit)
             strCurrencyCode = Trim(ORDBData.GetScalar(strSQLString))
 
             'Code to get currency details
@@ -6147,22 +7717,22 @@ Public Class sdiMultiCurrency
         Dim dsCurrencyInfo As New DataSet
         Try
             Dim strSQLString As String = "SELECT " & vbCrLf &
-                                    " CD.CURRENCY_CD " & vbCrLf &
-                                    ",CD.DESCRSHORT " & vbCrLf &
-                                    ",CD.DESCR " & vbCrLf &
-                                    ",CD.CUR_SYMBOL " & vbCrLf &
-                                    ",CD.COUNTRY " & vbCrLf &
-                                    "FROM SYSADM8.PS_CURRENCY_CD_TBL CD " & vbCrLf &
-                                    "WHERE CD.EFF_STATUS = 'A' " & vbCrLf &
-                                    "  AND CD.CURRENCY_CD = '" & currencyCode & "' " & vbCrLf &
-                                    "  AND CD.EFFDT = ( " & vbCrLf &
-                                    "                  SELECT MAX(A1.EFFDT) " & vbCrLf &
-                                    "                  FROM SYSADM8.PS_CURRENCY_CD_TBL A1 " & vbCrLf &
-                                    "                  WHERE A1.CURRENCY_CD = CD.CURRENCY_CD " & vbCrLf &
-                                    "                    AND A1.EFF_STATUS = CD.EFF_STATUS " & vbCrLf &
-                                    "                    AND A1.EFFDT <= SYSDATE " & vbCrLf &
-                                    "                 ) " & vbCrLf &
-                                    "ORDER BY CD.CURRENCY_CD "
+                                        " CD.CURRENCY_CD " & vbCrLf &
+                                        ",CD.DESCRSHORT " & vbCrLf &
+                                        ",CD.DESCR " & vbCrLf &
+                                        ",CD.CUR_SYMBOL " & vbCrLf &
+                                        ",CD.COUNTRY " & vbCrLf &
+                                        "FROM SYSADM8.PS_CURRENCY_CD_TBL CD " & vbCrLf &
+                                        "WHERE CD.EFF_STATUS = 'A' " & vbCrLf &
+                                        "  AND CD.CURRENCY_CD = '" & currencyCode & "' " & vbCrLf &
+                                        "  AND CD.EFFDT = ( " & vbCrLf &
+                                        "                  SELECT MAX(A1.EFFDT) " & vbCrLf &
+                                        "                  FROM SYSADM8.PS_CURRENCY_CD_TBL A1 " & vbCrLf &
+                                        "                  WHERE A1.CURRENCY_CD = CD.CURRENCY_CD " & vbCrLf &
+                                        "                    AND A1.EFF_STATUS = CD.EFF_STATUS " & vbCrLf &
+                                        "                    AND A1.EFFDT <= SYSDATE " & vbCrLf &
+                                        "                 ) " & vbCrLf &
+                                        "ORDER BY CD.CURRENCY_CD "
 
             dsCurrencyInfo = ORDBData.GetAdapterSpc(strSQLString)
         Catch ex As Exception
@@ -6190,6 +7760,8 @@ Public Class sdiMultiCurrency
         Return (curr)
     End Function
 End Class
+
+
 
 Public Class sdiCurrency
 
@@ -8154,6 +9726,39 @@ Public Class WebPSharedFunc
     End Sub
 
 End Class
+Public Class sdiItemPrice
+
+    Public Sub New()
+
+    End Sub
+
+    Public Sub New(ByVal unitPrice As Decimal,
+                   ByVal priceCurrency As sdiCurrency)
+        m_unitPrice = unitPrice
+        m_currency = priceCurrency
+    End Sub
+
+    Private m_unitPrice As Decimal = 0
+    Public Property [UnitPrice]() As Decimal
+        Get
+            Return m_unitPrice
+        End Get
+        Set(ByVal Value As Decimal)
+            m_unitPrice = Value
+        End Set
+    End Property
+
+    Private m_currency As sdiCurrency = Nothing
+    Public Property [Currency]() As sdiCurrency
+        Get
+            Return m_currency
+        End Get
+        Set(ByVal Value As sdiCurrency)
+            m_currency = Value
+        End Set
+    End Property
+
+End Class
 
 
 Public Class ApprovalHistory
@@ -8276,6 +9881,577 @@ Public Class ApprovalHistory
 
 
 End Class
+'Imports System.Data.OleDb
+
+Public Class sdiItem
+
+    Public Sub New()
+
+    End Sub
+
+    Public Sub New(ByVal id As String, ByVal desc As String)
+        m_id = id
+        m_desc = desc
+    End Sub
+
+    Public Sub New(ByVal id As String, ByVal desc As String, ByVal typ As sdiItemStockType)
+        m_id = id
+        m_desc = desc
+        m_stockType = typ
+    End Sub
+
+    Private m_id As String = ""
+
+    Public Property [Id]() As String
+        Get
+            Return m_id
+        End Get
+        Set(ByVal Value As String)
+            m_id = Value
+        End Set
+    End Property
+
+    Private m_commodityCode As String = ""
+
+    Public Property [CommodityCode]() As String
+        Get
+            Return m_commodityCode
+        End Get
+        Set(ByVal Value As String)
+            m_commodityCode = Value
+        End Set
+    End Property
+
+    Private m_desc As String = ""
+
+    Public Property [Description]() As String
+        Get
+            Return m_desc
+        End Get
+        Set(ByVal Value As String)
+            m_desc = Value
+        End Set
+    End Property
+
+    Private m_stockType As New sdiItemStockType
+
+    Public Property [StockType]() As sdiItemStockType
+        Get
+            Return m_stockType
+        End Get
+        Set(ByVal Value As sdiItemStockType)
+            m_stockType = Value
+        End Set
+    End Property
+
+    Private m_invType As String = ""
+
+    Public Property [InventoryType]() As String
+        Get
+            Return m_invType
+        End Get
+        Set(ByVal Value As String)
+            m_invType = Value
+        End Set
+    End Property
+
+    Private m_IBU As String = ""
+
+    Public Property [IBusinessUnit]() As String
+        Get
+            Return m_IBU
+        End Get
+        Set(ByVal Value As String)
+            m_IBU = Value
+        End Set
+    End Property
+
+    Private m_prodViewId As String = ""
+
+    Public Property [ProductViewId]() As String
+        Get
+            Return m_prodViewId
+        End Get
+        Set(ByVal Value As String)
+            m_prodViewId = Value
+        End Set
+    End Property
+
+    Public Overloads Shared Function GetItemInfo(ByVal sdiItemId As String) As sdiItem
+        Return (RetrieveItemInfo(sdiItemId))
+    End Function
+
+    Private Shared Function RetrieveItemInfo(ByVal sdiItemId As String) As sdiItem
+        Dim itm As New sdiItem(sdiItemId, "")
+        Try
+            sdiItemId = sdiItemId.Trim.ToUpper
+            '            Dim sql As String = "" & _
+            '"SELECT " & vbCrLf & _
+            '" A.INV_ITEM_ID " & vbCrLf & _
+            '",A.COMMODITY_CD " & vbCrLf & _
+            '",A.INV_ITEM_TYPE " & vbCrLf & _
+            '",A.DESCR254 AS ITEM_DESC " & vbCrLf & _
+            '",A.INV_STOCK_TYPE " & vbCrLf & _
+            '",B.DESCR AS STOCK_TYPE_DESC " & vbCrLf & _
+            '",B.SETID AS STOCK_TYPE_SETID " & vbCrLf & _
+            '",B.STOCK_OWNER AS STOCK_TYPE_OWNER " & vbCrLf & _
+            '"FROM " & vbCrLf & _
+            '" PS_INV_ITEMS A " & vbCrLf & _
+            '",(" & vbCrLf & _
+            '"  SELECT " & vbCrLf & _
+            '"   B1.SETID " & vbCrLf & _
+            '"  ,B1.INV_STOCK_TYPE " & vbCrLf & _
+            '"  ,B1.DESCR " & vbCrLf & _
+            '"  ,B1.STOCK_OWNER " & vbCrLf & _
+            '"  FROM PS_STOCK_TYPE_INV B1 " & vbCrLf & _
+            '"  WHERE B1.SETID = 'MAIN1' " & vbCrLf & _
+            '"    AND B1.EFF_STATUS = 'A' " & vbCrLf & _
+            '"    AND B1.EFFDT = (" & vbCrLf & _
+            '"                    SELECT MAX(B11.EFFDT) " & vbCrLf & _
+            '"                    FROM PS_STOCK_TYPE_INV B11 " & vbCrLf & _
+            '"                    WHERE B11.SETID = B1.SETID " & vbCrLf & _
+            '"                      AND B11.INV_STOCK_TYPE = B1.INV_STOCK_TYPE " & vbCrLf & _
+            '"                      AND B11.EFF_STATUS = B1.EFF_STATUS " & vbCrLf & _
+            '"                      AND B11.EFFDT <= SYSDATE " & vbCrLf & _
+            '"                   )" & vbCrLf & _
+            '" ) B " & vbCrLf & _
+            '"WHERE A.SETID = 'MAIN1' " & vbCrLf & _
+            '"  AND A.EFF_STATUS = 'A' " & vbCrLf & _
+            '"  AND A.INV_ITEM_ID = '" & sdiItemId & "' " & vbCrLf & _
+            '"  AND A.EFFDT = (" & vbCrLf & _
+            '"                    SELECT MAX(A1.EFFDT) " & vbCrLf & _
+            '"                    FROM PS_INV_ITEMS A1 " & vbCrLf & _
+            '"                    WHERE A1.SETID = A.SETID " & vbCrLf & _
+            '"                      AND A1.INV_ITEM_ID = A.INV_ITEM_ID " & vbCrLf & _
+            '"                      AND A1.EFF_STATUS = A.EFF_STATUS " & vbCrLf & _
+            '"                      AND A1.EFFDT <= SYSDATE " & vbCrLf & _
+            '"                )" & vbCrLf & _
+            '"  AND A.SETID = B.SETID (+) " & vbCrLf & _
+            '"  AND A.INV_STOCK_TYPE = B.INV_STOCK_TYPE (+) " & vbCrLf & _
+            '                                " "
+            Dim sql As String = "" &
+"SELECT A.INV_ITEM_ID ,A.COMMODITY_CD ,A.INV_ITEM_TYPE ,A.DESCR254 AS ITEM_DESC ,A.INV_STOCK_TYPE ,B.DESCR AS STOCK_TYPE_DESC, " & vbCrLf &
+" B.SETID AS STOCK_TYPE_SETID ,B.STOCK_OWNER AS STOCK_TYPE_OWNER " & vbCrLf &
+" FROM SYSADM8.PS_INV_ITEMS A ,  " & vbCrLf &
+" SYSADM8.ps_master_item_tbl c,  " & vbCrLf &
+" (SELECT B1.SETID ,B1.INV_STOCK_TYPE ,B1.DESCR ,B1.STOCK_OWNER  " & vbCrLf &
+" FROM SYSADM8.PS_STOCK_TYPE_INV B1  " & vbCrLf &
+"  WHERE B1.SETID = 'MAIN1'  " & vbCrLf &
+" AND   B1.EFF_STATUS = 'A'  " & vbCrLf &
+" AND   B1.EFFDT = ( SELECT MAX(B11.EFFDT) " & vbCrLf &
+" FROM SYSADM8.PS_STOCK_TYPE_INV B11 " & vbCrLf &
+" WHERE B11.SETID = B1.SETID " & vbCrLf &
+" AND   B11.INV_STOCK_TYPE = B1.INV_STOCK_TYPE " & vbCrLf &
+"  AND B11.EFFDT <= SYSDATE ) ) B " & vbCrLf &
+"   WHERE A.SETID = 'MAIN1'  " & vbCrLf &
+"  AND   A.INV_ITEM_ID = '" & sdiItemId & "' " & vbCrLf &
+"  AND A.SETID = B.SETID (+)  " & vbCrLf &
+"  AND A.INV_STOCK_TYPE = B.INV_STOCK_TYPE (+)  AND A.EFFDT = C.ITM_STATUS_EFFDT " & vbCrLf &
+"  and a.setid = c.setid " & vbCrLf &
+"  and a.inv_item_id= c.inv_item_id " & vbCrLf &
+"    and c.ITM_STATUS_CURRENT = '1' " & vbCrLf
+
+
+            Dim rdr As OleDb.OleDbDataReader = Nothing
+            Try
+                rdr = ORDBData.GetReader(sql)
+            Catch ex As Exception
+            End Try
+            If Not (rdr Is Nothing) Then
+                If rdr.Read Then
+                    If Not (rdr("INV_ITEM_ID") Is System.DBNull.Value) Then
+                        itm.Id = CStr(rdr("INV_ITEM_ID"))
+                    End If
+                    If Not (rdr("COMMODITY_CD") Is System.DBNull.Value) Then
+                        itm.CommodityCode = CStr(rdr("COMMODITY_CD"))
+                    End If
+                    If Not (rdr("ITEM_DESC") Is System.DBNull.Value) Then
+                        itm.Description = CStr(rdr("ITEM_DESC"))
+                    End If
+                    If Not (rdr("INV_ITEM_TYPE") Is System.DBNull.Value) Then
+                        itm.InventoryType = CStr(rdr("INV_ITEM_TYPE"))
+                    End If
+                    If Not (rdr("INV_STOCK_TYPE") Is System.DBNull.Value) Then
+                        itm.StockType.Id = CStr(rdr("INV_STOCK_TYPE"))
+                    End If
+                    If Not (rdr("STOCK_TYPE_DESC") Is System.DBNull.Value) Then
+                        itm.StockType.Description = CStr(rdr("STOCK_TYPE_DESC"))
+                    End If
+                    If Not (rdr("STOCK_TYPE_SETID") Is System.DBNull.Value) Then
+                        itm.StockType.SetId = CStr(rdr("STOCK_TYPE_SETID"))
+                    End If
+                    If Not (rdr("STOCK_TYPE_OWNER") Is System.DBNull.Value) Then
+                        itm.StockType.StockOwner = CStr(rdr("STOCK_TYPE_OWNER"))
+                    End If
+                    itm.StockType.IsKnownType = (itm.StockType.Id.Trim.Length > 0 And itm.StockType.Description.Trim.Length > 0)
+                End If
+                Try
+                    rdr.Close()
+                Catch ex As Exception
+                End Try
+            End If
+            rdr = Nothing
+        Catch ex As Exception
+        End Try
+        Return (itm)
+    End Function
+
+    Private m_arrPriceCurrency As ArrayList = Nothing
+
+    Public ReadOnly Property [PriceCurrencyList]() As ArrayList
+        Get
+            If (m_arrPriceCurrency Is Nothing) Then
+                m_arrPriceCurrency = New ArrayList
+            End If
+            Return (m_arrPriceCurrency)
+        End Get
+    End Property
+
+    Public Function GetItemPrice() As sdiItemPrice
+        ' always reset the price/currency list each time this method runs
+        Me.PriceCurrencyList.Clear()
+        ' get price
+        Dim itemPr As New sdiItemPrice
+        Try
+            Dim catalogCNstring As String = SQLDBData.getRepDBConnectString(SQLDBData.DbSQLRepUrl1, "755784")  '   _
+            '  HttpContext.Current.ApplicationInstance.Session("CplusDbSQL"))
+            Dim bIsCanCheck As Boolean = (Me.IBusinessUnit.Length > 0 And Me.Id.Length > 0) Or
+                                         (Me.ProductViewId.Length > 0 And Me.CommodityCode.Length > 0)
+            If bIsCanCheck Then
+                Dim itm As sdiItemX = Nothing
+                'Dim itemBaseCurrency As sdiCurrency = Nothing
+                'If (Me.ProductViewId.Length > 0 And Me.CommodityCode.Length > 0) Then
+                '    ' use product view Id and commodity code values to get item info
+                '    itm = sdiItemCrossReference.getItemInfo(CInt(Me.ProductViewId),
+                '                                            CInt(Me.CommodityCode),
+                '                                            ORDBData.DbUrl,
+                '                                            catalogCNstring)
+                'Else
+                '    ' use business unit and sdi item Id combination to get item info
+                '    itm = sdiItemCrossReference.getItemInfo(Me.IBusinessUnit,
+                '                                            Me.Id,
+                '                                            ORDBData.DbUrl,
+                '                                            catalogCNstring)
+                'End If
+                If Not (itm Is Nothing) Then
+                    'itemBaseCurrency = sdiMultiCurrency.getItemBaseCurrency(itm.sdiItemId)
+                    itemPr.UnitPrice = itm.CPlusPromoPrice
+                    itemPr.Currency = sdiMultiCurrency.getItemBaseCurrency(itm.sdiItemId)
+                End If
+            End If
+        Catch ex As Exception
+        End Try
+        ' add itemPr to list
+        Me.PriceCurrencyList.Add(itemPr)
+        ' return
+        Return (itemPr)
+    End Function
+
+End Class
+
+
+Public Class sdiItemCrossReference
+
+    ' prevent others from creating instance of this object
+    Private Sub New()
+    End Sub
+
+
+End Class
+
+
+#Region " sdiItemX object "
+
+Public Class sdiItemX
+
+    Public Sub New()
+
+    End Sub
+
+    Public Sub New(ByVal iBU As String,
+                   ByVal sdiItemCode As String)
+        m_ibu = iBU
+        m_sdiItemId = sdiItemCode
+    End Sub
+
+    Public Sub New(ByVal cplusProdViewId As Integer,
+                   ByVal cplusItemCode As Integer)
+        m_cplusProdViewId = cplusProdViewId
+        m_cplusItemId = cplusItemCode
+    End Sub
+
+    Private m_sdiItemId As String = ""
+    Public Property [sdiItemId]() As String
+        Get
+            Return m_sdiItemId
+        End Get
+        Set(ByVal Value As String)
+            m_sdiItemId = Value
+        End Set
+    End Property
+
+    Private m_ibu As String = ""
+    Public Property [IBusinessUnit]() As String
+        Get
+            Return m_ibu
+        End Get
+        Set(ByVal Value As String)
+            m_ibu = Value
+        End Set
+    End Property
+
+    Private m_cplusProdViewId As Integer = 0
+    Public Property [ProductViewId]() As Integer
+        Get
+            Return m_cplusProdViewId
+        End Get
+        Set(ByVal Value As Integer)
+            m_cplusProdViewId = Value
+        End Set
+    End Property
+
+    Private m_cplusItemId As Integer = 0
+    Public Property [CPlusItemId]() As Integer
+        Get
+            Return m_cplusItemId
+        End Get
+        Set(ByVal Value As Integer)
+            m_cplusItemId = Value
+        End Set
+    End Property
+
+    Private m_cplusCatId As Integer = 0
+    Public Property [CPlusCatalogId]() As Integer
+        Get
+            Return m_cplusCatId
+        End Get
+        Set(ByVal Value As Integer)
+            m_cplusCatId = Value
+        End Set
+    End Property
+
+    Private m_cplusClassId As Integer = 0
+    Public Property [CPlusClassId]() As Integer
+        Get
+            Return m_cplusClassId
+        End Get
+        Set(ByVal Value As Integer)
+            m_cplusClassId = Value
+        End Set
+    End Property
+
+    Private m_cplusCustItemId As String = ""
+    Public Property [CPlusCustomerItemId]() As String
+        Get
+            Return m_cplusCustItemId
+        End Get
+        Set(ByVal Value As String)
+            m_cplusCustItemId = Value
+        End Set
+    End Property
+
+    Private m_cplusItemDesc As String = ""
+    Public Property [CPlusItemDescription]() As String
+        Get
+            Return m_cplusItemDesc
+        End Get
+        Set(ByVal Value As String)
+            m_cplusItemDesc = Value
+        End Set
+    End Property
+
+    Private m_cplusSupShortDesc As String = ""
+    Public Property [CPlusSupplierShortDescription]() As String
+        Get
+            Return m_cplusSupShortDesc
+        End Get
+        Set(ByVal Value As String)
+            m_cplusSupShortDesc = Value
+        End Set
+    End Property
+
+    Private m_cplusSupLongDesc As String = ""
+    Public Property [CPlusSupplierLongDescription]() As String
+        Get
+            Return m_cplusSupLongDesc
+        End Get
+        Set(ByVal Value As String)
+            m_cplusSupLongDesc = Value
+        End Set
+    End Property
+
+    Private m_cplusPromoPrice As Decimal = 0
+    Public Property [CPlusPromoPrice]() As Decimal
+        Get
+            Return m_cplusPromoPrice
+        End Get
+        Set(ByVal Value As Decimal)
+            m_cplusPromoPrice = Value
+        End Set
+    End Property
+
+    Private m_cplusShippableUOM As String = ""
+    Public Property [CPlusShippableUOM]() As String
+        Get
+            Return m_cplusShippableUOM
+        End Get
+        Set(ByVal Value As String)
+            m_cplusShippableUOM = Value
+        End Set
+    End Property
+
+    Private m_bIsInCPlus As Boolean = False
+    Public Property [IsInContentPlus]() As Boolean
+        Get
+            Return m_bIsInCPlus
+        End Get
+        Set(ByVal Value As Boolean)
+            m_bIsInCPlus = Value
+        End Set
+    End Property
+
+    ' collection of d/t (key) and ApplicationException type of object
+    Private m_ex As Hashtable = Nothing
+    Public ReadOnly Property [LatestProcessExceptionList]() As Hashtable
+        Get
+            If (m_ex Is Nothing) Then
+                m_ex = New Hashtable
+            End If
+            Return (m_ex)
+        End Get
+    End Property
+
+    Public Sub ClearExceptionList()
+        m_ex.Clear()
+    End Sub
+
+    Private m_cpJuncTrigFlag As String = ""
+    Public Property [CPJunctionTriggerFlag]() As String
+        Get
+            Return m_cpJuncTrigFlag
+        End Get
+        Set(ByVal Value As String)
+            m_cpJuncTrigFlag = Value
+        End Set
+    End Property
+
+    Private m_cpJuncSiteId As String = ""
+    Public Property [CPJunctionSiteId]() As String
+        Get
+            Return m_cpJuncSiteId
+        End Get
+        Set(ByVal Value As String)
+            m_cpJuncSiteId = Value
+        End Set
+    End Property
+
+    Private m_bIsInInSite As Boolean = False
+    Public Property [IsInInSite]() As Boolean
+        Get
+            Return m_bIsInInSite
+        End Get
+        Set(ByVal Value As Boolean)
+            m_bIsInInSite = Value
+        End Set
+    End Property
+
+End Class
+Public Class SQLDBData
+
+
+
+
+    Public Shared Function getRepDBConnectString(ByVal strConnectString, ByVal strCatalogID) As String
+
+        getRepDBConnectString = strConnectString & strCatalogID
+
+
+    End Function
+
+    Public Shared ReadOnly Property DbSQLRepUrl1() As String
+
+        Get
+            Return ConfigurationSettings.AppSettings("SQLDBReplicateConString1")
+        End Get
+    End Property
+
+
+End Class
+Public Class sdiItemStockType
+
+    Public Sub New()
+
+    End Sub
+
+    Public Sub New(ByVal id As String, ByVal desc As String)
+        m_id = id
+        m_desc = desc
+    End Sub
+
+    Public Sub New(ByVal id As String, ByVal desc As String, ByVal bIsKnownType As Boolean)
+        m_id = id
+        m_desc = desc
+        m_bIsKnownType = bIsKnownType
+    End Sub
+
+    Private m_setId As String = "MAIN1"
+
+    Public Property [SetId]() As String
+        Get
+            Return m_setId
+        End Get
+        Set(ByVal Value As String)
+            m_setId = Value
+        End Set
+    End Property
+
+    ' default to "ONCE"
+    Private m_id As String = "ONCE"
+
+    Public Property [Id]() As String
+        Get
+            Return m_id
+        End Get
+        Set(ByVal Value As String)
+            m_id = Value
+        End Set
+    End Property
+
+    Private m_stockOwner As String = ""
+
+    Public Property [StockOwner]() As String
+        Get
+            Return m_stockOwner
+        End Get
+        Set(ByVal Value As String)
+            m_stockOwner = Value
+        End Set
+    End Property
+
+    Private m_desc As String = ""
+
+    Public Property [Description]() As String
+        Get
+            Return m_desc
+        End Get
+        Set(ByVal Value As String)
+            m_desc = Value
+        End Set
+    End Property
+
+    Private m_bIsKnownType As Boolean = False
+
+    Public Property [IsKnownType]() As Boolean
+        Get
+            Return m_bIsKnownType
+        End Get
+        Set(ByVal Value As Boolean)
+            m_bIsKnownType = Value
+        End Set
+    End Property
+
+End Class
+#End Region
 
 
 
