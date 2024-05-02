@@ -3474,6 +3474,12 @@ Module Module1
             ElseIf strBU = "I0631" Then
                 BU = "EMC00"
                 fromMail = getFromMail(BU, connectOR)
+            ElseIf strBU = "I0643" Then
+                BU = "AMC00"
+                fromMail = getFromMail(BU, connectOR)
+            ElseIf strBU = "I0645" Then
+                BU = "BOE00"
+                fromMail = getFromMail(BU, connectOR)
             Else
                 BU = "ISA00"
                 fromMail = getFromMail(BU, connectOR)
@@ -3635,6 +3641,10 @@ Module Module1
                 BU = "WAL00"
             ElseIf strBU = "I0631" Then
                 BU = "EMC00"
+            ElseIf strBU = "I0643" Then
+                BU = "AMC00"
+            ElseIf strBU = "I0645" Then
+                BU = "BOE00"
             Else
                 BU = "ISA00"
             End If
@@ -3652,7 +3662,7 @@ Module Module1
                     Mailer1.To = "webdev@sdi.com"
                     Mailer1.Cc = toMail
                     Mailer1.Subject = "Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
-                ElseIf strBU = "I0631" Then
+                ElseIf (strBU = "I0631" Or strBU = "I0643" Or strBU = "I0645") Then
                     Mailer1.To = "webdev@sdi.com"
                     Mailer1.Cc = toMail
                     Mailer1.Subject = "SDI Order(" & strOrderNo & ") " & strOrderStatDesc & If(strWOno <> "-", " For " & strWOno, "")
@@ -4289,6 +4299,10 @@ Module Module1
                 fromMail = "WalmartPurchasing@sdi.com"
             ElseIf (strBU = "EMC00" Or strBU = "I0631") Then
                 fromMail = "Emcorpurchasing@sdi.com"
+            ElseIf (strBU = "I0643" Or strBU = "AMC00") Then
+                fromMail = "americoldpurchasing@sdi.com"
+            ElseIf (strBU = "I0645" Or strBU = "BOE00") Then
+                fromMail = "boeing@sdi.com"
             Else
                 fromMail = "SDIExchange@SDI.com"
             End If
@@ -4315,6 +4329,10 @@ Module Module1
                 toMail = "WalmartPurchasing@sdi.com"
             ElseIf (StrBu = "EMC00" Or StrBu = "I0631") Then
                 toMail = "Emcorpurchasing@sdi.com"
+            ElseIf (StrBu = "I0643" Or StrBu = "AMC00") Then
+                toMail = "americoldpurchasing@sdi.com"
+            ElseIf (StrBu = "I0645" Or StrBu = "BOE00") Then
+                toMail = "boeing@sdi.com"
             End If
         End Try
         Try
