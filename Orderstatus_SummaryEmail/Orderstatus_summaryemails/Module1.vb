@@ -63,7 +63,7 @@ Module Module1
             For I = 0 To dsBU.Tables(0).Rows.Count - 1
 
 
-                If (dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") = "I0W01" Or dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") = "I0631") Then
+                If (dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") = "I0W01" Or dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") = "I0631" Or dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") = "I0643" Or dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") = "I0645") Then
                     Try
                         Console.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + "")
                         objStreamWriter.WriteLine(Convert.ToString(I + 1) + ".Order Status Email Completed for BU: " + Convert.ToString(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT")) + " " & Now())
@@ -106,6 +106,10 @@ Module Module1
                 fromMail = "WalmartPurchasing@sdi.com"
             ElseIf (strBU = "EMC00" Or strBU = "I0631") Then
                 fromMail = "Emcorpurchasing@sdi.com"
+            ElseIf (strBU = "AMC00" Or strBU = "I0643") Then
+                fromMail = "americoldpurchasing@sdi.com"
+            ElseIf (strBU = "BOE00" Or strBU = "I0645") Then
+                fromMail = "boeing@sdi.com"
             Else
                 fromMail = "SDIExchange@SDI.com"
             End If
@@ -167,6 +171,10 @@ Module Module1
                 toMail = "WalmartPurchasing@sdi.com"
             ElseIf (StrBu = "EMC00" Or StrBu = "I0631") Then
                 toMail = "Emcorpurchasing@sdi.com"
+            ElseIf (StrBu = "AMC00" Or StrBu = "I0643") Then
+                toMail = "americoldpurchasing@sdi.com"
+            ElseIf (StrBu = "BOE00" Or StrBu = "I0645") Then
+                toMail = "boeing@sdi.com"
             End If
         End Try
         Try
@@ -207,6 +215,13 @@ Module Module1
                 Mailer1.From = getFromMail(BU, connectOR)
             ElseIf strBU = "I0631" Then
                 BU = "EMC00"
+                Mailer1.From = getFromMail(BU, connectOR)
+                'Addded Americold and boeing Bus for MailCC -immanuvel.k
+            ElseIf strBU = "I0643" Then
+                BU = "AMC00"
+                Mailer1.From = getFromMail(BU, connectOR)
+            ElseIf strBU = "I0645" Then
+                BU = "BOE00"
                 Mailer1.From = getFromMail(BU, connectOR)
             Else
                 BU = "ISA00"
