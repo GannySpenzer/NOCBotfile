@@ -1845,7 +1845,7 @@ Public Class QuoteNonStockProcessor
 
                 ' assign recipient CC email address(es)
                 'Mythili -- INC0023448 Adding CC emails
-                If sBU = "EMC00" Or sBU = "WAL00" Then
+                If sBU = "EMC00" Or sBU = "WAL00" Or sBU = "AMC00" Or sBU = "BOE00" Then
                     If itmQuoted.CC.Length > 0 And getDBName() Then
                         eml.Cc = itmQuoted.CC + ";" + getpurchasingEmailTo(sBU)
                     ElseIf itmQuoted.CC.Length = 0 And getDBName() Then
