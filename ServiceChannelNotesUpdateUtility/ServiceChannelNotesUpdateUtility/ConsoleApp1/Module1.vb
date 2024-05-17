@@ -85,7 +85,8 @@ Module Module1
                         Dim dteEndDate As DateTime = GetEndDate(dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
                         dteEndDate.AddSeconds(1)
                         objWalSCWorkOrder.WriteLine("  StatChg Email Update workorder for Enterprise BU : " & dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT") & " " & Now())
-                        UpdateWalmartSourceCode(dteStartDate, dteEndDate, dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"))
+                        UpdateWalmartSourceCode(dteStartDate, dteEndDate, dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"), False)
+                        UpdateWalmartSourceCode(dteStartDate, dteEndDate, dsBU.Tables(0).Rows(I).Item("BUSINESS_UNIT"), True)
 
                     Catch ex As Exception
                         objWalSCWorkOrder.WriteLine("  Error in StatChg Email Update workorder Executeion : " & ex.Message & " " & Now())
@@ -111,7 +112,7 @@ Module Module1
     Private Function GetBU() As DataSet
         Dim ds As System.Data.DataSet = New System.Data.DataSet
         Try
-            '' To get teh list of BU 
+            '' To get teh list of BU
             Dim getBuQuery As String = "SELECT DISTINCT(ISA_BUSINESS_UNIT) AS BUSINESS_UNIT from PS_ISA_ENTERPRISE"
 
             Dim Command As OleDbCommand = New OleDbCommand(getBuQuery, connectOR)
@@ -156,7 +157,7 @@ Module Module1
         'The email address of the sender
         email.From = "WalmartPurchasing@sdi.com"
 
-        'The email address of the recipient. 
+        'The email address of the recipient.
         If Not getDBName() Then
             email.To = "webdev@sdi.com"
 
@@ -331,57 +332,68 @@ Module Module1
 
         Return GetStart_Date
     End Function
-    'Madhu-WAL-1203-Select queryto get the details of WorkOrder[Otimised the query to bring the current line status]
-
-    Private Function UpdateWalmartSourceCode(ByVal dteStartDate As Date, ByVal dteEndDate As Date, ByVal strBU As String)
+    'Madhu-WAL-1203-Select queryto get the details of WorkOrder[Optimised the query to bring the current line status]
+    'Madhu-INC0038493-SCNotesUpdateUtility needs fix to capture and reprocess errors updating work order
+    Private Function UpdateWalmartSourceCode(ByVal dteStartDate As Date, ByVal dteEndDate As Date, ByVal strBU As String, ByVal Reprocess As Boolean)
         Dim bolerror1 As Boolean
 
         Try
             Dim ds As New DataSet
             Dim strSQLstring As String = String.Empty
             strSQLstring = "SELECT distinct G.BUSINESS_UNIT_OM, G.BUSINESS_UNIT_OM AS G_BUS_UNIT, D.BUSINESS_UNIT, D.ISA_EMPLOYEE_ID, A.ORDER_NO,B.ISA_WORK_ORDER_NO As WORK_ORDER_NO, B.ISA_INTFC_LN AS line_nbr," & vbCrLf &
-                " B.ISA_EMPLOYEE_ID AS EMPLID, B.ISA_LINE_STATUS as ORDER_TYPE,B.OPRID_ENTERED_BY,WO.ISA_INSTALL_CUST," & vbCrLf &
-                " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, " & vbCrLf &  '  & _
-                     " (SELECT E.XLATLONGNAME" & vbCrLf &
-                                    " FROM XLATTABLE E" & vbCrLf &
-                                    " WHERE E.EFFDT =" & vbCrLf &
-                                    " (SELECT MAX(E_ED.EFFDT) FROM XLATTABLE E_ED" & vbCrLf &
-                                    " WHERE(E.FIELDNAME = E_ED.FIELDNAME)" & vbCrLf &
-                                    " AND E.FIELDVALUE = E_ED.FIELDVALUE" & vbCrLf &
-                                    " AND E_ED.EFFDT <= SYSDATE)" & vbCrLf &
-                                    " AND E.FIELDNAME = 'ISA_LINE_STATUS'" & vbCrLf &
-                                    " AND E.FIELDVALUE = G.ISA_LINE_STATUS) as ORDER_STATUS_DESC, " & vbCrLf &
-                     " B.DESCR254 As NONSTOCK_DESCRIPTION, C.DESCR60 as STOCK_DESCRIPTION, D.ISA_EMPLOYEE_EMAIL," & vbCrLf &
-                     " B.INV_ITEM_ID as INV_ITEM_ID," & vbCrLf &
-            " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH" & vbCrLf &
-                     " ,A.origin, LD.PO_ID, SH.ISA_ASN_TRACK_NO" & vbCrLf &
-                     " FROM ps_isa_ord_intf_HD A," & vbCrLf  '   & _
+            " B.ISA_EMPLOYEE_ID AS EMPLID, B.ISA_LINE_STATUS as ORDER_TYPE,B.OPRID_ENTERED_BY,WO.ISA_INSTALL_CUST," & vbCrLf &
+            " TO_CHAR(G.DTTM_STAMP, 'MM/DD/YYYY HH:MI:SS AM') as DTTM_STAMP, " & vbCrLf &  '  & _
+                 " (SELECT E.XLATLONGNAME" & vbCrLf &
+                                " FROM XLATTABLE E" & vbCrLf &
+                                " WHERE E.EFFDT =" & vbCrLf &
+                                " (SELECT MAX(E_ED.EFFDT) FROM XLATTABLE E_ED" & vbCrLf &
+                                " WHERE(E.FIELDNAME = E_ED.FIELDNAME)" & vbCrLf &
+                                " AND E.FIELDVALUE = E_ED.FIELDVALUE" & vbCrLf &
+                                " AND E_ED.EFFDT <= SYSDATE)" & vbCrLf &
+                                " AND E.FIELDNAME = 'ISA_LINE_STATUS'" & vbCrLf &
+                                " AND E.FIELDVALUE = G.ISA_LINE_STATUS) as ORDER_STATUS_DESC, " & vbCrLf &
+                 " B.DESCR254 As NONSTOCK_DESCRIPTION, C.DESCR60 as STOCK_DESCRIPTION, D.ISA_EMPLOYEE_EMAIL," & vbCrLf &
+                 " B.INV_ITEM_ID as INV_ITEM_ID," & vbCrLf &
+        " D.FIRST_NAME_SRCH, D.LAST_NAME_SRCH" & vbCrLf &
+                 " ,A.origin, LD.PO_ID, SH.ISA_ASN_TRACK_NO" & vbCrLf &
+                 " FROM ps_isa_ord_intf_HD A," & vbCrLf  '   & _
 
             strSQLstring += " ps_isa_ord_intf_LN B," & vbCrLf &
-                     " PS_MASTER_ITEM_TBL C," & vbCrLf &
-                     " PS_ISA_USERS_TBL D," & vbCrLf &
-                     " PS_ISAORDSTATUSLOG G, PS_ISA_ASN_SHIPPED SH,PS_ISA_WO_STATUS WO, PS_PO_LINE_DISTRIB LD" & vbCrLf &
-                     " where G.BUSINESS_UNIT_OM = '" & strBU & "' " & vbCrLf &
-                     " AND G.BUSINESS_UNIT_OM = A.BUSINESS_UNIT_OM " & vbCrLf &
-                     " AND G.BUSINESS_UNIT_OM = D.BUSINESS_UNIT " & vbCrLf     '   & _
-
+                 " PS_MASTER_ITEM_TBL C," & vbCrLf &
+                 " PS_ISA_USERS_TBL D," & vbCrLf &
+                 " PS_ISAORDSTATUSLOG G, PS_ISA_ASN_SHIPPED SH,PS_ISA_WO_STATUS WO, PS_PO_LINE_DISTRIB LD" & vbCrLf
+            If Reprocess Then
+                strSQLstring += " ,SDIX_UTILITY_PROCESS X" & vbCrLf
+            End If
+            strSQLstring += " where G.BUSINESS_UNIT_OM = '" & strBU & "' " & vbCrLf &
+                 " AND G.BUSINESS_UNIT_OM = A.BUSINESS_UNIT_OM " & vbCrLf &
+                 " AND G.BUSINESS_UNIT_OM = D.BUSINESS_UNIT " & vbCrLf
             strSQLstring += "  and A.BUSINESS_UNIT_OM = B.BUSINESS_UNIT_OM" & vbCrLf &
-                     " and A.ORDER_NO = B.ORDER_NO" & vbCrLf &
-                     " and C.SETID (+) = 'MAIN1'" & vbCrLf &
-                     " and C.INV_ITEM_ID(+) = B.INV_ITEM_ID " & vbCrLf &
-                     " AND G.ORDER_NO = A.ORDER_NO " & vbCrLf &
-                     " AND B.ISA_INTFC_LN = G.ISA_INTFC_LN" & vbCrLf &
-                     " AND G.ISA_LINE_STATUS = B.ISA_LINE_STATUS" & vbCrLf &
-                     " AND B.ISA_LINE_STATUS IN ('DLF','ASN','DLP','CNC','RPU')" & vbCrLf &
-                     " AND A.BUSINESS_UNIT_OM = D.BUSINESS_UNIT" & vbCrLf &
-                     " AND B.ISA_WORK_ORDER_NO = WO.ISA_WORK_ORDER_NO(+)" & vbCrLf &
-                     " AND B.BUSINESS_UNIT_OM = WO.BUSINESS_UNIT_OM(+)" & vbCrLf &
-                     " AND SH.PO_ID (+) = LD.PO_ID And SH.LINE_NBR (+) = LD.LINE_NBR And SH.SCHED_NBR (+) = LD.SCHED_NBR And LD.Req_id (+) = B.order_no AND LD.REQ_LINE_NBR (+) = B.ISA_INTFC_LN" & vbCrLf &
-                     "AND G.DTTM_STAMP > TO_DATE('" & dteStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf &
-                      "AND G.DTTM_STAMP <= TO_DATE('" & dteEndDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf &
-                      " AND UPPER(B.ISA_EMPLOYEE_ID) = UPPER(D.ISA_EMPLOYEE_ID)" & vbCrLf &
-                      " ORDER BY  DTTM_STAMP"
+                 " and A.ORDER_NO = B.ORDER_NO" & vbCrLf &
+                 " and C.SETID (+) = 'MAIN1'" & vbCrLf &
+                 " and C.INV_ITEM_ID(+) = B.INV_ITEM_ID " & vbCrLf &
+                 " AND G.ORDER_NO = A.ORDER_NO " & vbCrLf &
+                 " AND B.ISA_INTFC_LN = G.ISA_INTFC_LN" & vbCrLf &
+                 " AND G.ISA_LINE_STATUS = B.ISA_LINE_STATUS" & vbCrLf &
+                 " AND B.ISA_LINE_STATUS IN ('DLF','ASN','DLP','CNC','RPU')" & vbCrLf &
+                 " AND A.BUSINESS_UNIT_OM = D.BUSINESS_UNIT" & vbCrLf &
+                 " AND B.ISA_WORK_ORDER_NO = WO.ISA_WORK_ORDER_NO(+)" & vbCrLf &
+                 " AND B.BUSINESS_UNIT_OM = WO.BUSINESS_UNIT_OM(+)" & vbCrLf &
+                 " AND SH.PO_ID (+) = LD.PO_ID And SH.LINE_NBR (+) = LD.LINE_NBR And SH.SCHED_NBR (+) = LD.SCHED_NBR And LD.Req_id (+) = B.order_no AND LD.REQ_LINE_NBR (+) = B.ISA_INTFC_LN" & vbCrLf &
+                 " AND UPPER(B.ISA_EMPLOYEE_ID) = UPPER(D.ISA_EMPLOYEE_ID)" & vbCrLf
+            If Reprocess Then
+                strSQLstring += " AND b.order_no= x.order_no(+)" & vbCrLf &
+                 " AND x.SC_STATUS = 'Failed'" & vbCrLf &
+                 " And TOTAL_TRY_COUNT < 5 " & vbCrLf &
+                 " And UTILITY = 'WalmartSCStatusUpdate'" & vbCrLf &
+                 " ORDER BY  DTTM_STAMP DESC"
 
+            Else
+                strSQLstring += " And G.DTTM_STAMP > TO_DATE('" & dteStartDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf &
+                 "AND G.DTTM_STAMP <= TO_DATE('" & dteEndDate & "', 'MM/DD/YYYY HH:MI:SS AM')" & vbCrLf &
+                 " ORDER BY  DTTM_STAMP"
+
+            End If
             Try
                 objWalSCWorkOrder.WriteLine("  UpdateWalmartSourceCode Q1New: " & strSQLstring)
                 Try
@@ -407,83 +419,122 @@ Module Module1
                 Dim WO_Type As String = " "
                 Dim SamsClub_Key As String = ConfigurationSettings.AppSettings("SAMSCLUBKey").ToString()
                 Dim lstOfString As List(Of String) = New List(Of String)
-                For I = 0 To ds.Tables(0).Rows.Count - 1
-                    Dim IsSamsclubWO As Boolean = False
+                'Mythili - INC0038493 SCNotesUpdateUtility needs fix to capture and reprocess errors updating work order -- error handling
+                Dim locVar As String = String.Empty
+                Dim strExecQry As String = String.Empty
+                Dim rowsaffected As Integer = 0
+                If Not ds Is Nothing Then
+                    If ds.Tables.Count > 0 Then
+                        If ds.Tables(0).Rows.Count > 0 Then
+                            For I = 0 To ds.Tables(0).Rows.Count - 1
+                                Dim IsSamsclubWO As Boolean = False
 
-                    Try
-                        Dim OrderNo As String = ds.Tables(0).Rows(I).Item("ORDER_NO")
-                        objWalSCWorkOrder.WriteLine("Order No: " + Convert.ToString(OrderNo) + "Count " + Convert.ToString(I))
-                        Try
-                            If Not IsDBNull(ds.Tables(0).Rows(I).Item("ISA_INSTALL_CUST")) Then
-                                WO_Type = ds.Tables(0).Rows(I).Item("ISA_INSTALL_CUST")
-                                objWalSCWorkOrder.WriteLine("WO_TYPE: " + Convert.ToString(WO_Type) + "Count " + Convert.ToString(I))
-                                If WO_Type = SamsClub_Key Then
-                                    IsSamsclubWO = True
-                                End If
-                            Else
-                                WO_Type = " "
-                            End If
-                        Catch ex As Exception
-                        End Try
-                        If OrderNo.ToUpper.Substring(0, 1) = "W" Then
-                            If Not lstOfString.Contains(OrderNo) Then
-                                objWalSCWorkOrder.WriteLine("Order No: " + Convert.ToString(OrderNo) + "Count " + Convert.ToString(I))
-                                lstOfString.Add(OrderNo)
-                                Dim WorkOrder As String = ds.Tables(0).Rows(I).Item("WORK_ORDER_NO")
-                                objWalSCWorkOrder.WriteLine("WorkOrder No: " + Convert.ToString(WorkOrder))
-                                Dim EnteredBy As String = ds.Tables(0).Rows(I).Item("OPRID_ENTERED_BY")
-                                If Not String.IsNullOrEmpty(WorkOrder) Then
-                                    Dim strSQLQuery As String = "select THIRDPARTY_COMP_ID from SDIX_USERS_TBL where ISA_EMPLOYEE_ID='" & EnteredBy & "' "
-                                    Dim dsUser As DataSet = ORDBAccess.GetAdapter(strSQLQuery, connectOR)
-                                    Dim Order As String()
-                                    If dsUser.Tables.Count > 0 Then
-                                        Dim THIRDPARTY_COMP_ID As String = String.Empty
-                                        Try
-                                            THIRDPARTY_COMP_ID = dsUser.Tables(0).Rows(0).Item("THIRDPARTY_COMP_ID")
-                                            objWalSCWorkOrder.WriteLine("THIRDPARTY_COMP_ID: " + Convert.ToString(THIRDPARTY_COMP_ID))
-                                        Catch ex As Exception
-                                            THIRDPARTY_COMP_ID = "0"
-                                            objWalSCWorkOrder.WriteLine("Catch-THIRDPARTY_COMP_ID: " + Convert.ToString(THIRDPARTY_COMP_ID))
-                                        End Try
-                                        Dim OrderStatusDetail As New OrderStatusDetail
-                                        Dim orderDetail As String = OrdrStatus(OrderNo)
-                                        objWalSCWorkOrder.WriteLine("Current Order Status: " + Convert.ToString(orderDetail))
-                                        If orderDetail.Trim() <> "" Then
-                                            Order = orderDetail.Split("^"c)
-                                            OrderStatusDetail.orderStatus = Order(0)
-                                            OrderStatusDetail.statusDesc = Order(1)
-                                            OrderStatusDetail.dueDate = Order(2)
-                                            OrderStatusDetail.message = "Success"
-                                            objWalSCWorkOrder.WriteLine("Order No: " + Convert.ToString(OrderNo) + "Status" + Convert.ToString(OrderStatusDetail.statusDesc))
-                                            If OrderStatusDetail.message = "Success" Then
-                                                'WAL-622: SC Updates for Canceled Orders And Partial Deliveries 
-                                                'Mythili - WAL-824 Need Service Channel API change to map PUR (Ready for Pickup) from In Progress / Parts on Order to new Service Channel Extended Status “In Progress / Parts Ready for Pickup
-                                                If OrderStatusDetail.statusDesc = "Delivered" Or OrderStatusDetail.statusDesc = "En Route from Vendor" Or OrderStatusDetail.statusDesc = "Partially Delivered" Or OrderStatusDetail.statusDesc = "Cancelled" Or OrderStatusDetail.statusDesc = "Ready for Pickup" Then
-                                                    Dim CheckWOStatus As String = CheckWorkOrderStatus(WorkOrder, THIRDPARTY_COMP_ID, IsSamsclubWO)
-                                                    objWalSCWorkOrder.WriteLine("CheckWOStatus: " + Convert.ToString(CheckWOStatus))
-                                                    If CheckWOStatus.ToUpper() <> "COMPLETED" And CheckWOStatus <> "Failed" Then
-                                                        Dim WOStatus As String = String.Empty
-                                                        If OrderStatusDetail.statusDesc = "Delivered" Then
-                                                            WOStatus = "PARTS DELIVERED"
-                                                        ElseIf OrderStatusDetail.statusDesc = "En Route from Vendor" Then
-                                                            WOStatus = "PARTS SHIPPED"
-                                                        ElseIf OrderStatusDetail.statusDesc = "Partially Delivered" Then
-                                                            WOStatus = "PARTIAL PARTS DELIVERED"
-                                                        ElseIf OrderStatusDetail.statusDesc = "Cancelled" Then
-                                                            WOStatus = "INCOMPLETE"
-                                                        ElseIf OrderStatusDetail.statusDesc = "Ready for Pickup" Then
-                                                            WOStatus = "PARTS READY FOR PICKUP"
-                                                        End If
-                                                        If CheckWOStatus <> WOStatus Then
-                                                            Dim PurchaseNo As String = PurchaseOrderNo(WorkOrder, THIRDPARTY_COMP_ID, IsSamsclubWO)
-                                                            If PurchaseNo <> "Failed" Then
-                                                                If THIRDPARTY_COMP_ID = ConfigurationSettings.AppSettings("CBRECompanyID").ToString() Then
-                                                                    UpdateWorkOrderStatus(WorkOrder, "CBRE", WOStatus, IsSamsclubWO)
-                                                                    UpdateWorkOrderStatus(PurchaseNo, "Walmart", WOStatus, IsSamsclubWO)
-                                                                ElseIf IsSamsclubWO Then
-                                                                    UpdateWorkOrderStatus(WorkOrder, SamsClub_Key, WOStatus, IsSamsclubWO)
-                                                                Else
-                                                                    UpdateWorkOrderStatus(WorkOrder, "Walmart", WOStatus, IsSamsclubWO)
+                                Try
+                                    Dim OrderNo As String = ds.Tables(0).Rows(I).Item("ORDER_NO")
+                                    'objWalSCWorkOrder.WriteLine("Order No: " + Convert.ToString(OrderNo) + "Count " + Convert.ToString(I))
+                                    Try
+                                        If Not IsDBNull(ds.Tables(0).Rows(I).Item("ISA_INSTALL_CUST")) Then
+                                            WO_Type = ds.Tables(0).Rows(I).Item("ISA_INSTALL_CUST")
+                                            'objWalSCWorkOrder.WriteLine("WO_TYPE: " + Convert.ToString(WO_Type) + "Count " + Convert.ToString(I))
+                                            If WO_Type = SamsClub_Key Then
+                                                IsSamsclubWO = True
+                                            End If
+                                        Else
+                                            WO_Type = " "
+                                        End If
+                                    Catch ex As Exception
+                                    End Try
+                                    If OrderNo.ToUpper.Substring(0, 1) = "W" Then
+                                        If Not lstOfString.Contains(OrderNo) Then
+                                            'objWalSCWorkOrder.WriteLine("Order No: " + Convert.ToString(OrderNo) + "Count " + Convert.ToString(I))
+                                            lstOfString.Add(OrderNo)
+                                            Dim WorkOrder As String = ds.Tables(0).Rows(I).Item("WORK_ORDER_NO")
+                                            objWalSCWorkOrder.WriteLine("WorkOrder No: " + Convert.ToString(WorkOrder))
+                                            Dim EnteredBy As String = ds.Tables(0).Rows(I).Item("OPRID_ENTERED_BY")
+                                            If Not String.IsNullOrEmpty(WorkOrder) Then
+                                                Dim strSQLQuery As String = "select THIRDPARTY_COMP_ID from SDIX_USERS_TBL where ISA_EMPLOYEE_ID='" & EnteredBy & "' "
+                                                Dim dsUser As DataSet = ORDBAccess.GetAdapter(strSQLQuery, connectOR)
+                                                Dim Order As String()
+                                                If dsUser.Tables.Count > 0 Then
+                                                    Dim THIRDPARTY_COMP_ID As String = String.Empty
+                                                    Try
+                                                        THIRDPARTY_COMP_ID = dsUser.Tables(0).Rows(0).Item("THIRDPARTY_COMP_ID")
+                                                        objWalSCWorkOrder.WriteLine("THIRDPARTY_COMP_ID: " + Convert.ToString(THIRDPARTY_COMP_ID))
+                                                    Catch ex As Exception
+                                                        THIRDPARTY_COMP_ID = "0"
+                                                        objWalSCWorkOrder.WriteLine("Catch-THIRDPARTY_COMP_ID: " + Convert.ToString(THIRDPARTY_COMP_ID))
+                                                    End Try
+                                                    Dim OrderStatusDetail As New OrderStatusDetail
+                                                    Dim orderDetail As String = OrdrStatus(OrderNo)
+                                                    objWalSCWorkOrder.WriteLine("Current Order Status: " + Convert.ToString(orderDetail))
+                                                    If orderDetail.Trim() <> "" Then
+                                                        Order = orderDetail.Split("^"c)
+                                                        OrderStatusDetail.orderStatus = Order(0)
+                                                        OrderStatusDetail.statusDesc = Order(1)
+                                                        OrderStatusDetail.dueDate = Order(2)
+                                                        OrderStatusDetail.message = "Success"
+                                                        objWalSCWorkOrder.WriteLine("Order No: " + Convert.ToString(OrderNo) + "Status" + Convert.ToString(OrderStatusDetail.statusDesc))
+                                                        If OrderStatusDetail.message = "Success" Then
+                                                            'WAL-622: SC Updates for Canceled Orders And Partial Deliveries
+                                                            'Mythili - WAL-824 Need Service Channel API change to map PUR (Ready for Pickup) from In Progress / Parts on Order to new Service Channel Extended Status “In Progress / Parts Ready for Pickup
+                                                            If OrderStatusDetail.statusDesc = "Delivered" Or OrderStatusDetail.statusDesc = "En Route from Vendor" Or OrderStatusDetail.statusDesc = "Partially Delivered" Or OrderStatusDetail.statusDesc = "Cancelled" Or OrderStatusDetail.statusDesc = "Ready for Pickup" Then
+                                                                Dim CheckWOStatus As String = CheckWorkOrderStatus(WorkOrder, THIRDPARTY_COMP_ID, IsSamsclubWO)
+                                                                objWalSCWorkOrder.WriteLine("CheckWOStatus: " + Convert.ToString(CheckWOStatus))
+                                                                If CheckWOStatus.ToUpper() <> "COMPLETED" And CheckWOStatus <> "Failed" Then
+                                                                    Dim WOStatus As String = String.Empty
+                                                                    If OrderStatusDetail.statusDesc = "Delivered" Then
+                                                                        WOStatus = "PARTS DELIVERED"
+                                                                    ElseIf OrderStatusDetail.statusDesc = "En Route from Vendor" Then
+                                                                        WOStatus = "PARTS SHIPPED"
+                                                                    ElseIf OrderStatusDetail.statusDesc = "Partially Delivered" Then
+                                                                        WOStatus = "PARTIAL PARTS DELIVERED"
+                                                                    ElseIf OrderStatusDetail.statusDesc = "Cancelled" Then
+                                                                        WOStatus = "INCOMPLETE"
+                                                                    ElseIf OrderStatusDetail.statusDesc = "Ready for Pickup" Then
+                                                                        WOStatus = "PARTS READY FOR PICKUP"
+                                                                    End If
+                                                                    If CheckWOStatus <> WOStatus Then
+                                                                        Dim PurchaseNo As String = PurchaseOrderNo(WorkOrder, THIRDPARTY_COMP_ID, IsSamsclubWO)
+                                                                        Dim result As String = ""
+                                                                        If PurchaseNo <> "Failed" Then
+                                                                            If THIRDPARTY_COMP_ID = ConfigurationSettings.AppSettings("CBRECompanyID").ToString() Then
+                                                                                result = UpdateWorkOrderStatus(WorkOrder, "CBRE", WOStatus, IsSamsclubWO)
+                                                                                result = UpdateWorkOrderStatus(PurchaseNo, "Walmart", WOStatus, IsSamsclubWO)
+                                                                            ElseIf IsSamsclubWO Then
+                                                                                result = UpdateWorkOrderStatus(WorkOrder, SamsClub_Key, WOStatus, IsSamsclubWO)
+                                                                            Else
+                                                                                result = UpdateWorkOrderStatus(WorkOrder, "Walmart", WOStatus, IsSamsclubWO)
+                                                                            End If
+                                                                            'Mythili - INC0038493 SCNotesUpdateUtility needs fix to capture and reprocess errors updating work order -- adding logs
+                                                                            locVar = "Order status: " + OrderStatusDetail.statusDesc + "-- Work order status: " + WOStatus
+                                                                            Try
+                                                                                LogOrderStatus(OrderNo, locVar, result)
+                                                                            Catch ex As Exception
+                                                                                objWalSCWorkOrder.WriteLine("Error in LogOrderStatus  " & " " & ex.Message & Now())
+                                                                            End Try
+                                                                        ElseIf PurchaseNo = "Failed" Then
+                                                                            locVar = OrderStatusDetail.statusDesc + "-- PurchaseNo(): " + CheckWOStatus
+                                                                            Try
+                                                                                LogOrderStatus(OrderNo, locVar, "Failed")
+                                                                            Catch ex As Exception
+                                                                                objWalSCWorkOrder.WriteLine("Error in LogOrderStatus  " & " " & ex.Message & Now())
+                                                                            End Try
+                                                                        End If
+                                                                    End If
+                                                                ElseIf CheckWOStatus = "Failed" Then
+                                                                    locVar = OrderStatusDetail.statusDesc + "-- CheckWOStatus(): " + CheckWOStatus
+                                                                    Try
+                                                                        LogOrderStatus(OrderNo, locVar, "Failed")
+                                                                    Catch ex As Exception
+                                                                        objWalSCWorkOrder.WriteLine("Error in LogOrderStatus  " & " " & ex.Message & Now())
+                                                                    End Try
+                                                                ElseIf CheckWOStatus = "COMPLETED" Then
+                                                                    locVar = OrderStatusDetail.statusDesc + "-- CheckWOStatus(): " + CheckWOStatus
+                                                                    Try
+                                                                        LogOrderStatus(OrderNo, locVar, "Completed")
+                                                                    Catch ex As Exception
+                                                                        objWalSCWorkOrder.WriteLine("Error in LogOrderStatus  " & " " & ex.Message & Now())
+                                                                    End Try
                                                                 End If
                                                             End If
                                                         End If
@@ -491,15 +542,14 @@ Module Module1
                                                 End If
                                             End If
                                         End If
-                                        End If
-                                End If
-                            End If
+                                    End If
+                                Catch ex As Exception
+                                    objWalSCWorkOrder.WriteLine("Method:UpdateWalmartSourceCode - " + ex.Message & " " & Now())
+                                End Try
+                            Next
                         End If
-                    Catch ex As Exception
-                        objWalSCWorkOrder.WriteLine("Method:UpdateWalmartSourceCode - " + ex.Message & " " & Now())
-                    End Try
-                Next
-
+                    End If
+                End If
             Catch OleDBExp As OleDbException
                 Console.WriteLine("")
                 Console.WriteLine("***OLEDB error - " & OleDBExp.ToString)
@@ -518,9 +568,10 @@ Module Module1
                 Catch ex As Exception
                     objWalSCWorkOrder.WriteLine("Error in UpdateWalmartSourcecodemetod  " & " " & ex.Message & Now())
                     SendEmail(ex.Message)
-
                 End Try
-                Return False
+
+
+
             Else
                 Console.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()))
                 objWalSCWorkOrder.WriteLine("Fetched Datas " + Convert.ToString(ds.Tables(0).Rows.Count()) & " " & Now())
@@ -528,13 +579,62 @@ Module Module1
         Catch ex As Exception
             objWalSCWorkOrder.WriteLine("Error in UpdateWalmartSourcecodemetod  " & " " & ex.Message & Now())
             SendEmail(ex.Message)
-
         End Try
-        bolerror1 = updateLastSendDate(strBU, dteEndDate)
-        If bolerror1 = True Then
-            SendEmail()
+
+        If Not Reprocess Then
+            bolerror1 = updateLastSendDate(strBU, dteEndDate)
+            If bolerror1 = True Then
+                SendEmail()
+            End If
         End If
 
+
+    End Function
+    'Madhu-WAL-1203-Select queryto get the details of WorkOrder[Otimised the query to bring the current line status]
+    Public Function LogOrderStatus(ByVal orderNo As String, ByVal statusChange As String, ByVal status As String)
+        Dim dsOrders As DataSet = New DataSet()
+        Dim strSql As String = String.Empty
+        Dim strExecQry As String = String.Empty
+        Dim rowsaffected As Integer
+        Dim totTryCount As Integer
+        Try
+            strSql = "SELECT * FROM SDIX_UTILITY_PROCESS WHERE UTILITY = 'WalmartSCStatusUpdate' AND SC_STATUS = 'Failed' AND TOTAL_TRY_COUNT <5 AND ORDER_NO = '" + orderNo + "'"
+            dsOrders = ORDBAccess.GetAdapter(strSql, connectOR)
+                If Not dsOrders Is Nothing Then
+                    If dsOrders.Tables(0).Rows.Count > 0 Then
+                    totTryCount = CInt(dsOrders.Tables(0).Rows(0).Item("TOTAL_TRY_COUNT").ToString) + 1
+
+                    strExecQry = "UPDATE SDIX_UTILITY_PROCESS SET TOTAL_TRY_COUNT = '" & totTryCount & "',SC_STATUS = '" & status & "'," & vbCrLf &
+                        "STATUS_CHANGE = '" & statusChange & "', UTILITY = 'WalmartSCStatusUpdate', LASTUPDTTM = SYSDATE WHERE ORDER_NO = '" & orderNo.ToString() & "'"
+                Else
+                    totTryCount = 1
+                    strExecQry = "INSERT INTO SDIX_UTILITY_PROCESS (" & vbCrLf &
+                    "ORDER_NO,TOTAL_TRY_COUNT,STATUS_CHANGE,SC_STATUS,ADD_DTTM,UTILITY,LASTUPDTTM) VALUES" & vbCrLf &
+                    "('" + orderNo.ToString() & "','" & totTryCount & "','" & statusChange & "','" & status & "',SYSDATE,'WalmartSCStatusUpdate',SYSDATE)"
+                End If
+
+                Else
+                    objWalSCWorkOrder.WriteLine("No data in dsOrders  " & " " & Now())
+                    Exit Function
+                End If
+
+            Try
+                Dim Command = New OleDbCommand(strExecQry, connectOR)
+                objWalSCWorkOrder.WriteLine("  Insert/Update log : " & strExecQry & " " & Now())
+                connectOR.Open()
+                rowsaffected = Command.ExecuteNonQuery()
+                connectOR.Close()
+            Catch OleDBExp As OleDbException
+                Console.WriteLine("")
+                Console.WriteLine("***OLEDB error - " & OleDBExp.ToString)
+                Console.WriteLine("")
+                connectOR.Close()
+                objWalSCWorkOrder.WriteLine("  Error - inserting/updating the log table " & OleDBExp.ToString & " " & Now())
+            End Try
+        Catch ex As OleDbException
+            objWalSCWorkOrder.WriteLine("Error in LogOrderStatus  " & " " & ex.Message & Now())
+            SendEmail(ex.Message)
+        End Try
     End Function
     Public Function GetCredentials(ByVal credtye As String) As DataSet
         Try
@@ -614,6 +714,7 @@ Module Module1
                 Else
                     objWalSCWorkOrder.WriteLine("Method:CheckWorkOrderStatus - " + APIresponse)
 
+                    Return "Failed"
                 End If
             End If
         Catch ex As Exception
@@ -688,6 +789,8 @@ Module Module1
                     End If
                 End If
                 objWalSCWorkOrder.WriteLine("Method:PurchaseOrderNo - " + APIresponse)
+            Else
+                Return "Failed"
             End If
         Catch ex As Exception
             Return "Failed"
@@ -748,6 +851,7 @@ Module Module1
                         objPartParam.Status = New Status
                         objPartParam.Status.Primary = "In Progress"
                         objPartParam.Status.Extended = status
+                        Dim objResult As New resultBO
 
                         Dim serializedparameter = JsonConvert.SerializeObject(objPartParam)
                         Dim response = httpClient.PutAsync(apiURL, New StringContent(serializedparameter, Encoding.UTF8, "application/json")).Result
@@ -755,8 +859,16 @@ Module Module1
                             Dim workorderAPIResponse As String = response.Content.ReadAsStringAsync().Result
                             objWalSCWorkOrder.WriteLine("Result-" + Convert.ToString(workorderAPIResponse) & " " & Now())
                             objWalSCWorkOrder.WriteLine("--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
+                            Try
+                                objResult = JsonConvert.DeserializeObject(Of resultBO)(workorderAPIResponse)
+                                If objResult.result = "" Then
+                                    Return "Failed"
+                                Else
 
-                            Return "Success"
+                                    Return "Success"
+                                End If
+                            Catch ex As Exception
+                            End Try
                         Else
                             objWalSCWorkOrder.WriteLine("Result- Failed in API response" & " " & Now())
                             objWalSCWorkOrder.WriteLine("--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
@@ -765,6 +877,7 @@ Module Module1
                         End If
                     End If
                 Else
+                    Return "Failed"
                     objWalSCWorkOrder.WriteLine("Method:UpdateWorkOrderStatus - " + APIresponse)
                 End If
 
@@ -988,6 +1101,11 @@ End Class
 Public Class Status
     Public Property Primary As String
     Public Property Extended As String
+End Class
+Public Class resultBO
+    Public Property result As String
+    Public Property id As String
+
 End Class
 
 
