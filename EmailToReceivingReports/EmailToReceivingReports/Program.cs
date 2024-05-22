@@ -372,13 +372,14 @@ namespace EmailToReceivingReports
         }
 
         //Madhu-INC0015039-OAUTH Change for Abbvie EmailToReceivingReports utility
-
+        //Madhu-INC0039457	We would like to make updates and use a different report for ingestion on the Abbvie Item status
         private static Boolean InsertBackOrderReport(DataTable dt)
         {
             Boolean reslt = false;
             try
             {
                 string StoreRoom = string.Empty;
+                string backorder = string.Empty;
                 string StockCatagory = string.Empty;
                 string Item = string.Empty;
                 string LastIssueDate = String.Empty;
@@ -396,9 +397,9 @@ namespace EmailToReceivingReports
                   //deleting unwanted rows
                    dt.Rows[0].Delete();
                    dt.Rows[1].Delete();
-                   dt.Rows[2].Delete();
-                   dt.Rows[3].Delete();
-                   dt.Rows[4].Delete();
+                   //dt.Rows[2].Delete();
+                   //dt.Rows[3].Delete();
+                   //dt.Rows[4].Delete();
                   dt.AcceptChanges();
 
                    string ParentOrder = "";
@@ -406,180 +407,194 @@ namespace EmailToReceivingReports
 
                 foreach (DataRow rw in dt.Rows)
                 {
-                    string currentOrder = "";
-                    if (!isExit)
-                    {
-
-                        if (rw["Stockroom Backorder Report (RPA)"] != System.DBNull.Value)
+                        string currentOrder = "";
+                        if (!isExit)
                         {
-                            currentOrder = rw["Stockroom Backorder Report (RPA)"].ToString().Trim();
-                            if (currentOrder == "Summary") {
-                                isExit = true;
-                                currentOrder = "";
-                                StoreRoom = "";
-                            }
-                            else if (currentOrder == "")
+
+                            if (rw["Stockroom Backorder Report"] != System.DBNull.Value)
                             {
-                                currentOrder = ParentOrder;
-                                StoreRoom = currentOrder;
-                            }
-                            else if (currentOrder == ParentOrder) {
-                                StoreRoom = "";
+                                currentOrder = rw["Stockroom Backorder Report"].ToString().Trim();
+                                if (currentOrder == "Summary")
+                                {
+                                    isExit = true;
+                                    currentOrder = "";
+                                    StoreRoom = "";
+                                }
+                                else if (currentOrder == "")
+                                {
+                                    currentOrder = ParentOrder;
+                                    StoreRoom = currentOrder;
+                                }
+                                else if (currentOrder == ParentOrder)
+                                {
+                                    StoreRoom = "";
+                                }
+                                else
+                                {
+                                    ParentOrder = currentOrder;
+                                    StoreRoom = currentOrder;
+                                }
                             }
                             else
                             {
-                                ParentOrder = currentOrder;
-                                StoreRoom = currentOrder;
+                                StoreRoom = ParentOrder;
                             }
+                            //Need to insert the values only if the backorder value is "Y"
+                            try
+                            {
+                                if (rw["F13"] != System.DBNull.Value)
+                                {
+                                    backorder = rw["F13"].ToString().ToUpper();
+                                }
+                                else
+                                {
+                                    backorder = "N";
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                backorder = "N";
                         }
-                        else
+                        if (backorder == "Y")
                         {
-                            StoreRoom = ParentOrder;
-                        }
-
-
-                        if (StoreRoom != "")
-                        {
-                            //Validate the stock category
-                            try
+                            if (StoreRoom != "")
                             {
-                                if (rw["F2"] != System.DBNull.Value)
+                                //Validate the stock category
+                                try
                                 {
-                                    StockCatagory = rw["F2"].ToString();
-                                }
-                                else
-                                {
-                                    StockCatagory = " ";
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-
-                            }
-                            //Validate the Item
-                            try
-                            {
-                                if (rw["F3"] != System.DBNull.Value)
-                                {
-                                    Item = rw["F3"].ToString();
-                                }
-                                else
-                                {
-                                    Item = " ";
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-
-                            }
-                            //Validate the Last Issuedate
-                            try
-                            {
-                                if (rw["F4"] != System.DBNull.Value)
-                                {
-                                    LastIssueDate = rw["F4"].ToString();
-                                }
-                                else
-                                {
-                                    LastIssueDate = "";
-                                }
-
-                            }
-                            catch (Exception ex)
-                            {
-
-                            }
-                            //Validate the Item description
-                            try
-                            {
-                                if (rw["F5"] != System.DBNull.Value)
-                                {
-                                    ItemDescription = rw["F5"].ToString();
-                                    if (ItemDescription.Contains("'"))
+                                    if (rw["F2"] != System.DBNull.Value)
                                     {
-                                        ItemDescription = ItemDescription.Replace("'", "''");
+                                        StockCatagory = rw["F2"].ToString();
+                                    }
+                                    else
+                                    {
+                                        StockCatagory = " ";
                                     }
                                 }
+                                catch (Exception ex)
+                                {
+
+                                }
+                                //Validate the Item
+                                try
+                                {
+                                    if (rw["F3"] != System.DBNull.Value)
+                                    {
+                                        Item = rw["F3"].ToString();
+                                    }
+                                    else
+                                    {
+                                        Item = " ";
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+
+                                }
+                                //Validate the Last Issuedate
+                                try
+                                {
+                                    if (rw["F4"] != System.DBNull.Value)
+                                    {
+                                        LastIssueDate = rw["F4"].ToString();
+                                    }
+                                    else
+                                    {
+                                        LastIssueDate = "";
+                                    }
+
+                                }
+                                catch (Exception ex)
+                                {
+
+                                }
+                                //Validate the Item description
+                                try
+                                {
+                                    if (rw["F6"] != System.DBNull.Value)
+                                    {
+                                        ItemDescription = rw["F6"].ToString();
+                                        if (ItemDescription.Contains("'"))
+                                        {
+                                            ItemDescription = ItemDescription.Replace("'", "''");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        ItemDescription = " ";
+                                    }
+
+
+                                }
+                                catch (Exception ex)
+                                {
+
+                                }
+                                //Validate the Issue unit
+                                try
+                                {
+                                    if (rw["F10"] != System.DBNull.Value)
+                                    {
+                                        IssueUnit = rw["F10"].ToString();
+                                    }
+                                    else
+                                    {
+                                        IssueUnit = " ";
+                                    }
+
+                                }
+                                catch (Exception ex)
+                                {
+
+                                }
+                                //Validate the Hardreserved quantity
+
+                                try
+                                {
+                                    if (rw["F12"] != System.DBNull.Value)
+                                    {
+                                        HardReservedQuantity = rw["F12"].ToString();
+                                    }
+                                    else
+                                    {
+                                        HardReservedQuantity = " ";
+                                    }
+
+                                }
+                                catch (Exception ex)
+                                {
+
+                                }
+                                //Inserting into DB
+
+
+                                strSQLstring = "INSERT INTO SDIX_BACKORDER_REPORT_LOG (STORE_ROOM,STOCK_TYPE,ITEM_ID,ITEM_DESC,ISSUE_UNIT,QUTY_RESERV,LASTUPDDTTM";
+                                if (LastIssueDate != "")
+                                {
+                                    strSQLstring = strSQLstring + ",LASTISSUE_DATE ) " + System.Environment.NewLine;
+
+                                }
                                 else
                                 {
-                                    ItemDescription = " ";
+                                    strSQLstring = strSQLstring + ") " + System.Environment.NewLine;
+
                                 }
-
-
-                            }
-                            catch (Exception ex)
-                            {
-
-                            }
-                            //Validate the Issue unit
-                            try
-                            {
-                                if (rw["F6"] != System.DBNull.Value)
+                                if (LastIssueDate != "")
                                 {
-                                    IssueUnit = rw["F6"].ToString();
+                                    strSQLstring= strSQLstring +"VALUES('" + StoreRoom + "', '" + StockCatagory + "', '" + Item + "', '" + ItemDescription + "', '" + IssueUnit + "','" + HardReservedQuantity + "',SYSDATE,TO_DATE('" + LastIssueDate + "', 'MM/DD/YYYY HH:MI:SS AM'))";
+
                                 }
                                 else
                                 {
-                                    IssueUnit = " ";
+                                    strSQLstring = strSQLstring + "VALUES('" + StoreRoom + "', '" + StockCatagory + "', '" + Item + "', '" + ItemDescription + "', '" + IssueUnit + "','" + HardReservedQuantity + "',SYSDATE)";
+
                                 }
-
+                                com = new OleDbCommand(strSQLstring, cn);
+                                rowsaffected = com.ExecuteNonQuery();
                             }
-                            catch (Exception ex)
-                            {
-
-                            }
-                            //Validate the Hardreserved quantity
-
-                            try
-                            {
-                                if (rw["F7"] != System.DBNull.Value)
-                                {
-                                    HardReservedQuantity = rw["F7"].ToString();
-                                }
-                                else
-                                {
-                                    HardReservedQuantity = " ";
-                                }
-
-                            }
-                            catch (Exception ex)
-                            {
-
-                            }
-                            //Inserting into DB
-
-
-                            strSQLstring = "INSERT INTO SDIX_BACKORDER_REPORT_LOG (STORE_ROOM,STOCK_TYPE,ITEM_ID,ITEM_DESC,ISSUE_UNIT,QUTY_RESERV,LASTUPDDTTM"; 
-                              if (LastIssueDate != "")
-                            {
-                                strSQLstring = strSQLstring + ",LASTISSUE_DATE ) " + System.Environment.NewLine; 
-
-                            }
-                            else
-                            {
-                                strSQLstring = strSQLstring + ") " + System.Environment.NewLine;
-
-                            }
-                            if (LastIssueDate != "")
-                            {
-                                strSQLstring= strSQLstring +   "VALUES('" + StoreRoom + "', '" + StockCatagory + "', '" + Item + "', '" + ItemDescription + "', '" + IssueUnit + "','" + HardReservedQuantity + "',SYSDATE,TO_DATE('" + LastIssueDate + "', 'MM/DD/YYYY HH:MI:SS AM'))";
-
-                            }
-                            else
-                            {
-                                strSQLstring = strSQLstring + "VALUES('" + StoreRoom + "', '" + StockCatagory + "', '" + Item + "', '" + ItemDescription + "', '" + IssueUnit + "','" + HardReservedQuantity + "',SYSDATE)";
-
-                            }
-
-
-
-                            com = new OleDbCommand(strSQLstring, cn);
-                            rowsaffected = com.ExecuteNonQuery();
                         }
-
                     }
-                    
-                  
+
                 }
                 cn.Close();
                 cn.Dispose();
