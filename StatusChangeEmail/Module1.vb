@@ -3917,81 +3917,52 @@ Module Module1
         Return strpo_no
         '
     End Function
-
-    Public Sub sendNotification(ByVal Session_UserID As String, ByVal subject As String, ByVal orderNo As String, Optional ByVal strbu As String = Nothing)
-        Dim response As String
+    'INC0042603 - Changed .net maui push notification since the Xamarin push notification is outdated (-Shanmugapriya)
+    Public Sub sendNotification(ByVal Session_UserID As String, ByVal subject As String, ByVal orderNo As String, Optional ByVal strbu As String = Nothing, Optional ByVal redirectscreen As String = " ", Optional ByVal CurrentApprover As String = " ")
+        Dim Response As String = String.Empty
+        Dim URL1 As String = String.Empty
         Try
-            Dim NotificationContent As String = subject
-            Dim _notificationResult As New DataSet
-            Dim notificationSQLStr = "Select distinct(DEVICE_INFO) FROM (SELECT DISTINCT(DEVICE_INFO) FROM SDIX_USER_TOKEN WHERE ISA_EMPLOYEE_ID = '" + Session_UserID + "' AND DEVICE_INFO IS NOT NULL AND LOWER(DEVICE_INFO) <> 'unknown unknown' AND LOWER(DEVICE_INFO)<>'webapp' order by last_update_dttm desc fetch first 1000 rows only)"
-            _notificationResult = ORDBAccess.GetAdapter(notificationSQLStr, connectOR)
-            If _notificationResult.Tables.Count > 0 Then
-                If _notificationResult.Tables(0).Rows.Count > 0 Then
-                    Dim getTokenID As String() = _notificationResult.Tables(0).AsEnumerable().[Select](Function(r) r.Field(Of String)("DEVICE_INFO")).ToArray()
-                    Dim serverKey As String = ConfigurationManager.AppSettings("serverKey")
-                    Dim senderId As String = ConfigurationManager.AppSettings("senderId")
-                    Dim serverKey1 As String = ConfigurationManager.AppSettings("serverKey1")
-                    Dim senderId1 As String = ConfigurationManager.AppSettings("senderId1")
-                    Dim tRequest As WebRequest = WebRequest.Create("https://fcm.googleapis.com/fcm/send")
-                    tRequest.Method = "post"
-                    tRequest.ContentType = "application/json"
-                    Dim webObject As New WebRequestFcmData
-                    With webObject
-                        .registration_ids = getTokenID
-                        .notification.body = subject
-                        .notification.sound = "Enabled"
-                        .data.orderid = orderNo
-                        'Madhu-IPM-18-Modifying the title as IPM For Push notifications(For Non-Walmart)
-                        Try
-                            If strbu = "I0W01" Then
-                                Try
-                                    .notification.title = "ZEUS"
-                                Catch ex As Exception
-                                End Try
-                            Else
-                                Try
-                                    .notification.title = "IPM"
-                                Catch ex As Exception
-                                End Try
-
-                            End If
-                        Catch ex As Exception
-                        End Try
-
-                    End With
-                    Dim serializer = New JavaScriptSerializer()
-                    Dim json = serializer.Serialize(webObject)
-                    Dim byteArray As Byte() = Encoding.UTF8.GetBytes(json)
-                    If strbu = "I0W01" Then
-                        tRequest.Headers.Add(String.Format("Authorization: key={0}", serverKey))
-                        tRequest.Headers.Add(String.Format("Sender: id={0}", senderId))
-                    Else
-                        tRequest.Headers.Add(String.Format("Authorization: key={0}", serverKey1))
-                        tRequest.Headers.Add(String.Format("Sender: id={0}", senderId1))
-
-                    End If
-
-                    tRequest.ContentLength = byteArray.Length
-
-                    Using dataStream As Stream = tRequest.GetRequestStream()
-                        dataStream.Write(byteArray, 0, byteArray.Length)
-
-                        Using tResponse As WebResponse = tRequest.GetResponse()
-
-                            Using dataStreamResponse As Stream = tResponse.GetResponseStream()
-
-                                Using tReader As StreamReader = New StreamReader(dataStreamResponse)
-                                    Dim sResponseFromServer As String = tReader.ReadToEnd()
-                                    response = sResponseFromServer
-                                End Using
-                            End Using
-                        End Using
-                    End Using
+            Try
+                If strbu = "I0W01" Then
+                    URL1 = ConfigurationManager.AppSettings("WalmartPushNotification")
+                Else
+                    URL1 = ConfigurationManager.AppSettings("PushNotification")
                 End If
-            End If
-        Catch ex As Exception
+            Catch ex As Exception
+            End Try
+            Dim client = New HttpClient()
+                client.DefaultRequestHeaders.Accept.Clear()
+                client.DefaultRequestHeaders.Accept.Add(New MediaTypeWithQualityHeaderValue("application/json"))
+                Dim notification As NotificationBO = New NotificationBO()
+                notification.subject = subject
+                notification.SessionUser = Session_UserID
+                notification.orderno = orderNo
+                notification.redirectscreen = redirectscreen
+                notification.ApproverName = CurrentApprover
+                Dim Serializedparameter = JsonConvert.SerializeObject(notification)
+                Dim res As HttpResponseMessage = client.PostAsync(URL1, New StringContent(Serializedparameter, Encoding.UTF8, "application/json")).Result
+                Try
+                    If res.StatusCode = HttpStatusCode.OK Then
+                        Response = res.Content.ReadAsStringAsync().Result
+                    Else
+                        Response = "Error"
+                    End If
+                Catch ex As Exception
+                End Try
+            Catch ex As Exception
+                Dim d = ex.Message
         End Try
     End Sub
+
+    Public Class NotificationBO
+
+        Public Property SessionUser As String
+        Public Property subject As String
+        Public Property orderno As String
+        Public Property redirectscreen As String
+        Public Property ApproverName As String = " "
+
+    End Class
 
     Public Function PurchaseOrderNo(ByVal workOrder As String, THIRDPARTY_COMP_ID As String) As String
         Try
