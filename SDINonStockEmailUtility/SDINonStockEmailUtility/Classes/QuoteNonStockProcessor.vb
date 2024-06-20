@@ -2171,8 +2171,7 @@ Public Class QuoteNonStockProcessor
                 Try
 
                     SendLogger(eml.Subject, eml.Body, "QUOTEAPPROVAL", "Mail", eml.To, eml.Cc, eml.Bcc, itmQuoted.BusinessUnitID, itmQuoted.BusinessUnitOM)
-                    SendNotification(itmQuoted.EmployeeID, eml.Subject, itmQuoted.OrderID, itmQuoted.BusinessUnitOM, itmQuoted.Priority, LineStatus)
-                    'Dim Title As String = "Order Number: " + itmQuoted.OrderID + " Requested For Quote Approval"
+                    sendNotification(itmQuoted.EmployeeID, eml.Subject, itmQuoted.OrderID, itmQuoted.BusinessUnitOM, itmQuoted.Priority, LineStatus)
                     sendWebNotification(itmQuoted.EmployeeID, eml.Subject, itmQuoted.Priority, LineStatus)
                 Catch ex As Exception
 
@@ -2411,10 +2410,16 @@ Public Class QuoteNonStockProcessor
     End Function
     'IPM-18-Madhu-Modifyingg the title for IPM
     'INC0042603  - Changed .net maui push notification since the Xamarin push notification is outdated.
-    Public Sub sendNotification(ByVal Session_UserID As String, ByVal subject As String, ByVal orderNo As String, Optional ByVal strbu As String = " ", Optional ByVal redirectscreen As String = " ", Optional ByVal CurrentApprover As String = " ")
+    Public Sub sendNotification(ByVal Session_UserID As String, ByVal subject As String, ByVal orderNo As String, Optional ByVal strbu As String = " ", Optional priority As String = "", Optional LineStatus As String = "", Optional ByVal redirectscreen As String = " ", Optional ByVal CurrentApprover As String = " ")
         Dim Response As String = String.Empty
         Dim URL1 As String = String.Empty
         Try
+            Try
+                If LineStatus = "QTW" And Trim(priority) = "R" Then
+                    subject = subject & " " & "*PRIORITY*"
+                End If
+            Catch ex As Exception
+            End Try
             Try
                 If strbu = "I0W01" Then
                     URL1 = ConfigurationManager.AppSettings("WalmartPushNotification")
@@ -2424,26 +2429,26 @@ Public Class QuoteNonStockProcessor
             Catch ex As Exception
             End Try
             Dim client = New HttpClient()
-                client.DefaultRequestHeaders.Accept.Clear()
-                client.DefaultRequestHeaders.Accept.Add(New MediaTypeWithQualityHeaderValue("application/json"))
-                Dim notification As NotificationBO = New NotificationBO()
-                notification.subject = subject
-                notification.SessionUser = Session_UserID
-                notification.orderno = orderNo
-                notification.redirectscreen = redirectscreen
-                notification.ApproverName = CurrentApprover
-                Dim Serializedparameter = JsonConvert.SerializeObject(notification)
-                Dim res As HttpResponseMessage = client.PostAsync(URL1, New StringContent(Serializedparameter, Encoding.UTF8, "application/json")).Result
-                Try
-                    If res.StatusCode = HttpStatusCode.OK Then
-                        Response = res.Content.ReadAsStringAsync().Result
-                    Else
-                        Response = "Error"
-                    End If
-                Catch ex As Exception
-                End Try
+            client.DefaultRequestHeaders.Accept.Clear()
+            client.DefaultRequestHeaders.Accept.Add(New MediaTypeWithQualityHeaderValue("application/json"))
+            Dim notification As NotificationBO = New NotificationBO()
+            notification.subject = subject
+            notification.SessionUser = Session_UserID
+            notification.orderno = orderNo
+            notification.redirectscreen = redirectscreen
+            notification.ApproverName = CurrentApprover
+            Dim Serializedparameter = JsonConvert.SerializeObject(notification)
+            Dim res As HttpResponseMessage = client.PostAsync(URL1, New StringContent(Serializedparameter, Encoding.UTF8, "application/json")).Result
+            Try
+                If res.StatusCode = HttpStatusCode.OK Then
+                    Response = res.Content.ReadAsStringAsync().Result
+                Else
+                    Response = "Error"
+                End If
             Catch ex As Exception
-                Dim d = ex.Message
+            End Try
+        Catch ex As Exception
+            Dim d = ex.Message
         End Try
     End Sub
     'INC0042603  - Changed .net maui push notification since the Xamarin push notification is outdated.
