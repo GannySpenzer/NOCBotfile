@@ -26,6 +26,8 @@ Module Module1
     Dim fileStream As FileStream = Nothing
     Dim logDirInfo As DirectoryInfo = Nothing
     Dim logFileInfo As FileInfo
+    'Suvetha - INC0042985 - Walmart SC utility needs fix to capture and reprocess errors updating work order with the updated try count as 10
+    Dim trycount As String = ConfigurationSettings.AppSettings("TryCount")
 
 
 
@@ -384,7 +386,7 @@ Module Module1
             If Reprocess Then
                 strSQLstring += " AND b.order_no= x.order_no(+)" & vbCrLf &
                  " AND x.SC_STATUS = 'Failed'" & vbCrLf &
-                 " And TOTAL_TRY_COUNT < 5 " & vbCrLf &
+                 " And TOTAL_TRY_COUNT < '" & trycount & "' " & vbCrLf &
                  " And UTILITY = 'WalmartSCStatusUpdate'" & vbCrLf &
                  " ORDER BY  DTTM_STAMP DESC"
 
@@ -591,6 +593,8 @@ Module Module1
 
     End Function
     'Madhu-WAL-1203-Select queryto get the details of WorkOrder[Otimised the query to bring the current line status]
+    'Suvetha - INC0042985 - Walmart SC utility needs fix to capture And reprocess errors updating work order with the updated try count as 10
+
     Public Function LogOrderStatus(ByVal orderNo As String, ByVal statusChange As String, ByVal status As String)
         Dim dsOrders As DataSet = New DataSet()
         Dim strSql As String = String.Empty
@@ -598,22 +602,26 @@ Module Module1
         Dim rowsaffected As Integer
         Dim totTryCount As Integer
         Try
-            strSql = "SELECT * FROM SDIX_UTILITY_PROCESS WHERE UTILITY = 'WalmartSCStatusUpdate' AND SC_STATUS = 'Failed' AND TOTAL_TRY_COUNT <5 AND ORDER_NO = '" + orderNo + "'"
+            strSql = "SELECT * FROM SDIX_UTILITY_PROCESS WHERE UTILITY = 'WalmartSCStatusUpdate' AND SC_STATUS = 'Failed' AND ORDER_NO = '" + orderNo + "'"
             dsOrders = ORDBAccess.GetAdapter(strSql, connectOR)
-                If Not dsOrders Is Nothing Then
+            If Not dsOrders Is Nothing Then
+                If dsOrders.Tables.Count > 0 Then
                     If dsOrders.Tables(0).Rows.Count > 0 Then
-                    totTryCount = CInt(dsOrders.Tables(0).Rows(0).Item("TOTAL_TRY_COUNT").ToString) + 1
-
-                    strExecQry = "UPDATE SDIX_UTILITY_PROCESS SET TOTAL_TRY_COUNT = '" & totTryCount & "',SC_STATUS = '" & status & "'," & vbCrLf &
+                        totTryCount = dsOrders.Tables(0).Rows(0).Item("TOTAL_TRY_COUNT")
+                        If totTryCount >= trycount Then
+                        Else
+                            totTryCount = CInt(dsOrders.Tables(0).Rows(0).Item("TOTAL_TRY_COUNT").ToString) + 1
+                            strExecQry = "UPDATE SDIX_UTILITY_PROCESS SET TOTAL_TRY_COUNT = '" & totTryCount & "',SC_STATUS = '" & status & "'," & vbCrLf &
                         "STATUS_CHANGE = '" & statusChange & "', UTILITY = 'WalmartSCStatusUpdate', LASTUPDTTM = SYSDATE WHERE ORDER_NO = '" & orderNo.ToString() & "'"
-                Else
-                    totTryCount = 1
-                    strExecQry = "INSERT INTO SDIX_UTILITY_PROCESS (" & vbCrLf &
+                        End If
+                    Else
+                        totTryCount = 1
+                        strExecQry = "INSERT INTO SDIX_UTILITY_PROCESS (" & vbCrLf &
                     "ORDER_NO,TOTAL_TRY_COUNT,STATUS_CHANGE,SC_STATUS,ADD_DTTM,UTILITY,LASTUPDTTM) VALUES" & vbCrLf &
                     "('" + orderNo.ToString() & "','" & totTryCount & "','" & statusChange & "','" & status & "',SYSDATE,'WalmartSCStatusUpdate',SYSDATE)"
+                    End If
                 End If
-
-                Else
+            Else
                     objWalSCWorkOrder.WriteLine("No data in dsOrders  " & " " & Now())
                     Exit Function
                 End If
