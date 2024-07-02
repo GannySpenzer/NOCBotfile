@@ -341,7 +341,7 @@ Public Class QuoteNonStockProcessor
         'dstcart.Columns.Add("Ext Base Price")
         dstcart.Columns.Add("Item USD Price")
         dstcart.Columns.Add("Ext. USD Price")
-        'Madhu-16592-Display columns for ECI BU 
+        'Madhu-16592-Display columns for ECI BU
         Try
             If IsECI(BU) Then
                 dstcart.Columns.Add("Item PO Price")
@@ -540,7 +540,7 @@ Public Class QuoteNonStockProcessor
                         dr("Ext. USD Price") = itemExtPrice.ToString("####,###,##0.00")
                     Catch ex As Exception
                     End Try
-                    'Madhu-16592-Display columns for ECI BU 
+                    'Madhu-16592-Display columns for ECI BU
                     Try
                         If IsECI(BU) Then
                             Try
@@ -1817,7 +1817,7 @@ Public Class QuoteNonStockProcessor
                 eml.Body = ""
 
                 LineStatus = itmQuoted.Status
-                ' assign sender email address from item object 
+                ' assign sender email address from item object
                 ' or assign the default automated sender
                 If itmQuoted.FROM.Length > 0 Then
                     eml.From = itmQuoted.FROM
@@ -2038,6 +2038,7 @@ Public Class QuoteNonStockProcessor
                     Catch ex As Exception
                     End Try
                 End If
+                'INC0043289 - As a Stanford user, I would like, when hyperlinked from a text message to the Order Approval page, to see my first name at the top of the page - Shanmugapriya
                 If bIsPunchInBU Then
                     'SdiExchange
                     'WorkOrder should show for all the BU's
@@ -2046,8 +2047,8 @@ Public Class QuoteNonStockProcessor
                     eml.Body = "<HTML>" &
                                         BodyStyle() &
                                         AddNoRecepientExistNote(eml.To) &
-                                        EmailBodyHead(itmQuoted.Addressee, itmQuoted.OrderID, BU, LineStatus, itmQuoted.Zeussiteflag, itmQuoted.EmployeeID) &
-                                        FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, LineStatus, bShowApproveViaEmailLink) &
+                                        EmailBodyHead(itmQuoted.Addressee, itmQuoted.OrderID, BU, LineStatus, itmQuoted.Zeussiteflag, itmQuoted.EmployeeID, itmQuoted) &
+                                        FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, LineStatus, itmQuoted.UserName, itmQuoted.Zeussiteflag, bShowApproveViaEmailLink) &
                                        FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority, LineStatus, strOrderTotal) &
                                         PositionGrid(dstcartSTK, LineStatus, BU) &
                                         EmailBodyClosure() &
@@ -2065,8 +2066,8 @@ Public Class QuoteNonStockProcessor
                     eml.Body = "<HTML>" &
                                     BodyStyle() &
                                         AddNoRecepientExistNote(eml.To) &
-                                        EmailBodyHead(itmQuoted.Addressee, itmQuoted.OrderID, BU, LineStatus, itmQuoted.Zeussiteflag, itmQuoted.EmployeeID) &
-                                         FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, LineStatus, bShowApproveViaEmailLink) &
+                                        EmailBodyHead(itmQuoted.Addressee, itmQuoted.OrderID, BU, LineStatus, itmQuoted.Zeussiteflag, itmQuoted.EmployeeID, itmQuoted) &
+                                         FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, LineStatus, itmQuoted.UserName, itmQuoted.Zeussiteflag, bShowApproveViaEmailLink) &
                                        FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority, LineStatus, strOrderTotal) &
                                         PositionGrid(dstcartSTK, LineStatus, BU) &
                                         EmailBodyClosure() &
@@ -2084,7 +2085,7 @@ Public Class QuoteNonStockProcessor
                     eml.To = eml.From
                 End If
 
-                ' check if there's no valid recepient still, then we need to send this to 
+                ' check if there's no valid recepient still, then we need to send this to
                 '   the default "no valid recepient" recepient based off of our config file.
                 If Not (eml.To.Trim.Length > 0) Then
                     If m_defaultToRecepient.Count > 0 Then
@@ -2133,7 +2134,7 @@ Public Class QuoteNonStockProcessor
                                 eml.To = eml.From
                             End If
 
-                            ' check if there's no valid recepient still, then we need to send this to 
+                            ' check if there's no valid recepient still, then we need to send this to
                             '   the default "no valid recepient" recepient based off of our config file.
                             If Not (eml.To.Trim.Length > 0) Then
                                 If m_defaultToRecepient.Count > 0 Then
@@ -2304,8 +2305,8 @@ Public Class QuoteNonStockProcessor
         End Try
         Return strStyle
     End Function
-
-    Public Shared Function EmailBodyHead(ByVal IsaEmployeeName As String, ByVal orderNo As String, ByVal Bu As String, ByVal Linestatus As String, ByVal Zeussite As String, ByVal Employeeid As String) As String
+    'INC0043289 - As a Stanford user, I would like, when hyperlinked from a text message to the Order Approval page, to see my first name at the top of the page - Shanmugapriya
+    Public Shared Function EmailBodyHead(ByVal IsaEmployeeName As String, ByVal orderNo As String, ByVal Bu As String, ByVal Linestatus As String, ByVal Zeussite As String, ByVal Employeeid As String, ByVal itmQuoted As QuotedNStkItem) As String
         Dim OrderNum As String = orderNo
         Dim strBu As String = Bu
         Dim bodyHead As String = ""
@@ -2362,6 +2363,9 @@ Public Class QuoteNonStockProcessor
                     dtrAppReader.Close()
                 End If
 
+                If strappName <> "" And itmQuoted.UserName = "" Then
+                    itmQuoted.UserName = strappName
+                End If
             Catch ex As Exception
             End Try
 
@@ -2612,8 +2616,9 @@ Public Class QuoteNonStockProcessor
         End Try
         'Return cInfoHTML
     End Function
-
-    Private Function FormHTMLLink(ByVal cOrderID As String, ByVal cEmployeeID As String, ByVal cBusinessUnitOM As String, ByVal LineStatus As String, Optional ByVal bShowLink As Boolean = True) As String
+    'INC0043289 - As a Stanford user, I would like, when hyperlinked from a text message to the Order Approval page, to see my first name at the top of the page - Shanmugapriya
+    Private Function FormHTMLLink(ByVal cOrderID As String, ByVal cEmployeeID As String, ByVal cBusinessUnitOM As String, ByVal LineStatus As String, ByVal UserName As String, ByVal Zeussite As String, Optional ByVal bShowLink As Boolean = True) As String
+        Dim cParam As String = ""
         Dim cLink As String = ""
         Dim cHdr As String = "QuoteNonStockProcessor.FormHTMLLink: "
         If bShowLink Then
@@ -2623,11 +2628,16 @@ Public Class QuoteNonStockProcessor
                 Dim m_cURL1 As String = GetURL(cBusinessUnitOM, LineStatus)
 
                 Dim boEncrypt As New Encryption64
-
-                Dim cParam As String = "?fer=" & boEncrypt.Encrypt(cOrderID, m_cEncryptionKey) &
+                Try
+                    cParam = "?fer=" & boEncrypt.Encrypt(cOrderID, m_cEncryptionKey) &
                                        "&op=" & boEncrypt.Encrypt(cEmployeeID, m_cEncryptionKey) &
                                        "&xyz=" & boEncrypt.Encrypt(cBusinessUnitOM, m_cEncryptionKey) &
                                        "&HOME=N"
+                    If Zeussite = "Y" Then
+                        cParam += "&un=" & boEncrypt.Encrypt(UserName, m_cEncryptionKey)
+                    End If
+                Catch ex As Exception
+                End Try
 
                 If LineStatus = "QTW" Then
                     cLink = "<p style='color: #000; margin: 0px 0px 18px 0px; line-height: 24px;'>" &
@@ -2918,7 +2928,7 @@ Public Class QuoteNonStockProcessor
 
             ' We need to check if the record doesn't already exist when trying to insert it.
             ' If it already exists, we get a unique constraint error so we'll avoid the error
-            ' with this insert statement. The record could already exist if we processed the 
+            ' with this insert statement. The record could already exist if we processed the
             ' order with this utility previously but a buyer goes into PeopleSoft and changes
             ' the status back to "Q".
             strInsertQuery = "INSERT INTO PS_ISA_APPR_PATH" & vbCrLf &
@@ -2970,7 +2980,7 @@ Public Class QuoteNonStockProcessor
             eml.Subject = ""
             eml.Body = ""
 
-            ' assign sender email address from item object 
+            ' assign sender email address from item object
             ' or assign the default automated sender
             If itmQuoted.FROM.Length > 0 Then
                 eml.From = itmQuoted.FROM
@@ -4664,7 +4674,7 @@ Public Class QuoteNonStockProcessor
         Return bIsAscend
 
     End Function
-    'Madhu-16592-Display columns for ECI BU 
+    'Madhu-16592-Display columns for ECI BU
     Public Shared Function IsECI(ByVal sBU As String, Optional ByVal ECIBoolean As Boolean = True) As Boolean
 
         Dim bIsECI As Boolean = False
@@ -5356,7 +5366,7 @@ Public Class OrderApprovals
         Dim strApproverName As String
         Dim strSDIBuyer As String
 
-        'I know the below code looks like a duplication 
+        'I know the below code looks like a duplication
         'but I needed to get the SDI buyers email for approvals notifications
         'and I didn't want to break what was already working
         'Bob D - 01/20/2005
@@ -5629,7 +5639,7 @@ Public Class OrderApprovals
     Public Shared Sub buildNotifyApprover(ByVal strreqID As String, ByVal strAgent As String, ByVal strBU As String, ByVal strAppUserid As String, ByVal strHldStatus As String)
         'this is where we will put in the description of the order per S.Roudriquez
         'pfd
-        'Gives us a reference to the current asp.net 
+        'Gives us a reference to the current asp.net
         'application executing the method.
 
 
@@ -5868,7 +5878,7 @@ Public Class OrderApprovals
         Catch ex As Exception
             Dim strErr As String = ex.Message
         End Try
-        ' Code to Add Notifications queue table 
+        ' Code to Add Notifications queue table
         Try
             Dim Notify_Type As String = "APPRV"
             Dim Notify_User As String = strappName
@@ -6100,7 +6110,7 @@ Public Class OrderApprovals
         Catch ex As Exception
             sCplusServer = ""
         End Try
-        'Gives us a reference to the current asp.net 
+        'Gives us a reference to the current asp.net
         'application executing the method.
 
         'Dim sAppPath As String = currentApp.Request.ApplicationPath
@@ -7453,7 +7463,7 @@ Public Class OrderApprovals
 
     Public Shared Sub SendSDiExchErrorMail(ByVal strErrorMessage As String, Optional ByVal sSubject As String = "")
 
-        'Gives us a reference to the current asp.net 
+        'Gives us a reference to the current asp.net
         'application executing the method.
 
         Dim strComeFrom As String = "Unknown"
@@ -8208,7 +8218,7 @@ Public Class ApprovalDetails
 
     Public Shared Function GetSiteBU(ByVal sBU As String, Optional ByVal strTaxCompany As String = "", Optional ByVal strSiteBu1 As String = "") As String
 
-        'Gives us a reference to the current asp.net 
+        'Gives us a reference to the current asp.net
         'application executing the method.
         Dim strSiteBU As String
         Dim dtrPrefixReader As OleDbDataReader = Nothing
@@ -8257,7 +8267,7 @@ Public Class ApprovalDetails
 
     Public Shared Function GetSitePrefix(ByVal sBU As String) As String
 
-        'Gives us a reference to the current asp.net 
+        'Gives us a reference to the current asp.net
         'application executing the method.
 
         Dim strSitePrefix As String = "XXX"
@@ -8293,7 +8303,7 @@ Public Class ApprovalDetails
             End Try
             strSitePrefix = "XXX"
             'sendErrorEmail(objException.ToString, "NO", currentApp.Request.ServerVariables("URL"), strSQLString)
-            'currentApp.Response.Redirect("DBErrorPage.aspx") 
+            'currentApp.Response.Redirect("DBErrorPage.aspx")
         End Try
 
         Return strSitePrefix
@@ -9374,7 +9384,7 @@ Public Class clsSDIAudit
 
         Try
             ' We are going to truncate instead of return an error. We don't
-            ' want to abort the primary function (interunit receipts, etc) 
+            ' want to abort the primary function (interunit receipts, etc)
             ' just for an audit record.
 
 
@@ -9555,7 +9565,7 @@ Public Class WebPSharedFunc
 
     'Public Shared Sub sendErrorEmail(ByVal strMessage As String, ByVal strMobile As String, ByVal strURL As String, ByVal strSQL As String)
 
-    '    'Gives us a reference to the current asp.net 
+    '    'Gives us a reference to the current asp.net
     '    'application executing the method.
 
     '    Dim Mailer As MailMessage = New MailMessage
@@ -9664,7 +9674,7 @@ Public Class WebPSharedFunc
 
     Public Shared Sub SendSDiExchErrorMail(ByVal strErrorMessage As String, Optional ByVal sSubject As String = "")
 
-        'Gives us a reference to the current asp.net 
+        'Gives us a reference to the current asp.net
         'application executing the method.
 
         Dim strComeFrom As String = "Unknown"
