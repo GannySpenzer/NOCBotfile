@@ -3691,18 +3691,24 @@ Module Module1
         'Push & Web notifications will be sent for all orders of all BUs lively- WAL-632&WW-287 Poornima S
         Dim strPushNoti As String = ""
         'SP-316 changed subject for EMCOR- Dhamotharan
+        'INC0043325 - Zeus Ordering app notification Read Section search issue OSC Ticket 240626-005351 (-Suvetha)
+        Dim Title As String = ""
         Try
             If Not IsProdDB Then
                 If strBU = "I0W01" Then
                     strPushNoti = "<<TEST SITE>>Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
+                    Title = "<<TEST SITE>>Order Number: " + strOrderNo + " - Status Modified To " + strOrderStatDesc + ""
                 Else
                     strPushNoti = "<<TEST SITE>>SDI Order(" & strOrderNo & ") " & strOrderStatDesc & If(strWOno <> "-", " For " & strWOno, "")
+                    Title = strPushNoti
                 End If
             Else
                 If strBU = "I0W01" Then
                     strPushNoti = "Status Update - " + strOrderStatDesc + " - Store #" + Store + " - WO # " & strWOno
+                    Title = "Order Number: " + strOrderNo + " - Status Modified To " + strOrderStatDesc + ""
                 Else
                     strPushNoti = "SDI Order(" & strOrderNo & ") " & strOrderStatDesc & If(strWOno <> "-", " For " & strWOno, "")
+                    Title = strPushNoti
                 End If
             End If
         Catch ex As Exception
@@ -3711,8 +3717,6 @@ Module Module1
 
         If Not strEmpID.Trim = "" Then
             sendNotification(strEmpID, strPushNoti, strOrderNo, strBU)
-            Dim Title As String
-            Title = "SDI Order(" & strOrderNo & ") " & strOrderStatDesc & If(strWOno <> "-", " For " & strWOno, "")
             sendWebNotification(strEmpID, Title)
         End If
 
