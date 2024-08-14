@@ -316,7 +316,7 @@ Public Class QuoteNonStockProcessor
     End Function
 
     Private Shared Function buildCartforemail(ByVal m_colMsgs As QuotedNStkItemCollection, ByVal ordNumber As String,
-                        ByRef strWrkOrder As String, ByVal BU As String, Optional ByVal EmployeeID As String = "") As DataTable
+                        ByRef strWrkOrder As String, ByVal BU As String, Optional ByVal EmployeeID As String = "", Optional ByVal Linestatus As String = "") As DataTable
 
         Dim dr As DataRow
         Dim I As Integer
@@ -571,20 +571,24 @@ Public Class QuoteNonStockProcessor
                         End Try
                     End If
                     'WAL-1044 making price 0 for third party[change by Vishalini]
-                    If BU = "I0W01" Then
-                        Try
-                            Dim SqlStringThirdPartCompid As String = "select THIRDPARTY_COMP_ID from sdix_users_tbl where THIRDPARTY_COMP_ID <> '0' and THIRDPARTY_COMP_ID is not null and ISA_EMPLOYEE_ID = '" & EmployeeID & "'"
-                            Dim THIRDPARTY_COMP_ID As String = ORDBData.GetScalar(SqlStringThirdPartCompid)
-                            If THIRDPARTY_COMP_ID <> "" Then
-                                dr("Item USD Price") = "0"
-                                dr("Ext. USD Price") = "0"
-                            End If
-                        Catch ex As Exception
+                    'Madhu-WAL-1500-For Walmart linestatus  QTS Hide the price
+                    Try
+                        If BU = "I0W01" And Linestatus <> "QTS" Then
+                            Try
+                                Dim SqlStringThirdPartCompid As String = "select THIRDPARTY_COMP_ID from sdix_users_tbl where THIRDPARTY_COMP_ID <> '0' and THIRDPARTY_COMP_ID is not null and ISA_EMPLOYEE_ID = '" & EmployeeID & "'"
+                                Dim THIRDPARTY_COMP_ID As String = ORDBData.GetScalar(SqlStringThirdPartCompid)
+                                If THIRDPARTY_COMP_ID <> "" Then
+                                    dr("Item USD Price") = "0"
+                                    dr("Ext. USD Price") = "0"
+                                End If
+                            Catch ex As Exception
 
-                        End Try
+                            End Try
 
-                    End If
+                        End If
 
+                    Catch ex As Exception
+                    End Try
 
                     dstcart.Rows.Add(dr)
                 Next
@@ -1929,7 +1933,11 @@ Public Class QuoteNonStockProcessor
                 Dim dstcartSTK As New DataTable
                 Dim StrWO1 As String = " "
                 Dim BU As String = itmQuoted.BusinessUnitOM
-                dstcartSTK = buildCartforemail(m_colMsgs, itmQuoted.OrderID, StrWO1, BU, itmQuoted.EmployeeID)
+                'Madhu-WAL-1500-For Walmart linestatus  QTS Hide the price
+                Try
+                    dstcartSTK = buildCartforemail(m_colMsgs, itmQuoted.OrderID, StrWO1, BU, itmQuoted.EmployeeID, LineStatus)
+                Catch ex As Exception
+                End Try
                 If Trim(StrWO1) = "" Then
                     StrWO1 = " "
                 End If
@@ -3415,28 +3423,33 @@ Public Class QuoteNonStockProcessor
                             Catch ex As Exception
 
                             End Try
-
+                            'Madhu-WAL-1500-For Walmart linestatus QTS Hide the price
                             Try
-                                content &= "<tr style='font-size: 13px;'>"
-                                content &= "<td style='width: 41%; padding: 0px 12px; vertical-align: top;'>"
-                                content &= "<p style=font-weight: 600; margin: 10px 0px;>Price :</p>"
-                                content &= "</td>"
-                                content &= "<td style='padding:0px 12px; '>"
-                                content &= "<p style= 'color: #595959; margin: 10px 0px;'>" & "$" & Price & "</p>"
-                                content &= "</td>"
-                                content &= "</tr>"
-                            Catch ex As Exception
-                            End Try
+                                If sBU <> "I0W01" OrElse (sBU = "I0W01" AndAlso LineStatus <> "QTS") Then
+                                    Try
+                                        content &= "<tr style='font-size: 13px;'>"
+                                        content &= "<td style='width: 41%; padding: 0px 12px; vertical-align: top;'>"
+                                        content &= "<p style=font-weight: 600; margin: 10px 0px;>Price :</p>"
+                                        content &= "</td>"
+                                        content &= "<td style='padding:0px 12px; '>"
+                                        content &= "<p style= 'color: #595959; margin: 10px 0px;'>" & "$" & Price & "</p>"
+                                        content &= "</td>"
+                                        content &= "</tr>"
+                                    Catch ex As Exception
+                                    End Try
 
-                            Try
-                                content &= "<tr style='font-size: 13px;'>"
-                                content &= "<td style='width: 41%; padding: 0px 12px; vertical-align: top;'>"
-                                content &= "<p style=font-weight: 600; margin: 10px 0px;>Ext. price :</p>"
-                                content &= "</td>"
-                                content &= "<td style='padding:0px 12px; '>"
-                                content &= "<p style= 'color: #595959; margin: 10px 0px;'>" & "$" & ExtPrice & "</p>"
-                                content &= "</td>"
-                                content &= "</tr>"
+                                    Try
+                                        content &= "<tr style='font-size: 13px;'>"
+                                        content &= "<td style='width: 41%; padding: 0px 12px; vertical-align: top;'>"
+                                        content &= "<p style=font-weight: 600; margin: 10px 0px;>Ext. price :</p>"
+                                        content &= "</td>"
+                                        content &= "<td style='padding:0px 12px; '>"
+                                        content &= "<p style= 'color: #595959; margin: 10px 0px;'>" & "$" & ExtPrice & "</p>"
+                                        content &= "</td>"
+                                        content &= "</tr>"
+                                    Catch ex As Exception
+                                    End Try
+                                End If
                             Catch ex As Exception
                             End Try
 
