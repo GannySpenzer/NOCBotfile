@@ -575,7 +575,7 @@ Public Class QuoteNonStockProcessor
                     Try
                         If BU = "I0W01" And Linestatus <> "QTS" Then
                             Try
-                                Dim SqlStringThirdPartCompid As String = "select THIRDPARTY_COMP_ID from sdix_users_tbl where THIRDPARTY_COMP_ID <> '0' and THIRDPARTY_COMP_ID is not null and ISA_EMPLOYEE_ID = '" & EmployeeID & "'"
+                                Dim SqlStringThirdPartCompid As String = "select THIRDPARTY_COMP_ID from sdix_users_tbl where THIRDPARTY_COMP_ID > '99' and THIRDPARTY_COMP_ID is not null and ISA_EMPLOYEE_ID = '" & EmployeeID & "'"
                                 Dim THIRDPARTY_COMP_ID As String = ORDBData.GetScalar(SqlStringThirdPartCompid)
                                 If THIRDPARTY_COMP_ID <> "" Then
                                     dr("Item USD Price") = "0"
