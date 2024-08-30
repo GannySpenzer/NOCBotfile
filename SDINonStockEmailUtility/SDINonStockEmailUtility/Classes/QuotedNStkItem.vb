@@ -21,6 +21,9 @@ Public Class QuotedNStkItem
     Private m_sStatus As String = ""
     Private m_sAddressee As String = ""
     Private m_Zeusid As String = ""
+    Private m_siteemail As String = ""
+    Private m_orginalempid As String = ""
+
 
     Private m_workOrderNo As String = ""
     Private m_store As String = ""
@@ -201,6 +204,26 @@ Public Class QuotedNStkItem
             m_Zeusid = Value
         End Set
     End Property
+    'Madhu-INC0046903-Non stock email utility inactive approver scenario for RFQ 
+
+    Public Property SiteEmail() As String
+        Get
+            Return m_siteemail
+        End Get
+        Set(ByVal Value As String)
+            m_siteemail = Value
+        End Set
+    End Property
+    Public Property Orginalempid() As String
+        Get
+            Return m_orginalempid
+        End Get
+        Set(ByVal Value As String)
+            m_orginalempid = Value
+        End Set
+    End Property
+
+
     'INC0043289 - As a Stanford user, I would like, when hyperlinked from a text message to the Order Approval page, to see my first name at the top of the page - Shanmugapriya
     Public Property UserName() As String
         Get

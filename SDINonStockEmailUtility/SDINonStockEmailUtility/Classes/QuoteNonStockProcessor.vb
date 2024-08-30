@@ -1017,7 +1017,7 @@ Public Class QuoteNonStockProcessor
                                  ",A4.BUSINESS_UNIT_OM AS BUSINESS_UNIT_OM" & vbCrLf &
                                  ",L.ISA_PRIORITY_FLAG,A4.ORIGIN" & vbCrLf &
                                  ",L.OPRID_MODIFIED_BY AS OPRID_MODIFIED_BY, L.ISA_WORK_ORDER_NO AS WORK_ORDER_ID,L.ISA_USER2 AS STORE , A3.APPRVALTHRESHOLD AS APPROVAL_LIMIT " & vbCrLf &
-                                 ",A3.ISA_CUSTINT_APPRVL,A3.ZEUS_SITE " & vbCrLf &
+                                 ",A3.ISA_CUSTINT_APPRVL,A3.ZEUS_SITE,A3.ISA_SITE_EMAIL " & vbCrLf &
                                  "FROM " & vbCrLf &
                                  " PS_REQ_HDR A" & vbCrLf &
                                  ",SYSADM8.PS_ROLEXLATOPR B" & vbCrLf &
@@ -1080,6 +1080,7 @@ Public Class QuoteNonStockProcessor
                 Dim bNew As Boolean
 
                 Dim sModifiedByID As String = ""
+                Dim strapproverdetails As String = ""
 
                 Dim workOrderNo As String = ""
                 Dim rfqEmailRecipient As String = ""
@@ -1187,6 +1188,10 @@ Public Class QuoteNonStockProcessor
 
                     If Not (boItem.Zeussiteflag.Length > 0) Then
                         boItem.Zeussiteflag = CType(rdr("ZEUS_SITE"), String).Trim
+                    End If
+                    'Set the Siteemail flag
+                    If Not (boItem.SiteEmail.Length > 0) Then
+                        boItem.SiteEmail = CType(rdr("ISA_SITE_EMAIL"), String).Trim
                     End If
                     ' get the first Business Unit OM available
                     If Not (boItem.BusinessUnitOM.Length > 0) Then
@@ -1313,63 +1318,153 @@ Public Class QuoteNonStockProcessor
                         End Try
                     End If
                     boItem.Status = lineStatus
+                    Dim strworkorderno As String = ""
+                    strworkorderno = GetWorkorderno(boItem.OrderID)
                     ' get the very first available VALID recipient of this message (if not yet)
+                    'Madhu-INC0046903-Non stock email utility inactive approver scenario for RFQ 
+
                     If Not boItem.IsPrimaryRecipientExist Then
                         If lineStatus = "QTS" Then
-                            ' get the employee ID
                             If Not (rdr("ISA_EMPLOYEE_ID") Is System.DBNull.Value) Then
-                                boItem.EmployeeID = CType(rdr("ISA_EMPLOYEE_ID"), String).Trim
-                            End If
+                                If boItem.BusinessUnitOM = "I0W01" Or rdr("ZEUS_SITE") = "Y" Then
+                                    Try
+                                        strapproverdetails = GET_ACTIVE_USER_INFO(CType(rdr("ISA_EMPLOYEE_ID"), String), boItem.Status, strworkorderno, boItem.BusinessUnitOM)
+                                        Try
+                                            If Not String.IsNullOrEmpty(strapproverdetails) Then
+                                                ' Split the approverDet string using a comma as the separator
+                                                Dim arrApproverDet() As String = strapproverdetails.Split(New Char() {","c}) ' "c" denotes a char literal in VB.NET
+                                                ' Assign the split values to the appropriate variables
+                                                If (arrApproverDet(0) = "NOACTIVEUSER") Then
+                                                    Try
+                                                        boItem.TO = boItem.SiteEmail
+                                                        boItem.Orginalempid = CType(rdr("ISA_EMPLOYEE_ID"), String).Trim
+                                                        boItem.EmployeeID = ""
+                                                    Catch ex As Exception
+                                                    End Try
 
-                            ' get the addressee (name)
-                            If Not (rdr("ISA_EMPLOYEE_NAME") Is System.DBNull.Value) Then
-                                'boItem.Addressee = CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim
-                                Dim cAddressee As String = Utility.FormatAddessee(CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim)
-                                If Not (cAddressee.Trim.Length > 0) Then
-                                    cAddressee = CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim
-                                End If
-                                boItem.Addressee = cAddressee
-                            End If
+                                                Else
+                                                    Try
+                                                        boItem.EmployeeID = arrApproverDet(0).Trim()
+                                                        boItem.TO = arrApproverDet(1).Trim()
 
-                            ' get the email address
-                            If Not (rdr("ISA_EMPLOYEE_EMAIL") Is System.DBNull.Value) Then
-                                'If SDI.WinServices.Utility.IsValidEmailAdd(CType(rdr("ISA_EMPLOYEE_EMAIL"), String)) Then
-                                '    boItem.TO = CType(rdr("ISA_EMPLOYEE_EMAIL"), String)
-                                'End If
-                                Dim arr As ArrayList = Utility.ExtractValidEmails(CType(rdr("ISA_EMPLOYEE_EMAIL"), String).Trim)
-                                If arr.Count > 0 Then
-                                    For Each sAdd As String In arr
-                                        boItem.TO &= sAdd & ";"
-                                    Next
+                                                    Catch ex As Exception
+
+                                                    End Try
+                                                End If
+                                            End If
+
+                                        Catch ex As Exception
+                                            boItem.EmployeeID = CType(rdr("ISA_EMPLOYEE_ID"), String).Trim
+
+                                        End Try
+                                    Catch ex As Exception
+                                        boItem.EmployeeID = CType(rdr("ISA_EMPLOYEE_ID"), String).Trim
+                                    End Try
+                                    ' get the addressee (name)
+                                    If Not (rdr("ISA_EMPLOYEE_NAME") Is System.DBNull.Value) Then
+                                        'boItem.Addressee = CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim
+                                        Dim cAddressee As String = Utility.FormatAddessee(CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim)
+                                        If Not (cAddressee.Trim.Length > 0) Then
+                                            cAddressee = CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim
+                                        End If
+                                        boItem.Addressee = cAddressee
+                                    End If
+
+                                    ' get the email address
+                                    If (boItem.TO <> "") Then
+                                        Dim arr As ArrayList = Utility.ExtractValidEmails(boItem.TO)
+                                        If arr.Count > 0 Then
+                                            For Each sAdd As String In arr
+                                                boItem.TO = ""
+                                                boItem.TO &= sAdd & ";"
+                                            Next
+                                        End If
+                                        arr = Nothing
+                                    End If
+                                Else
+                                    boItem.EmployeeID = CType(rdr("ISA_EMPLOYEE_ID"), String).Trim
+                                    ' get the email address
+                                    ' get the addressee (name)
+                                    If Not (rdr("ISA_EMPLOYEE_NAME") Is System.DBNull.Value) Then
+                                        'boItem.Addressee = CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim
+                                        Dim cAddressee As String = Utility.FormatAddessee(CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim)
+                                        If Not (cAddressee.Trim.Length > 0) Then
+                                            cAddressee = CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim
+                                        End If
+                                        boItem.Addressee = cAddressee
+                                    End If
+
+                                    ' get the email address
+                                    If Not (rdr("ISA_EMPLOYEE_EMAIL") Is System.DBNull.Value) Then
+                                        'If SDI.WinServices.Utility.IsValidEmailAdd(CType(rdr("ISA_EMPLOYEE_EMAIL"), String)) Then
+                                        '    boItem.TO = CType(rdr("ISA_EMPLOYEE_EMAIL"), String)
+                                        'End If
+                                        Dim arr As ArrayList = Utility.ExtractValidEmails(CType(rdr("ISA_EMPLOYEE_EMAIL"), String).Trim)
+                                        If arr.Count > 0 Then
+                                            For Each sAdd As String In arr
+                                                boItem.TO &= sAdd & ";"
+                                            Next
+                                        End If
+                                        arr = Nothing
+                                    End If
                                 End If
-                                arr = Nothing
                             End If
                             'INC0037100 - Email To for Needs approvals from Non stock email utility should come from the ISA_USERS1 based upon Zeus 2 site flag = 'Y' - Dhamo
                         Else
                             Dim strOrigApproverID As String = String.Empty
                             If boItem.BusinessUnitID = "WAL00" Or rdr("ZEUS_SITE") = "Y" Then
-                                strOrigApproverID = rdr("APPROVER").trim
+                                Try
+                                    strapproverdetails = GET_ACTIVE_USER_INFO(CType(rdr("APPROVER"), String), boItem.Status, strworkorderno, boItem.BusinessUnitOM)
+                                    Try
+                                        If Not String.IsNullOrEmpty(strapproverdetails) Then
+                                            ' Split the approverDet string using a comma as the separator
+                                            Dim arrApproverDet() As String = strapproverdetails.Split(New Char() {","c}) ' "c" denotes a char literal in VB.NET
+                                            ' Assign the split values to the appropriate variables
+                                            If (arrApproverDet(0) = "NOACTIVEUSER") Then
+                                                Try
+                                                    boItem.TO = boItem.SiteEmail
+                                                    boItem.Orginalempid = CType(rdr("ISA_EMPLOYEE_ID"), String).Trim
+                                                    boItem.EmployeeID = ""
+                                                Catch ex As Exception
+                                                End Try
+
+
+                                            Else
+                                                Try
+                                                    boItem.EmployeeID = arrApproverDet(0).Trim()
+                                                    boItem.TO = arrApproverDet(1).Trim()
+                                                Catch ex As Exception
+                                                End Try
+                                            End If
+                                        End If
+
+                                    Catch ex As Exception
+                                        strOrigApproverID = rdr("APPROVER").trim
+
+                                    End Try
+                                Catch ex As Exception
+                                    strOrigApproverID = rdr("APPROVER").trim
+                                End Try
                             Else
                                 strOrigApproverID = GetOriginalApprover(rdr("BUSINESS_UNIT_OM").trim, rdr("ISA_EMPLOYEE_ID").trim)
-
-                            End If
-                            If strOrigApproverID.Trim <> "" Then
-                                Dim strSQLString As String = "SELECT FIRST_NAME_SRCH," & vbCrLf &
+                                If strOrigApproverID.Trim <> "" Then
+                                    Dim strSQLString As String = "SELECT FIRST_NAME_SRCH," & vbCrLf &
                    " LAST_NAME_SRCH," & vbCrLf &
                    " ISA_EMPLOYEE_EMAIL" & vbCrLf &
                    " FROM SDIX_USERS_TBL" & vbCrLf &
                    " WHERE ISA_EMPLOYEE_ID = '" & strOrigApproverID & "'"
 
-                                Dim dtrAppReader As OleDbDataReader = ORDBData.GetReader(strSQLString)
+                                    Dim dtrAppReader As OleDbDataReader = ORDBData.GetReader(strSQLString)
 
-                                If dtrAppReader.HasRows() = True Then
-                                    dtrAppReader.Read()
-                                    boItem.EmployeeID = strOrigApproverID
-                                    boItem.Addressee = dtrAppReader.Item("FIRST_NAME_SRCH") & " " & dtrAppReader.Item("LAST_NAME_SRCH")
-                                    boItem.TO = dtrAppReader.Item("ISA_EMPLOYEE_EMAIL")
-                                    dtrAppReader.Close()
-                                Else
-                                    dtrAppReader.Close()
+                                    If dtrAppReader.HasRows() = True Then
+                                        dtrAppReader.Read()
+                                        boItem.EmployeeID = strOrigApproverID
+                                        boItem.Addressee = dtrAppReader.Item("FIRST_NAME_SRCH") & " " & dtrAppReader.Item("LAST_NAME_SRCH")
+                                        boItem.TO = dtrAppReader.Item("ISA_EMPLOYEE_EMAIL")
+                                        dtrAppReader.Close()
+                                    Else
+                                        dtrAppReader.Close()
+                                    End If
                                 End If
                             End If
                         End If
@@ -1515,6 +1610,40 @@ Public Class QuoteNonStockProcessor
         End Try
 
     End Function
+    'Madhu-INC0046903-Non stock email utility inactive approver scenario for RFQ 
+    Public Shared Function GET_ACTIVE_USER_INFO(ByVal Empid As String, ByVal Linestatus As String, ByVal workorder As String, ByVal BU As String) As String
+        Dim approverdetails As String = ""
+        Dim strSQLstring As String = ""
+
+        Try
+            strSQLstring = "SELECT GET_ACTIVE_USER_INFO('" + Empid + "','" + Linestatus + "','" + workorder + "','" + BU + "') AS APPROVAL FROM DUAL"
+            approverdetails = ORDBData.GetScalar(strSQLstring)
+
+        Catch ex As Exception
+        End Try
+
+        Return approverdetails
+    End Function
+    Public Shared Function GetWorkorderno(ByVal strOrderNo As String) As String
+        Dim strSQLstring As String = ""
+        Dim workorderno As String = ""
+        Try
+            strSQLstring = "SELECT  CASE
+        WHEN INSTR(ISA_WORK_ORDER_NO, ':', 1, 1) > 0 THEN
+            SUBSTR(ISA_WORK_ORDER_NO, 1, INSTR(ISA_WORK_ORDER_NO, ':', 1, 1) - 1)
+        ELSE
+            ISA_WORK_ORDER_NO
+    END AS ISA_WORK_ORDER_NO FROM PS_ISA_ORD_INTF_LN WHERE ORDER_NO = '" + strOrderNo + "'"
+            workorderno = ORDBData.GetScalar(strSQLstring)
+
+        Catch ex As Exception
+        End Try
+
+        Return workorderno
+
+
+    End Function
+
     Public Shared Function GetOriginalApprover(ByVal strBU As String, ByVal strLastApprover As String) As String
         Dim strOrigApproverID As String = ""
 
@@ -2056,7 +2185,7 @@ Public Class QuoteNonStockProcessor
                                         BodyStyle() &
                                         AddNoRecepientExistNote(eml.To) &
                                         EmailBodyHead(itmQuoted.Addressee, itmQuoted.OrderID, BU, LineStatus, itmQuoted.Zeussiteflag, itmQuoted.EmployeeID, itmQuoted) &
-                                        FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, LineStatus, itmQuoted.UserName, itmQuoted.Zeussiteflag, bShowApproveViaEmailLink) &
+                                        FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, LineStatus, itmQuoted.UserName, itmQuoted.Zeussiteflag, itmQuoted.Orginalempid, bShowApproveViaEmailLink) &
                                        FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority, LineStatus, strOrderTotal) &
                                         PositionGrid(dstcartSTK, LineStatus, BU) &
                                         EmailBodyClosure() &
@@ -2075,7 +2204,7 @@ Public Class QuoteNonStockProcessor
                                     BodyStyle() &
                                         AddNoRecepientExistNote(eml.To) &
                                         EmailBodyHead(itmQuoted.Addressee, itmQuoted.OrderID, BU, LineStatus, itmQuoted.Zeussiteflag, itmQuoted.EmployeeID, itmQuoted) &
-                                         FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, LineStatus, itmQuoted.UserName, itmQuoted.Zeussiteflag, bShowApproveViaEmailLink) &
+                                         FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, LineStatus, itmQuoted.UserName, itmQuoted.Zeussiteflag, itmQuoted.Orginalempid, bShowApproveViaEmailLink) &
                                        FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority, LineStatus, strOrderTotal) &
                                         PositionGrid(dstcartSTK, LineStatus, BU) &
                                         EmailBodyClosure() &
@@ -2167,7 +2296,15 @@ Public Class QuoteNonStockProcessor
 
                         eml.Cc = ""
                         eml.Bcc = ""
+                        If itmQuoted.EmployeeID = "" Then
+                            eml.Subject = "TEST ZEUS - " & "Approver Inactived" & " " & itmQuoted.OrderID
+                        End If
                     Else
+                        If itmQuoted.EmployeeID = "" Then
+                            eml.Subject = "Approver Inactived" & itmQuoted.OrderID
+
+                        End If
+
                     End If
                 Catch ex As Exception
                 End Try
@@ -2180,8 +2317,10 @@ Public Class QuoteNonStockProcessor
                 Try
 
                     SendLogger(eml.Subject, eml.Body, "QUOTEAPPROVAL", "Mail", eml.To, eml.Cc, eml.Bcc, itmQuoted.BusinessUnitID, itmQuoted.BusinessUnitOM)
-                    sendNotification(itmQuoted.EmployeeID, eml.Subject, itmQuoted.OrderID, itmQuoted.BusinessUnitOM, itmQuoted.Priority, LineStatus)
-                    sendWebNotification(itmQuoted.EmployeeID, eml.Subject, itmQuoted.Priority, LineStatus)
+                    If itmQuoted.EmployeeID <> "" Then
+                        sendNotification(itmQuoted.EmployeeID, eml.Subject, itmQuoted.OrderID, itmQuoted.BusinessUnitOM, itmQuoted.Priority, LineStatus)
+                        sendWebNotification(itmQuoted.EmployeeID, eml.Subject, itmQuoted.Priority, LineStatus)
+                    End If
                 Catch ex As Exception
 
                 End Try
@@ -2317,6 +2456,7 @@ Public Class QuoteNonStockProcessor
     Public Shared Function EmailBodyHead(ByVal IsaEmployeeName As String, ByVal orderNo As String, ByVal Bu As String, ByVal Linestatus As String, ByVal Zeussite As String, ByVal Employeeid As String, ByVal itmQuoted As QuotedNStkItem) As String
         Dim OrderNum As String = orderNo
         Dim strBu As String = Bu
+        Dim strbody As String = "Hello"
         Dim bodyHead As String = ""
         Dim img = ConfigurationSettings.AppSettings("ZeusMailImg")
         Dim format As New System.Globalization.CultureInfo("en-US", True)
@@ -2341,43 +2481,45 @@ Public Class QuoteNonStockProcessor
             Dim strappName As String = ""
             Dim strSQLstring As String = ""
             Dim IsaUser1 As String = ""
-            If Linestatus = "QTW" Then
+            If Employeeid <> "" Then
+                If Linestatus = "QTW" Then
+                    Try
+                        If Zeussite = "Y" Or strBu = "I0W01" Then
+                            IsaUser1 = Employeeid
+                        Else
+                            IsaUser1 = GetOriginalApprover(strBu, Employeeid)
+                        End If
+                    Catch ex As Exception
+                    End Try
+                Else
+                    IsaUser1 = Employeeid
+                End If
                 Try
-                    If Zeussite = "Y" Or strBu = "I0W01" Then
-                        IsaUser1 = GetWalmartApprover(OrderNum)
-                    Else
-                        IsaUser1 = GetOriginalApprover(strBu, Employeeid)
-                    End If
-                Catch ex As Exception
-                End Try
-            Else
-                IsaUser1 = Employeeid
-            End If
-            Try
-                strSQLstring = "SELECT FIRST_NAME_SRCH," & vbCrLf &
+                    strSQLstring = "SELECT FIRST_NAME_SRCH," & vbCrLf &
                 " LAST_NAME_SRCH" & vbCrLf &
                 " FROM PS_ISA_USERS_TBL" & vbCrLf &
                 " WHERE ISA_EMPLOYEE_ID = '" & IsaUser1 & "'"
 
-                Dim dtrAppReader As OleDbDataReader = GetReader(strSQLstring)
-                If dtrAppReader.HasRows() = True Then
-                    dtrAppReader.Read()
-                    strappName = dtrAppReader.Item("FIRST_NAME_SRCH") & " " & dtrAppReader.Item("LAST_NAME_SRCH")
-                    Dim txtInfoLocal As TextInfo = New CultureInfo("en-US", False).TextInfo
-                    strappName = txtInfoLocal.ToTitleCase(strappName.ToLower())
-                    bodyHead &= " Hello " & strappName & "!"
-                    dtrAppReader.Close()
-                Else
-                    dtrAppReader.Close()
-                End If
+                    Dim dtrAppReader As OleDbDataReader = GetReader(strSQLstring)
+                    If dtrAppReader.HasRows() = True Then
+                        dtrAppReader.Read()
+                        strappName = dtrAppReader.Item("FIRST_NAME_SRCH") & " " & dtrAppReader.Item("LAST_NAME_SRCH")
+                        Dim txtInfoLocal As TextInfo = New CultureInfo("en-US", False).TextInfo
+                        strappName = txtInfoLocal.ToTitleCase(strappName.ToLower())
+                        bodyHead &= strbody & strappName & "!"
+                        dtrAppReader.Close()
+                    Else
+                        dtrAppReader.Close()
+                    End If
 
-                If strappName <> "" And itmQuoted.UserName = "" Then
-                    itmQuoted.UserName = strappName
-                End If
-            Catch ex As Exception
-            End Try
-
-
+                    If strappName <> "" And itmQuoted.UserName = "" Then
+                        itmQuoted.UserName = strappName
+                    End If
+                Catch ex As Exception
+                End Try
+            Else
+                bodyHead &= strbody & ","
+            End If
             bodyHead &= "</p>"
         Catch ex As Exception
         End Try
@@ -2625,53 +2767,57 @@ Public Class QuoteNonStockProcessor
         'Return cInfoHTML
     End Function
     'INC0043289 - As a Stanford user, I would like, when hyperlinked from a text message to the Order Approval page, to see my first name at the top of the page - Shanmugapriya
-    Private Function FormHTMLLink(ByVal cOrderID As String, ByVal cEmployeeID As String, ByVal cBusinessUnitOM As String, ByVal LineStatus As String, ByVal UserName As String, ByVal Zeussite As String, Optional ByVal bShowLink As Boolean = True) As String
+    Private Function FormHTMLLink(ByVal cOrderID As String, ByVal cEmployeeID As String, ByVal cBusinessUnitOM As String, ByVal LineStatus As String, ByVal UserName As String, ByVal Zeussite As String, ByVal orginalempid As String, Optional ByVal bShowLink As Boolean = True) As String
         Dim cParam As String = ""
         Dim cLink As String = ""
         Dim cHdr As String = "QuoteNonStockProcessor.FormHTMLLink: "
+        Dim boEncrypt As New Encryption64
         If bShowLink Then
-            Try
-                'Dim m_cURL1 As String = "http://" & ConfigurationManager.AppSettings("WebAppName") & "Approvequote.aspx"
-                'Dim m_cURL1 As String = GetURL() & "Approvequote.aspx"
-                Dim m_cURL1 As String = GetURL(cBusinessUnitOM, LineStatus)
-
-                Dim boEncrypt As New Encryption64
+            If cEmployeeID <> "" Then
                 Try
-                    cParam = "?fer=" & boEncrypt.Encrypt(cOrderID, m_cEncryptionKey) &
+                    'Dim m_cURL1 As String = "http://" & ConfigurationManager.AppSettings("WebAppName") & "Approvequote.aspx"
+                    'Dim m_cURL1 As String = GetURL() & "Approvequote.aspx"
+                    Dim m_cURL1 As String = GetURL(cBusinessUnitOM, LineStatus)
+                    Try
+                        cParam = "?fer=" & boEncrypt.Encrypt(cOrderID, m_cEncryptionKey) &
                                        "&op=" & boEncrypt.Encrypt(cEmployeeID, m_cEncryptionKey) &
                                        "&xyz=" & boEncrypt.Encrypt(cBusinessUnitOM, m_cEncryptionKey) &
                                        "&HOME=N"
-                    If Zeussite = "Y" Then
-                        cParam += "&un=" & boEncrypt.Encrypt(UserName, m_cEncryptionKey)
-                    End If
-                Catch ex As Exception
-                End Try
+                        If Zeussite = "Y" Then
+                            cParam += "&un=" & boEncrypt.Encrypt(UserName, m_cEncryptionKey)
+                        End If
+                    Catch ex As Exception
+                    End Try
 
-                If LineStatus = "QTW" Then
-                    cLink = "<p style='color: #000; margin: 0px 0px 18px 0px; line-height: 24px;'>" &
+                    If LineStatus = "QTW" Then
+                        cLink = "<p style='color: #000; margin: 0px 0px 18px 0px; line-height: 24px;'>" &
                     "The below referenced order has been requested by " & cEmployeeID & " and needs your approval.Click the " &
                     "<a href=""" & m_cURL1 & cParam & """ style='text-decoration: none; color: #3090FF;'>link</a> " &
                     "or select the ""Approve Orders"" menu option in SDI ZEUS to approve or reject the order." &
                     "</p>"
-                Else
-                    cLink = "<p style='color: #000; margin: 0px 0px 18px 0px; line-height: 24px;'> " &
+                    Else
+                        cLink = "<p style='color: #000; margin: 0px 0px 18px 0px; line-height: 24px;'> " &
                     "The below referenced order contains items that required a price quote before processing.To view quoted price either click the " &
                     "<a href=""" & m_cURL1 & cParam & """ style='text-decoration none; color: #3090FF;'>link</a> " &
                     "or select the ""Requestor Approvals"" menu option in SDI ZEUS to approve or decline the order. " &
                    "</p>"
 
-                End If
-                boEncrypt = Nothing
-                cLink &= "</td>"
-                cLink &= "</tr>"
-                Return cLink
+                    End If
 
-            Catch ex As Exception
-                'm_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
+                Catch ex As Exception
+                    'm_eventLogger.WriteEntry(cHdr & ex.ToString, EventLogEntryType.Error)
 
-                m_logger.WriteVerboseLog(cHdr & ".  Error:  " & ex.ToString)
-                SendAlertMessage(msg:=cHdr & ex.ToString)
-            End Try
+                    m_logger.WriteVerboseLog(cHdr & ".  Error:  " & ex.ToString)
+                    SendAlertMessage(msg:=cHdr & ex.ToString)
+                End Try
+            Else
+                cLink = "<p style='color: #000; margin: 0px 0px 18px 0px; line-height: 24px;'> " &
+"This is to notify that the below referenced order has been requested by " & orginalempid & " and their Next budgetary/alternate approvers are inactive.</p>"
+            End If
+            boEncrypt = Nothing
+            cLink &= "</td>"
+            cLink &= "</tr>"
+            Return cLink
         End If
         Return (cLink)
     End Function
