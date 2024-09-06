@@ -1009,8 +1009,8 @@ Public Class QuoteNonStockProcessor
                                  ",A.REQ_ID AS REQ_ID,A1.BUYER_ID,B.DESCR,B.EMAILID,L.SHIPTO_ID AS SHIPTO" & vbCrLf &
                                  ",A1.LINE_NBR AS LINE_NBR" & vbCrLf &
                                  ",A4.BILL_TO_CUST_ID AS SOLD_TO_CUST_ID" & vbCrLf &
+                                 ",A2.FIRST_NAME_SRCH || ' ' || A2.LAST_NAME_SRCH AS USERNAME" & vbCrLf &
                                  ",A2.ISA_EMPLOYEE_EMAIL AS ISA_EMPLOYEE_EMAIL" & vbCrLf &
-                                 ",A2.ISA_EMPLOYEE_NAME AS ISA_EMPLOYEE_NAME" & vbCrLf &
                                  ",A2.ISA_PRICE_BLOCK AS ISA_PRICE_BLOCK" & vbCrLf &
                                  ",A3.ISA_NONSKREQ_EMAIL AS ISA_NONSKREQ_EMAIL" & vbCrLf &
                                  ",L.ISA_EMPLOYEE_ID AS ISA_EMPLOYEE_ID,L.isa_user1 AS APPROVER" & vbCrLf &
@@ -1199,6 +1199,14 @@ Public Class QuoteNonStockProcessor
                             boItem.BusinessUnitOM = CType(rdr("BUSINESS_UNIT_OM"), String).Trim
                         End If
                     End If
+                    'Madhu-INC0045280-Pass the first name and lastname in QTW Email
+                    Try
+                        If Not String.IsNullOrEmpty(rdr("USERNAME").ToString().Trim()) Then
+                            Dim txtInfoLocal As TextInfo = New CultureInfo("en-US", False).TextInfo
+                            boItem.Addressee = txtInfoLocal.ToTitleCase(rdr("USERNAME").ToLower())
+                        End If
+                    Catch ex As Exception
+                    End Try
 
                     ' get order ID (if not defined yet)
                     If Not (boItem.OrderID.Length > 0) Then
@@ -1360,15 +1368,17 @@ Public Class QuoteNonStockProcessor
                                     Catch ex As Exception
                                         boItem.EmployeeID = CType(rdr("ISA_EMPLOYEE_ID"), String).Trim
                                     End Try
-                                    ' get the addressee (name)
-                                    If Not (rdr("ISA_EMPLOYEE_NAME") Is System.DBNull.Value) Then
-                                        'boItem.Addressee = CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim
-                                        Dim cAddressee As String = Utility.FormatAddessee(CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim)
-                                        If Not (cAddressee.Trim.Length > 0) Then
-                                            cAddressee = CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim
-                                        End If
-                                        boItem.Addressee = cAddressee
-                                    End If
+                                    'Madhu-INC0045280-Commenting out since this code is not used
+
+                                    '' get the addressee (name)
+                                    'If Not (rdr("ISA_EMPLOYEE_NAME") Is System.DBNull.Value) Then
+                                    '    'boItem.Addressee = CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim
+                                    '    Dim cAddressee As String = Utility.FormatAddessee(CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim)
+                                    '    If Not (cAddressee.Trim.Length > 0) Then
+                                    '        cAddressee = CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim
+                                    '    End If
+                                    '    boItem.Addressee = cAddressee
+                                    'End If
 
                                     ' get the email address
                                     If (boItem.TO <> "") Then
@@ -1385,14 +1395,16 @@ Public Class QuoteNonStockProcessor
                                     boItem.EmployeeID = CType(rdr("ISA_EMPLOYEE_ID"), String).Trim
                                     ' get the email address
                                     ' get the addressee (name)
-                                    If Not (rdr("ISA_EMPLOYEE_NAME") Is System.DBNull.Value) Then
-                                        'boItem.Addressee = CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim
-                                        Dim cAddressee As String = Utility.FormatAddessee(CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim)
-                                        If Not (cAddressee.Trim.Length > 0) Then
-                                            cAddressee = CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim
-                                        End If
-                                        boItem.Addressee = cAddressee
-                                    End If
+                                    'Madhu-INC0045280-Commenting out since this code is not used
+
+                                    'If Not (rdr("ISA_EMPLOYEE_NAME") Is System.DBNull.Value) Then
+                                    '    'boItem.Addressee = CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim
+                                    '    Dim cAddressee As String = Utility.FormatAddessee(CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim)
+                                    '    If Not (cAddressee.Trim.Length > 0) Then
+                                    '        cAddressee = CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim
+                                    '    End If
+                                    '    boItem.Addressee = cAddressee
+                                    'End If
 
                                     ' get the email address
                                     If Not (rdr("ISA_EMPLOYEE_EMAIL") Is System.DBNull.Value) Then
@@ -1459,7 +1471,7 @@ Public Class QuoteNonStockProcessor
                                     If dtrAppReader.HasRows() = True Then
                                         dtrAppReader.Read()
                                         boItem.EmployeeID = strOrigApproverID
-                                        boItem.Addressee = dtrAppReader.Item("FIRST_NAME_SRCH") & " " & dtrAppReader.Item("LAST_NAME_SRCH")
+                                        'boItem.Addressee = dtrAppReader.Item("FIRST_NAME_SRCH") & " " & dtrAppReader.Item("LAST_NAME_SRCH")
                                         boItem.TO = dtrAppReader.Item("ISA_EMPLOYEE_EMAIL")
                                         dtrAppReader.Close()
                                     Else
@@ -1823,15 +1835,16 @@ Public Class QuoteNonStockProcessor
                                         'If Not (rdr("ISA_EMPLOYEE_ID") Is System.DBNull.Value) Then
                                         '    boItem.EmployeeID = CType(rdr("ISA_EMPLOYEE_ID"), String).Trim
                                         'End If
+                                        'Madhu-INC0045280-Commenting out since this code is not used
 
                                         ' get the addressee (name)
-                                        If Not (rdr("ISA_EMPLOYEE_NAME") Is System.DBNull.Value) Then
-                                            Dim cAddressee As String = Utility.FormatAddessee(CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim)
-                                            If Not (cAddressee.Trim.Length > 0) Then
-                                                cAddressee = CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim
-                                            End If
-                                            boItem.Addressee = cAddressee
-                                        End If
+                                        'If Not (rdr("ISA_EMPLOYEE_NAME") Is System.DBNull.Value) Then
+                                        '    Dim cAddressee As String = Utility.FormatAddessee(CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim)
+                                        '    If Not (cAddressee.Trim.Length > 0) Then
+                                        '        cAddressee = CType(rdr("ISA_EMPLOYEE_NAME"), String).Trim
+                                        '    End If
+                                        '    boItem.Addressee = cAddressee
+                                        'End If
 
                                         ' get the email address
                                         If Not (rdr("ISA_EMPLOYEE_EMAIL") Is System.DBNull.Value) Then
@@ -2184,9 +2197,9 @@ Public Class QuoteNonStockProcessor
                     eml.Body = "<HTML>" &
                                         BodyStyle() &
                                         AddNoRecepientExistNote(eml.To) &
-                                        EmailBodyHead(itmQuoted.Addressee, itmQuoted.OrderID, BU, LineStatus, itmQuoted.Zeussiteflag, itmQuoted.EmployeeID, itmQuoted) &
-                                        FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, LineStatus, itmQuoted.UserName, itmQuoted.Zeussiteflag, itmQuoted.Orginalempid, bShowApproveViaEmailLink) &
-                                       FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority, LineStatus, strOrderTotal) &
+                                        EmailBodyHead(itmQuoted.OrderID, BU, LineStatus, itmQuoted.Zeussiteflag, itmQuoted.EmployeeID, itmQuoted) &
+                                        FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, LineStatus, itmQuoted.UserName, itmQuoted.Zeussiteflag, itmQuoted.Orginalempid, itmQuoted.Addressee, bShowApproveViaEmailLink) &
+                                       FormHTMLQouteInfo(strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority, LineStatus, strOrderTotal) &
                                         PositionGrid(dstcartSTK, LineStatus, BU) &
                                         EmailBodyClosure() &
                                         bindFooterMail(BU) &
@@ -2203,9 +2216,9 @@ Public Class QuoteNonStockProcessor
                     eml.Body = "<HTML>" &
                                     BodyStyle() &
                                         AddNoRecepientExistNote(eml.To) &
-                                        EmailBodyHead(itmQuoted.Addressee, itmQuoted.OrderID, BU, LineStatus, itmQuoted.Zeussiteflag, itmQuoted.EmployeeID, itmQuoted) &
-                                         FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, LineStatus, itmQuoted.UserName, itmQuoted.Zeussiteflag, itmQuoted.Orginalempid, bShowApproveViaEmailLink) &
-                                       FormHTMLQouteInfo(itmQuoted.Addressee, strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority, LineStatus, strOrderTotal) &
+                                        EmailBodyHead(itmQuoted.OrderID, BU, LineStatus, itmQuoted.Zeussiteflag, itmQuoted.EmployeeID, itmQuoted) &
+                                         FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, LineStatus, itmQuoted.UserName, itmQuoted.Zeussiteflag, itmQuoted.Orginalempid, itmQuoted.Addressee, bShowApproveViaEmailLink) &
+                                       FormHTMLQouteInfo(strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority, LineStatus, strOrderTotal) &
                                         PositionGrid(dstcartSTK, LineStatus, BU) &
                                         EmailBodyClosure() &
                                         bindFooterMail(BU) &
@@ -2452,8 +2465,9 @@ Public Class QuoteNonStockProcessor
         End Try
         Return strStyle
     End Function
+    'Madhu-INC0045280-Commenting out since this code is not used
     'INC0043289 - As a Stanford user, I would like, when hyperlinked from a text message to the Order Approval page, to see my first name at the top of the page - Shanmugapriya
-    Public Shared Function EmailBodyHead(ByVal IsaEmployeeName As String, ByVal orderNo As String, ByVal Bu As String, ByVal Linestatus As String, ByVal Zeussite As String, ByVal Employeeid As String, ByVal itmQuoted As QuotedNStkItem) As String
+    Public Shared Function EmailBodyHead(ByVal orderNo As String, ByVal Bu As String, ByVal Linestatus As String, ByVal Zeussite As String, ByVal Employeeid As String, ByVal itmQuoted As QuotedNStkItem) As String
         Dim OrderNum As String = orderNo
         Dim strBu As String = Bu
         Dim strbody As String = "Hello"
@@ -2506,7 +2520,7 @@ Public Class QuoteNonStockProcessor
                         strappName = dtrAppReader.Item("FIRST_NAME_SRCH") & " " & dtrAppReader.Item("LAST_NAME_SRCH")
                         Dim txtInfoLocal As TextInfo = New CultureInfo("en-US", False).TextInfo
                         strappName = txtInfoLocal.ToTitleCase(strappName.ToLower())
-                        bodyHead &= strbody & strappName & "!"
+                        bodyHead &= strbody & " " & strappName & "!"
                         dtrAppReader.Close()
                     Else
                         dtrAppReader.Close()
@@ -2657,7 +2671,7 @@ Public Class QuoteNonStockProcessor
         End Try
     End Sub
 
-    Private Function FormHTMLQouteInfo(ByVal cAddressee As String, ByVal cOrderID As String, Optional ByVal bIsShowWorkOrderNo As Boolean = False,
+    Private Function FormHTMLQouteInfo(ByVal cOrderID As String, Optional ByVal bIsShowWorkOrderNo As Boolean = False,
                 Optional ByVal cWorkOrderNo As String = "", Optional ByVal strPriority As String = "", Optional ByVal LineStatus As String = "", Optional ByVal ordtotal As String = "") As String
 
         Dim cHdr As String = "QuoteNonStockProcessor.FormHTMLQouteInfo: "
@@ -2678,18 +2692,19 @@ Public Class QuoteNonStockProcessor
         If String.IsNullOrEmpty(cWorkOrderNo) Then
             cWorkOrderNo = "-"
         End If
+        'Madhu-INC0045280-Commenting out since this code is not used
 
-        If String.IsNullOrEmpty(cAddressee) Then
-            Try
-                If Not (cAddressee.Trim.Length > 0) Then
-                    Dim parts() As String = cAddressee.Split(","c)
-                    cAddressee = parts(1).Trim() & " " & parts(0).Trim()
-                Else
-                    cAddressee = "-"
-                End If
-            Catch ex As Exception
-            End Try
-        End If
+        'If String.IsNullOrEmpty(cAddressee) Then
+        '    Try
+        '        If Not (cAddressee.Trim.Length > 0) Then
+        '            Dim parts() As String = cAddressee.Split(","c)
+        '            cAddressee = parts(1).Trim() & " " & parts(0).Trim()
+        '        Else
+        '            cAddressee = "-"
+        '        End If
+        '    Catch ex As Exception
+        '    End Try
+        'End If
 
 
         Try
@@ -2766,8 +2781,9 @@ Public Class QuoteNonStockProcessor
         End Try
         'Return cInfoHTML
     End Function
+    'Madhu-INC0045280-Commenting out since this code is not used
     'INC0043289 - As a Stanford user, I would like, when hyperlinked from a text message to the Order Approval page, to see my first name at the top of the page - Shanmugapriya
-    Private Function FormHTMLLink(ByVal cOrderID As String, ByVal cEmployeeID As String, ByVal cBusinessUnitOM As String, ByVal LineStatus As String, ByVal UserName As String, ByVal Zeussite As String, ByVal orginalempid As String, Optional ByVal bShowLink As Boolean = True) As String
+    Private Function FormHTMLLink(ByVal cOrderID As String, ByVal cEmployeeID As String, ByVal cBusinessUnitOM As String, ByVal LineStatus As String, ByVal UserName As String, ByVal Zeussite As String, ByVal orginalempid As String, ByVal Employeename As String, Optional ByVal bShowLink As Boolean = True) As String
         Dim cParam As String = ""
         Dim cLink As String = ""
         Dim cHdr As String = "QuoteNonStockProcessor.FormHTMLLink: "
@@ -2791,7 +2807,7 @@ Public Class QuoteNonStockProcessor
 
                     If LineStatus = "QTW" Then
                         cLink = "<p style='color: #000; margin: 0px 0px 18px 0px; line-height: 24px;'>" &
-                    "The below referenced order has been requested by " & cEmployeeID & " and needs your approval.Click the " &
+                    "The below referenced order has been requested by <b>" & Employeename & "</b> and needs your approval.Click the " &
                     "<a href=""" & m_cURL1 & cParam & """ style='text-decoration: none; color: #3090FF;'>link</a> " &
                     "or select the ""Approve Orders"" menu option in SDI ZEUS to approve or reject the order." &
                     "</p>"
@@ -2812,7 +2828,7 @@ Public Class QuoteNonStockProcessor
                 End Try
             Else
                 cLink = "<p style='color: #000; margin: 0px 0px 18px 0px; line-height: 24px;'> " &
-"This is to notify that the below referenced order has been requested by " & orginalempid & " and their Next budgetary/alternate approvers are inactive.</p>"
+"This is to notify that the below referenced order has been requested by <b>" & Employeename & "</b> and their Next budgetary/alternate approvers are inactive.</p>"
             End If
             boEncrypt = Nothing
             cLink &= "</td>"
