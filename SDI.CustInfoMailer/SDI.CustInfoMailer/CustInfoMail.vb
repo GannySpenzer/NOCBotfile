@@ -66,17 +66,18 @@ Module CustInfoMail
 
         log.WriteLine("------------------------------------------------------------------------------------------")
         log.WriteLine("Start to fetch the orders that is need customer infromation, by using ISA_LINE_STATUS='CST' IN order line table")
-
+        'INC0045818-Pricing should not be shared on the email notifications-Shanmugapriya
         strSQLString = "select oln.BUSINESS_UNIT_OM,oln.BUSINESS_UNIT_PO, oln.ORDER_NO,oln.isa_intfc_ln, oln.ISA_WORK_ORDER_NO " & vbCrLf &
                         " , usr.ISA_EMPLOYEE_EMAIL , usr.PHONE_NUM, oln.OPRID_ENTERED_BY " & vbCrLf &
-                        "  , oln.ISA_REQUIRED_BY_DT, usr.ISA_EMPLOYEE_NAME,usr.ISA_EMPLOYEE_ID,ohd.order_date ,RLN.buyer_id " & vbCrLf &
+                        "  , oln.ISA_REQUIRED_BY_DT, usr.ISA_EMPLOYEE_NAME,usr.ISA_EMPLOYEE_ID,ohd.order_date ,RLN.buyer_id, ua.DIVISION " & vbCrLf &
                         "from PS_ISA_ORD_INTF_LN oln " & vbCrLf &
                         "join sdix_users_tbl usr on usr.ISA_EMPLOYEE_ID = oln.ISA_EMPLOYEE_ID join PS_ISA_ORD_INTF_HD ohd on ohd.ORDER_NO = oln.ORDER_NO join PS_REQ_LINE RLN ON RLN.REQ_ID = oln.ORDER_NO and RLN.BUSINESS_UNIT = OLN.BUSINESS_UNIT_PO AND RLN.LINE_NBR = oln.isa_intfc_ln and oln.business_unit_om = usr.business_unit" & vbCrLf &
+                        "LEFT JOIN sdix_users_attrib ua ON ua.ISA_EMPLOYEE_ID = usr.ISA_EMPLOYEE_ID" & vbCrLf &
                         "where oln.isa_LINE_STATUS='CST'" & vbCrLf &
                         "AND NOT EXISTS (SELECT 'X' FROM sdix_Cust_Info_email_log lg WHERE lg.BUSINESS_UNIT = OLN.BUSINESS_UNIT_PO  AND lg.REQ_ID = oln.ORDER_NO) " & vbCrLf &
                         " group by oln.BUSINESS_UNIT_OM ,oln.BUSINESS_UNIT_PO, oln.ORDER_NO, oln.ISA_WORK_ORDER_NO " & vbCrLf &
                         " , usr.ISA_EMPLOYEE_EMAIL , usr.PHONE_NUM, oln.OPRID_ENTERED_BY " & vbCrLf &
-                        " , oln.ISA_REQUIRED_BY_DT, usr.ISA_EMPLOYEE_NAME, usr.ISA_EMPLOYEE_ID, ohd.order_date,oln.isa_intfc_ln,RLN.buyer_id"
+                        " , oln.ISA_REQUIRED_BY_DT, usr.ISA_EMPLOYEE_NAME, usr.ISA_EMPLOYEE_ID, ohd.order_date,oln.isa_intfc_ln,RLN.buyer_id, ua.DIVISION"
 
         Dim dtrAppReader As OleDbDataReader = GetReader(strSQLString)
         If dtrAppReader.HasRows() = True Then
@@ -92,6 +93,7 @@ Module CustInfoMail
                 Dim strOrdDate As String = ""
                 Dim strBuyer As String = ""
                 Dim strUserId As String = ""
+                Dim Division As String = ""
 
                 Dim ORDER_NO As String = Convert.ToString(dtrAppReader.Item("ORDER_NO"))
 
@@ -135,8 +137,10 @@ Module CustInfoMail
                     If Not IsDBNull(dtrAppReader.Item("buyer_id")) Then
                         strBuyer = Convert.ToString(dtrAppReader.Item("buyer_id"))
                     End If
-
-
+                    'INC0045818-Pricing should not be shared on the email notifications-Shanmugapriya
+                    If Not IsDBNull(dtrAppReader.Item("DIVISION")) Then
+                        Division = Convert.ToString(dtrAppReader.Item("DIVISION")).ToUpper()
+                    End If
                     log.WriteLine("OrderNo {0} is need more information from customer {1}", strORderNo, strEmpName)
                     'SDI-41322 Email Notification turn off for user LOWE,ASHLEY
                     Try
@@ -150,10 +154,10 @@ Module CustInfoMail
                         If IsDontNotifierCustomer = "True" Then
                             'Don't Send notification
                         Else
-                            buildNotifyApprover(strPOBU, strORderNo, strEmail, strEmpName, Required_By_Dttm, strWorkONo, strOrdDate, strBuyer)
+                            buildNotifyApprover(strPOBU, strORderNo, strEmail, strEmpName, Required_By_Dttm, strWorkONo, strOrdDate, strBuyer, Division)
                         End If
                     Catch ex As Exception
-                        buildNotifyApprover(strPOBU, strORderNo, strEmail, strEmpName, Required_By_Dttm, strWorkONo, strOrdDate, strBuyer)
+                        buildNotifyApprover(strPOBU, strORderNo, strEmail, strEmpName, Required_By_Dttm, strWorkONo, strOrdDate, strBuyer, Division)
                     End Try
 
                 End If
@@ -191,8 +195,8 @@ Module CustInfoMail
         Return PurchasingEmailFrom
     End Function
     'Madhu-INC0015106-Removed avacorp in Email flow
-
-    Public Sub buildNotifyApprover(ByVal POBU As String, ByVal orderNum As String, ByVal EmpEmail As String, ByVal EmpNme As String, ByVal Required_By_Dttm As String, ByVal strWorkONo As String, ByVal strOrdDate As String, ByVal strBuyer As String)
+    'INC0045818-Pricing should not be shared on the email notifications-Shanmugapriya
+    Public Sub buildNotifyApprover(ByVal POBU As String, ByVal orderNum As String, ByVal EmpEmail As String, ByVal EmpNme As String, ByVal Required_By_Dttm As String, ByVal strWorkONo As String, ByVal strOrdDate As String, ByVal strBuyer As String, ByVal division As String)
 
         Dim strPuncher As Boolean = False
         Dim I As Integer
@@ -216,7 +220,7 @@ Module CustInfoMail
         Dim dataGridHTML As String = String.Empty
         Dim dstcartSTK As New DataTable
         Dim StrWO1 As String = " "
-        dstcartSTK = buildCartforemail(orderNum, StrWO1)
+        dstcartSTK = buildCartforemail(orderNum, StrWO1, POBU, division)
         If Trim(StrWO1) = "" Then
             StrWO1 = " "
         End If
@@ -529,9 +533,9 @@ Module CustInfoMail
         Return strReturn
 
     End Function
-
-    Private Function buildCartforemail(ByVal ordNumber As String, _
-                      ByRef strWrkOrder As String) As DataTable
+    'INC0045818-Pricing should not be shared on the email notifications-Shanmugapriya
+    Private Function buildCartforemail(ByVal ordNumber As String,
+                      ByRef strWrkOrder As String, ByVal BU As String, ByVal Division As String) As DataTable
 
         Dim dr As DataRow
         Dim I As Integer
@@ -546,8 +550,10 @@ Module CustInfoMail
         dstcart.Columns.Add("Manuf. Partnum")
         dstcart.Columns.Add("QTY")
         dstcart.Columns.Add("UOM")
-        dstcart.Columns.Add("Price")
-        dstcart.Columns.Add("Ext. Price")
+        If (BU <> "WAL00" Or (BU = "WAL00" And Division = "WALMART HOME OFFICE")) Then
+            dstcart.Columns.Add("Price")
+            dstcart.Columns.Add("Ext. Price")
+        End If
         ' dstcart.Columns.Add("Item ID")
         'dstcart.Columns.Add("Bin Location")
         'dstcart.Columns.Add("Item Chg Code")
@@ -636,31 +642,32 @@ Module CustInfoMail
                     Catch ex As Exception
                         strQty = "0"
                     End Try
-                    strPrice = "0.00"
-                    Try
-                        strPrice = CDec(CType(dataRowMain("ISA_SELL_PRICE"), String).Trim()).ToString()
-                        strPrice = strPrice.Remove(strPrice.Length - 2)
-                        If strPrice Is Nothing Then
-                            strPrice = "0.00"
-                        End If
-                    Catch ex As Exception
+                    If (BU <> "WAL00" Or (BU = "WAL00" And Division = "WALMART HOME OFFICE")) Then
                         strPrice = "0.00"
-                    End Try
-                    If CDec(strPrice) = 0 Then
-                        ' dr("Price") = "Call for Price"
-                        dr("Price") = "0.00"
-                    Else
-                        strPrice = CDec(strPrice).ToString("f")
-                        dr("Price") = strPrice
-                    End If
-                    Dim ExtPrice As Decimal = CType(Convert.ToDecimal(strQty) * Convert.ToDecimal(strPrice), String)
+                        Try
+                            strPrice = CDec(CType(dataRowMain("ISA_SELL_PRICE"), String).Trim()).ToString()
+                            strPrice = strPrice.Remove(strPrice.Length - 2)
+                            If strPrice Is Nothing Then
+                                strPrice = "0.00"
+                            End If
+                        Catch ex As Exception
+                            strPrice = "0.00"
+                        End Try
+                        If CDec(strPrice) = 0 Then
+                            ' dr("Price") = "Call for Price"
+                            dr("Price") = "0.00"
+                        Else
+                            strPrice = CDec(strPrice).ToString("f")
+                            dr("Price") = strPrice
+                        End If
+                        Dim ExtPrice As Decimal = CType(Convert.ToDecimal(strQty) * Convert.ToDecimal(strPrice), String)
 
-                    If (ExtPrice.ToString("f") = "0.00") Then
-                        dr("Ext. Price") = "0.00"
-                    Else
-                        dr("Ext. Price") = ExtPrice.ToString("f")
+                        If (ExtPrice.ToString("f") = "0.00") Then
+                            dr("Ext. Price") = "0.00"
+                        Else
+                            dr("Ext. Price") = ExtPrice.ToString("f")
+                        End If
                     End If
-
                     dr("LN") = CType(dataRowMain("ISA_INTFC_LN"), String).Trim()
                     Dim Order_No As String = CType(dataRowMain("ORDER_NO"), String).Trim()
                     Dim Line_nbr As String = CType(dataRowMain("ISA_INTFC_LN"), String).Trim()
