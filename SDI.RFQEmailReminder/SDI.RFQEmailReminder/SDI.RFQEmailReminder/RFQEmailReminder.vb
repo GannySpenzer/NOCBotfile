@@ -436,9 +436,12 @@ Module RFQEmailReminder
                 strSQLString = "SELECT ISA_EMPLOYEE_EMAIL FROM SDIX_USERS_TBL WHERE ISA_EMPLOYEE_ID = '" & approverid & "' "
                 apprEmail = GetScalar(strSQLString)
             End If
+            'INC0045818-Pricing should not be shared on the email notifications-Shanmugapriya
+            Dim SQLString As String = "SELECT UPPER(DIVISION) FROM SDIX_USERS_ATTRIB WHERE ISA_EMPLOYEE_ID = '" & EmployeeId & "' "
+            Dim Division As String = GetScalar(SQLString)
 
             If type = "fiftypercent" Or type = "seventyfivepercent" Or type = "lastday" Then
-                buildNotifyApprover(BU, OrderNo, OPRID_Appr_By, Appr_Dttm, ITM_SETID, SELL_Price, Required_By_Dttm,
+                buildNotifyApprover(Division, BU, OrderNo, OPRID_Appr_By, Appr_Dttm, ITM_SETID, SELL_Price, Required_By_Dttm,
                                                         Decriptions, Value, empEmail, endCount, Order_date, type, Email, endCount, Expiredate, apprEmail)
                 log.WriteLine("OrderNo:" + Convert.ToString(OrderNo) + "Mail Sent Successfully")
             End If
@@ -450,7 +453,8 @@ Module RFQEmailReminder
 
     End Sub
     'Madhu-INC0015106-Removed avacorp in Email flow
-    Public Sub buildNotifyApprover(ByVal businessUnit As String, ByVal orderNum As String, ByVal apprvBy As String,
+    'INC0045818-Pricing should not be shared on the email notifications-Shanmugapriya
+    Public Sub buildNotifyApprover(ByVal Division As String, ByVal businessUnit As String, ByVal orderNum As String, ByVal apprvBy As String,
                                     ByVal apprvDate As String, ByVal itmSet As String, ByVal sellPrice As String,
                                     ByVal itmReqDate As String, ByVal itmDescr As String, ByVal mode As String,
                                    ByVal empEmail1 As String, ByVal DateInterval As String, ByVal orderDate As String,
@@ -468,7 +472,7 @@ Module RFQEmailReminder
         Dim dataGridHTML As String = String.Empty
         Dim dstcartSTK As New DataTable
         Dim StrWO1 As String = " "
-        dstcartSTK = buildCartforemail(orderNum, StrWO1, DateInterval, type, businessUnit, Expiredate)
+        dstcartSTK = buildCartforemail(orderNum, StrWO1, DateInterval, type, businessUnit, Expiredate, Division)
         If Trim(StrWO1) = "" Then
             StrWO1 = " "
         End If
@@ -577,9 +581,10 @@ Module RFQEmailReminder
         End Try
 
     End Sub
+    'INC0045818-Pricing should not be shared on the email notifications-Shanmugapriya
     Private Function buildCartforemail(ByVal ordNumber As String,
                      ByRef strWrkOrder As String, ByRef DateInterval As String,
-                                       ByVal type As String, ByVal businessUnit As String, ByVal Enddate As String) As DataTable
+                                       ByVal type As String, ByVal businessUnit As String, ByVal Enddate As String, ByVal Division As String) As DataTable
 
         Dim dr As DataRow
         Dim I As Integer
@@ -595,8 +600,10 @@ Module RFQEmailReminder
         dstcart.Columns.Add("Manuf. Partnum")
         dstcart.Columns.Add("QTY")
         dstcart.Columns.Add("UOM")
-        dstcart.Columns.Add("Price")
-        dstcart.Columns.Add("Ext. Price")
+        If (businessUnit <> "I0W01" OrElse (businessUnit = "I0W01" AndAlso Division IsNot Nothing AndAlso Division = "WALMART HOME OFFICE")) Then
+            dstcart.Columns.Add("Price")
+            dstcart.Columns.Add("Ext. Price")
+        End If
         dstcart.Columns.Add("LN")
         dstcart.Columns.Add("Expected Delivery Date")
         dstcart.Columns.Add("Requested Due Date")
@@ -679,31 +686,32 @@ Module RFQEmailReminder
                     Catch ex As Exception
                         strQty = "0"
                     End Try
-                    strPrice = "0.00"
-                    Try
-                        strPrice = CDec(CType(dataRowMain("ISA_SELL_PRICE"), String).Trim()).ToString()
-                        strPrice = strPrice.Remove(strPrice.Length - 2)
-                        If strPrice Is Nothing Then
-                            strPrice = "0.00"
-                        End If
-                    Catch ex As Exception
+                    If (businessUnit <> "I0W01" OrElse (businessUnit = "I0W01" AndAlso Division IsNot Nothing AndAlso Division = "WALMART HOME OFFICE")) Then
                         strPrice = "0.00"
-                    End Try
-                    If CDec(strPrice) = 0 Then
-                        ' dr("Price") = "Call for Price"
-                        dr("Price") = "0.00"
-                    Else
-                        strPrice = CDec(strPrice).ToString("f")
-                        dr("Price") = strPrice
-                    End If
-                    Dim ExtPrice As Decimal = CType(Convert.ToDecimal(strQty) * Convert.ToDecimal(strPrice), String)
+                        Try
+                            strPrice = CDec(CType(dataRowMain("ISA_SELL_PRICE"), String).Trim()).ToString()
+                            strPrice = strPrice.Remove(strPrice.Length - 2)
+                            If strPrice Is Nothing Then
+                                strPrice = "0.00"
+                            End If
+                        Catch ex As Exception
+                            strPrice = "0.00"
+                        End Try
+                        If CDec(strPrice) = 0 Then
+                            ' dr("Price") = "Call for Price"
+                            dr("Price") = "0.00"
+                        Else
+                            strPrice = CDec(strPrice).ToString("f")
+                            dr("Price") = strPrice
+                        End If
+                        Dim ExtPrice As Decimal = CType(Convert.ToDecimal(strQty) * Convert.ToDecimal(strPrice), String)
 
-                    If (ExtPrice.ToString("f") = "0.00") Then
-                        dr("Ext. Price") = "0.00"
-                    Else
-                        dr("Ext. Price") = ExtPrice.ToString("f")
+                        If (ExtPrice.ToString("f") = "0.00") Then
+                            dr("Ext. Price") = "0.00"
+                        Else
+                            dr("Ext. Price") = ExtPrice.ToString("f")
+                        End If
                     End If
-
                     dr("LN") = CType(dataRowMain("ISA_INTFC_LN"), String).Trim()
                     Try
                         dr("Expected Delivery Date") = CDate(dataRowMain("ISA_REQUIRED_BY_DT")).ToString("MM/dd/yyyy")
