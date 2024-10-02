@@ -2310,11 +2310,11 @@ Public Class QuoteNonStockProcessor
                         eml.Cc = ""
                         eml.Bcc = ""
                         If itmQuoted.EmployeeID = "" Then
-                            eml.Subject = "TEST ZEUS - " & "Approver Inactived" & " " & itmQuoted.OrderID
+                            eml.Subject = "<<TEST SITE>> Approver Inactivated Order # " & itmQuoted.OrderID
                         End If
                     Else
                         If itmQuoted.EmployeeID = "" Then
-                            eml.Subject = "Approver Inactived" & itmQuoted.OrderID
+                            eml.Subject = "Approver Inactivated Order # " & itmQuoted.OrderID
 
                         End If
 
@@ -2828,7 +2828,7 @@ Public Class QuoteNonStockProcessor
                 End Try
             Else
                 cLink = "<p style='color: #000; margin: 0px 0px 18px 0px; line-height: 24px;'> " &
-"This is to notify that the below referenced order has been requested by <b>" & Employeename & "</b> and their Next budgetary/alternate approvers are inactive.</p>"
+"This is to notify that the below referenced order has been requested by <b>" & Employeename & "</b> but their Next budgetary/alternate approvers are inactive.</p>"
             End If
             boEncrypt = Nothing
             cLink &= "</td>"
