@@ -43,6 +43,7 @@ Public Class QuotedNStkItem
 
     Private m_Priority As String = ""
     Private m_Name As String = ""
+    Private m_Division As String = ""
 
     Public Property ID() As String
         Get
@@ -202,6 +203,15 @@ Public Class QuotedNStkItem
         End Get
         Set(ByVal Value As String)
             m_Zeusid = Value
+        End Set
+    End Property
+    'INC0045818-Pricing should not be shared on the email notifications-Shanmugapriya
+    Public Property Division() As String
+        Get
+            Return m_Division
+        End Get
+        Set(ByVal Value As String)
+            m_Division = Value
         End Set
     End Property
     'Madhu-INC0046903-Non stock email utility inactive approver scenario for RFQ 

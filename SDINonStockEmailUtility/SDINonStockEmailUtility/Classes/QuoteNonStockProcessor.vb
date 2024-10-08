@@ -314,9 +314,9 @@ Public Class QuoteNonStockProcessor
             SendAlertMessage(msg:=cHdr & ex.ToString)
         End Try
     End Function
-
+    'INC0045818-Pricing should not be shared on the email notifications-Shanmugapriya
     Private Shared Function buildCartforemail(ByVal m_colMsgs As QuotedNStkItemCollection, ByVal ordNumber As String,
-                        ByRef strWrkOrder As String, ByVal BU As String, Optional ByVal EmployeeID As String = "", Optional ByVal Linestatus As String = "") As DataTable
+                        ByRef strWrkOrder As String, ByVal BU As String, ByVal Division As String, Optional ByVal EmployeeID As String = "", Optional ByVal Linestatus As String = "") As DataTable
 
         Dim dr As DataRow
         Dim I As Integer
@@ -572,8 +572,9 @@ Public Class QuoteNonStockProcessor
                     End If
                     'WAL-1044 making price 0 for third party[change by Vishalini]
                     'Madhu-WAL-1500-For Walmart linestatus  QTS Hide the price
+                    'INC0045818-Pricing should not be shared on the email notifications-Shanmugapriya
                     Try
-                        If BU = "I0W01" And Linestatus <> "QTS" Then
+                        If BU = "I0W01" AndAlso Division IsNot Nothing AndAlso Division = "WALMART HOME OFFICE" Then
                             Try
                                 Dim SqlStringThirdPartCompid As String = "select THIRDPARTY_COMP_ID from sdix_users_tbl where THIRDPARTY_COMP_ID > '99' and THIRDPARTY_COMP_ID is not null and ISA_EMPLOYEE_ID = '" & EmployeeID & "'"
                                 Dim THIRDPARTY_COMP_ID As String = ORDBData.GetScalar(SqlStringThirdPartCompid)
@@ -996,6 +997,7 @@ Public Class QuoteNonStockProcessor
         m_config = Nothing
     End Sub
     'INC0037100 - Email To for Needs approvals from Non stock email utility should come from the ISA_USERS1 based upon Zeus 2 site flag = 'Y' - Dhamo
+    'INC0045818-Pricing should not be shared on the email notifications-Shanmugapriya
     Public Function GetQuotedItems() As Integer
         Dim cHdr As String = "QuoteNonStockProcessor.GetQuotedItems: "
         Dim connectionString As String = ConfigurationManager.AppSettings("OLEDBconString")
@@ -1018,6 +1020,7 @@ Public Class QuoteNonStockProcessor
                                  ",L.ISA_PRIORITY_FLAG,A4.ORIGIN" & vbCrLf &
                                  ",L.OPRID_MODIFIED_BY AS OPRID_MODIFIED_BY, L.ISA_WORK_ORDER_NO AS WORK_ORDER_ID,L.ISA_USER2 AS STORE , A3.APPRVALTHRESHOLD AS APPROVAL_LIMIT " & vbCrLf &
                                  ",A3.ISA_CUSTINT_APPRVL,A3.ZEUS_SITE,A3.ISA_SITE_EMAIL " & vbCrLf &
+                                 ",(SELECT UPPER(DIVISION) FROM SDIX_USERS_ATTRIB WHERE ISA_EMPLOYEE_ID = L.ISA_EMPLOYEE_ID) AS DIVISION" & vbCrLf &
                                  "FROM " & vbCrLf &
                                  " PS_REQ_HDR A" & vbCrLf &
                                  ",SYSADM8.PS_ROLEXLATOPR B" & vbCrLf &
@@ -1198,6 +1201,10 @@ Public Class QuoteNonStockProcessor
                         If Not (rdr("BUSINESS_UNIT_OM") Is System.DBNull.Value) Then
                             boItem.BusinessUnitOM = CType(rdr("BUSINESS_UNIT_OM"), String).Trim
                         End If
+                    End If
+                    'INC0045818-Pricing should not be shared on the email notifications-Shanmugapriya
+                    If Not (rdr("DIVISION") Is System.DBNull.Value) Then
+                        boItem.Division = CType(rdr("DIVISION"), String).Trim
                     End If
                     'Madhu-INC0045280-Pass the first name and lastname in QTW Email
                     Try
@@ -2077,7 +2084,7 @@ Public Class QuoteNonStockProcessor
                 Dim BU As String = itmQuoted.BusinessUnitOM
                 'Madhu-WAL-1500-For Walmart linestatus  QTS Hide the price
                 Try
-                    dstcartSTK = buildCartforemail(m_colMsgs, itmQuoted.OrderID, StrWO1, BU, itmQuoted.EmployeeID, LineStatus)
+                    dstcartSTK = buildCartforemail(m_colMsgs, itmQuoted.OrderID, StrWO1, BU, itmQuoted.Division, itmQuoted.EmployeeID, LineStatus)
                 Catch ex As Exception
                 End Try
                 If Trim(StrWO1) = "" Then
@@ -2189,6 +2196,7 @@ Public Class QuoteNonStockProcessor
                     End Try
                 End If
                 'INC0043289 - As a Stanford user, I would like, when hyperlinked from a text message to the Order Approval page, to see my first name at the top of the page - Shanmugapriya
+                'INC0045818-Pricing should not be shared on the email notifications-Shanmugapriya
                 If bIsPunchInBU Then
                     'SdiExchange
                     'WorkOrder should show for all the BU's
@@ -2199,8 +2207,8 @@ Public Class QuoteNonStockProcessor
                                         AddNoRecepientExistNote(eml.To) &
                                         EmailBodyHead(itmQuoted.OrderID, BU, LineStatus, itmQuoted.Zeussiteflag, itmQuoted.EmployeeID, itmQuoted) &
                                         FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, LineStatus, itmQuoted.UserName, itmQuoted.Zeussiteflag, itmQuoted.Orginalempid, itmQuoted.Addressee, bShowApproveViaEmailLink) &
-                                       FormHTMLQouteInfo(strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority, LineStatus, strOrderTotal) &
-                                        PositionGrid(dstcartSTK, LineStatus, BU) &
+                                       FormHTMLQouteInfo(BU, itmQuoted.Division, strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority, LineStatus, strOrderTotal) &
+                                        PositionGrid(itmQuoted.Division, dstcartSTK, LineStatus, BU) &
                                         EmailBodyClosure() &
                                         bindFooterMail(BU) &
                                           "</table>" &
@@ -2218,8 +2226,8 @@ Public Class QuoteNonStockProcessor
                                         AddNoRecepientExistNote(eml.To) &
                                         EmailBodyHead(itmQuoted.OrderID, BU, LineStatus, itmQuoted.Zeussiteflag, itmQuoted.EmployeeID, itmQuoted) &
                                          FormHTMLLink(itmQuoted.OrderID, itmQuoted.EmployeeID, itmQuoted.BusinessUnitOM, LineStatus, itmQuoted.UserName, itmQuoted.Zeussiteflag, itmQuoted.Orginalempid, itmQuoted.Addressee, bShowApproveViaEmailLink) &
-                                       FormHTMLQouteInfo(strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority, LineStatus, strOrderTotal) &
-                                        PositionGrid(dstcartSTK, LineStatus, BU) &
+                                       FormHTMLQouteInfo(BU, itmQuoted.Division, strShowOrderId, bShowWorkOrderNo, sWorkOrder, itmQuoted.Priority, LineStatus, strOrderTotal) &
+                                        PositionGrid(itmQuoted.Division, dstcartSTK, LineStatus, BU) &
                                         EmailBodyClosure() &
                                         bindFooterMail(BU) &
                                                                 "</table>" &
@@ -2671,7 +2679,8 @@ Public Class QuoteNonStockProcessor
         End Try
     End Sub
 
-    Private Function FormHTMLQouteInfo(ByVal cOrderID As String, Optional ByVal bIsShowWorkOrderNo As Boolean = False,
+    'INC0045818-Pricing should not be shared on the email notifications-Shanmugapriya
+    Private Function FormHTMLQouteInfo(ByVal BU As String, ByVal Division As String, ByVal cOrderID As String, Optional ByVal bIsShowWorkOrderNo As Boolean = False,
                 Optional ByVal cWorkOrderNo As String = "", Optional ByVal strPriority As String = "", Optional ByVal LineStatus As String = "", Optional ByVal ordtotal As String = "") As String
 
         Dim cHdr As String = "QuoteNonStockProcessor.FormHTMLQouteInfo: "
@@ -2733,9 +2742,12 @@ Public Class QuoteNonStockProcessor
                     End Try
                     additionalInfoHTML &= "</tr>"
                     additionalInfoHTML &= "<tr class='table-grid'>"
-                    additionalInfoHTML &= "<td>"
-                    additionalInfoHTML &= "<p style='font-weight: 600; margin: 10px 0px 14px 0px;'> Order Total : <span style='color: #595959; font-weight: 500;'>" & ordtotal & "</span> </p>"
-                    additionalInfoHTML &= "</td>"
+                    'INC0045818-Pricing should not be shared on the email notifications-Shanmugapriya
+                    If BU <> "I0W01" OrElse (BU = "I0W01" AndAlso Division IsNot Nothing AndAlso Division = "WALMART HOME OFFICE") Then
+                        additionalInfoHTML &= "<td>"
+                        additionalInfoHTML &= "<p style='font-weight: 600; margin: 10px 0px 14px 0px;'> Order Total : <span style='color: #595959; font-weight: 500;'>" & ordtotal & "</span> </p>"
+                        additionalInfoHTML &= "</td>"
+                    End If
                     If Trim(strPriority) = "R" Then
                         additionalInfoHTML &= "<td>"
                         additionalInfoHTML &= "<p style='font-weight: 600; margin: 10px 0px 14px 0px;'> Priority : <span style='color: #595959; font-weight: 500;'>" & strOrderPriorty & "</span> </p>"
@@ -3343,7 +3355,8 @@ Public Class QuoteNonStockProcessor
         End Try
     End Function
 
-    Public Function PositionGrid(ByVal dstcartSTK As DataTable, Optional ByVal LineStatus As String = "", Optional ByVal sBU As String = "") As String
+    'INC0045818-Pricing should not be shared on the email notifications-Shanmugapriya
+    Public Function PositionGrid(ByVal Division As String, ByVal dstcartSTK As DataTable, Optional ByVal LineStatus As String = "", Optional ByVal sBU As String = "") As String
 
         Dim Item_ID As String = ""
         Dim Descr As String = ""
@@ -3586,8 +3599,9 @@ Public Class QuoteNonStockProcessor
 
                             End Try
                             'Madhu-WAL-1500-For Walmart linestatus QTS Hide the price
+                            'INC0045818-Pricing should not be shared on the email notifications-Shanmugapriya
                             Try
-                                If sBU <> "I0W01" OrElse (sBU = "I0W01" AndAlso LineStatus <> "QTS") Then
+                                If sBU <> "I0W01" OrElse (sBU = "I0W01" AndAlso Division IsNot Nothing AndAlso Division = "WALMART HOME OFFICE") Then
                                     Try
                                         content &= "<tr style='font-size: 13px;'>"
                                         content &= "<td style='width: 41%; padding: 0px 12px; vertical-align: top;'>"
@@ -4710,7 +4724,8 @@ Public Class QuoteNonStockProcessor
         Dim dataGridHTML As String = String.Empty
         Dim dstcartSTK As New DataTable
         Dim StrWO1 As String = " "
-        dstcartSTK = buildCartforemail(m_colMsgs, itmQuoted.OrderID, StrWO1, itmQuoted.BusinessUnitOM, itmQuoted.EmployeeID)
+        'INC0045818-Pricing should not be shared on the email notifications-Shanmugapriya
+        dstcartSTK = buildCartforemail(m_colMsgs, itmQuoted.OrderID, StrWO1, itmQuoted.BusinessUnitOM, itmQuoted.Division, itmQuoted.EmployeeID)
         If Trim(StrWO1) = "" Then
             StrWO1 = " "
         End If
@@ -10613,8 +10628,6 @@ Public Class sdiItemStockType
 
 End Class
 #End Region
-
-
 
 
 
