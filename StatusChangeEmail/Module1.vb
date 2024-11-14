@@ -3717,12 +3717,12 @@ Module Module1
 
         If Not strEmpID.Trim = "" Then
             sendNotification(strEmpID, strPushNoti, strOrderNo, strBU)
-            sendWebNotification(strEmpID, Title)
+            sendWebNotification(strEmpID, Title, strBU)
         End If
 
     End Sub
 
-    Public Sub sendWebNotification(ByVal Session_UserID As String, ByVal subject As String)
+    Public Sub sendWebNotification(ByVal Session_UserID As String, ByVal subject As String, ByVal BU As String)
         Try
             Dim _notificationResult As New DataSet
             Dim notificationSQLStr = "select max(NOTIFY_ID) As NOTIFY_ID from SDIX_NOTIFY_QUEUE where USER_ID='" + Session_UserID + "'"
@@ -3737,13 +3737,14 @@ Module Module1
             End If
             connectOR.Open()
             Dim strSQLstring As String = "INSERT INTO SDIX_NOTIFY_QUEUE" & vbCrLf &
-        " (NOTIFY_ID, NOTIFY_TYPE, USER_ID,DTTMADDED, STATUS,LINK, HTMLMSG, ATTACHMENTS, TITLE) VALUES ('" & NotifyID & "'," & vbCrLf &
+        " (NOTIFY_ID, NOTIFY_TYPE, USER_ID,DTTMADDED, STATUS,LINK, HTMLMSG, ATTACHMENTS, TITLE, BUSINESS_UNIT) VALUES ('" & NotifyID & "'," & vbCrLf &
         " 'ORD'," & vbCrLf &
         " '" & Session_UserID & "'," & vbCrLf &
         " sysdate," & vbCrLf &
         " 'N'," & vbCrLf &
          " ' ',' ',' '," & vbCrLf &
-        " '" & subject & "')" & vbCrLf
+        " '" & subject & "'," & vbCrLf &
+        " '" & BU & "')" & vbCrLf
 
             Dim command1 As OleDbCommand
             command1 = New OleDbCommand(strSQLstring, connectOR)
