@@ -2340,7 +2340,7 @@ Public Class QuoteNonStockProcessor
                     SendLogger(eml.Subject, eml.Body, "QUOTEAPPROVAL", "Mail", eml.To, eml.Cc, eml.Bcc, itmQuoted.BusinessUnitID, itmQuoted.BusinessUnitOM)
                     If itmQuoted.EmployeeID <> "" Then
                         sendNotification(itmQuoted.EmployeeID, eml.Subject, itmQuoted.OrderID, itmQuoted.BusinessUnitOM, itmQuoted.Priority, LineStatus)
-                        sendWebNotification(itmQuoted.EmployeeID, eml.Subject, itmQuoted.Priority, LineStatus)
+                        sendWebNotification(itmQuoted.EmployeeID, eml.Subject, itmQuoted.Priority, LineStatus, itmQuoted.BusinessUnitOM)
                     End If
                 Catch ex As Exception
 
@@ -2638,7 +2638,7 @@ Public Class QuoteNonStockProcessor
         Public Property ApproverName As String = " "
 
     End Class
-    Public Sub sendWebNotification(ByVal Session_UserID As String, ByVal subject As String, Optional ByVal priority As String = "", Optional Linestatus As String = "")
+    Public Sub sendWebNotification(ByVal Session_UserID As String, ByVal subject As String, Optional ByVal priority As String = "", Optional Linestatus As String = "", Optional BU As String = "")
 
         Try
             If Linestatus = "QTW" And Trim(priority) = "R" Then
@@ -2662,13 +2662,13 @@ Public Class QuoteNonStockProcessor
             End If
 
             Dim strSQLstring As String = "INSERT INTO SDIX_NOTIFY_QUEUE" & vbCrLf &
-        " (NOTIFY_ID, NOTIFY_TYPE, USER_ID,DTTMADDED, STATUS,LINK, HTMLMSG, ATTACHMENTS, TITLE) VALUES ('" & NotifyID & "'," & vbCrLf &
+        " (NOTIFY_ID, NOTIFY_TYPE, USER_ID,DTTMADDED, STATUS,LINK, HTMLMSG, ATTACHMENTS, TITLE, BUSINESS_UNIT) VALUES ('" & NotifyID & "'," & vbCrLf &
         " 'AQO'," & vbCrLf &
         " '" & Session_UserID & "'," & vbCrLf &
         " sysdate," & vbCrLf &
         " 'N'," & vbCrLf &
          " ' ',' ',' '," & vbCrLf &
-        " '" & subject & "')" & vbCrLf
+        " '" & subject & "','" & BU & "')" & vbCrLf
             Try
                 Dim rowsaffected As Integer
                 rowsaffected = ORDBData.ExecNonQuery(strSQLstring)
