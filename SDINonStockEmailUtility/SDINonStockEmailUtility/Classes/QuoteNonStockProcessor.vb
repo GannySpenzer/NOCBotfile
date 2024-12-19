@@ -1047,6 +1047,7 @@ Public Class QuoteNonStockProcessor
                                  "  and trunc(L.ADD_DTTM) >= TO_DATE('" & StartDate & "','DD-MM-YY')" & vbCrLf &
                                  "  AND (A3.ZEUS_SITE = 'N' OR (A3.ZEUS_SITE = 'Y' AND ((L.ISA_LINE_STATUS = 'QTS') OR (L.ISA_LINE_STATUS = 'QTW'" & vbCrLf &
                                  "  And NOT EXISTS ( SELECT 1 FROM PS_ISA_ORD_INTF_LN SL WHERE SL.ISA_LINE_STATUS IN ('QTS','CRE','IPR','NEW') AND L.ORDER_NO = SL.ORDER_NO)))))" & vbCrLf &
+                                 "  AND NOT EXISTS (SELECT 1 FROM PS_ISA_ORD_INTF_LN LS WHERE LS.LINE_FIELD_C6= 'RFQ' AND LS.BUSINESS_UNIT_OM='I0W01' AND L.ORDER_NO=LS.ORDER_NO)" & vbCrLf & 'WAL-1557 - added condition to not take quote items from Walmart BU
                                  "  AND NOT EXISTS ( " & vbCrLf &
                                  "                  SELECT 'X' " & vbCrLf &
                                  "                  FROM SYSADM8.PS_NLINK_CUST_PLNT C " & vbCrLf &
