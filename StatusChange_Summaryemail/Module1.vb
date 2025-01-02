@@ -160,13 +160,23 @@ Module Module1
         End If
         Try
             connectOR.Open() 'Mythili -- INC0023448 Adding CC emails
-            sqlStringEmailFrom = "Select ISA_PURCH_EML_TO from PS_ISA_BUS_UNIT_PM where BUSINESS_UNIT_PO = '" & StrBu & "'"
-            toMail = ORDBAccess.GetScalar(sqlStringEmailFrom, connectOR)
+            '[ Zeus 408 - Order status summary email CC removal for non prod - Johnprinto ]'
+            If getDBName() Then
+                sqlStringEmailFrom = "Select ISA_PURCH_EML_TO from PS_ISA_BUS_UNIT_PM where BUSINESS_UNIT_PO = '" & StrBu & "'"
+                toMail = ORDBAccess.GetScalar(sqlStringEmailFrom, connectOR)
+            Else
+                toMail = ""
+            End If
         Catch ex As Exception
-            If (StrBu = "I0W01" Or StrBu = "WAL00") Then
-                toMail = "WalmartPurchasing@sdi.com"
-            ElseIf (StrBu = "EMC00" Or StrBu = "I0631") Then
-                toMail = "Emcorpurchasing@sdi.com"
+            '[ Zeus 408 - Order status summary email CC removal for non prod - Johnprinto ]'
+            If getDBName() Then
+                If (StrBu = "I0W01" Or StrBu = "WAL00") Then
+                    toMail = "WalmartPurchasing@sdi.com"
+                ElseIf (StrBu = "EMC00" Or StrBu = "I0631") Then
+                    toMail = "Emcorpurchasing@sdi.com"
+                End If
+            Else
+                toMail = ""
             End If
         End Try
         Try
