@@ -1047,7 +1047,6 @@ Public Class QuoteNonStockProcessor
                                  "  and trunc(L.ADD_DTTM) >= TO_DATE('" & StartDate & "','DD-MM-YY')" & vbCrLf &
                                  "  AND (A3.ZEUS_SITE = 'N' OR (A3.ZEUS_SITE = 'Y' AND ((L.ISA_LINE_STATUS = 'QTS') OR (L.ISA_LINE_STATUS = 'QTW'" & vbCrLf &
                                  "  And NOT EXISTS ( SELECT 1 FROM PS_ISA_ORD_INTF_LN SL WHERE SL.ISA_LINE_STATUS IN ('QTS','CRE','IPR','NEW') AND L.ORDER_NO = SL.ORDER_NO)))))" & vbCrLf &
-                                 "  AND NOT EXISTS (SELECT 1 FROM PS_ISA_ORD_INTF_LN LS WHERE LS.LINE_FIELD_C6= 'RFQ' AND LS.BUSINESS_UNIT_OM='I0W01' AND L.ORDER_NO=LS.ORDER_NO)" & vbCrLf & 'WAL-1557 - added condition to not take quote items from Walmart BU
                                  "  AND NOT EXISTS ( " & vbCrLf &
                                  "                  SELECT 'X' " & vbCrLf &
                                  "                  FROM SYSADM8.PS_NLINK_CUST_PLNT C " & vbCrLf &
@@ -2685,6 +2684,7 @@ Public Class QuoteNonStockProcessor
                 Optional ByVal cWorkOrderNo As String = "", Optional ByVal strPriority As String = "", Optional ByVal LineStatus As String = "", Optional ByVal ordtotal As String = "") As String
 
         Dim cHdr As String = "QuoteNonStockProcessor.FormHTMLQouteInfo: "
+        Dim OrderNoPrefix = cOrderID.Substring(0, 2)
 
         Dim strOrderPriorty As String = " "
         If Trim(strPriority) <> " " Then
@@ -2745,9 +2745,16 @@ Public Class QuoteNonStockProcessor
                     additionalInfoHTML &= "<tr class='table-grid'>"
                     'INC0045818-Pricing should not be shared on the email notifications-Shanmugapriya
                     If BU <> "I0W01" OrElse (BU = "I0W01" AndAlso Division IsNot Nothing AndAlso Division = "WALMART HOME OFFICE") Then
-                        additionalInfoHTML &= "<td>"
-                        additionalInfoHTML &= "<p style='font-weight: 600; margin: 10px 0px 14px 0px;'> Order Total : <span style='color: #595959; font-weight: 500;'>" & ordtotal & "</span> </p>"
-                        additionalInfoHTML &= "</td>"
+                        'WW-1221_CR-3 Email body text change for quote orders -Vishwa S
+                        If OrderNoPrefix = "WQ" Then
+                            additionalInfoHTML &= "<td>"
+                            additionalInfoHTML &= "<p style='font-weight: 600; margin: 10px 0px 14px 0px;'> Quote Total : <span style='color: #595959; font-weight: 500;'>" & ordtotal & "</span> </p>"
+                            additionalInfoHTML &= "</td>"
+                        Else
+                            additionalInfoHTML &= "<td>"
+                            additionalInfoHTML &= "<p style='font-weight: 600; margin: 10px 0px 14px 0px;'> Order Total : <span style='color: #595959; font-weight: 500;'>" & ordtotal & "</span> </p>"
+                            additionalInfoHTML &= "</td>"
+                        End If
                     End If
                     If Trim(strPriority) = "R" Then
                         additionalInfoHTML &= "<td>"
@@ -2801,6 +2808,7 @@ Public Class QuoteNonStockProcessor
         Dim cLink As String = ""
         Dim cHdr As String = "QuoteNonStockProcessor.FormHTMLLink: "
         Dim boEncrypt As New Encryption64
+        Dim OrderNoPrefix = cOrderID.Substring(0, 2)
         If bShowLink Then
             If cEmployeeID <> "" Then
                 Try
@@ -2819,11 +2827,20 @@ Public Class QuoteNonStockProcessor
                     End Try
 
                     If LineStatus = "QTW" Then
-                        cLink = "<p style='color: #000; margin: 0px 0px 18px 0px; line-height: 24px;'>" &
+                        'WW-1221_CR-3 Email body text change for quote orders -Vishwa S
+                        If OrderNoPrefix = "WQ" Then
+                            cLink = "<p style='color: #000; margin: 0px 0px 18px 0px; line-height: 24px;'>" &
+                    "The below referenced quote has been requested by <b>" & Employeename & "</b> and needs your approval.Click the " &
+                    "<a href=""" & m_cURL1 & cParam & """ style='text-decoration: none; color: #3090FF;'>link</a> " &
+                    "or select the ""Approve Orders"" menu option in SDI ZEUS to approve or reject the quote." &
+                    "</p>"
+                        Else
+                            cLink = "<p style='color: #000; margin: 0px 0px 18px 0px; line-height: 24px;'>" &
                     "The below referenced order has been requested by <b>" & Employeename & "</b> and needs your approval.Click the " &
                     "<a href=""" & m_cURL1 & cParam & """ style='text-decoration: none; color: #3090FF;'>link</a> " &
                     "or select the ""Approve Orders"" menu option in SDI ZEUS to approve or reject the order." &
                     "</p>"
+                        End If
                     Else
                         cLink = "<p style='color: #000; margin: 0px 0px 18px 0px; line-height: 24px;'> " &
                     "The below referenced order contains items that required a price quote before processing.To view quoted price either click the " &
@@ -2840,8 +2857,14 @@ Public Class QuoteNonStockProcessor
                     SendAlertMessage(msg:=cHdr & ex.ToString)
                 End Try
             Else
-                cLink = "<p style='color: #000; margin: 0px 0px 18px 0px; line-height: 24px;'> " &
+                'WW-1221_CR-3 Email body text change for quote orders -Vishwa S
+                If OrderNoPrefix = "WQ" Then
+                    cLink = "<p style='color: #000; margin: 0px 0px 18px 0px; line-height: 24px;'> " &
+"This is to notify that the below referenced quote has been requested by <b>" & Employeename & "</b> but their Next budgetary/alternate approvers are inactive.</p>"
+                Else
+                    cLink = "<p style='color: #000; margin: 0px 0px 18px 0px; line-height: 24px;'> " &
 "This is to notify that the below referenced order has been requested by <b>" & Employeename & "</b> but their Next budgetary/alternate approvers are inactive.</p>"
+                End If
             End If
             boEncrypt = Nothing
             cLink &= "</td>"
