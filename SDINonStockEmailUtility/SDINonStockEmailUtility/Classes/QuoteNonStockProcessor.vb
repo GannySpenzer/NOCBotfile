@@ -1020,7 +1020,7 @@ Public Class QuoteNonStockProcessor
                                  ",L.ISA_PRIORITY_FLAG,A4.ORIGIN" & vbCrLf &
                                  ",L.OPRID_MODIFIED_BY AS OPRID_MODIFIED_BY, L.ISA_WORK_ORDER_NO AS WORK_ORDER_ID,L.ISA_USER2 AS STORE , A3.APPRVALTHRESHOLD AS APPROVAL_LIMIT " & vbCrLf &
                                  ",A3.ISA_CUSTINT_APPRVL,A3.ZEUS_SITE,A3.ISA_SITE_EMAIL " & vbCrLf &
-                                 ",(SELECT UPPER(DIVISION) FROM SDIX_USERS_ATTRIB WHERE ISA_EMPLOYEE_ID = L.ISA_EMPLOYEE_ID) AS DIVISION" & vbCrLf &
+                                 ",(SELECT UPPER(DIVISION) FROM SDIX_USERS_ATTRIB WHERE ISA_EMPLOYEE_ID = L.isa_user1) AS DIVISION" & vbCrLf &
                                  "FROM " & vbCrLf &
                                  " PS_REQ_HDR A" & vbCrLf &
                                  ",SYSADM8.PS_ROLEXLATOPR B" & vbCrLf &
