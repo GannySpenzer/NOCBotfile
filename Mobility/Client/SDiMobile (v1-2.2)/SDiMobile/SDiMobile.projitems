@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>{4B46CC12-B86B-4002-891D-F3558756A755}</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>SDiMobile</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)SDiMobile.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AppMainPage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)authenticator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)common.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)dummyAuthenticator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IAppManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)INavPageChild.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)InfiniteListView.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ItemDetailPage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LoginModalPage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LoginPage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MenuItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MenuListData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MenuListView.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MenuPage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)orderParameter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)partItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)partSearcher.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PartSearchPage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)partSearchParam.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SettingsPage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)shoppingCartItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ShoppingCartPage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)user.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UserAcctMaint.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)userAuthenticate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UserProfilePage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IWorklightClientInstance.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PreserveAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)userJSON.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)userInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)userPriv.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)userRequestingAuth.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)worklightClientInstance.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SOAP\SOAPbaseResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SOAP\SOAPEnvelope.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SOAP\SOAPResponseHeaders.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SOAP\SOAPBody.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SOAP\SOAPSearchResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SOAP\SOAPSearchResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SOAP\SOAPschema.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SOAP\SOAPdiffgram.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SOAP\SOAPResults.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SOAP\SOAPRelevantResults.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)singleOrArrayConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CartToolbarItem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)EmptyClass.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SQLITE\SQLiteDataAccess.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SQLITE\LoggingBO.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ServerLogWriter.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)SOAP\" />
+    <Folder Include="$(MSBuildThisFileDirectory)SQLITE\" />
+  </ItemGroup>
+</Project>

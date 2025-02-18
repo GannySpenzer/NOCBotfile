@@ -1,0 +1,8 @@
+E:\Arvinthakash\SDiMobile (v1-2.2)\SDiMobile (v1-2.2)\UITests\bin\Debug\SDiMobile.UITests.dll
+E:\Arvinthakash\SDiMobile (v1-2.2)\SDiMobile (v1-2.2)\UITests\bin\Debug\SDiMobile.UITests.pdb
+E:\Arvinthakash\SDiMobile (v1-2.2)\SDiMobile (v1-2.2)\UITests\bin\Debug\nunit.framework.dll
+E:\Arvinthakash\SDiMobile (v1-2.2)\SDiMobile (v1-2.2)\UITests\bin\Debug\Xamarin.UITest.dll
+E:\Arvinthakash\SDiMobile (v1-2.2)\SDiMobile (v1-2.2)\UITests\bin\Debug\Xamarin.UITest.xml
+E:\Arvinthakash\SDiMobile (v1-2.2)\SDiMobile (v1-2.2)\UITests\bin\Debug\nunit.framework.xml
+E:\Arvinthakash\SDiMobile (v1-2.2)\SDiMobile (v1-2.2)\UITests\obj\Debug\SDiMobile.UITests.dll
+E:\Arvinthakash\SDiMobile (v1-2.2)\SDiMobile (v1-2.2)\UITests\obj\Debug\SDiMobile.UITests.pdb

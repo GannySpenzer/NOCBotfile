@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xmlData version="2.0" logging="off">
+	<Catalog id="GRAYBAR.default" docType="cXML.dtd" docVersion="1.2.017" logging="verbose">
+		<Identities>
+			<From domain="AribaNetworkId" userId="184098" />
+			<To domain="DUNS" userId="001903202" />
+			<Sender domain="DUNS" userId="184098sdi" userPw="sdi1234">
+				<UserAgentOverride>Ariba Network 1.2</UserAgentOverride>
+			</Sender>
+		</Identities>
+		<!-- <VendorURL>http://kwps10dx.graybar.com/webapp/wcs/stores/servlet/PunchOutSetup?storeId=10151&amp;catalogId=10001&amp;langId=-1</VendorURL> -->
+		<VendorURL>http://www.graybar.com/webapp/wcs/stores/servlet/PunchOutSetup?storeId=10151&amp;catalogId=10001&amp;langId=-1</VendorURL>
+		<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.insiteonline.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+	<Catalog id="GRAYBAR.sdi_nacco" docType="cXML.dtd" docVersion="1.2.017" logging="verbose">
+		<Identities>
+			<From domain="AribaNetworkId" userId="150605" />
+			<To domain="DUNS" userId="001903202" />
+			<Sender domain="DUNS" userId="150605sdi" userPw="sdi1234">
+				<UserAgentOverride>Ariba Network 1.2</UserAgentOverride>
+			</Sender>
+		</Identities>
+		<!-- <VendorURL>http://kwps10dx.graybar.com/webapp/wcs/stores/servlet/PunchOutSetup?storeId=10151&amp;catalogId=10001&amp;langId=-1</VendorURL> -->
+		<VendorURL>http://www.graybar.com/webapp/wcs/stores/servlet/PunchOutSetup?storeId=10151&amp;catalogId=10001&amp;langId=-1</VendorURL>
+		<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.insiteonline.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+	<Catalog id="GRAYBAR.nyc" docType="cXML.dtd" docVersion="1.2.017" logging="verbose">
+		<Identities>
+			<From domain="AribaNetworkId" userId="160513" />
+			<To domain="DUNS" userId="001903202" />
+			<Sender domain="DUNS" userId="160513sdi" userPw="sdi1234">
+				<UserAgentOverride>Ariba Network 1.2</UserAgentOverride>
+			</Sender>
+		</Identities>
+	<!--	<VendorURL>http://kwps10dx.graybar.com/webapp/wcs/stores/servlet/PunchOutSetup?storeId=10151&amp;catalogId=10001&amp;langId=-1</VendorURL> -->
+	    <VendorURL>http://www.graybar.com/webapp/wcs/stores/servlet/PunchOutSetup?storeId=10151&amp;catalogId=10001&amp;langId=-1</VendorURL>
+		<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.insiteonline.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+	<Catalog id="GRAYBAR.kelloggs" docType="cXML.dtd" docVersion="1.2.017" logging="verbose">
+		<Identities>
+			<From domain="AribaNetworkId" userId="370939" />
+			<To domain="DUNS" userId="001903202" />
+			<Sender domain="DUNS" userId="370939sdi" userPw="sdi1234">
+				<UserAgentOverride>Ariba Network 1.2</UserAgentOverride>
+			</Sender>
+		</Identities>
+		<VendorURL>http://www.graybar.com/webapp/wcs/stores/servlet/PunchOutSetup?storeId=10151&amp;catalogId=10001&amp;langId=-1</VendorURL>
+		<!-- <VendorURL>http://kwps10dx.graybar.com/webapp/wcs/stores/servlet/PunchOutSetup?storeId=10151&amp;catalogId=10001&amp;langId=-1</VendorURL> -->
+		<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.insiteonline.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+	<Catalog id="MSCDIRECT" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd">
+		<Identities>
+			<From domain="SDI" userId="02245154" />
+			<To domain="MSCDIRECT" userId="02245154" />
+			<Sender domain="MSCDIRECT" userId="02245154" />
+		</Identities>
+		<VendorURL>https://xml1.mscdirect.com/cgi/aribain</VendorURL>
+	</Catalog>
+	<Catalog id="MOTION.default" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd" logging="verbose">
+		<Identities>
+			<From domain="SDI" userId="053302709" />
+			<To domain="DUNS" userId="007960446" />
+			<Sender domain="SDI" userId="053302709" />
+		</Identities>
+		<VendorURL>http://www.motionmro.com/motion3/jsp/xml30/SDI.jsp</VendorURL>
+		<PunchOutSetupRequest>
+			<ShipToOverride addressId="MAIN1.TILLMAN" addressName="STRATEGIC DISTRIBUTION, INC." />
+		</PunchOutSetupRequest>
+		<PunchOutOrderMessage isValidateAgainstSchema="TRUE" validateSchemaURL="http://www.insiteonline.com/PunchOutcXML/cXML.dtd" />
+	</Catalog>
+	<Catalog id="ONESOURCE" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd">
+		<Identities>
+			<From domain="SDI" userId="SDI-Punchout" />
+			<To domain="ONESOURCE" userId="SDI-Punchout" />
+			<Sender domain="ONESOURCE" userId="SDI-Punchout" />
+		</Identities>
+		<VendorURL>https://one.eplusonline.com/procurement/cXmlPunchoutRequest.aspx</VendorURL>
+	</Catalog>
+	<Catalog id="SDI" docType="http://xml.cxml.org/schemas/cXML/1.2.013/cXML.dtd">
+		<Identities>
+			<From domain="SDI" userId="90052" />
+			<To domain="SDI" userId="90052" />
+			<Sender domain="SDI" userId="90052" />
+		</Identities>
+		<VendorURL>http://cptest.sdi.com/ISOLPunchin/punchinlaunch.aspx</VendorURL>
+	</Catalog>
+</xmlData>

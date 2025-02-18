@@ -1,0 +1,2470 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="https://www.autocrib.net/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" targetNamespace="https://www.autocrib.net/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="https://www.autocrib.net/">
+      <s:element name="GetUsers">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="U" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="P" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="N" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="UserStart" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="UserEnd" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetUsersResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetUsersResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetBins">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="U" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="P" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="N" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="StationStart" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="StationEnd" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="BinNoStart" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="BinNoEnd" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Processed" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetBinsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetBinsResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetEmployeesDetail">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="U" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="P" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="N" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="EmpNumStart" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="EmpNumEnd" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="LastNameStart" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="LastNameEnd" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DeptStart" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DeptEnd" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="supervisor" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="stocker" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetEmployeesDetailResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetEmployeesDetailResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetEmployees">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="U" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="P" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="N" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetEmployeesResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetEmployeesResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetItems">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="U" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="P" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="N" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ItemCodeStart" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ItemCodeEnd" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Description1Start" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Description1End" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="VendorStart" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="VendorEnd" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetItemsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetItemsResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetTransactions">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="U" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="P" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="StartDate" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="EndDate" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="StartTranNo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="EndTranNo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="TranType" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Crib" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Bin" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Item" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Employee" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Department" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Job" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Machine" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Part" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Reason" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="N" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ServerDateTime" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetTransactionsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetTransactionsResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetTransactionsSAP2">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="U" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="P" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="StartDate" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="EndDate" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="StartTranNo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="EndTranNo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="TranType" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Crib" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Bin" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Item" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Employee" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Department" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Job" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Machine" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Part" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Reason" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="N" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ServerDateTime" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetTransactionsSAP2Response">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetTransactionsSAP2Result">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetGages">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="U" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="P" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="N" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ItemCodeStart" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ItemCodeEnd" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="SerialStart" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="SerialEnd" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="CalibratorStart" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="CalibratorEnd" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="GageType" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetGagesResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetGagesResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetDepartments">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="U" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="P" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="N" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DeptNoStart" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DeptNoEnd" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DescriptionStart" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DescriptionEnd" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Active" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetDepartmentsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetDepartmentsResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetJobs">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="U" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="P" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="N" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="JobNoStart" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="JobNoEnd" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DescriptionStart" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DescripionEnd" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Active" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetJobsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetJobsResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetJobItems">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="U" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="P" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="N" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="JobNoStart" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="JobNoEnd" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetJobItemsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetJobItemsResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetMachines">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="U" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="P" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="N" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="MachNoStart" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="MachNoEnd" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DescriptionStart" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DescripionEnd" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Active" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetMachinesResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetMachinesResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetParts">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="U" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="P" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="N" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PartNoStart" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PartNoEnd" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DescriptionStart" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DescripionEnd" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Active" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetPartsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetPartsResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetReasons">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="U" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="P" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="N" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReasNoStart" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReasNoEnd" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DescriptionStart" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DescripionEnd" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Active" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetReasonsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetReasonsResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetSuppliers">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="U" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="P" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="N" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="SuplierNoStart" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="SupplierNoEnd" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetSuppliersResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetSuppliersResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetDeleteHst">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="U" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="P" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="N" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="strTable" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="strKey1" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="strKey2" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="strKey3" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="strProcessed" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetDeleteHstResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetDeleteHstResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetOpenPOs">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="U" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="P" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="N" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Processed" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="StationEnd" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetOpenPOsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetOpenPOsResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetIssues">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="U" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="P" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="N" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Station" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="TranNo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="MyLineNo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Processed" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetIssuesResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetIssuesResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetStation">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="U" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="P" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="N" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Station" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Processed" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetStationResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetStationResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetStationExt">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="U" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="P" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="N" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="StationStart" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="StationEnd" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetStationExtResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetStationExtResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetFirmware">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="U" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="P" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="N" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DeviceType" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="Detailed" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetFirmwareResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetFirmwareResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetTransactionsSAP">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="U" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="P" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="N" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="TranNo" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetTransactionsSAPResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetTransactionsSAPResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetCompany">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="U" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="P" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="N" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetCompanyResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetCompanyResult">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="GetUsersSoapIn">
+    <wsdl:part name="parameters" element="tns:GetUsers" />
+  </wsdl:message>
+  <wsdl:message name="GetUsersSoapOut">
+    <wsdl:part name="parameters" element="tns:GetUsersResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetBinsSoapIn">
+    <wsdl:part name="parameters" element="tns:GetBins" />
+  </wsdl:message>
+  <wsdl:message name="GetBinsSoapOut">
+    <wsdl:part name="parameters" element="tns:GetBinsResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetEmployeesDetailSoapIn">
+    <wsdl:part name="parameters" element="tns:GetEmployeesDetail" />
+  </wsdl:message>
+  <wsdl:message name="GetEmployeesDetailSoapOut">
+    <wsdl:part name="parameters" element="tns:GetEmployeesDetailResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetEmployeesSoapIn">
+    <wsdl:part name="parameters" element="tns:GetEmployees" />
+  </wsdl:message>
+  <wsdl:message name="GetEmployeesSoapOut">
+    <wsdl:part name="parameters" element="tns:GetEmployeesResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetItemsSoapIn">
+    <wsdl:part name="parameters" element="tns:GetItems" />
+  </wsdl:message>
+  <wsdl:message name="GetItemsSoapOut">
+    <wsdl:part name="parameters" element="tns:GetItemsResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionsSoapIn">
+    <wsdl:part name="parameters" element="tns:GetTransactions" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionsSoapOut">
+    <wsdl:part name="parameters" element="tns:GetTransactionsResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionsSAP2SoapIn">
+    <wsdl:part name="parameters" element="tns:GetTransactionsSAP2" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionsSAP2SoapOut">
+    <wsdl:part name="parameters" element="tns:GetTransactionsSAP2Response" />
+  </wsdl:message>
+  <wsdl:message name="GetGagesSoapIn">
+    <wsdl:part name="parameters" element="tns:GetGages" />
+  </wsdl:message>
+  <wsdl:message name="GetGagesSoapOut">
+    <wsdl:part name="parameters" element="tns:GetGagesResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetDepartmentsSoapIn">
+    <wsdl:part name="parameters" element="tns:GetDepartments" />
+  </wsdl:message>
+  <wsdl:message name="GetDepartmentsSoapOut">
+    <wsdl:part name="parameters" element="tns:GetDepartmentsResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetJobsSoapIn">
+    <wsdl:part name="parameters" element="tns:GetJobs" />
+  </wsdl:message>
+  <wsdl:message name="GetJobsSoapOut">
+    <wsdl:part name="parameters" element="tns:GetJobsResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetJobItemsSoapIn">
+    <wsdl:part name="parameters" element="tns:GetJobItems" />
+  </wsdl:message>
+  <wsdl:message name="GetJobItemsSoapOut">
+    <wsdl:part name="parameters" element="tns:GetJobItemsResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetMachinesSoapIn">
+    <wsdl:part name="parameters" element="tns:GetMachines" />
+  </wsdl:message>
+  <wsdl:message name="GetMachinesSoapOut">
+    <wsdl:part name="parameters" element="tns:GetMachinesResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetPartsSoapIn">
+    <wsdl:part name="parameters" element="tns:GetParts" />
+  </wsdl:message>
+  <wsdl:message name="GetPartsSoapOut">
+    <wsdl:part name="parameters" element="tns:GetPartsResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetReasonsSoapIn">
+    <wsdl:part name="parameters" element="tns:GetReasons" />
+  </wsdl:message>
+  <wsdl:message name="GetReasonsSoapOut">
+    <wsdl:part name="parameters" element="tns:GetReasonsResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetSuppliersSoapIn">
+    <wsdl:part name="parameters" element="tns:GetSuppliers" />
+  </wsdl:message>
+  <wsdl:message name="GetSuppliersSoapOut">
+    <wsdl:part name="parameters" element="tns:GetSuppliersResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetDeleteHstSoapIn">
+    <wsdl:part name="parameters" element="tns:GetDeleteHst" />
+  </wsdl:message>
+  <wsdl:message name="GetDeleteHstSoapOut">
+    <wsdl:part name="parameters" element="tns:GetDeleteHstResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetOpenPOsSoapIn">
+    <wsdl:part name="parameters" element="tns:GetOpenPOs" />
+  </wsdl:message>
+  <wsdl:message name="GetOpenPOsSoapOut">
+    <wsdl:part name="parameters" element="tns:GetOpenPOsResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetIssuesSoapIn">
+    <wsdl:part name="parameters" element="tns:GetIssues" />
+  </wsdl:message>
+  <wsdl:message name="GetIssuesSoapOut">
+    <wsdl:part name="parameters" element="tns:GetIssuesResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetStationSoapIn">
+    <wsdl:part name="parameters" element="tns:GetStation" />
+  </wsdl:message>
+  <wsdl:message name="GetStationSoapOut">
+    <wsdl:part name="parameters" element="tns:GetStationResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetStationExtSoapIn">
+    <wsdl:part name="parameters" element="tns:GetStationExt" />
+  </wsdl:message>
+  <wsdl:message name="GetStationExtSoapOut">
+    <wsdl:part name="parameters" element="tns:GetStationExtResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetFirmwareSoapIn">
+    <wsdl:part name="parameters" element="tns:GetFirmware" />
+  </wsdl:message>
+  <wsdl:message name="GetFirmwareSoapOut">
+    <wsdl:part name="parameters" element="tns:GetFirmwareResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionsSAPSoapIn">
+    <wsdl:part name="parameters" element="tns:GetTransactionsSAP" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionsSAPSoapOut">
+    <wsdl:part name="parameters" element="tns:GetTransactionsSAPResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetCompanySoapIn">
+    <wsdl:part name="parameters" element="tns:GetCompany" />
+  </wsdl:message>
+  <wsdl:message name="GetCompanySoapOut">
+    <wsdl:part name="parameters" element="tns:GetCompanyResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetUsersHttpGetIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="UserStart" type="s:string" />
+    <wsdl:part name="UserEnd" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetUsersHttpGetOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetBinsHttpGetIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="StationStart" type="s:string" />
+    <wsdl:part name="StationEnd" type="s:string" />
+    <wsdl:part name="BinNoStart" type="s:string" />
+    <wsdl:part name="BinNoEnd" type="s:string" />
+    <wsdl:part name="Processed" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetBinsHttpGetOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetEmployeesDetailHttpGetIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="EmpNumStart" type="s:string" />
+    <wsdl:part name="EmpNumEnd" type="s:string" />
+    <wsdl:part name="LastNameStart" type="s:string" />
+    <wsdl:part name="LastNameEnd" type="s:string" />
+    <wsdl:part name="DeptStart" type="s:string" />
+    <wsdl:part name="DeptEnd" type="s:string" />
+    <wsdl:part name="supervisor" type="s:string" />
+    <wsdl:part name="stocker" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetEmployeesDetailHttpGetOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetEmployeesHttpGetIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetEmployeesHttpGetOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetItemsHttpGetIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="ItemCodeStart" type="s:string" />
+    <wsdl:part name="ItemCodeEnd" type="s:string" />
+    <wsdl:part name="Description1Start" type="s:string" />
+    <wsdl:part name="Description1End" type="s:string" />
+    <wsdl:part name="VendorStart" type="s:string" />
+    <wsdl:part name="VendorEnd" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetItemsHttpGetOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionsHttpGetIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="StartDate" type="s:string" />
+    <wsdl:part name="EndDate" type="s:string" />
+    <wsdl:part name="StartTranNo" type="s:string" />
+    <wsdl:part name="EndTranNo" type="s:string" />
+    <wsdl:part name="TranType" type="s:string" />
+    <wsdl:part name="Crib" type="s:string" />
+    <wsdl:part name="Bin" type="s:string" />
+    <wsdl:part name="Item" type="s:string" />
+    <wsdl:part name="Employee" type="s:string" />
+    <wsdl:part name="Department" type="s:string" />
+    <wsdl:part name="Job" type="s:string" />
+    <wsdl:part name="Machine" type="s:string" />
+    <wsdl:part name="Part" type="s:string" />
+    <wsdl:part name="Reason" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="ServerDateTime" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionsHttpGetOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionsSAP2HttpGetIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="StartDate" type="s:string" />
+    <wsdl:part name="EndDate" type="s:string" />
+    <wsdl:part name="StartTranNo" type="s:string" />
+    <wsdl:part name="EndTranNo" type="s:string" />
+    <wsdl:part name="TranType" type="s:string" />
+    <wsdl:part name="Crib" type="s:string" />
+    <wsdl:part name="Bin" type="s:string" />
+    <wsdl:part name="Item" type="s:string" />
+    <wsdl:part name="Employee" type="s:string" />
+    <wsdl:part name="Department" type="s:string" />
+    <wsdl:part name="Job" type="s:string" />
+    <wsdl:part name="Machine" type="s:string" />
+    <wsdl:part name="Part" type="s:string" />
+    <wsdl:part name="Reason" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="ServerDateTime" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionsSAP2HttpGetOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetGagesHttpGetIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="ItemCodeStart" type="s:string" />
+    <wsdl:part name="ItemCodeEnd" type="s:string" />
+    <wsdl:part name="SerialStart" type="s:string" />
+    <wsdl:part name="SerialEnd" type="s:string" />
+    <wsdl:part name="CalibratorStart" type="s:string" />
+    <wsdl:part name="CalibratorEnd" type="s:string" />
+    <wsdl:part name="GageType" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetGagesHttpGetOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetDepartmentsHttpGetIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="DeptNoStart" type="s:string" />
+    <wsdl:part name="DeptNoEnd" type="s:string" />
+    <wsdl:part name="DescriptionStart" type="s:string" />
+    <wsdl:part name="DescriptionEnd" type="s:string" />
+    <wsdl:part name="Active" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetDepartmentsHttpGetOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetJobsHttpGetIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="JobNoStart" type="s:string" />
+    <wsdl:part name="JobNoEnd" type="s:string" />
+    <wsdl:part name="DescriptionStart" type="s:string" />
+    <wsdl:part name="DescripionEnd" type="s:string" />
+    <wsdl:part name="Active" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetJobsHttpGetOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetJobItemsHttpGetIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="JobNoStart" type="s:string" />
+    <wsdl:part name="JobNoEnd" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetJobItemsHttpGetOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetMachinesHttpGetIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="MachNoStart" type="s:string" />
+    <wsdl:part name="MachNoEnd" type="s:string" />
+    <wsdl:part name="DescriptionStart" type="s:string" />
+    <wsdl:part name="DescripionEnd" type="s:string" />
+    <wsdl:part name="Active" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetMachinesHttpGetOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetPartsHttpGetIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="PartNoStart" type="s:string" />
+    <wsdl:part name="PartNoEnd" type="s:string" />
+    <wsdl:part name="DescriptionStart" type="s:string" />
+    <wsdl:part name="DescripionEnd" type="s:string" />
+    <wsdl:part name="Active" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetPartsHttpGetOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetReasonsHttpGetIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="ReasNoStart" type="s:string" />
+    <wsdl:part name="ReasNoEnd" type="s:string" />
+    <wsdl:part name="DescriptionStart" type="s:string" />
+    <wsdl:part name="DescripionEnd" type="s:string" />
+    <wsdl:part name="Active" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetReasonsHttpGetOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetSuppliersHttpGetIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="SuplierNoStart" type="s:string" />
+    <wsdl:part name="SupplierNoEnd" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetSuppliersHttpGetOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetDeleteHstHttpGetIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="strTable" type="s:string" />
+    <wsdl:part name="strKey1" type="s:string" />
+    <wsdl:part name="strKey2" type="s:string" />
+    <wsdl:part name="strKey3" type="s:string" />
+    <wsdl:part name="strProcessed" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetDeleteHstHttpGetOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetOpenPOsHttpGetIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="Processed" type="s:string" />
+    <wsdl:part name="StationEnd" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetOpenPOsHttpGetOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetIssuesHttpGetIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="Station" type="s:string" />
+    <wsdl:part name="TranNo" type="s:string" />
+    <wsdl:part name="MyLineNo" type="s:string" />
+    <wsdl:part name="Processed" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetIssuesHttpGetOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetStationHttpGetIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="Station" type="s:string" />
+    <wsdl:part name="Processed" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetStationHttpGetOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetStationExtHttpGetIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="StationStart" type="s:string" />
+    <wsdl:part name="StationEnd" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetStationExtHttpGetOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetFirmwareHttpGetIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="DeviceType" type="s:string" />
+    <wsdl:part name="Detailed" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetFirmwareHttpGetOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionsSAPHttpGetIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="TranNo" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionsSAPHttpGetOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetCompanyHttpGetIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetCompanyHttpGetOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetUsersHttpPostIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="UserStart" type="s:string" />
+    <wsdl:part name="UserEnd" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetUsersHttpPostOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetBinsHttpPostIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="StationStart" type="s:string" />
+    <wsdl:part name="StationEnd" type="s:string" />
+    <wsdl:part name="BinNoStart" type="s:string" />
+    <wsdl:part name="BinNoEnd" type="s:string" />
+    <wsdl:part name="Processed" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetBinsHttpPostOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetEmployeesDetailHttpPostIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="EmpNumStart" type="s:string" />
+    <wsdl:part name="EmpNumEnd" type="s:string" />
+    <wsdl:part name="LastNameStart" type="s:string" />
+    <wsdl:part name="LastNameEnd" type="s:string" />
+    <wsdl:part name="DeptStart" type="s:string" />
+    <wsdl:part name="DeptEnd" type="s:string" />
+    <wsdl:part name="supervisor" type="s:string" />
+    <wsdl:part name="stocker" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetEmployeesDetailHttpPostOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetEmployeesHttpPostIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetEmployeesHttpPostOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetItemsHttpPostIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="ItemCodeStart" type="s:string" />
+    <wsdl:part name="ItemCodeEnd" type="s:string" />
+    <wsdl:part name="Description1Start" type="s:string" />
+    <wsdl:part name="Description1End" type="s:string" />
+    <wsdl:part name="VendorStart" type="s:string" />
+    <wsdl:part name="VendorEnd" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetItemsHttpPostOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionsHttpPostIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="StartDate" type="s:string" />
+    <wsdl:part name="EndDate" type="s:string" />
+    <wsdl:part name="StartTranNo" type="s:string" />
+    <wsdl:part name="EndTranNo" type="s:string" />
+    <wsdl:part name="TranType" type="s:string" />
+    <wsdl:part name="Crib" type="s:string" />
+    <wsdl:part name="Bin" type="s:string" />
+    <wsdl:part name="Item" type="s:string" />
+    <wsdl:part name="Employee" type="s:string" />
+    <wsdl:part name="Department" type="s:string" />
+    <wsdl:part name="Job" type="s:string" />
+    <wsdl:part name="Machine" type="s:string" />
+    <wsdl:part name="Part" type="s:string" />
+    <wsdl:part name="Reason" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="ServerDateTime" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionsHttpPostOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionsSAP2HttpPostIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="StartDate" type="s:string" />
+    <wsdl:part name="EndDate" type="s:string" />
+    <wsdl:part name="StartTranNo" type="s:string" />
+    <wsdl:part name="EndTranNo" type="s:string" />
+    <wsdl:part name="TranType" type="s:string" />
+    <wsdl:part name="Crib" type="s:string" />
+    <wsdl:part name="Bin" type="s:string" />
+    <wsdl:part name="Item" type="s:string" />
+    <wsdl:part name="Employee" type="s:string" />
+    <wsdl:part name="Department" type="s:string" />
+    <wsdl:part name="Job" type="s:string" />
+    <wsdl:part name="Machine" type="s:string" />
+    <wsdl:part name="Part" type="s:string" />
+    <wsdl:part name="Reason" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="ServerDateTime" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionsSAP2HttpPostOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetGagesHttpPostIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="ItemCodeStart" type="s:string" />
+    <wsdl:part name="ItemCodeEnd" type="s:string" />
+    <wsdl:part name="SerialStart" type="s:string" />
+    <wsdl:part name="SerialEnd" type="s:string" />
+    <wsdl:part name="CalibratorStart" type="s:string" />
+    <wsdl:part name="CalibratorEnd" type="s:string" />
+    <wsdl:part name="GageType" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetGagesHttpPostOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetDepartmentsHttpPostIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="DeptNoStart" type="s:string" />
+    <wsdl:part name="DeptNoEnd" type="s:string" />
+    <wsdl:part name="DescriptionStart" type="s:string" />
+    <wsdl:part name="DescriptionEnd" type="s:string" />
+    <wsdl:part name="Active" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetDepartmentsHttpPostOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetJobsHttpPostIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="JobNoStart" type="s:string" />
+    <wsdl:part name="JobNoEnd" type="s:string" />
+    <wsdl:part name="DescriptionStart" type="s:string" />
+    <wsdl:part name="DescripionEnd" type="s:string" />
+    <wsdl:part name="Active" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetJobsHttpPostOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetJobItemsHttpPostIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="JobNoStart" type="s:string" />
+    <wsdl:part name="JobNoEnd" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetJobItemsHttpPostOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetMachinesHttpPostIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="MachNoStart" type="s:string" />
+    <wsdl:part name="MachNoEnd" type="s:string" />
+    <wsdl:part name="DescriptionStart" type="s:string" />
+    <wsdl:part name="DescripionEnd" type="s:string" />
+    <wsdl:part name="Active" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetMachinesHttpPostOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetPartsHttpPostIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="PartNoStart" type="s:string" />
+    <wsdl:part name="PartNoEnd" type="s:string" />
+    <wsdl:part name="DescriptionStart" type="s:string" />
+    <wsdl:part name="DescripionEnd" type="s:string" />
+    <wsdl:part name="Active" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetPartsHttpPostOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetReasonsHttpPostIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="ReasNoStart" type="s:string" />
+    <wsdl:part name="ReasNoEnd" type="s:string" />
+    <wsdl:part name="DescriptionStart" type="s:string" />
+    <wsdl:part name="DescripionEnd" type="s:string" />
+    <wsdl:part name="Active" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetReasonsHttpPostOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetSuppliersHttpPostIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="SuplierNoStart" type="s:string" />
+    <wsdl:part name="SupplierNoEnd" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetSuppliersHttpPostOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetDeleteHstHttpPostIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="strTable" type="s:string" />
+    <wsdl:part name="strKey1" type="s:string" />
+    <wsdl:part name="strKey2" type="s:string" />
+    <wsdl:part name="strKey3" type="s:string" />
+    <wsdl:part name="strProcessed" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetDeleteHstHttpPostOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetOpenPOsHttpPostIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="Processed" type="s:string" />
+    <wsdl:part name="StationEnd" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetOpenPOsHttpPostOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetIssuesHttpPostIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="Station" type="s:string" />
+    <wsdl:part name="TranNo" type="s:string" />
+    <wsdl:part name="MyLineNo" type="s:string" />
+    <wsdl:part name="Processed" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetIssuesHttpPostOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetStationHttpPostIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="Station" type="s:string" />
+    <wsdl:part name="Processed" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetStationHttpPostOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetStationExtHttpPostIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="StationStart" type="s:string" />
+    <wsdl:part name="StationEnd" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetStationExtHttpPostOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetFirmwareHttpPostIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="DeviceType" type="s:string" />
+    <wsdl:part name="Detailed" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetFirmwareHttpPostOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionsSAPHttpPostIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+    <wsdl:part name="TranNo" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionsSAPHttpPostOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:message name="GetCompanyHttpPostIn">
+    <wsdl:part name="U" type="s:string" />
+    <wsdl:part name="P" type="s:string" />
+    <wsdl:part name="N" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetCompanyHttpPostOut">
+    <wsdl:part name="Body" />
+  </wsdl:message>
+  <wsdl:portType name="AutoCribWSSoap">
+    <wsdl:operation name="GetUsers">
+      <wsdl:input message="tns:GetUsersSoapIn" />
+      <wsdl:output message="tns:GetUsersSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetBins">
+      <wsdl:input message="tns:GetBinsSoapIn" />
+      <wsdl:output message="tns:GetBinsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetEmployeesDetail">
+      <wsdl:input message="tns:GetEmployeesDetailSoapIn" />
+      <wsdl:output message="tns:GetEmployeesDetailSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetEmployees">
+      <wsdl:input message="tns:GetEmployeesSoapIn" />
+      <wsdl:output message="tns:GetEmployeesSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetItems">
+      <wsdl:input message="tns:GetItemsSoapIn" />
+      <wsdl:output message="tns:GetItemsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactions">
+      <wsdl:input message="tns:GetTransactionsSoapIn" />
+      <wsdl:output message="tns:GetTransactionsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactionsSAP2">
+      <wsdl:input message="tns:GetTransactionsSAP2SoapIn" />
+      <wsdl:output message="tns:GetTransactionsSAP2SoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetGages">
+      <wsdl:input message="tns:GetGagesSoapIn" />
+      <wsdl:output message="tns:GetGagesSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetDepartments">
+      <wsdl:input message="tns:GetDepartmentsSoapIn" />
+      <wsdl:output message="tns:GetDepartmentsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetJobs">
+      <wsdl:input message="tns:GetJobsSoapIn" />
+      <wsdl:output message="tns:GetJobsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetJobItems">
+      <wsdl:input message="tns:GetJobItemsSoapIn" />
+      <wsdl:output message="tns:GetJobItemsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetMachines">
+      <wsdl:input message="tns:GetMachinesSoapIn" />
+      <wsdl:output message="tns:GetMachinesSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetParts">
+      <wsdl:input message="tns:GetPartsSoapIn" />
+      <wsdl:output message="tns:GetPartsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetReasons">
+      <wsdl:input message="tns:GetReasonsSoapIn" />
+      <wsdl:output message="tns:GetReasonsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetSuppliers">
+      <wsdl:input message="tns:GetSuppliersSoapIn" />
+      <wsdl:output message="tns:GetSuppliersSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetDeleteHst">
+      <wsdl:input message="tns:GetDeleteHstSoapIn" />
+      <wsdl:output message="tns:GetDeleteHstSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetOpenPOs">
+      <wsdl:input message="tns:GetOpenPOsSoapIn" />
+      <wsdl:output message="tns:GetOpenPOsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetIssues">
+      <wsdl:input message="tns:GetIssuesSoapIn" />
+      <wsdl:output message="tns:GetIssuesSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetStation">
+      <wsdl:input message="tns:GetStationSoapIn" />
+      <wsdl:output message="tns:GetStationSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetStationExt">
+      <wsdl:input message="tns:GetStationExtSoapIn" />
+      <wsdl:output message="tns:GetStationExtSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetFirmware">
+      <wsdl:input message="tns:GetFirmwareSoapIn" />
+      <wsdl:output message="tns:GetFirmwareSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactionsSAP">
+      <wsdl:input message="tns:GetTransactionsSAPSoapIn" />
+      <wsdl:output message="tns:GetTransactionsSAPSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetCompany">
+      <wsdl:input message="tns:GetCompanySoapIn" />
+      <wsdl:output message="tns:GetCompanySoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType name="AutoCribWSHttpGet">
+    <wsdl:operation name="GetUsers">
+      <wsdl:input message="tns:GetUsersHttpGetIn" />
+      <wsdl:output message="tns:GetUsersHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetBins">
+      <wsdl:input message="tns:GetBinsHttpGetIn" />
+      <wsdl:output message="tns:GetBinsHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetEmployeesDetail">
+      <wsdl:input message="tns:GetEmployeesDetailHttpGetIn" />
+      <wsdl:output message="tns:GetEmployeesDetailHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetEmployees">
+      <wsdl:input message="tns:GetEmployeesHttpGetIn" />
+      <wsdl:output message="tns:GetEmployeesHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetItems">
+      <wsdl:input message="tns:GetItemsHttpGetIn" />
+      <wsdl:output message="tns:GetItemsHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactions">
+      <wsdl:input message="tns:GetTransactionsHttpGetIn" />
+      <wsdl:output message="tns:GetTransactionsHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactionsSAP2">
+      <wsdl:input message="tns:GetTransactionsSAP2HttpGetIn" />
+      <wsdl:output message="tns:GetTransactionsSAP2HttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetGages">
+      <wsdl:input message="tns:GetGagesHttpGetIn" />
+      <wsdl:output message="tns:GetGagesHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetDepartments">
+      <wsdl:input message="tns:GetDepartmentsHttpGetIn" />
+      <wsdl:output message="tns:GetDepartmentsHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetJobs">
+      <wsdl:input message="tns:GetJobsHttpGetIn" />
+      <wsdl:output message="tns:GetJobsHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetJobItems">
+      <wsdl:input message="tns:GetJobItemsHttpGetIn" />
+      <wsdl:output message="tns:GetJobItemsHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetMachines">
+      <wsdl:input message="tns:GetMachinesHttpGetIn" />
+      <wsdl:output message="tns:GetMachinesHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetParts">
+      <wsdl:input message="tns:GetPartsHttpGetIn" />
+      <wsdl:output message="tns:GetPartsHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetReasons">
+      <wsdl:input message="tns:GetReasonsHttpGetIn" />
+      <wsdl:output message="tns:GetReasonsHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetSuppliers">
+      <wsdl:input message="tns:GetSuppliersHttpGetIn" />
+      <wsdl:output message="tns:GetSuppliersHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetDeleteHst">
+      <wsdl:input message="tns:GetDeleteHstHttpGetIn" />
+      <wsdl:output message="tns:GetDeleteHstHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetOpenPOs">
+      <wsdl:input message="tns:GetOpenPOsHttpGetIn" />
+      <wsdl:output message="tns:GetOpenPOsHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetIssues">
+      <wsdl:input message="tns:GetIssuesHttpGetIn" />
+      <wsdl:output message="tns:GetIssuesHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetStation">
+      <wsdl:input message="tns:GetStationHttpGetIn" />
+      <wsdl:output message="tns:GetStationHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetStationExt">
+      <wsdl:input message="tns:GetStationExtHttpGetIn" />
+      <wsdl:output message="tns:GetStationExtHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetFirmware">
+      <wsdl:input message="tns:GetFirmwareHttpGetIn" />
+      <wsdl:output message="tns:GetFirmwareHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactionsSAP">
+      <wsdl:input message="tns:GetTransactionsSAPHttpGetIn" />
+      <wsdl:output message="tns:GetTransactionsSAPHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetCompany">
+      <wsdl:input message="tns:GetCompanyHttpGetIn" />
+      <wsdl:output message="tns:GetCompanyHttpGetOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType name="AutoCribWSHttpPost">
+    <wsdl:operation name="GetUsers">
+      <wsdl:input message="tns:GetUsersHttpPostIn" />
+      <wsdl:output message="tns:GetUsersHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetBins">
+      <wsdl:input message="tns:GetBinsHttpPostIn" />
+      <wsdl:output message="tns:GetBinsHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetEmployeesDetail">
+      <wsdl:input message="tns:GetEmployeesDetailHttpPostIn" />
+      <wsdl:output message="tns:GetEmployeesDetailHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetEmployees">
+      <wsdl:input message="tns:GetEmployeesHttpPostIn" />
+      <wsdl:output message="tns:GetEmployeesHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetItems">
+      <wsdl:input message="tns:GetItemsHttpPostIn" />
+      <wsdl:output message="tns:GetItemsHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactions">
+      <wsdl:input message="tns:GetTransactionsHttpPostIn" />
+      <wsdl:output message="tns:GetTransactionsHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactionsSAP2">
+      <wsdl:input message="tns:GetTransactionsSAP2HttpPostIn" />
+      <wsdl:output message="tns:GetTransactionsSAP2HttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetGages">
+      <wsdl:input message="tns:GetGagesHttpPostIn" />
+      <wsdl:output message="tns:GetGagesHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetDepartments">
+      <wsdl:input message="tns:GetDepartmentsHttpPostIn" />
+      <wsdl:output message="tns:GetDepartmentsHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetJobs">
+      <wsdl:input message="tns:GetJobsHttpPostIn" />
+      <wsdl:output message="tns:GetJobsHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetJobItems">
+      <wsdl:input message="tns:GetJobItemsHttpPostIn" />
+      <wsdl:output message="tns:GetJobItemsHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetMachines">
+      <wsdl:input message="tns:GetMachinesHttpPostIn" />
+      <wsdl:output message="tns:GetMachinesHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetParts">
+      <wsdl:input message="tns:GetPartsHttpPostIn" />
+      <wsdl:output message="tns:GetPartsHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetReasons">
+      <wsdl:input message="tns:GetReasonsHttpPostIn" />
+      <wsdl:output message="tns:GetReasonsHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetSuppliers">
+      <wsdl:input message="tns:GetSuppliersHttpPostIn" />
+      <wsdl:output message="tns:GetSuppliersHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetDeleteHst">
+      <wsdl:input message="tns:GetDeleteHstHttpPostIn" />
+      <wsdl:output message="tns:GetDeleteHstHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetOpenPOs">
+      <wsdl:input message="tns:GetOpenPOsHttpPostIn" />
+      <wsdl:output message="tns:GetOpenPOsHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetIssues">
+      <wsdl:input message="tns:GetIssuesHttpPostIn" />
+      <wsdl:output message="tns:GetIssuesHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetStation">
+      <wsdl:input message="tns:GetStationHttpPostIn" />
+      <wsdl:output message="tns:GetStationHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetStationExt">
+      <wsdl:input message="tns:GetStationExtHttpPostIn" />
+      <wsdl:output message="tns:GetStationExtHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetFirmware">
+      <wsdl:input message="tns:GetFirmwareHttpPostIn" />
+      <wsdl:output message="tns:GetFirmwareHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactionsSAP">
+      <wsdl:input message="tns:GetTransactionsSAPHttpPostIn" />
+      <wsdl:output message="tns:GetTransactionsSAPHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetCompany">
+      <wsdl:input message="tns:GetCompanyHttpPostIn" />
+      <wsdl:output message="tns:GetCompanyHttpPostOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="AutoCribWSSoap" type="tns:AutoCribWSSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="GetUsers">
+      <soap:operation soapAction="https://www.autocrib.net/GetUsers" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetBins">
+      <soap:operation soapAction="https://www.autocrib.net/GetBins" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetEmployeesDetail">
+      <soap:operation soapAction="https://www.autocrib.net/GetEmployeesDetail" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetEmployees">
+      <soap:operation soapAction="https://www.autocrib.net/GetEmployees" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetItems">
+      <soap:operation soapAction="https://www.autocrib.net/GetItems" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactions">
+      <soap:operation soapAction="https://www.autocrib.net/GetTransactions" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactionsSAP2">
+      <soap:operation soapAction="https://www.autocrib.net/GetTransactionsSAP2" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetGages">
+      <soap:operation soapAction="https://www.autocrib.net/GetGages" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDepartments">
+      <soap:operation soapAction="https://www.autocrib.net/GetDepartments" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetJobs">
+      <soap:operation soapAction="https://www.autocrib.net/GetJobs" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetJobItems">
+      <soap:operation soapAction="https://www.autocrib.net/GetJobItems" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetMachines">
+      <soap:operation soapAction="https://www.autocrib.net/GetMachines" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetParts">
+      <soap:operation soapAction="https://www.autocrib.net/GetParts" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetReasons">
+      <soap:operation soapAction="https://www.autocrib.net/GetReasons" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetSuppliers">
+      <soap:operation soapAction="https://www.autocrib.net/GetSuppliers" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDeleteHst">
+      <soap:operation soapAction="https://www.autocrib.net/GetDeleteHst" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetOpenPOs">
+      <soap:operation soapAction="https://www.autocrib.net/GetOpenPOs" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetIssues">
+      <soap:operation soapAction="https://www.autocrib.net/GetIssues" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetStation">
+      <soap:operation soapAction="https://www.autocrib.net/GetStation" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetStationExt">
+      <soap:operation soapAction="https://www.autocrib.net/GetStationExt" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetFirmware">
+      <soap:operation soapAction="https://www.autocrib.net/GetFirmware" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactionsSAP">
+      <soap:operation soapAction="https://www.autocrib.net/GetTransactionsSAP" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCompany">
+      <soap:operation soapAction="https://www.autocrib.net/GetCompany" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="AutoCribWSSoap12" type="tns:AutoCribWSSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="GetUsers">
+      <soap12:operation soapAction="https://www.autocrib.net/GetUsers" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetBins">
+      <soap12:operation soapAction="https://www.autocrib.net/GetBins" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetEmployeesDetail">
+      <soap12:operation soapAction="https://www.autocrib.net/GetEmployeesDetail" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetEmployees">
+      <soap12:operation soapAction="https://www.autocrib.net/GetEmployees" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetItems">
+      <soap12:operation soapAction="https://www.autocrib.net/GetItems" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactions">
+      <soap12:operation soapAction="https://www.autocrib.net/GetTransactions" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactionsSAP2">
+      <soap12:operation soapAction="https://www.autocrib.net/GetTransactionsSAP2" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetGages">
+      <soap12:operation soapAction="https://www.autocrib.net/GetGages" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDepartments">
+      <soap12:operation soapAction="https://www.autocrib.net/GetDepartments" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetJobs">
+      <soap12:operation soapAction="https://www.autocrib.net/GetJobs" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetJobItems">
+      <soap12:operation soapAction="https://www.autocrib.net/GetJobItems" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetMachines">
+      <soap12:operation soapAction="https://www.autocrib.net/GetMachines" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetParts">
+      <soap12:operation soapAction="https://www.autocrib.net/GetParts" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetReasons">
+      <soap12:operation soapAction="https://www.autocrib.net/GetReasons" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetSuppliers">
+      <soap12:operation soapAction="https://www.autocrib.net/GetSuppliers" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDeleteHst">
+      <soap12:operation soapAction="https://www.autocrib.net/GetDeleteHst" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetOpenPOs">
+      <soap12:operation soapAction="https://www.autocrib.net/GetOpenPOs" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetIssues">
+      <soap12:operation soapAction="https://www.autocrib.net/GetIssues" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetStation">
+      <soap12:operation soapAction="https://www.autocrib.net/GetStation" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetStationExt">
+      <soap12:operation soapAction="https://www.autocrib.net/GetStationExt" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetFirmware">
+      <soap12:operation soapAction="https://www.autocrib.net/GetFirmware" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactionsSAP">
+      <soap12:operation soapAction="https://www.autocrib.net/GetTransactionsSAP" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCompany">
+      <soap12:operation soapAction="https://www.autocrib.net/GetCompany" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="AutoCribWSHttpGet" type="tns:AutoCribWSHttpGet">
+    <http:binding verb="GET" />
+    <wsdl:operation name="GetUsers">
+      <http:operation location="/GetUsers" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetBins">
+      <http:operation location="/GetBins" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetEmployeesDetail">
+      <http:operation location="/GetEmployeesDetail" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetEmployees">
+      <http:operation location="/GetEmployees" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetItems">
+      <http:operation location="/GetItems" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactions">
+      <http:operation location="/GetTransactions" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactionsSAP2">
+      <http:operation location="/GetTransactionsSAP2" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetGages">
+      <http:operation location="/GetGages" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDepartments">
+      <http:operation location="/GetDepartments" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetJobs">
+      <http:operation location="/GetJobs" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetJobItems">
+      <http:operation location="/GetJobItems" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetMachines">
+      <http:operation location="/GetMachines" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetParts">
+      <http:operation location="/GetParts" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetReasons">
+      <http:operation location="/GetReasons" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetSuppliers">
+      <http:operation location="/GetSuppliers" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDeleteHst">
+      <http:operation location="/GetDeleteHst" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetOpenPOs">
+      <http:operation location="/GetOpenPOs" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetIssues">
+      <http:operation location="/GetIssues" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetStation">
+      <http:operation location="/GetStation" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetStationExt">
+      <http:operation location="/GetStationExt" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetFirmware">
+      <http:operation location="/GetFirmware" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactionsSAP">
+      <http:operation location="/GetTransactionsSAP" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCompany">
+      <http:operation location="/GetCompany" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="AutoCribWSHttpPost" type="tns:AutoCribWSHttpPost">
+    <http:binding verb="POST" />
+    <wsdl:operation name="GetUsers">
+      <http:operation location="/GetUsers" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetBins">
+      <http:operation location="/GetBins" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetEmployeesDetail">
+      <http:operation location="/GetEmployeesDetail" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetEmployees">
+      <http:operation location="/GetEmployees" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetItems">
+      <http:operation location="/GetItems" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactions">
+      <http:operation location="/GetTransactions" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactionsSAP2">
+      <http:operation location="/GetTransactionsSAP2" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetGages">
+      <http:operation location="/GetGages" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDepartments">
+      <http:operation location="/GetDepartments" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetJobs">
+      <http:operation location="/GetJobs" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetJobItems">
+      <http:operation location="/GetJobItems" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetMachines">
+      <http:operation location="/GetMachines" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetParts">
+      <http:operation location="/GetParts" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetReasons">
+      <http:operation location="/GetReasons" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetSuppliers">
+      <http:operation location="/GetSuppliers" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetDeleteHst">
+      <http:operation location="/GetDeleteHst" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetOpenPOs">
+      <http:operation location="/GetOpenPOs" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetIssues">
+      <http:operation location="/GetIssues" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetStation">
+      <http:operation location="/GetStation" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetStationExt">
+      <http:operation location="/GetStationExt" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetFirmware">
+      <http:operation location="/GetFirmware" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactionsSAP">
+      <http:operation location="/GetTransactionsSAP" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCompany">
+      <http:operation location="/GetCompany" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:content part="Body" type="text/xml" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="AutoCribWS">
+    <wsdl:port name="AutoCribWSSoap" binding="tns:AutoCribWSSoap">
+      <soap:address location="http://www24.autocrib.net/webservices/autocribws.asmx" />
+    </wsdl:port>
+    <wsdl:port name="AutoCribWSSoap12" binding="tns:AutoCribWSSoap12">
+      <soap12:address location="http://www24.autocrib.net/webservices/autocribws.asmx" />
+    </wsdl:port>
+    <wsdl:port name="AutoCribWSHttpGet" binding="tns:AutoCribWSHttpGet">
+      <http:address location="http://www24.autocrib.net/webservices/autocribws.asmx" />
+    </wsdl:port>
+    <wsdl:port name="AutoCribWSHttpPost" binding="tns:AutoCribWSHttpPost">
+      <http:address location="http://www24.autocrib.net/webservices/autocribws.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

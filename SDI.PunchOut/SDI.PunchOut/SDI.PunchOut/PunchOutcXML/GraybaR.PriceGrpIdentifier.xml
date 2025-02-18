@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Groups>
+	<Group id="sdi_nacco" desc="NACCO">
+		<site id="I0075" custId="90029" desc="NACCO Berea" />
+		<site id="I0076" custId="90105" desc="NACCO Greenville" />
+		<site id="I0903" custId="40016" desc="NACCO Saltillo Mexico" />
+	</Group>
+	<Group id="nyc" desc="New York City">
+		<site id="I0231" custId="NY00002" desc="NYC DOE Custodial" />
+		<site id="I0230" custId="NY00001" desc="NYC DOE Maintenance" />
+		<site id="I0257" custId="NY00005" desc="NYC Pest Control" />
+	</Group>
+	<Group id="kelloggs" desc="Kelloggs">
+		<site id="I0304" custId="90428" desc="Kelloggs Grand Rapids" />
+		<site id="I0359" custId="90428" desc="Kelloggs Pikeville" />
+		<site id="I0369" custId="90428" desc="Kelloggs Zanesville" />
+		<site id="I0376" custId="90428" desc="Kelloggs Blue Anchor" />
+		<site id="I0377" custId="90428" desc="Kelloggs Atlanta" />
+		<site id="I0378" custId="90428" desc="Kelloggs Rossville" />
+		<site id="I0379" custId="90428" desc="Kelloggs San Jose" />
+		<site id="I0390" custId="90428" desc="Kelloggs Battle Creek" />
+		<site id="I0392" custId="90428" desc="Kelloggs Omaha" />
+		<site id="I0393" custId="90428" desc="Kelloggs Lancaster" />
+		<site id="I0394" custId="90428" desc="Kelloggs Memphis" />
+		<site id="I0395" custId="90428" desc="Kelloggs Muncy" />
+		<site id="I0397" custId="90428" desc="Kelloggs Chicago" />
+	</Group>
+</Groups>

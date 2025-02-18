@@ -1,0 +1,7 @@
+/Users/Shared/SDiMobile (v1-2.2)/UITests/obj/Debug/.NETFramework,Version=v4.5.AssemblyAttribute.cs
+/Users/Shared/SDiMobile (v1-2.2)/UITests/bin/Debug/SDiMobile.UITests.dll.mdb
+/Users/Shared/SDiMobile (v1-2.2)/UITests/bin/Debug/SDiMobile.UITests.dll
+/Users/Shared/SDiMobile (v1-2.2)/UITests/obj/Debug/SDiMobile.UITests.dll
+/Users/Shared/SDiMobile (v1-2.2)/UITests/obj/Debug/SDiMobile.UITests.dll.mdb
+/Users/Shared/SDiMobile (v1-2.2)/UITests/bin/Debug/Xamarin.UITest.dll
+/Users/Shared/SDiMobile (v1-2.2)/UITests/bin/Debug/nunit.framework.dll

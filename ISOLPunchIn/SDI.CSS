@@ -1,0 +1,255 @@
+.highlight {text-decoration: none;color:black;background:yellow;}
+	
+A:link	{	
+	color:	#273D8C;
+	}	
+		
+A:visited	{	
+	color:	#273D8C;
+	}	
+		
+A:active	{	
+	color:	#273D8C;
+	}	
+		
+A:hover	{	
+	text-decoration:	underline;
+	color:	#273D8C;
+	}
+	
+a:tracklink	{	
+	text-decoration:	underline;
+	font-size : 24pt;
+	color:	#273D8C;
+	background: gray;
+	}
+	
+p.banner {
+	color : #FFFFFF;
+	font-size : 14pt;
+	font-family : sans-serif;
+	font-weight : Bold;
+}
+
+p.bannertext {
+	color : #FFFFFF;
+	font-size : 8pt;
+	font-family : sans-serif;
+	font-weight : Bold;
+}
+
+p.menuheading {
+	font-size : 10pt;
+	font-family : sans-serif;
+}
+
+p.text {
+	font-size : 10pt;
+	font-family : sans-serif;
+}
+
+p.title {
+	color : #000080;
+	font-size : 14pt;
+	font-family : sans-serif;
+}
+
+.HeaderRow {
+	background-color : #99CCFF;
+	color : #000080;
+	font-family : sans-serif;
+}
+
+.DetailRow {
+	font-size : 9pt;
+	font-family : sans-serif;
+}
+
+.displaylabel 
+{
+	font-family :Arial, Sans-Serif;
+	color : #273D8C;
+	font-size : smaller;
+}
+
+.displaylabelF 
+{
+	font-family :Arial, Sans-Serif;
+	color : #273D8C;
+	font-size : smaller;
+	position:relative ; 
+   top:expression(this.offsetParent.scrollTop - 2); 
+   z-index: 10;
+}
+
+.displaySmallLabel
+{
+	font-family :Arial, Sans-Serif;
+	color : #273D8C;
+	font-size : x-small;
+}
+
+.Attrblabel 
+{
+	FONT-WEIGHT: bold;
+    FONT-SIZE: 10.5pt;
+    COLOR: #273D8C;
+    FONT-FAMILY: Arial, Helvetica, 'MS Sans Serif';
+    background-color: #B9D52B;
+}
+
+.displayhome 
+{
+	font-family :Arial, Sans-Serif;
+	color : #273D8C;
+	font-size : 10pt;
+}
+
+.tabledetail {
+	color : #000080;
+	font-family : sans-serif;
+}
+
+.tablefield {
+	font-family : sans-serif;
+}
+
+
+.ColumnHeader {
+	background-color : #99CCFF;
+	color : #000080;
+	font-size : 14pt;
+	font-family : sans-serif;
+	text-align : center;
+}
+
+Input.ErrorInput {
+	background-color: #FFFF33;
+}
+
+..BannerBgColor
+{
+    COLOR: #273D8C;
+    FONT-FAMILY: Arial, Helvetica, 'MS Sans Serif';
+    FONT-WEIGHT: bolder;
+    FONT-SIZE: 12pt;
+    BACKGROUND-COLOR: #B9D52B;
+}
+
+.button-fancy1
+{
+    FONT-WEIGHT: lighter;
+    FONT-SIZE: 9pt;
+    COLOR: #273D8C;
+    /*COLOR: white;*/
+    FONT-FAMILY: Arial, Verdana, 'MS Sans Serif';
+    BACKGROUND-COLOR: #B9D52B;
+    /*BACKGROUND-COLOR: #273D8C;*/
+	cursor:hand;
+}
+
+.button-fancy2
+{
+    FONT-WEIGHT: lighter;
+    FONT-SIZE: 9pt;
+    COLOR: white;
+    FONT-FAMILY: Arial, Verdana, 'MS Sans Serif';
+    BACKGROUND-COLOR: #273D8C;
+	cursor:hand;
+}
+
+.displaytitle
+{
+	FONT-WEIGHT: bolder;
+	font-size: 8pt;
+	color: #273D8C;
+	FONT-FAMILY: Arial, Verdana, 'MS Sans Serif';
+	BACKGROUND-COLOR: #B9D52B;
+	border: #c7cc96 1pt solid;
+}
+
+.displaytitletxt
+{
+	FONT-WEIGHT: bolder;
+	font-size: 8pt;
+	color: #273D8C;
+	FONT-FAMILY: Arial, Verdana, 'MS Sans Serif';
+	BACKGROUND-COLOR: #B9D52B;
+}
+
+.displayCartInfo
+{
+	FONT-WEIGHT: bolder;
+	font-size: 8pt;
+	color: #273D8C;
+	FONT-FAMILY: Arial, Verdana, 'MS Sans Serif';
+}
+
+..loclink
+{
+	FONT-WEIGHT: bolder;
+    FONT-SIZE: 8pt;
+    font-family: sans-serif;
+    BACKGROUND-COLOR: #B9D52B
+}
+
+..contentlink
+{
+	font-family:Sans-Serif;
+	font-weight:bolder;
+	font-size: 8pt;
+}
+
+.headinglabel
+{
+    FONT-WEIGHT: bolder;
+    FONT-SIZE: 9pt;
+    color: #273D8C;
+    TEXT-TRANSFORM: capitalize;
+    FONT-FAMILY: Arial, Verdana, 'MS Sans Serif';
+}
+
+.NoDataGroup
+{
+  background-color:#B9D52B;
+  border-width:1px; 
+  border-color:#273D8C; 
+  border-style:solid;
+  cursor:default;
+  font-family:MS Sans Serif; 
+  font-size:20px; 
+  padding:5px;
+  padding-left:10px;
+  padding-right:10px; 
+}
+
+..Gridheading
+{
+    FONT-WEIGHT: bolder;
+    FONT-SIZE: 10pt;
+    COLOR: black;
+    FONT-FAMILY: Arial, Verdana, 'MS Sans Serif';
+}
+
+..Griddata
+{
+    FONT-SIZE: 8pt;
+    COLOR: black;
+    FONT-FAMILY: Arial, Verdana, 'MS Sans Serif';
+}
+
+..TextBoxAlignRight
+{
+    text-align : right;
+}
+
+/* Body Text Bold */
+	.btb, .btb3			{font-weight:bold;font-size:12PT;}
+	
+/* Body Text Small*/
+	.bodytextsmall, .bts, .bts3		{font-size:10PT;}
+	.btsRed				{font-size:8PT;color:#CC0000;}
+						
+/* Body Text Small Bold */
+	.btsb, .btsb3		{font-weight:bold;font-size:8PT;}
+

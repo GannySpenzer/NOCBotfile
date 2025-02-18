@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "SDIVendingAutoCrib", "SDIVendingAutoCrib.vbproj", "{EB1A44F5-D1C7-4AE1-B75D-5157BEAE4D0B}"
+EndProject
+Global
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 2
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = http://vsfoundations:8080/tfs/insiteonline
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = SDIVendingAutoCrib.vbproj
+		SccLocalPath1 = .
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EB1A44F5-D1C7-4AE1-B75D-5157BEAE4D0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB1A44F5-D1C7-4AE1-B75D-5157BEAE4D0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB1A44F5-D1C7-4AE1-B75D-5157BEAE4D0B}.Debug|x86.ActiveCfg = Debug|x86
+		{EB1A44F5-D1C7-4AE1-B75D-5157BEAE4D0B}.Debug|x86.Build.0 = Debug|x86
+		{EB1A44F5-D1C7-4AE1-B75D-5157BEAE4D0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB1A44F5-D1C7-4AE1-B75D-5157BEAE4D0B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB1A44F5-D1C7-4AE1-B75D-5157BEAE4D0B}.Release|x86.ActiveCfg = Release|Any CPU
+		{EB1A44F5-D1C7-4AE1-B75D-5157BEAE4D0B}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

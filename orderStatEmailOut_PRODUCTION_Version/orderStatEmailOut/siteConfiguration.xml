@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?> 
+<configuration>
+	<appSettings>
+		<add id="scannedDocumentLink" value="http://legato.sdi.com/wx/query.asp?ORDERNUM={0}" />
+        <add id="urlTruckShipmentBOL" value="https://www.sdiexchange.com/Trucking/shipmentBOL.aspx?bu={0}&amp;ord={1}" />
+        <add id="legatoSQLCNstring" value="server=ANGEL;uid=NYCSHIP;pwd=nycship;initial catalog='OTG';" />
+	</appSettings>
+	<siteSettings>
+		<site id="I0260" startDT="09/12/2015" desc="SDI/NYCDOE WAREHOUSE" bccAll="webdev@sdi.com;" bccAddForNSTK="vitaly.rovensky@sdi.com;Ron.Fijalkowski@sdi.com;" bccAddForNY0A="vitaly.rovensky@sdi.com">
+			<orderStatusToCheck id="shipped" startDT="04/12/2010" desc="checked for order's shipped status.">
+				<userEmailPrivForStatus id="EMLSHIPPD6" desc="user was setup to receive notification when order got shipped - refer to PS_ISA_USERS_PRIVS table." />
+			</orderStatusToCheck>
+		</site>
+	</siteSettings>
+</configuration>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<xmlData>
+	<Catalog>
+		<COMPID>HON40000</COMPID>
+		<Fromdomain>HONEYWELL</Fromdomain>
+		<CUSTID>40019</CUSTID>
+		<PASSWORD>INNEWHW</PASSWORD>
+	</Catalog>
+	<Catalog>
+		<COMPID>MIBUY425</COMPID>
+		<Fromdomain>MILLER COORS</Fromdomain>
+		<CUSTID>90500</CUSTID>
+		<PASSWORD>INNEWMC</PASSWORD>
+	</Catalog>
+	<Catalog>
+		<COMPID>MIBUY426</COMPID>
+		<Fromdomain>MILLER COORS</Fromdomain>
+		<CUSTID>90499</CUSTID>
+		<PASSWORD>INNEWMC</PASSWORD>
+	</Catalog>
+	<Catalog>
+		<COMPID>MIBUY427</COMPID>
+		<Fromdomain>MILLER COORS</Fromdomain>
+		<CUSTID>90498</CUSTID>
+		<PASSWORD>INNEWMC</PASSWORD>
+	</Catalog>
+	<Catalog>
+		<COMPID>MIBUY022</COMPID>
+		<Fromdomain>MILLER COORS</Fromdomain>
+		<CUSTID>90052</CUSTID>
+		<PASSWORD>INNEWMC</PASSWORD>
+	</Catalog>
+	<Catalog>
+		<COMPID>MIBUY445</COMPID>
+		<Fromdomain>MILLER COORS</Fromdomain>
+		<CUSTID>90530</CUSTID>
+		<PASSWORD>INNEWMC</PASSWORD>
+	</Catalog>
+	<Catalog>
+		<COMPID>MIBUY446</COMPID>
+		<Fromdomain>MILLER COORS</Fromdomain>
+		<CUSTID>90531</CUSTID>
+		<PASSWORD>INNEWMC</PASSWORD>
+	</Catalog>
+	<Catalog>
+		<COMPID>MIBUY447</COMPID>
+		<Fromdomain>MILLER COORS</Fromdomain>
+		<CUSTID>90532</CUSTID>
+		<PASSWORD>INNEWMC</PASSWORD>
+	</Catalog>
+	<Catalog>
+		<COMPID>MIBUY448</COMPID>
+		<Fromdomain>MILLER COORS</Fromdomain>
+		<CUSTID>90533</CUSTID>
+		<PASSWORD>INNEWMC</PASSWORD>
+	</Catalog>
+		<Catalog>
+		<COMPID>ASCENDCAN</COMPID>
+		<Fromdomain>ASCENDCA</Fromdomain>
+		<CUSTID>90523</CUSTID>
+		<PASSWORD>INNEWAS</PASSWORD>
+	</Catalog>
+	<Catalog>
+		<COMPID>ASCENDALV</COMPID>
+		<Fromdomain>ASCENDAL</Fromdomain>
+		<CUSTID>90524</CUSTID>
+		<PASSWORD>INNEWAS</PASSWORD>
+	</Catalog>
+	<Catalog>
+		<COMPID>ASCENDDEC</COMPID>
+		<Fromdomain>ASCENDDE</Fromdomain>
+		<CUSTID>90525</CUSTID>
+		<PASSWORD>INNEWAS</PASSWORD>
+	</Catalog>
+	<Catalog>
+		<COMPID>ASCENDGRN</COMPID>
+		<Fromdomain>ASCENDGR</Fromdomain>
+		<CUSTID>90526</CUSTID>
+		<PASSWORD>INNEWAS</PASSWORD>
+	</Catalog>
+	<Catalog>
+		<COMPID>ASCENDFOL</COMPID>
+		<Fromdomain>ASCENDFO</Fromdomain>
+		<CUSTID>90527</CUSTID>
+		<PASSWORD>INNEWAS</PASSWORD>
+	</Catalog>
+	<Catalog>
+		<COMPID>UNCC425</COMPID>
+		<Fromdomain>UNIV OF NC CHARLOTTE</Fromdomain>
+		<CUSTID>90425</CUSTID>
+		<PASSWORD>INNEWNC</PASSWORD>
+	</Catalog>
+</xmlData>
+

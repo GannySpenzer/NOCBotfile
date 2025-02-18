@@ -1,0 +1,1 @@
+<resources><!-- Inherit from the light Material Theme --><style name="MyTheme" parent="android:Theme.Material.Light.DarkActionBar"><item name="android:colorPrimary">@color/my_header</item><item name="android:colorPrimaryDark">@color/my_statusbar</item><item name="android:colorAccent">@color/my_header</item></style></resources>

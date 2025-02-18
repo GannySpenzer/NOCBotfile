@@ -1,0 +1,33 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "SDI_loadbalance_IO", "http://localhost/SDI_loadbalance_IO/SDI_loadbalance_IO.vbproj", "{B3F795DE-68DA-4E5E-9ECC-3875B7941B7E}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SourceCodeControl) = preSolution
+		SccNumberOfProjects = 2
+		SccLocalPath0 = .
+		CanCheckoutShared = false
+		SolutionUniqueID = {371372C8-8081-4BE4-9F5C-5A729DDEB47D}
+		SccProjectUniqueName1 = http://localhost/SDI_loadbalance_IO/SDI_loadbalance_IO.vbproj
+		SccLocalPath1 = .
+		CanCheckoutShared = false
+		SccProjectEnlistmentChoice1 = 2
+	EndGlobalSection
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectDependencies) = postSolution
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{B3F795DE-68DA-4E5E-9ECC-3875B7941B7E}.Debug.ActiveCfg = Debug|.NET
+		{B3F795DE-68DA-4E5E-9ECC-3875B7941B7E}.Debug.Build.0 = Debug|.NET
+		{B3F795DE-68DA-4E5E-9ECC-3875B7941B7E}.Release.ActiveCfg = Release|.NET
+		{B3F795DE-68DA-4E5E-9ECC-3875B7941B7E}.Release.Build.0 = Release|.NET
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,12 @@
+﻿<Properties StartupItem="iOS/SDiMobile.iOS.csproj">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|iPhone" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneDeviceTarget" />
+  <MonoDevelop.Ide.Workbench />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore>
+      <Breakpoint file="e:\Arvinthakash\SDiMobile (v1-2.2)\SDiMobile (v1-2.2)\SDiMobile\LoginPage.cs" line="111" column="1" />
+      <Breakpoint file="E:\Arvinthakash\SDiMobile (v1-2.2)\SDiMobile (v1-2.2)\SDiMobile\SDiMobile.cs" line="51" column="1" />
+      <Breakpoint file="E:\Arvinthakash\SDiMobile (v1-2.2)\SDiMobile (v1-2.2)\SDiMobile\ServerLogWriter.cs" line="16" column="1" />
+    </BreakpointStore>
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

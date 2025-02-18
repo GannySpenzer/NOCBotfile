@@ -1,0 +1,273 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <ProductVersion>8.0.30319</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{940B436A-52BB-4C48-BA48-47A656F82E59}</ProjectGuid>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{F184B08F-C81C-45F6-A57F-5ABD9991F28F}</ProjectTypeGuids>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ApplicationIcon />
+    <AssemblyKeyContainerName />
+    <AssemblyName>ISOLPunchIn</AssemblyName>
+    <AssemblyOriginatorKeyFile />
+    <AssemblyOriginatorKeyMode>None</AssemblyOriginatorKeyMode>
+    <DefaultClientScript>JScript</DefaultClientScript>
+    <DefaultHTMLPageLayout>Grid</DefaultHTMLPageLayout>
+    <DefaultTargetSchema>IE50</DefaultTargetSchema>
+    <DelaySign>false</DelaySign>
+    <OutputType>Library</OutputType>
+    <OptionCompare>Binary</OptionCompare>
+    <OptionExplicit>On</OptionExplicit>
+    <OptionStrict>Off</OptionStrict>
+    <RootNamespace>ISOLPunchIn</RootNamespace>
+    <StartupObject />
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <MyType>Windows</MyType>
+    <UpgradeBackupLocation />
+    <UseIISExpress>false</UseIISExpress>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\</OutputPath>
+    <DocumentationFile>ISOLPunchIn.xml</DocumentationFile>
+    <BaseAddress>285212672</BaseAddress>
+    <ConfigurationOverrideFile />
+    <DefineConstants />
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <DebugSymbols>true</DebugSymbols>
+    <Optimize>false</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>1</WarningLevel>
+    <NoWarn>42016,42017,42018,42019,42032,42353,42354,42355</NoWarn>
+    <DebugType>full</DebugType>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\</OutputPath>
+    <DocumentationFile>ISOLPunchIn.xml</DocumentationFile>
+    <BaseAddress>285212672</BaseAddress>
+    <ConfigurationOverrideFile />
+    <DefineConstants />
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <DebugSymbols>false</DebugSymbols>
+    <Optimize>true</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>1</WarningLevel>
+    <NoWarn>42016,42017,42018,42019,42032,42353,42354,42355</NoWarn>
+    <DebugType>none</DebugType>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System">
+      <Name>System</Name>
+    </Reference>
+    <Reference Include="System.Data">
+      <Name>System.Data</Name>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Drawing">
+      <Name>System.Drawing</Name>
+    </Reference>
+    <Reference Include="System.Web">
+      <Name>System.Web</Name>
+    </Reference>
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Web.Services">
+      <Name>System.Web.Services</Name>
+    </Reference>
+    <Reference Include="System.Xml">
+      <Name>System.XML</Name>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <Import Include="Microsoft.VisualBasic" />
+    <Import Include="System" />
+    <Import Include="System.Collections" />
+    <Import Include="System.Configuration" />
+    <Import Include="System.Data" />
+    <Import Include="System.Drawing" />
+    <Import Include="System.Web" />
+    <Import Include="System.Web.UI" />
+    <Import Include="System.Web.UI.HtmlControls" />
+    <Import Include="System.Web.UI.WebControls" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ApplicationLogger.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="AssemblyInfo.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="BuildBanner2.ascx.vb">
+      <DependentUpon>BuildBanner2.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BusinessObjects\punchInUser.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="clsEnterprise.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DBErrorPage.aspx.vb">
+      <DependentUpon>DBErrorPage.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Global.asax.vb">
+      <DependentUpon>Global.asax</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ISOLPunchinFunc.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ORDBData.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="PunchINOIC.aspx.vb">
+      <DependentUpon>PunchINOIC.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="PunchInSAP.aspx.vb">
+      <DependentUpon>PunchInSAP.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Content Include="BIN\ISOLPunchIn.dll" />
+    <Content Include="BIN\ISOLPunchIn.pdb" />
+    <Content Include="BIN\ISOLPunchIn.xml" />
+    <Content Include="BuildBanner2.ascx" />
+    <Content Include="CSScriptLib.js" />
+    <Content Include="DBErrorPage.aspx" />
+    <Content Include="Global.asax" />
+    <Content Include="images\1x1.gif" />
+    <Content Include="images\arrow_left_sdi.gif" />
+    <Content Include="images\asndetailpic.gif" />
+    <Content Include="images\ASNselect1.gif" />
+    <Content Include="images\ASNselect2.gif" />
+    <Content Include="images\cal.gif" />
+    <Content Include="images\careers.gif" />
+    <Content Include="images\careers_on.gif" />
+    <Content Include="images\clear.gif" />
+    <Content Include="images\company.gif" />
+    <Content Include="images\company_on.gif" />
+    <Content Include="images\contact_us.gif" />
+    <Content Include="images\contact_us_on.gif" />
+    <Content Include="images\EXPLORER.BMP" />
+    <Content Include="images\facilities_hp_on.gif" />
+    <Content Include="images\facilities_main_hp.gif" />
+    <Content Include="images\global_reach_hp.gif" />
+    <Content Include="images\global_reach_on.gif" />
+    <Content Include="images\investor_relations.gif" />
+    <Content Include="images\investor_relations_on.gif" />
+    <Content Include="images\leftarrow.gif" />
+    <Content Include="images\logoff.gif" />
+    <Content Include="images\logoff_on.gif" />
+    <Content Include="images\logon.gif" />
+    <Content Include="images\logon_on.gif" />
+    <Content Include="images\log_off.gif" />
+    <Content Include="images\log_off_active.gif" />
+    <Content Include="images\log_on.gif" />
+    <Content Include="images\log_on_active.gif" />
+    <Content Include="images\manufacturing_hp.gif" />
+    <Content Include="images\manufacturing_hp_on.gif" />
+    <Content Include="images\mro_defined.gif" />
+    <Content Include="images\mro_defined_on.gif" />
+    <Content Include="images\nav_tile.gif" />
+    <Content Include="images\next.gif" />
+    <Content Include="images\our_customers.gif" />
+    <Content Include="images\our_customers_on.gif" />
+    <Content Include="images\POdetailpic.gif" />
+    <Content Include="images\poPartialA.gif" />
+    <Content Include="images\popartialB.gif" />
+    <Content Include="images\portalpic2.gif" />
+    <Content Include="images\press_room.gif" />
+    <Content Include="images\press_room_on.gif" />
+    <Content Include="images\prev.gif" />
+    <Content Include="images\sdi_logo.gif" />
+    <Content Include="images\SDI_logo.jpg" />
+    <Content Include="images\SDI_logo1.gif" />
+    <Content Include="images\SelectAll.gif" />
+    <Content Include="images\selectPOpic.gif" />
+    <Content Include="images\selectpopic2.gif" />
+    <Content Include="images\solutions_hp.gif" />
+    <Content Include="images\solutions_hp_on.gif" />
+    <Content Include="images\success_stories_hp.gif" />
+    <Content Include="images\success_stories_on.gif" />
+    <Content Include="images\TXT.BMP" />
+    <Content Include="images\UnselectAll.gif" />
+    <Content Include="images\VendorSelect.gif" />
+    <Content Include="images\waitAnima2.gif" />
+    <Content Include="menuStyle.css" />
+    <Content Include="PunchINOIC.aspx" />
+    <Content Include="PunchInSAP.aspx" />
+    <Content Include="PunchinXML\PunchINSAP.xml" />
+    <Content Include="SDI.CSS" />
+    <Content Include="Styles.css" />
+    <Content Include="StyleSheet.css" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <EmbeddedResource Include="BuildBanner2.ascx.resx">
+      <DependentUpon>BuildBanner2.ascx.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DBErrorPage.aspx.resx">
+      <DependentUpon>DBErrorPage.aspx.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Global.asax.resx">
+      <DependentUpon>Global.asax.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PunchINOIC.aspx.resx">
+      <DependentUpon>PunchINOIC.aspx.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PunchInSAP.aspx.resx">
+      <DependentUpon>PunchInSAP.aspx.vb</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="logs\" />
+    <Folder Include="My Project\" />
+    <Folder Include="PublishedISOL\images\" />
+    <Folder Include="PublishedISOL\logs\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="BIN\vssver.scc" />
+    <None Include="ClassDiagram1.cd" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
+  <PropertyGroup>
+    <PreBuildEvent />
+    <PostBuildEvent />
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>1306</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost/ISOLPunchIn</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>
